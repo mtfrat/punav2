@@ -71,7 +71,7 @@ const Footer = () => {
                    <Logo variant="white" />
                 </div>
                 <div className="text-xl tracking-tight text-[#FFF2E1] font-body font-bold">
-                  Puna Tech<sup className="text-[10px] opacity-40">®</sup>
+                  Puna Tech
                 </div>
               </Link>
               <p className="text-sm leading-relaxed mb-6 max-w-xs opacity-70">

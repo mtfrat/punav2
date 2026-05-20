@@ -87,7 +87,7 @@ const Navbar = () => {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="text-2xl font-display font-bold text-foreground hover:text-primary transition-colors"
+                  className="text-2xl font-body font-semibold text-foreground hover:text-primary transition-colors"
                 >
                   {link.name}
                 </a>
@@ -95,7 +95,7 @@ const Navbar = () => {
               <a
                 href="/#contact"
                 onClick={() => setIsOpen(false)}
-                className="w-full bg-foreground text-white text-center font-bold rounded-full py-4 text-lg"
+                className="w-full bg-foreground text-white text-center font-body font-bold rounded-full py-4 text-lg"
               >
                 Contacto
               </a>
