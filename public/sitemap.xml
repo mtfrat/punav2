@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Homepage -->
+  <url>
+    <loc>https://puna-tech.com/</loc>
+    <lastmod>2026-05-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://puna-tech.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://puna-tech.com/en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://puna-tech.com/" />
+  </url>
+  <!-- Blog listing page -->
+  <url>
+    <loc>https://puna-tech.com/blog</loc>
+    <lastmod>2026-05-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://puna-tech.com/blog" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://puna-tech.com/en/blog" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://puna-tech.com/blog" />
+  </url>
+  <!-- Post: Google agentic AI and vibe-coded widgets -->
+  <url>
+    <loc>https://puna-tech.com/blog/ce50c784-fb5f-4fb0-8366-b509505ad350</loc>
+    <lastmod>2026-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://puna-tech.com/blog/ce50c784-fb5f-4fb0-8366-b509505ad350" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://puna-tech.com/en/blog/ce50c784-fb5f-4fb0-8366-b509505ad350" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://puna-tech.com/blog/ce50c784-fb5f-4fb0-8366-b509505ad350" />
+  </url>
+  <!-- Post: ASML semiconductor machine AI pace -->
+  <url>
+    <loc>https://puna-tech.com/blog/6a679262-ec4b-4b40-b3d3-2676414ca7cd</loc>
+    <lastmod>2026-05-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://puna-tech.com/blog/6a679262-ec4b-4b40-b3d3-2676414ca7cd" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://puna-tech.com/en/blog/6a679262-ec4b-4b40-b3d3-2676414ca7cd" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://puna-tech.com/blog/6a679262-ec4b-4b40-b3d3-2676414ca7cd" />
+  </url>
+  <!-- Post: Meta acquires Manus for AI agents -->
+  <url>
+    <loc>https://puna-tech.com/blog/2a7d35ed-5d84-47c3-a0fb-610037935b07</loc>
+    <lastmod>2026-04-29</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://puna-tech.com/blog/2a7d35ed-5d84-47c3-a0fb-610037935b07" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://puna-tech.com/en/blog/2a7d35ed-5d84-47c3-a0fb-610037935b07" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://puna-tech.com/blog/2a7d35ed-5d84-47c3-a0fb-610037935b07" />
+  </url>
+</urlset>

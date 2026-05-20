@@ -1,0 +1,6 @@
+{
+  "name": "Puna Tech",
+  "description": "Advanced data engineering and high-performance technical solutions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
