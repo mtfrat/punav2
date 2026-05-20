@@ -1,4 +1,11 @@
+# Robots.txt - Puna Tech
+# https://www.puna-tech.com
+
 User-agent: *
 Allow: /
 
-Sitemap: https://puna-tech.com/sitemap.xml
+# Disallow admin or internal paths if added later
+# Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://www.puna-tech.com/sitemap.xml

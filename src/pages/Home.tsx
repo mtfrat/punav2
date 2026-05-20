@@ -11,15 +11,16 @@ import ContactForm from '../components/ContactForm';
 import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
 import SEOTags from '../components/SEO/SEOTags';
+import ROICalculator from '../components/ui/ROICalculator';
 
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white font-body selection:bg-foreground selection:text-background">
       <SEOTags 
-        title="Puna Tech | Escalá tu Negocio B2B con Agentes de IA y Automatización"
-        description="Especialistas en ingeniería de automatización y GTM. Creamos agentes de IA personalizados para multiplicar tus ventas y liberar tu tiempo."
-        keywords="agentes de ia, automatización de ventas, infraestructura de crecimiento, b2b scaling, ai agents argentina, prospección automatizada, clay automation, n8n expert"
+        title="Puna Tech | Sistemas Agénticos de IA y Software B2B Personalizado"
+        description="Desarrollamos sistemas agénticos de IA y soluciones de software personalizadas que automatizan flujos complejos de extremo a extremo. Elevamos la eficiencia y escalabilidad de tu empresa."
+        keywords="agentes de ia, AI agent development, custom software solutions, agentic automation, machine learning consulting, automatización b2b, software a medida, puna tech"
         customSchema={{
           "@context": "https://schema.org",
           "@type": "ProfessionalService",
@@ -37,7 +38,15 @@ export default function Home() {
             "https://linkedin.com/company/puna-tech",
             "https://instagram.com/puna.tech"
           ],
-          "description": "Especialistas en ingeniería de automatización y GTM. Creamos agentes de IA personalizados para multiplicar tus ventas y liberar tu tiempo."
+          "description": "Desarrollamos sistemas agénticos de IA y soluciones de software personalizadas que automatizan flujos complejos de extremo a extremo. Elevamos la eficiencia y la escalabilidad operativa.",
+          "knowsAbout": [
+            "AI agent development",
+            "custom software solutions",
+            "agentic automation",
+            "machine learning consulting",
+            "intelligent workflows",
+            "multi-agent orchestration"
+          ]
         }}
       />
       <Navbar />
@@ -46,6 +55,7 @@ export default function Home() {
         <About />
         <Services />
         <TechStack />
+        <ROICalculator />
         <Testimonials />
         <Blog />
         <FAQ />

@@ -11,6 +11,30 @@ interface Post {
   created_at: string;
 }
 
+const defaultPosts: Post[] = [
+  {
+    id: 'orquestacion-multi-agente',
+    title: 'Orquestación Multi-Agente: Cómo Diseñar Arquitecturas de IA que Cooperan Sin Entrar en Loops Infinitos',
+    content: 'Diseñar sistemas con múltiples agentes autónomos requiere un manejo sofisticado de estados y ciclos. En esta guía técnica, analizamos cómo implementar patrones de comunicación asíncronos y semáforos de tokens para evitar la redundancia operativa en procesos corporativos.',
+    image_url: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=600&auto=format&fit=crop',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'guardrails-seguridad-ia',
+    title: 'Más Allá del Prompting: Implementación de Sistemas de Validación y Guardrails en Entornos Agénticos Corporativos',
+    content: 'La seguridad en aplicaciones que utilizan Modelos de Lenguaje va más allá de un buen prompt. Descubre cómo estructurar capas de validación sintáctica y semántica basadas en esquemas JSON y herramientas como LlamaGuard para evitar inyecciones de código.',
+    image_url: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?q=80&w=600&auto=format&fit=crop',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'integracion-cloud-agentes',
+    title: 'Integración Cloud de Agentes de IA: Guía Práctica para Conectar Modelos de Lenguaje con Bases de Datos y APIs Internas Securitizadas',
+    content: 'Desplegar un agente en producción implica conectarlo con la infraestructura existente de la empresa de forma segura. Analizamos el diseño de túneles API securizados, políticas de mínimos privilegios en base de datos y orquestación serverless.',
+    image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=600&auto=format&fit=crop',
+    created_at: new Date().toISOString()
+  }
+];
+
 const Blog = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,9 +56,14 @@ const Blog = () => {
           title: translatePostTitle(post.id, post.title)
         }));
         
-        setPosts(mappedPosts);
+        if (mappedPosts.length === 0) {
+          setPosts(defaultPosts);
+        } else {
+          setPosts(mappedPosts);
+        }
       } catch (err) {
         console.error('Error fetching latest posts:', err);
+        setPosts(defaultPosts);
       } finally {
         setLoading(false);
       }

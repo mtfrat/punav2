@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import emailjs from '@emailjs/browser';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 
 
@@ -57,12 +58,47 @@ const ContactForm = () => {
 
   const [newsletterSubmitted, setNewsletterSubmitted] = useState(false);
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setNewsletterSubmitted(true);
     const input = (e.currentTarget as HTMLFormElement).querySelector('input');
-    if (input) input.value = '';
-    setTimeout(() => setNewsletterSubmitted(false), 5000);
+    if (!input || !input.value) return;
+
+    const newsletterEmail = input.value;
+
+    try {
+      // 1. Guardar en Supabase
+      const { error } = await supabase
+        .from('leads')
+        .insert([{ email: newsletterEmail, source: 'newsletter' }]);
+
+      if (error) throw error;
+      
+      // 2. Enviar alerta por EmailJS
+      const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_yy0g002';
+      const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_cr5obtd';
+      const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'uTD7ft0fVaE7j9YlO';
+
+      const templateParams = {
+        from_name: 'Newsletter (puna-tech.com)',
+        from_email: newsletterEmail,
+        company: 'N/A',
+        message: `Nueva suscripción al Newsletter general de Puna Tech.`,
+        to_name: 'PunaTech',
+      };
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      setNewsletterSubmitted(true);
+      input.value = '';
+      setTimeout(() => setNewsletterSubmitted(false), 5000);
+    } catch (error) {
+      console.error('Error al suscribir al newsletter o enviar la alerta:', error);
+    }
   };
 
   return (

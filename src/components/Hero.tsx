@@ -37,31 +37,30 @@ const Hero = () => {
             </motion.div>
 
             <motion.h1 
-              className="animate-fade-rise text-6xl sm:text-7xl md:text-8xl lg:text-[110px] leading-[0.85] tracking-[-0.04em] font-normal text-foreground font-display"
+              className="animate-fade-rise text-6xl sm:text-7xl md:text-8xl lg:text-[100px] leading-[0.85] tracking-[-0.04em] font-normal text-foreground font-display"
             >
-              Multiplica tus <em className="italic font-display">Operaciones</em> <br />
-              con Infraestructura Ágil
+              Sistemas <em className="italic font-display">Agénticos</em> de IA <br />
+              que Escalan tu Operación
             </motion.h1>
 
             <motion.p 
-              className="animate-fade-rise-delay text-foreground/60 text-sm sm:text-base md:text-lg max-w-xl mt-10 leading-relaxed font-body"
+              className="animate-fade-rise-delay text-foreground/60 text-sm sm:text-base md:text-lg max-w-2xl mt-10 leading-relaxed font-body"
             >
-              Liberamos el potencial técnico de tu empresa mediante sistemas automatizados y 
-              arquitecturas escalables que garantizan autoridad absoluta en tu nicho.
+              Diseñamos arquitecturas multi-agente autónomas e infraestructura de software personalizada para automatizar flujos de trabajo complejos de extremo a extremo, logrando un impacto medible y libre de mantenimiento manual.
             </motion.p>
 
             <motion.div className="animate-fade-rise-delay-2 mt-12 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <a 
-                href="#about"
+                href="#roi-calculator"
                 className="bg-foreground text-background font-bold rounded-full px-10 py-4 text-sm hover:scale-105 transition-all duration-300 shadow-xl shadow-black/10 inline-block"
               >
-                Empezar ahora
+                Calcular ROI de IA
               </a>
               <a 
                 href="#services"
                 className="bg-white/60 backdrop-blur-md text-foreground font-bold rounded-full px-10 py-4 text-sm hover:bg-white transition-all duration-300 inline-block border border-white/20"
               >
-                Saber más
+                Ver Arquitectura
               </a>
             </motion.div>
           </div>
