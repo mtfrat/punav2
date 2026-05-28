@@ -49,8 +49,8 @@ const SEOTags: React.FC<SEOTagsProps> = ({
     keywords: keywords || defaults.keywords,
     ogTitle: ogTitle || title || defaults.title,
     ogDescription: ogDescription || description || defaults.description,
-    ogImage: ogImage || 'https://puna-tech.com/darkLogo.png',
-    canonicalUrl: canonicalUrl || 'https://puna-tech.com/'
+    ogImage: ogImage || 'https://www.puna-tech.com/darkLogo.png',
+    canonicalUrl: canonicalUrl || 'https://www.puna-tech.com/'
   };
 
   React.useEffect(() => {
@@ -125,13 +125,13 @@ const SEOTags: React.FC<SEOTagsProps> = ({
 
     // Calculate base URL by removing language prefixes if any exist
     const baseUrl = seoData.canonicalUrl.replace(/\/en(\/|$)/, '/').replace(/\/es(\/|$)/, '/');
-    const path = baseUrl.replace('https://puna-tech.com', '');
+    const path = baseUrl.replace('https://www.puna-tech.com', '').replace('https://puna-tech.com', '');
     const cleanPath = path === '/' ? '' : path;
 
     // Inject Alternate Links
-    updateHreflangTag('es', `https://puna-tech.com${cleanPath}`);
-    updateHreflangTag('en', `https://puna-tech.com/en${cleanPath}`);
-    updateHreflangTag('x-default', `https://puna-tech.com${cleanPath}`);
+    updateHreflangTag('es', `https://www.puna-tech.com${cleanPath}`);
+    updateHreflangTag('en', `https://www.puna-tech.com/en${cleanPath}`);
+    updateHreflangTag('x-default', `https://www.puna-tech.com${cleanPath}`);
 
     // Update lang attribute
     document.documentElement.lang = lang;

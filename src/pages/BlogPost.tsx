@@ -92,16 +92,16 @@ export default function BlogPost() {
         ogTitle={post.title}
         ogDescription={cleanDescription}
         ogImage={post.image_url}
-        canonicalUrl={`https://puna-tech.com/blog/${post.id}`}
+        canonicalUrl={`https://www.puna-tech.com/blog/${post.id}`}
         breadcrumbs={[
-          { name: 'Inicio', url: 'https://puna-tech.com/' },
-          { name: 'Blog', url: 'https://puna-tech.com/blog' },
-          { name: post.title, url: `https://puna-tech.com/blog/${post.id}` }
+          { name: 'Inicio', url: 'https://www.puna-tech.com/' },
+          { name: 'Blog', url: 'https://www.puna-tech.com/blog' },
+          { name: post.title, url: `https://www.puna-tech.com/blog/${post.id}` }
         ]}
         customSchema={{
           "@context": "https://schema.org",
           "@type": "BlogPosting",
-          "@id": `https://puna-tech.com/blog/${post.id}/#post`,
+          "@id": `https://www.puna-tech.com/blog/${post.id}/#post`,
           "headline": post.title,
           "image": post.image_url || 'https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=2070&auto=format&fit=crop',
           "datePublished": post.created_at,
@@ -109,14 +109,14 @@ export default function BlogPost() {
           "author": {
             "@type": "Organization",
             "name": "Puna Tech",
-            "url": "https://puna-tech.com/"
+            "url": "https://www.puna-tech.com/"
           },
           "publisher": {
             "@type": "Organization",
             "name": "Puna Tech",
             "logo": {
               "@type": "ImageObject",
-              "url": "https://puna-tech.com/darkLogo.png"
+              "url": "https://www.puna-tech.com/darkLogo.png"
             }
           },
           "description": cleanDescription

@@ -52,16 +52,16 @@ export default function Blog() {
       <SEOTags 
         title="Blog - Insights sobre Automatización y GTM | Puna Tech"
         description="Exploramos la intersección entre ingeniería, inteligencia artificial y crecimiento de negocios en el blog de Puna Tech."
-        canonicalUrl="https://puna-tech.com/blog"
+        canonicalUrl="https://www.puna-tech.com/blog"
         breadcrumbs={[
-          { name: 'Inicio', url: 'https://puna-tech.com/' },
-          { name: 'Blog', url: 'https://puna-tech.com/blog' }
+          { name: 'Inicio', url: 'https://www.puna-tech.com/' },
+          { name: 'Blog', url: 'https://www.puna-tech.com/blog' }
         ]}
         customSchema={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
-          "@id": "https://puna-tech.com/blog/#webpage",
-          "url": "https://puna-tech.com/blog",
+          "@id": "https://www.puna-tech.com/blog/#webpage",
+          "url": "https://www.puna-tech.com/blog",
           "name": "Blog - Insights sobre Automatización y GTM | Puna Tech",
           "description": "Exploramos la intersección entre ingeniería, inteligencia artificial y crecimiento de negocios en el blog de Puna Tech."
         }}

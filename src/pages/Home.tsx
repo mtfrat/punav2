@@ -12,6 +12,7 @@ import Footer from '../components/Footer';
 import FloatingCTA from '../components/FloatingCTA';
 import SEOTags from '../components/SEO/SEOTags';
 import ROICalculator from '../components/ui/ROICalculator';
+// import ChatWidget from '../components/ChatWidget';
 
 
 export default function Home() {
@@ -25,9 +26,9 @@ export default function Home() {
           "@context": "https://schema.org",
           "@type": "ProfessionalService",
           "name": "Puna Tech",
-          "image": "https://puna-tech.com/darkLogo.png",
-          "@id": "https://puna-tech.com/#organization",
-          "url": "https://puna-tech.com/",
+          "image": "https://www.puna-tech.com/darkLogo.png",
+          "@id": "https://www.puna-tech.com/#organization",
+          "url": "https://www.puna-tech.com/",
           "telephone": "",
           "priceRange": "$$$",
           "address": {
@@ -63,6 +64,7 @@ export default function Home() {
       </main>
       <Footer />
       <FloatingCTA />
+      {/* <ChatWidget /> */}
     </div>
   );
 }
