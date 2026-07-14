@@ -1,0 +1,6 @@
+{
+  "name": "Puna Tech - AI & Software Factory",
+  "description": "Plataforma interactiva para Puna Tech, una Software Factory de soluciones B2B y agentes de Inteligencia Artificial, con un cotizador inteligente de proyectos potenciado por Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

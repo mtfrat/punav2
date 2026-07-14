@@ -1,11 +1,11 @@
 import React from 'react';
 
-const TrustedBy = () => {
+const TrustedByEn = () => {
   return (
     <section className="py-stack-md border-y border-border-subtle bg-surface-container-lowest">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col items-center">
         <p className="font-label-mono text-label-mono text-slate-text-muted mb-stack-sm text-center uppercase tracking-widest">
-          Confiado por líderes globales en tecnología y logística
+          Trusted by global leaders in tech and logistics
         </p>
         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
           <div className="flex items-center gap-2 font-headline-sm text-headline-sm text-slate-text-primary">
@@ -26,4 +26,4 @@ const TrustedBy = () => {
   );
 };
 
-export default TrustedBy;
+export default TrustedByEn;

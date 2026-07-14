@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Terminal, Send, ArrowRight, ShieldCheck, Layers, Flame, Sparkles, Rocket } from "lucide-react";
 
-const Hero = () => {
-  // Terminal Console State & Logic inline to avoid extra component file
+const HeroEn = () => {
   const [logs, setLogs] = useState<{ text: string; type: "info" | "success" | "error" | "input" | "system" }[]>([
     { text: "Initializing neural pipeline...", type: "system" },
     { text: "Connecting to legacy DB (192.168.1.5)... [OK]", type: "info" },
@@ -27,11 +26,11 @@ const Hero = () => {
 
   useEffect(() => {
     const events = [
-      "Agente de Cobros: Analizando nueva factura PDF de proveedor aduanero...",
-      "Servicio de API: Ping recibido en /api/health - latencia 12ms [OK]",
-      "RAG Vector DB: Indexando 4 nuevos artículos del blog corporativo...",
-      "Agente Evaluador: Validando conformidad de respuesta conversacional...",
-      "Google Cloud Run: Escalando contenedor en puerto 3000..."
+      "Billing Agent: Analyzing new customs provider PDF invoice...",
+      "API Service: Ping received on /api/health - latency 12ms [OK]",
+      "RAG Vector DB: Indexing 4 new corporate blog articles...",
+      "Evaluator Agent: Validating conversational response compliance...",
+      "Google Cloud Run: Scaling container on port 3000..."
     ];
 
     const interval = setInterval(() => {
@@ -54,61 +53,61 @@ const Hero = () => {
       case "/help":
         setLogs([
           ...newLogs,
-          { text: "--- COMANDOS DISPONIBLES DE PUNA TECH TERMINAL ---", type: "system" },
-          { text: "  /status     - Verifica el estado de memoria, CPU y agentes.", type: "info" },
-          { text: "  /optimize   - Ejecuta un flujo animado de optimización de DB.", type: "info" },
-          { text: "  /deploy     - Simula el despliegue del MVP en Cloud Run.", type: "info" },
-          { text: "  /evaluate   - Audita el rendimiento del pipeline cognitivo.", type: "info" },
-          { text: "  /clear      - Limpia la pantalla de la consola.", type: "info" }
+          { text: "--- AVAILABLE PUNA TECH TERMINAL COMMANDS ---", type: "system" },
+          { text: "  /status     - Check memory, CPU, and agent status.", type: "info" },
+          { text: "  /optimize   - Run an animated DB optimization flow.", type: "info" },
+          { text: "  /deploy     - Simulate MVP deployment on Cloud Run.", type: "info" },
+          { text: "  /evaluate   - Audit cognitive pipeline performance.", type: "info" },
+          { text: "  /clear      - Clear the console screen.", type: "info" }
         ]);
         break;
       case "/status":
         setLogs([
           ...newLogs,
-          { text: "[SISTEMA CORPORATIVO ACTIVO]", type: "system" },
-          { text: "  CPU Usage: 1.8% (Optimizado para bajo costo)", type: "info" },
-          { text: "  Memoria RAM: 1.4GB / 16GB", type: "info" },
-          { text: "  Agentes de IA Activos: 3 (Facturación, Soporte, Conciliador)", type: "success" },
-          { text: "  API Uptime SLA: 99.98% - Estado general: EXCELENTE", type: "success" }
+          { text: "[CORPORATE SYSTEM ACTIVE]", type: "system" },
+          { text: "  CPU Usage: 1.8% (Optimized for low cost)", type: "info" },
+          { text: "  RAM Memory: 1.4GB / 16GB", type: "info" },
+          { text: "  Active AI Agents: 3 (Billing, Support, Reconciler)", type: "success" },
+          { text: "  API Uptime SLA: 99.98% - Overall status: EXCELLENT", type: "success" }
         ]);
         break;
       case "/optimize":
         setLogs([
           ...newLogs,
-          { text: "Iniciando optimización general...", type: "system" }
+          { text: "Initiating overall optimization...", type: "system" }
         ]);
         setTimeout(() => {
           setLogs((prev) => [
             ...prev,
-            { text: "Reduciendo temperatura del modelo a 0.1 para precisión...", type: "info" },
-            { text: "Optimizando índices en pgvector para búsquedas semánticas...", type: "info" },
-            { text: "¡Optimización finalizada! Latencia promedio reducida en 14%.", type: "success" }
+            { text: "Reducing model temperature to 0.1 for precision...", type: "info" },
+            { text: "Optimizing pgvector indexes for semantic search...", type: "info" },
+            { text: "Final optimization complete! Average latency reduced by 14%.", type: "success" }
           ]);
         }, 1000);
         break;
       case "/deploy":
         setLogs([
           ...newLogs,
-          { text: "Iniciando empaquetado de producción de Puna Tech...", type: "system" }
+          { text: "Initiating Puna Tech production build...", type: "system" }
         ]);
         setTimeout(() => {
           setLogs((prev) => [
             ...prev,
-            { text: "Compilando activos de Frontend mediante Vite...", type: "info" },
-            { text: "Construyendo imagen de contenedor seguro Docker...", type: "info" },
-            { text: "Desplegando servicio seguro de hosting en Google Cloud Run...", type: "info" },
-            { text: "¡Despliegue completado! Servicio online en puerto 3000.", type: "success" }
+            { text: "Compiling Frontend assets via Vite...", type: "info" },
+            { text: "Building secure Docker container image...", type: "info" },
+            { text: "Deploying secure hosting service on Google Cloud Run...", type: "info" },
+            { text: "Deployment complete! Service online on port 3000.", type: "success" }
           ]);
         }, 1200);
         break;
       case "/evaluate":
         setLogs([
           ...newLogs,
-          { text: "[INFORMACIÓN DE AUDITORÍA NEURAL]", type: "system" },
-          { text: "  Total registros analizados: 24,540", type: "info" },
-          { text: "  Tasa de acierto del modelo RAG: 99.82%", type: "success" },
-          { text: "  Milisegundos promedio por token generado: 18.5ms", type: "info" },
-          { text: "  Fugas de contexto detectadas: 0 (Flujo de auditoría limpio)", type: "success" }
+          { text: "[NEURAL AUDIT INFORMATION]", type: "system" },
+          { text: "  Total records analyzed: 24,540", type: "info" },
+          { text: "  RAG model hit rate: 99.82%", type: "success" },
+          { text: "  Average milliseconds per generated token: 18.5ms", type: "info" },
+          { text: "  Context leaks detected: 0 (Clean audit flow)", type: "success" }
         ]);
         break;
       case "/clear":
@@ -117,8 +116,8 @@ const Hero = () => {
       default:
         setLogs([
           ...newLogs,
-          { text: `Comando '${input}' no reconocido.`, type: "error" },
-          { text: "Prueba escribiendo '/help' para ver el listado de comandos.", type: "system" }
+          { text: `Command '${input}' not recognized.`, type: "error" },
+          { text: "Try typing '/help' to see the command list.", type: "system" }
         ]);
     }
   };
@@ -127,12 +126,10 @@ const Hero = () => {
     <>
       {/* HERO SECTION */}
       <section className="relative pt-12 pb-20 md:pt-28 md:pb-32 px-6 md:px-16 overflow-hidden">
-        {/* Subtle cosmic background gradient */}
         <div className="absolute inset-0 pointer-events-none opacity-10" style={{ background: "radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.08) 0%, transparent 50%)" }}></div>
         <div className="absolute inset-0 pointer-events-none opacity-5" style={{ background: "radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 40%)" }}></div>
 
         <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Copy block */}
           <div className="lg:col-span-7 flex flex-col items-start space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full border border-white/10 hover:border-white/20 transition-colors">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
@@ -142,15 +139,15 @@ const Hero = () => {
             </div>
             
             <h1 className="text-3xl md:text-5xl lg:text-7xl font-extralight text-white leading-none uppercase tracking-tight">
-              Desarrollo de Software B2B <br />
+              B2B Software Engineering <br />
               <span className="font-normal text-white">
-                &amp; Inteligencia Artificial
+                &amp; Custom Artificial
               </span> <br />
-              <span className="font-light text-white/50">a Medida.</span>
+              <span className="font-light text-white/50">Intelligence.</span>
             </h1>
 
             <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-xl font-light">
-              Transformamos tus ideas en productos digitales robustos. Desarrollamos plataformas web corporativas, asistentes cognitivos inteligentes y arquitecturas multi-agente de IA para escalar el rendimiento de tu negocio.
+              We transform your ideas into robust digital products. We develop corporate web platforms, intelligent cognitive assistants, and multi-agent AI architectures to scale your business performance.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full sm:w-auto">
@@ -159,17 +156,16 @@ const Hero = () => {
                 data-cal-config='{"layout":"month_view"}'
                 className="w-full sm:w-auto px-8 py-4 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-bold text-xs tracking-widest uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
               >
-                Agendar Sesión Gratuita
+                Book Free Session
                 <ArrowRight className="w-4 h-4" />
               </button>
               <span className="font-mono text-[10px] text-white/40 flex items-center gap-1.5 uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4 text-white/60" />
-                Sin compromiso de contratación
+                No hiring commitment
               </span>
             </div>
           </div>
 
-          {/* Right Interactive Console block */}
           <div className="lg:col-span-5 h-[360px] md:h-[420px] relative">
             <div className="absolute inset-0 rounded-lg overflow-hidden flex flex-col border border-white/10 bg-[#0d0d0d] shadow-2xl">
               <div className="h-10 border-b border-white/10 bg-white/5 flex items-center justify-between px-4 gap-2 shrink-0">
@@ -210,7 +206,7 @@ const Hero = () => {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe un comando... (ej: /help, /status)"
+                  placeholder="Type a command... (ex: /help, /status)"
                   className="flex-grow bg-transparent text-white font-mono text-xs border-none focus:outline-none placeholder-white/20 focus:ring-0"
                 />
                 <button
@@ -230,4 +226,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default HeroEn;

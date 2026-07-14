@@ -1,110 +1,192 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
-import Logo from './Logo';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Menu, X, Globe } from "lucide-react";
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [lang, setLang] = useState<"ES" | "EN">("ES");
 
-  const navLinks = [
-    { name: 'Inicio', href: '/#' },
-    { name: 'Nosotros', href: '/#about' },
-    { name: 'Servicios', href: '/#services' },
-    { name: 'Blog', href: '/#blog' },
-  ];
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+      setMobileMenuOpen(false);
+    }
+  };
 
   return (
-    <>
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="fixed top-0 left-0 right-0 z-50 w-full px-4 sm:px-8 md:px-12 2xl:px-20"
-      >
-        <div className="w-full max-w-none mx-auto bg-white rounded-b-[2.5rem] shadow-2xl shadow-black/5 px-6 sm:px-10 py-4 flex flex-row justify-between items-center">
-          <Link 
-            to="/" 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center space-x-3 group"
+    <nav
+      className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
+        scrolled
+          ? "bg-[#050505]/95 backdrop-blur-md py-3 shadow-md border-white/10"
+          : "bg-transparent py-5 border-transparent"
+      }`}
+    >
+      <div className="flex justify-between items-center px-6 md:px-16 max-w-7xl mx-auto">
+        {/* Logo and Brand */}
+        <Link to="/" className="flex items-center gap-3 select-none">
+          <div className="flex flex-col">
+            <span className="text-sm font-bold tracking-widest text-white leading-none uppercase">
+              PUNA <span className="font-light opacity-50">TECH</span>
+            </span>
+            <span className="text-[9px] font-mono text-white/40 tracking-widest uppercase mt-1">
+              AI FACTORY / V.04
+            </span>
+          </div>
+        </Link>
+
+        {/* Desktop Navigation Links */}
+        <div className="hidden md:flex items-center gap-8">
+          <button
+            onClick={() => scrollToSection("servicios")}
+            className="text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white transition-colors cursor-pointer"
           >
-            <div className="w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-               <Logo />
-            </div>
-            <div className="text-xl tracking-tight text-foreground font-body font-bold hidden sm:block">
-              Puna Tech
-            </div>
+            Servicios
+          </button>
+          <button
+            onClick={() => scrollToSection("metodologia")}
+            className="text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white transition-colors cursor-pointer"
+          >
+            Metodología
+          </button>
+          <button
+            onClick={() => scrollToSection("estimador")}
+            className="text-xs font-semibold uppercase tracking-wider text-white hover:text-white transition-colors flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/25 cursor-pointer"
+          >
+            Solicita tu presupuesto
+          </button>
+          <button
+            onClick={() => scrollToSection("casos")}
+            className="text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white transition-colors cursor-pointer"
+          >
+            Casos de Éxito
+          </button>
+          <Link
+            to="/blog"
+            className="text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white transition-colors cursor-pointer"
+          >
+            Blog
           </Link>
-          
-          <nav className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <a 
-                key={link.name}
-                href={link.href} 
-                className="text-[14px] text-foreground/50 hover:text-foreground transition-colors font-medium"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
-   
-          <div className="flex items-center gap-4">
-            <a 
-              href="/#contact"
-              className="hidden sm:block bg-foreground text-white font-bold rounded-full px-8 py-3 text-[14px] hover:bg-foreground/90 transition-all duration-300 shadow-lg shadow-foreground/10"
+
+          {/* Language Selector */}
+          <div className="flex items-center gap-1.5 border-l border-white/10 pl-6 ml-2 text-xs font-bold text-white/40">
+            <Globe className="w-3.5 h-3.5 text-white/40" />
+            <button
+              onClick={() => setLang("ES")}
+              className={`hover:text-white transition-colors uppercase cursor-pointer ${
+                lang === "ES" ? "text-white" : ""
+              }`}
             >
-              Contacto
-            </a>
-            
-            <button 
-              onClick={() => setIsOpen(!isOpen)}
-              className="lg:hidden p-2 text-foreground/60 hover:text-foreground transition-colors"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+              ES
             </button>
+            <span className="text-white/20">/</span>
+            <Link
+              to="/en"
+              className={`hover:text-white transition-colors uppercase cursor-pointer ${
+                lang === "EN" ? "text-white" : ""
+              }`}
+            >
+              EN
+            </Link>
           </div>
         </div>
-      </motion.header>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="fixed inset-0 z-40 lg:hidden"
+        {/* Action Button & Menu Icon */}
+        <div className="flex items-center gap-4">
+          <button
+            data-cal-link="puna-tech-r7xi5x/15min"
+            data-cal-config='{"layout":"month_view"}'
+            className="hidden md:block px-6 py-2.5 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer"
           >
-            <div 
-              className="absolute inset-0 bg-black/20 backdrop-blur-sm" 
-              onClick={() => setIsOpen(false)}
-            />
-            <motion.div 
-              className="absolute top-24 left-4 right-4 bg-white rounded-[2rem] shadow-2xl p-8 flex flex-col space-y-6"
-            >
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-2xl font-body font-semibold text-foreground hover:text-primary transition-colors"
-                >
-                  {link.name}
-                </a>
-              ))}
-              <a
-                href="/#contact"
-                onClick={() => setIsOpen(false)}
-                className="w-full bg-foreground text-white text-center font-body font-bold rounded-full py-4 text-lg"
-              >
-                Contacto
-              </a>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
-};
+            Agendar Demo
+          </button>
 
-export default Navbar;
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-white/80 hover:text-white cursor-pointer"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-[#050505] border-b border-white/10 p-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
+          <button
+            onClick={() => scrollToSection("servicios")}
+            className="text-sm uppercase tracking-wider font-semibold text-white/60 py-2 border-b border-white/5 text-left cursor-pointer"
+          >
+            Servicios
+          </button>
+          <button
+            onClick={() => scrollToSection("metodologia")}
+            className="text-sm uppercase tracking-wider font-semibold text-white/60 py-2 border-b border-white/5 text-left cursor-pointer"
+          >
+            Metodología
+          </button>
+          <button
+            onClick={() => scrollToSection("estimador")}
+            className="text-sm uppercase tracking-wider font-semibold text-white py-2 border-b border-white/5 text-left cursor-pointer"
+          >
+            Solicita tu presupuesto
+          </button>
+          <button
+            onClick={() => scrollToSection("casos")}
+            className="text-sm uppercase tracking-wider font-semibold text-white/60 py-2 border-b border-white/5 text-left cursor-pointer"
+          >
+            Casos de Éxito
+          </button>
+          <Link
+            to="/blog"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm uppercase tracking-wider font-semibold text-white/60 py-2 border-b border-white/5 text-left cursor-pointer"
+          >
+            Blog / Insights
+          </Link>
+
+          <div className="flex justify-between items-center py-2">
+            <span className="text-xs uppercase tracking-wider font-semibold text-white/40">Idioma / Language</span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setLang("ES")}
+                className={`px-2 py-1 rounded text-xs font-bold uppercase cursor-pointer ${
+                  lang === "ES" ? "bg-white text-black" : "text-white/60"
+                }`}
+              >
+                ES
+              </button>
+              <Link
+                to="/en"
+                className={`px-2 py-1 rounded text-xs font-bold uppercase cursor-pointer ${
+                  lang === "EN" ? "bg-white text-black" : "text-white/60"
+                }`}
+              >
+                EN
+              </Link>
+            </div>
+          </div>
+
+          <button
+            data-cal-link="puna-tech-r7xi5x/15min"
+            data-cal-config='{"layout":"month_view"}'
+            onClick={() => setMobileMenuOpen(false)}
+            className="w-full mt-2 py-3 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-bold text-xs tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer"
+          >
+            Agendar Demo de IA
+          </button>
+        </div>
+      )}
+    </nav>
+  );
+}

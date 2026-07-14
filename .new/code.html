@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "on-secondary-fixed-variant": "#85145a",
+                "surface-bright": "#31394d",
+                "tertiary-fixed": "#6ffbbe",
+                "inverse-on-surface": "#283044",
+                "surface-container-highest": "#2d3449",
+                "outline-variant": "#464554",
+                "on-tertiary-fixed": "#002113",
+                "secondary": "#ffafd3",
+                "on-tertiary": "#003824",
+                "surface-tint": "#c0c1ff",
+                "secondary-fixed-dim": "#ffafd3",
+                "error": "#ffb4ab",
+                "tertiary-container": "#00885d",
+                "background": "#0b1326",
+                "primary": "#c0c1ff",
+                "on-primary-fixed": "#07006c",
+                "outline": "#908fa0",
+                "surface-container-low": "#131b2e",
+                "on-tertiary-container": "#000703",
+                "primary-fixed-dim": "#c0c1ff",
+                "on-error-container": "#ffdad6",
+                "surface-dim": "#0b1326",
+                "inverse-primary": "#494bd6",
+                "tertiary-fixed-dim": "#4edea3",
+                "on-secondary-container": "#ff93c8",
+                "error-container": "#93000a",
+                "secondary-container": "#85145a",
+                "on-primary-container": "#0d0096",
+                "surface-container-lowest": "#060e20",
+                "surface": "#0b1326",
+                "on-background": "#dae2fd",
+                "on-primary": "#1000a9",
+                "on-secondary-fixed": "#3d0026",
+                "on-error": "#690005",
+                "on-tertiary-fixed-variant": "#005236",
+                "on-surface-variant": "#c7c4d7",
+                "tertiary": "#4edea3",
+                "on-primary-fixed-variant": "#2f2ebe",
+                "surface-variant": "#2d3449",
+                "on-secondary": "#620040",
+                "on-surface": "#dae2fd",
+                "secondary-fixed": "#ffd8e7",
+                "inverse-surface": "#dae2fd",
+                "primary-container": "#8083ff",
+                "surface-container": "#171f33",
+                "surface-container-high": "#222a3d",
+                "primary-fixed": "#e1e0ff",
+                "slate-text-secondary": "#94a3b8",
+                "slate-text-primary": "#f8fafc",
+                "slate-text-muted": "#475569",
+                "border-subtle": "#1e293b",
+                "surface-elevation-1": "#0d111a",
+                "surface-elevation-2": "#161b26"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "margin-desktop": "64px",
+                "margin-mobile": "20px",
+                "unit": "8px",
+                "gutter": "24px",
+                "container-max": "1280px",
+                "stack-lg": "32px",
+                "stack-xs": "4px",
+                "stack-sm": "8px",
+                "stack-md": "16px",
+                "stack-xl": "64px"
+        },
+        "fontFamily": {
+                "body-md": [
+                        "Outfit"
+                ],
+                "headline-lg-mobile": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-xl-mobile": [
+                        "Plus Jakarta Sans"
+                ],
+                "label-md": [
+                        "Outfit"
+                ],
+                "headline-md": [
+                        "Plus Jakarta Sans"
+                ],
+                "display-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "body-lg": [
+                        "Outfit"
+                ],
+                "headline-lg": [
+                        "Plus Jakarta Sans"
+                ],
+                "headline-xl": [
+                        "Plus Jakarta Sans"
+                ],
+                "label-mono": ["JetBrains Mono"],
+                "body-sm": ["Outfit"],
+                "label-caps": ["Plus Jakarta Sans"],
+                "display-lg-mobile": ["Plus Jakarta Sans"],
+                "headline-sm": ["Plus Jakarta Sans"]
+        },
+        "fontSize": {
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "1.6",
+                                "letterSpacing": "0em",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "28px",
+                        {
+                                "lineHeight": "1.3",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-xl-mobile": [
+                        "36px",
+                        {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-md": [
+                        "14px",
+                        {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "1.4",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-lg": [
+                        "72px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.04em",
+                                "fontWeight": "800"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "1.6",
+                                "letterSpacing": "0.01em",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "1.3",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-xl": [
+                        "48px",
+                        {
+                                "lineHeight": "1.2",
+                                "letterSpacing": "-0.03em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "label-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                "display-lg-mobile": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                "headline-sm": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+        }
+},
+    },
+  }
+</script></head><body class="bg-background min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-border-subtle shadow-sm">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="flex items-center gap-2">
+<img alt="Puna Tech Logo" class="h-8 w-8" src="https://lh3.googleusercontent.com/aida/AP1WRLsaFG2rIO-_rrY3bxcCzEXdfOPbIF_KE7lIUucs7yGo5B3u2ufEKlmjfDChgfeuY3adn-N6F5ol7QTCzebNHxX9BTbb7_5Zq5i-r_q1vi2M4Zx_wNN3DoZTRIXopWY_cP710CN0uyUd_Yj4XNrUH5gk0nKw1HZwsV1jp-XekEmWQlwIjhdil0SYymqV2cPD_btZ5UlWoIVzpgv6G25tOIcJpPQaPy0Tkm_OuTbmE5ImSk2Z6D_-lwFuPYE"/>
+<div class="text-body-lg font-headline-xl tracking-tighter text-slate-text-primary">
+                    Puna Tech
+                </div>
+</div>
+<div class="hidden md:flex items-center gap-gutter">
+<a class="text-slate-text-secondary font-label-caps hover:text-primary transition-colors duration-200" href="#servicios">Servicios</a>
+<a class="text-slate-text-secondary font-label-caps hover:text-primary transition-colors duration-200" href="#metodologia">Metodología</a>
+<a class="text-slate-text-secondary font-label-caps hover:text-primary transition-colors duration-200" href="#casos">Casos de Éxito</a>
+<a class="text-slate-text-secondary font-label-caps hover:text-primary transition-colors duration-200" href="#blog">Blog</a>
+<div class="flex items-center gap-2 border-l border-border-subtle pl-4 ml-2">
+<button class="text-primary font-label-caps hover:text-primary/80 transition-colors">ES</button>
+<span class="text-slate-text-muted">/</span>
+<button class="text-slate-text-secondary font-label-caps hover:text-primary transition-colors">EN</button>
+</div>
+</div>
+<button class="hidden md:block px-6 py-2 bg-inverse-primary text-on-primary font-label-caps rounded-DEFAULT hover:bg-primary transition-colors shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                Agendar Demo
+            </button>
+<button class="md:hidden text-slate-text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<main class="flex-grow pt-24">
+<!-- Hero Section -->
+<section class="relative pt-stack-xl pb-stack-xl md:pt-[120px] md:pb-[120px] px-margin-mobile md:px-margin-desktop ai-grid-bg overflow-hidden">
+<!-- Decorative abstract technical background element -->
+<div class="absolute inset-0 pointer-events-none opacity-20" style="background: radial-gradient(circle at 80% 20%, #005ac2 0%, transparent 40%);"></div>
+<div class="max-w-container-max mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-gutter items-center">
+<div class="lg:col-span-7 flex flex-col items-start space-y-stack-md">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full border border-border-subtle">
+<span class="ai-pulse-dot"></span>
+<span class="font-label-mono text-label-mono text-primary">Software Factory &amp; AI Solutions</span>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-slate-text-primary leading-tight">
+                        Desarrollo de Software B2B y <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-inverse-primary">Soluciones de Inteligencia Artificial</span> a Medida.
+                    </h1>
+<p class="font-body-lg text-body-lg text-slate-text-secondary max-w-2xl">
+                        Transformamos tus ideas en productos digitales robustos. Desarrollamos plataformas web, aplicaciones personalizadas, chatbots inteligentes y arquitecturas con agentes de IA para potenciar tu empresa.
+                    </p>
+<div class="flex flex-col sm:flex-row items-center gap-4 pt-stack-sm w-full sm:w-auto">
+<button class="w-full sm:w-auto px-8 py-4 bg-inverse-primary text-on-primary font-label-caps rounded-DEFAULT hover:bg-primary transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                            Agendar mi Sesión Gratuita
+                        </button>
+<span class="font-label-mono text-label-mono text-slate-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+                            Sin compromiso de compra
+                        </span>
+</div>
+</div>
+<div class="lg:col-span-5 hidden lg:block h-[500px] relative">
+<!-- Technical Data Vis Abstract Container -->
+<div class="absolute inset-0 glass-card rounded-lg overflow-hidden flex flex-col">
+<div class="h-8 border-b border-border-subtle bg-surface-elevation-2 flex items-center px-4 gap-2">
+<div class="w-2 h-2 rounded-full bg-slate-text-muted"></div>
+<div class="w-2 h-2 rounded-full bg-slate-text-muted"></div>
+<div class="w-2 h-2 rounded-full bg-slate-text-muted"></div>
+<span class="font-label-mono text-[10px] text-slate-text-muted ml-2">sys_process_monitor.sh</span>
+</div>
+<div class="flex-grow p-4 relative font-label-mono text-label-mono text-primary/70 leading-relaxed overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-surface-elevation-1 z-10 pointer-events-none"></div>
+                            &gt; Initializing neural pipeline...<br/>
+                            &gt; Connecting to legacy DB (192.168.1.5)... [OK]<br/>
+                            &gt; Fetching unstructured payload... [OK]<br/>
+                            &gt; Applying cognitive extraction model v4.2...<br/>
+<span class="text-tertiary">&gt; Entities identified: 1,240</span><br/>
+                            &gt; Cross-referencing logic gates...<br/>
+                            &gt; Generating structured output...<br/>
+<br/>
+<div class="flex gap-1 h-32 items-end mt-4">
+<div class="w-1/6 bg-border-subtle hover:bg-primary transition-colors h-[20%]"></div>
+<div class="w-1/6 bg-border-subtle hover:bg-primary transition-colors h-[35%]"></div>
+<div class="w-1/6 bg-border-subtle hover:bg-primary transition-colors h-[50%]"></div>
+<div class="w-1/6 bg-border-subtle hover:bg-primary transition-colors h-[75%]"></div>
+<div class="w-1/6 bg-inverse-primary h-[90%] relative shadow-[0_0_10px_rgba(0,90,194,0.5)]">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-primary">OPT</div>
+</div>
+<div class="w-1/6 bg-primary h-[98%] relative shadow-[0_0_10px_rgba(173,198,255,0.5)]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trusted By Section -->
+<section class="py-stack-md border-y border-border-subtle bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col items-center">
+<p class="font-label-mono text-label-mono text-slate-text-muted mb-stack-sm text-center uppercase tracking-widest">Confiado por líderes globales en tecnología y logística</p>
+<div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+<!-- Abstract geometric logos suitable for a developer-centric design -->
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-slate-text-primary">
+<span class="material-symbols-outlined text-[32px]">layers</span> TechCorp
+                    </div>
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-slate-text-primary">
+<span class="material-symbols-outlined text-[32px]">public</span> GlobalLog
+                    </div>
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-slate-text-primary">
+<span class="material-symbols-outlined text-[32px]">hub</span> NexusSystems
+                    </div>
+<div class="flex items-center gap-2 font-headline-sm text-headline-sm text-slate-text-primary hidden sm:flex">
+<span class="material-symbols-outlined text-[32px]">memory</span> DataFlow
+                    </div>
+</div>
+</div>
+</section>
+<!-- Services Detail Section -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-surface" id="servicios">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-stack-xl">
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-slate-text-primary mb-stack-sm">Nuestros Servicios</h2>
+<p class="font-body-lg text-body-lg text-slate-text-secondary max-w-2xl mx-auto">Soluciones de automatización de extremo a extremo diseñadas para empresas que buscan escalar operaciones sin multiplicar costos.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="glass-card p-stack-lg rounded-xl border border-border-subtle hover:border-primary/50 transition-colors group">
+<div class="w-14 h-14 bg-surface-container-high rounded-lg flex items-center justify-center mb-stack-md border border-border-subtle group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]">code</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-slate-text-primary mb-stack-sm">Desarrollo Web y Plataformas</h3>
+<p class="font-body-md text-body-md text-slate-text-secondary mb-stack-md">Creación de software B2B, portales corporativos y aplicaciones escalables desde cero.</p>
+</div>
+<div class="glass-card p-stack-lg rounded-xl border border-border-subtle hover:border-primary/50 transition-colors group">
+<div class="w-14 h-14 bg-surface-container-high rounded-lg flex items-center justify-center mb-stack-md border border-border-subtle group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]">smart_toy</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-slate-text-primary mb-stack-sm">Chatbots y Asistentes Virtuales</h3>
+<p class="font-body-md text-body-md text-slate-text-secondary mb-stack-md">Soluciones conversacionales con IA generativa para atención al cliente y ventas.</p>
+</div>
+<div class="glass-card p-stack-lg rounded-xl border border-border-subtle hover:border-primary/50 transition-colors group">
+<div class="w-14 h-14 bg-surface-container-high rounded-lg flex items-center justify-center mb-stack-md border border-border-subtle group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-primary text-[28px]">hub</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-slate-text-primary mb-stack-sm">Integración de Agentes de IA</h3>
+<p class="font-body-md text-body-md text-slate-text-secondary mb-stack-md">Desarrollo de sistemas inteligentes que interactúan con tus bases de datos y automatizan tareas complejas.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Methodology Section -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest" id="metodologia">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-stack-xl">
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-slate-text-primary mb-stack-sm">Nuestra Metodología</h2>
+<p class="font-body-lg text-body-lg text-slate-text-secondary max-w-2xl mx-auto">Un proceso estructurado para llevar tu empresa de operaciones manuales a una automatización impulsada por IA sin fricciones.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter relative">
+<!-- Connecting Line -->
+<div class="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-border-subtle -translate-y-1/2 z-0"></div>
+<!-- Step 1 -->
+<div class="relative z-10 flex flex-col items-center text-center group">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center border-2 border-border-subtle mb-stack-md group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
+<span class="font-headline-sm text-headline-sm text-primary">1</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2">Discovery</h4>
+<p class="font-body-sm text-body-sm text-slate-text-secondary">Auditoría profunda de tus procesos actuales e identificación de cuellos de botella con alto ROI de automatización.</p>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 flex flex-col items-center text-center group">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center border-2 border-border-subtle mb-stack-md group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
+<span class="font-headline-sm text-headline-sm text-primary">2</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2">Architecture</h4>
+<p class="font-body-sm text-body-sm text-slate-text-secondary">Diseño del ecosistema de IA, selección de modelos óptimos y mapeo de integraciones con tus sistemas legados.</p>
+</div>
+<!-- Step 3 -->
+<div class="relative z-10 flex flex-col items-center text-center group">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center border-2 border-border-subtle mb-stack-md group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
+<span class="font-headline-sm text-headline-sm text-primary">3</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2">Implementation</h4>
+<p class="font-body-sm text-body-sm text-slate-text-secondary">Desarrollo ágil, entrenamiento de modelos con tus datos y despliegue controlado en entornos de prueba.</p>
+</div>
+<!-- Step 4 -->
+<div class="relative z-10 flex flex-col items-center text-center group">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center border-2 border-border-subtle mb-stack-md group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300">
+<span class="font-headline-sm text-headline-sm text-primary">4</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2">Scaling</h4>
+<p class="font-body-sm text-body-sm text-slate-text-secondary">Monitoreo continuo, ajuste fino de rendimiento y expansión de la automatización a nuevas áreas funcionales.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Estimator Section (Value Gating) -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-surface ai-grid-bg">
+<div class="max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center">
+<div class="flex flex-col items-start space-y-stack-md">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-high rounded-full border border-border-subtle">
+<span class="material-symbols-outlined text-[16px] text-primary">calculate</span>
+<span class="font-label-mono text-label-mono text-primary">Estimador de Proyectos</span>
+</div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-slate-text-primary leading-tight">
+                        Calculá el presupuesto de <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-inverse-primary">tu próximo proyecto</span>.
+                    </h2>
+<p class="font-body-lg text-body-lg text-slate-text-secondary max-w-xl">
+                        Descubrí cuánto costaría desarrollar tu MVP o solución a medida. Ingresá los detalles de tu proyecto para una estimación inicial.
+                    </p>
+</div>
+<div class="glass-card p-stack-lg rounded-xl border border-border-subtle relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full pointer-events-none"></div>
+<div class="space-y-stack-md relative z-10">
+<div class="space-y-2 flex flex-col">
+<label class="font-label-mono text-label-mono text-slate-text-primary">¿Qué necesitas construir?</label>
+<select class="bg-surface-elevation-1 border border-border-subtle rounded-DEFAULT px-4 py-3 text-body-sm text-slate-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-full">
+<option>Plataforma Web</option>
+<option>Chatbot</option>
+<option>Sistema IA</option>
+</select>
+</div>
+<div class="space-y-2 flex flex-col">
+<label class="font-label-mono text-label-mono text-slate-text-primary">¿Cuál es tu etapa actual?</label>
+<select class="bg-surface-elevation-1 border border-border-subtle rounded-DEFAULT px-4 py-3 text-body-sm text-slate-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-full">
+<option>Tengo una idea</option>
+<option>Tengo diseño</option>
+<option>Reemplazo de software antiguo</option>
+</select>
+</div>
+<div class="pt-stack-md mt-stack-md border-t border-border-subtle text-center">
+<p class="font-body-sm text-body-sm text-slate-text-secondary mb-2">Estimación de Desarrollo</p>
+<div class="text-[48px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-inverse-primary filter blur-sm select-none transition-all duration-300 hover:blur-none cursor-pointer" title="Ingresá tu correo corporativo para desbloquear tu reporte detallado">
+                            $15,000 - $30,000
+                        </div>
+<form class="mt-4 flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onsubmit="event.preventDefault()">
+<input aria-label="Ingresá tu correo corporativo para recibir el reporte detallado" class="flex-1 bg-surface-elevation-1 border border-border-subtle rounded-DEFAULT px-4 py-3 text-body-sm text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="Ingresá tu correo corporativo..." required="" type="email"/>
+<button class="w-full sm:w-auto px-6 py-3 bg-inverse-primary text-on-primary font-label-caps rounded-DEFAULT hover:bg-primary transition-colors whitespace-nowrap" type="submit">
+                                Obtener Estimación de Proyecto
+                            </button>
+</form>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof Stats & Cases -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest" id="casos">
+<div class="max-w-container-max mx-auto">
+<div class="text-center mb-stack-xl">
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-slate-text-primary mb-stack-sm">Resultados Tangibles</h2>
+<p class="font-body-lg text-body-lg text-slate-text-secondary max-w-2xl mx-auto">Impacto medible en operaciones B2B complejas.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="glass-card p-stack-md rounded-lg flex flex-col items-start"><div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-stack-sm border border-border-subtle"><span class="material-symbols-outlined text-primary">rocket_launch</span></div><h3 class="font-headline-xl-mobile text-headline-xl-mobile md:font-headline-xl md:text-headline-xl text-slate-text-primary mb-2">6-8 Semanas</h3><p class="font-body-md text-body-md text-primary mb-1">Tiempo promedio de entrega (MVP)</p><p class="font-label-mono text-label-mono text-slate-text-muted mt-auto pt-4">Tiempo de salida al mercado para soluciones personalizadas.</p></div>
+<div class="glass-card p-stack-md rounded-lg flex flex-col items-start border-primary/30 relative overflow-hidden"><div class="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-2xl rounded-full"></div><div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-stack-sm border border-border-subtle relative z-10"><span class="material-symbols-outlined text-primary">api</span></div><h3 class="font-headline-xl-mobile text-headline-xl-mobile md:font-headline-xl md:text-headline-xl text-slate-text-primary mb-2 relative z-10">150+</h3><p class="font-body-md text-body-md text-primary mb-1 relative z-10">Integraciones de APIs y Sistemas</p><p class="font-label-mono text-label-mono text-slate-text-muted mt-auto pt-4 relative z-10">Sistemas y APIs conectadas en ecosistemas empresariales.</p></div>
+<div class="glass-card p-stack-md rounded-lg flex flex-col items-start"><div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center mb-stack-sm border border-border-subtle"><span class="material-symbols-outlined text-primary">verified_user</span></div><h3 class="font-headline-xl-mobile text-headline-xl-mobile md:font-headline-xl md:text-headline-xl text-slate-text-primary mb-2">99.9%</h3><p class="font-body-md text-body-md text-primary mb-1">Uptime Garantizado</p><p class="font-label-mono text-label-mono text-slate-text-muted mt-auto pt-4">SLA de disponibilidad para plataformas críticas B2B.</p></div>
+</div>
+</div>
+</section>
+<!-- Blog / Insights Section -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-surface" id="blog">
+<div class="max-w-container-max mx-auto">
+<div class="flex justify-between items-end mb-stack-xl">
+<div class="max-w-2xl">
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-slate-text-primary mb-stack-sm">Insights &amp; Visión</h2>
+<p class="font-body-lg text-body-lg text-slate-text-secondary">Perspectivas sobre el impacto de la IA en los negocios y el futuro de la automatización B2B.</p>
+</div>
+<a class="hidden md:flex items-center gap-2 text-primary font-label-caps hover:text-inverse-primary transition-colors" href="#">
+                    Ver todos los artículos
+                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Blog Post 1 -->
+<article class="glass-card rounded-xl overflow-hidden border border-border-subtle hover:border-primary/50 transition-all duration-300 group flex flex-col">
+<div class="h-48 overflow-hidden">
+<img alt="Abstract Nodes Network" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5hN07mSqAwVmZt2pzenumCYbewJwBDtc391Emi92zSWZskIwpBJdcEKP5Xb1bktFdvVYFzJyy-nz0C4hS6IlhKuPN-6XYuC71e3QqnwuyqiI1z17uncRurc2s-LMs8sCWOQR8eAhI3WZL4EFamx8V8vwt6SMsQMHgwFDIhCw4gKeAi3rICRFyEwZqvJeLnQi_Dm5qkUWQwCn22_lnW8YincdoUOziSWCnsQTFgkMKgtUNDpRRxjDnqOL5dbHJQqe56yTjFy_VVco"/>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-2 py-1 bg-surface-container-high rounded text-[10px] font-label-mono text-primary uppercase tracking-wider">Caso de Éxito</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2 group-hover:text-primary transition-colors">Caso de Éxito: Automatización de Facturación en Logística Regional</h3>
+<p class="font-body-sm text-body-sm text-slate-text-secondary mb-4">Cómo redujimos en un 80% el tiempo de procesamiento manual mediante agentes cognitivos.</p>
+<a class="inline-flex items-center gap-1 text-sm text-primary font-medium mt-auto hover:underline" href="#">Leer artículo <span class="material-symbols-outlined text-[14px]">chevron_right</span></a>
+</div>
+</article>
+<!-- Blog Post 2 -->
+<article class="glass-card rounded-xl overflow-hidden border border-border-subtle hover:border-primary/50 transition-all duration-300 group flex flex-col">
+<div class="h-48 overflow-hidden">
+<img alt="Global Network Architecture" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcUyfM0EbSJAi5x-yzLXawT2JH_wCcL0ZYLByP5ODu4x-NKlouRV-NcckVKs8gZo_C4XBCxw8EYFhTHJHQVPZZnJ9RGwMv5lMzIXLOZoUUPya-9S6CpIwBsgOQiSUhTrPgj8VuxJc1lA8cblcZWbPI0J9Ao9pTLhY5chEh7-x_eMZ_ZcyJTSW9bouApOlleJgU5hR4DtUPWrjXL8U2EV63m8_WC3Z0ym_bYiwcsSJYLb0euXAOecEYSB9nGGG_PuQsH4c9qMqeSSc"/>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-2 py-1 bg-surface-container-high rounded text-[10px] font-label-mono text-primary uppercase tracking-wider">Whitepaper</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2 group-hover:text-primary transition-colors">Whitepaper: Arquitecturas Multi-Agente en la Empresa</h3>
+<p class="font-body-sm text-body-sm text-slate-text-secondary mb-4">Una guía estratégica sobre la orquestación de IA autónoma para flujos de trabajo complejos.</p>
+<a class="inline-flex items-center gap-1 text-sm text-primary font-medium mt-auto hover:underline" href="#">Leer artículo <span class="material-symbols-outlined text-[14px]">chevron_right</span></a>
+</div>
+</article>
+<!-- Blog Post 3 -->
+<article class="glass-card rounded-xl overflow-hidden border border-border-subtle hover:border-primary/50 transition-all duration-300 group flex flex-col">
+<div class="h-48 overflow-hidden">
+<img alt="Circuit Board AI Optimization" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEdqqmKViity7-mZsmS3K_j_GVLizb4PL8qioazaWnI3AIRnElOiYU0hXT_7S7ESEFai5LqFYmP1a3D5ty4RAg9dEnj096RZxJLrESimznflFzIQHVEA6VkLGl5SGAZhJ6a_1YbpS5b4yMECxCpvqPleXaZZoaUw-E4xDDiQ6p0xLsmJolkQLoRexU2L4NXrTFU0UdiBzFmcpsTE4uq4O2DdSHfW6aqf5zMQeFc5HpN5x6a6QLnQi-tUkWJOMAkK4e2lrtAzf6FAc"/>
+</div>
+<div class="p-stack-md flex flex-col flex-grow">
+<div class="flex items-center gap-2 mb-3">
+<span class="px-2 py-1 bg-surface-container-high rounded text-[10px] font-label-mono text-primary uppercase tracking-wider">Guía</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-slate-text-primary mb-2 group-hover:text-primary transition-colors">Guía: Optimización de Procesos con IA Agéntica</h3>
+<p class="font-body-sm text-body-sm text-slate-text-secondary mb-4">Metodologías para identificar y automatizar cuellos de botella operativos de alto impacto.</p>
+<a class="inline-flex items-center gap-1 text-sm text-primary font-medium mt-auto hover:underline" href="#">Leer artículo <span class="material-symbols-outlined text-[14px]">chevron_right</span></a>
+</div>
+</article>
+</div>
+<div class="mt-stack-md text-center md:hidden">
+<a class="inline-flex items-center gap-2 text-primary font-label-caps hover:text-inverse-primary transition-colors" href="#">
+                    Ver todos los artículos
+                    <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full pt-stack-xl pb-stack-md bg-surface-container-lowest border-t border-border-subtle">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-xl">
+<div class="flex flex-col space-y-4 md:col-span-1">
+<div class="flex items-center gap-2 text-headline-sm font-headline-sm text-slate-text-primary">
+<img alt="Puna Tech Logo" class="h-8 w-8 grayscale" src="https://lh3.googleusercontent.com/aida/AP1WRLsaFG2rIO-_rrY3bxcCzEXdfOPbIF_KE7lIUucs7yGo5B3u2ufEKlmjfDChgfeuY3adn-N6F5ol7QTCzebNHxX9BTbb7_5Zq5i-r_q1vi2M4Zx_wNN3DoZTRIXopWY_cP710CN0uyUd_Yj4XNrUH5gk0nKw1HZwsV1jp-XekEmWQlwIjhdil0SYymqV2cPD_btZ5UlWoIVzpgv6G25tOIcJpPQaPy0Tkm_OuTbmE5ImSk2Z6D_-lwFuPYE"/>
+                    Puna Tech
+                </div>
+<p class="font-body-sm text-body-sm text-slate-text-secondary">
+                    Software factory B2B. Transformando ideas con inteligencia artificial a medida.
+                </p>
+</div>
+<div class="flex flex-col space-y-3">
+<span class="font-label-caps text-label-caps text-slate-text-primary mb-1">Compañía</span>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#servicios">Servicios</a>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#metodologia">Metodología</a>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#casos">Casos de Éxito</a>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#blog">Blog</a>
+</div>
+<div class="flex flex-col space-y-3">
+<span class="font-label-caps text-label-caps text-slate-text-primary mb-1">Legal</span>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#">Términos de Servicio</a>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors" href="#">Cookies</a>
+</div>
+<div class="flex flex-col space-y-3">
+<span class="font-label-caps text-label-caps text-slate-text-primary mb-1">Contacto</span>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[16px]">mail</span> info@puna-tech.com
+                </a>
+<a class="font-body-sm text-body-sm text-slate-text-secondary hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span> Agendar Llamada
+                </a>
+<div class="flex gap-4 mt-2">
+</div></div></div></footer></body></html>

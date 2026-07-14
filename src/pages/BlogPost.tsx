@@ -57,24 +57,24 @@ export default function BlogPost() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex-grow flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white/20 border-t-white"></div>
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-white text-foreground flex flex-col justify-between">
+      <>
         <Navbar />
         <div className="flex-grow flex flex-col items-center justify-center px-8">
-          <h1 className="text-4xl md:text-5xl font-display font-bold mb-4">Post no encontrado</h1>
-          <Link to="/blog" className="text-primary hover:opacity-80 flex items-center gap-2 font-semibold">
-            <ChevronLeft size={20} /> Volver al blog
+          <h1 className="text-3xl md:text-5xl font-extralight uppercase text-white tracking-tight mb-4">Post no encontrado</h1>
+          <Link to="/blog" className="text-white/60 hover:text-white transition-colors flex items-center gap-2 font-semibold uppercase tracking-wider text-sm border border-white/10 bg-white/5 px-4 py-2 rounded-full">
+            <ChevronLeft size={16} /> Volver al blog
           </Link>
         </div>
         <Footer />
-      </div>
+      </>
     );
   }
 
@@ -84,7 +84,7 @@ export default function BlogPost() {
     .substring(0, 160);
 
   return (
-    <div className="min-h-screen bg-white font-body selection:bg-foreground selection:text-background">
+    <>
       <SEOTags 
         title={`${post.title} | Puna Tech Blog`}
         description={cleanDescription}
@@ -98,40 +98,17 @@ export default function BlogPost() {
           { name: 'Blog', url: 'https://www.puna-tech.com/blog' },
           { name: post.title, url: `https://www.puna-tech.com/blog/${post.id}` }
         ]}
-        customSchema={{
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          "@id": `https://www.puna-tech.com/blog/${post.id}/#post`,
-          "headline": post.title,
-          "image": post.image_url || 'https://images.unsplash.com/photo-1554224155-1696413565d3?q=80&w=2070&auto=format&fit=crop',
-          "datePublished": post.created_at,
-          "dateModified": post.created_at,
-          "author": {
-            "@type": "Organization",
-            "name": "Puna Tech",
-            "url": "https://www.puna-tech.com/"
-          },
-          "publisher": {
-            "@type": "Organization",
-            "name": "Puna Tech",
-            "logo": {
-              "@type": "ImageObject",
-              "url": "https://www.puna-tech.com/darkLogo.png"
-            }
-          },
-          "description": cleanDescription
-        }}
       />
       <Navbar />
       
-      <main className="pt-40 pb-32">
-        <div className="max-w-4xl mx-auto px-8">
+      <main className="flex-grow pt-32 pb-32">
+        <div className="max-w-4xl mx-auto px-6 md:px-8">
           {/* Back button */}
           <Link 
             to="/blog" 
-            className="inline-flex items-center gap-2 text-foreground/50 hover:text-primary transition-colors mb-12 group font-semibold text-sm"
+            className="inline-flex items-center gap-2 text-white/50 hover:text-white transition-colors mb-12 group font-semibold text-xs uppercase tracking-wider"
           >
-            <ChevronLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+            <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Volver al blog
           </Link>
 
@@ -143,13 +120,13 @@ export default function BlogPost() {
               transition={{ duration: 0.6 }}
               className="mb-12"
             >
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-display font-bold mb-8 leading-[1.08] tracking-tight text-foreground">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-extralight uppercase text-white tracking-tight mb-8 leading-[1.08]">
                 {post.title}
               </h1>
               
-              <div className="flex flex-wrap items-center gap-6 text-foreground/50 border-y border-foreground/10 py-6 text-xs uppercase tracking-wider font-semibold">
+              <div className="flex flex-wrap items-center gap-6 text-white/50 border-y border-white/10 py-6 text-[10px] uppercase tracking-widest font-semibold">
                 <div className="flex items-center gap-2">
-                  <Calendar size={16} className="text-primary" />
+                  <Calendar size={14} className="text-white/80" />
                   <span>
                     {new Date(post.created_at).toLocaleDateString('es-ES', { 
                       year: 'numeric', 
@@ -159,17 +136,17 @@ export default function BlogPost() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <User size={16} className="text-primary" />
+                  <User size={14} className="text-white/80" />
                   <span>Puna Team</span>
                 </div>
                 
                 <div className="flex items-center gap-2 sm:ml-auto relative">
                   <button 
                     onClick={handleShare}
-                    className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer"
+                    className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer"
                     aria-label="Compartir artículo"
                   >
-                    <Share2 size={16} />
+                    <Share2 size={14} />
                     <span>{shared ? '¡Copiado!' : 'Compartir'}</span>
                   </button>
                 </div>
@@ -182,13 +159,14 @@ export default function BlogPost() {
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-12 rounded-[2.5rem] overflow-hidden aspect-video shadow-2xl shadow-foreground/5 border border-foreground/5"
+                className="mb-12 rounded-lg overflow-hidden aspect-video border border-white/10 relative"
               >
                 <img 
                   src={post.image_url} 
                   alt={post.title}
                   className="w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 bg-[#050505]/10"></div>
               </motion.div>
             )}
 
@@ -200,25 +178,25 @@ export default function BlogPost() {
               className="puna-blog-content"
             >
               <div 
-                className="prose max-w-none 
-                  prose-p:text-base prose-p:leading-relaxed prose-p:text-foreground/80
-                  prose-headings:font-display prose-headings:text-foreground prose-headings:tracking-tight
-                  prose-h2:text-3xl prose-h2:font-bold prose-h2:mt-12 prose-h2:mb-4
-                  prose-h3:text-2xl prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-4
-                  prose-a:text-primary prose-a:underline hover:prose-a:opacity-80
-                  prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:bg-foreground/5 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-2xl prose-blockquote:italic
-                  prose-ul:list-disc prose-ul:pl-6
-                  prose-ol:list-decimal prose-ol:pl-6
-                  prose-li:my-2 prose-li:text-foreground/80
-                  prose-img:rounded-[2rem] prose-img:shadow-2xl"
+                className="prose prose-invert max-w-none 
+                  prose-p:text-sm prose-p:leading-relaxed prose-p:text-white/70 prose-p:font-light
+                  prose-headings:font-light prose-headings:uppercase prose-headings:text-white prose-headings:tracking-wide
+                  prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4
+                  prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
+                  prose-a:text-white prose-a:underline hover:prose-a:opacity-80
+                  prose-blockquote:border-l-4 prose-blockquote:border-white/30 prose-blockquote:bg-white/5 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic
+                  prose-ul:list-disc prose-ul:pl-6 prose-ul:text-white/70 prose-ul:text-sm prose-ul:font-light
+                  prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-white/70 prose-ol:text-sm prose-ol:font-light
+                  prose-li:my-2
+                  prose-img:rounded-lg prose-img:border prose-img:border-white/10"
                 dangerouslySetInnerHTML={{ __html: post.content }} 
               />
             </motion.div>
           </article>
         </div>
       </main>
-
+      
       <Footer />
-    </div>
+    </>
   );
 }

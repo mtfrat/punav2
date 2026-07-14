@@ -1,27 +1,22 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
-import About from '../components/About';
 import Services from '../components/Services';
-import TechStack from '../components/TechStack';
-import Testimonials from '../components/Testimonials';
-import Blog from '../components/Blog';
-import FAQ from '../components/FAQ';
-import ContactForm from '../components/ContactForm';
+import Methodology from '../components/Methodology';
+import Estimator from '../components/Estimator';
+import Results from '../components/Results';
+import BlogHome from '../components/BlogHome';
 import Footer from '../components/Footer';
-import FloatingCTA from '../components/FloatingCTA';
 import SEOTags from '../components/SEO/SEOTags';
-import ROICalculator from '../components/ui/ROICalculator';
-// import ChatWidget from '../components/ChatWidget';
-
+import Chatbot from '../components/Chatbot';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white font-body selection:bg-foreground selection:text-background">
+    <>
       <SEOTags 
-        title="Puna Tech | Sistemas Agénticos de IA y Software B2B Personalizado"
-        description="Desarrollamos sistemas agénticos de IA y soluciones de software personalizadas que automatizan flujos complejos de extremo a extremo. Elevamos la eficiencia y escalabilidad de tu empresa."
-        keywords="agentes de ia, AI agent development, custom software solutions, agentic automation, machine learning consulting, automatización b2b, software a medida, puna tech"
+        title="Puna Tech | Automatización con IA y Agentes para Empresas B2B"
+        description="Puna Tech construye agentes de IA y flujos de trabajo autónomos que automatizan procesos complejos B2B. Más resultados, menos fricciones operativas."
+        keywords="automatización con IA, agentes de IA, AI agents B2B, automatización de procesos, agentic workflows, GTM automatizado, software personalizado, Buenos Aires"
         customSchema={{
           "@context": "https://schema.org",
           "@type": "ProfessionalService",
@@ -51,20 +46,16 @@ export default function Home() {
         }}
       />
       <Navbar />
-      <main role="main" className="overflow-x-hidden">
+      <main className="flex-grow pt-16">
         <Hero />
-        <About />
         <Services />
-        <TechStack />
-        <ROICalculator />
-        <Testimonials />
-        <Blog />
-        <FAQ />
-        <ContactForm />
+        <Methodology />
+        <Estimator />
+        <Results />
+        <BlogHome />
       </main>
       <Footer />
-      <FloatingCTA />
-      {/* <ChatWidget /> */}
-    </div>
+      <Chatbot />
+    </>
   );
 }

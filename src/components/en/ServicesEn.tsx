@@ -1,8 +1,27 @@
 import React from 'react';
-import { SERVICES } from '../data';
 import { Laptop, MessageSquareText, Brain, ChevronRight } from "lucide-react";
+import { SERVICES } from '../../data';
 
-const Services = () => {
+const translateService = (id: string) => {
+  if (id === "desarrollo-web-plataformas") {
+    return {
+      title: "Web & Platform Development",
+      description: "Creation of B2B software, corporate portals, and scalable applications from scratch."
+    };
+  }
+  if (id === "chatbots-asistentes") {
+    return {
+      title: "Chatbots & Virtual Assistants",
+      description: "Intelligent, omnichannel conversational solutions with generative AI for customer support and sales optimization."
+    };
+  }
+  return {
+    title: "AI Agents Integration",
+    description: "Development of autonomous systems (AI Agents) that interact with your corporate databases and automate complex administrative tasks."
+  };
+};
+
+const ServicesEn = () => {
   const scrollToEstimator = () => {
     const el = document.getElementById('estimador');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -13,13 +32,13 @@ const Services = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 space-y-3">
           <span className="text-[9px] font-mono text-white/40 tracking-widest uppercase block">
-            Soluciones B2B Escalables
+            Scalable B2B Solutions
           </span>
           <h2 className="text-3xl md:text-5xl font-extralight uppercase text-white tracking-tight">
-            Nuestros Servicios
+            Our Services
           </h2>
           <p className="text-white/60 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-light">
-            Proporcionamos ingeniería y automatización de extremo a extremo diseñadas para empresas que buscan expandirse sin multiplicar costos operativos.
+            We provide end-to-end engineering and automation designed for companies looking to expand without multiplying operational costs.
           </p>
         </div>
 
@@ -30,6 +49,8 @@ const Services = () => {
               srvIcon = <MessageSquareText className="w-6 h-6 text-white" />;
             if (srv.icon === "Brain")
               srvIcon = <Brain className="w-6 h-6 text-white" />;
+
+            const translated = translateService(srv.id);
 
             return (
               <div
@@ -42,15 +63,15 @@ const Services = () => {
                     {srvIcon}
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2 uppercase tracking-wide group-hover:text-white/80 transition-colors">
-                    {srv.title}
+                    {translated.title}
                   </h3>
                   <p className="text-xs md:text-sm text-white/50 leading-relaxed line-clamp-3 font-light">
-                    {srv.description}
+                    {translated.description}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-white/40 group-hover:text-white transition-colors pt-4 border-t border-white/5 mt-4">
-                  <span>Cotizar Proyecto</span>
+                  <span>Quote Project</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -62,4 +83,4 @@ const Services = () => {
   );
 };
 
-export default Services;
+export default ServicesEn;
