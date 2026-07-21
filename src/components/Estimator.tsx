@@ -5,7 +5,8 @@ import {
   Sparkles,
   CheckCircle2,
   XCircle,
-  RotateCcw
+  RotateCcw,
+  Clock
 } from "lucide-react";
 
 const Estimator = () => {
@@ -84,28 +85,27 @@ const Estimator = () => {
               </span>
             </div>
             <h2 className="text-3xl md:text-5xl font-extralight uppercase text-white tracking-tight leading-tight">
-              Calculá el presupuesto de <br />
+              Cotizá el desarrollo de <br />
               <span className="font-normal text-white">
                 tu próximo proyecto
               </span>
               .
             </h2>
             <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-xl font-light">
-              Descubrí de forma inmediata cuánto costaría desarrollar tu MVP, plataforma o
-              asistente con agentes autónomos. Completa tus datos para agendar una sesión estratégica y recibir un desglose real.
+              Envianos los detalles de tu idea o proyecto y nuestro equipo de ingeniería analizará tu requerimiento. Te enviaremos una estimación técnica personalizada y un roadmap de trabajo en <strong>24 a 48 horas</strong>.
             </p>
             <div className="flex flex-col gap-3 text-sm text-white/50 pt-4 font-light">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-white/80" />
-                <span>Estimación técnica personalizada.</span>
+                <Clock className="w-4 h-4 text-white/80 shrink-0" />
+                <span>Estimación técnica entregada en 24/48hs.</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-white/80" />
+                <CheckCircle2 className="w-4 h-4 text-white/80 shrink-0" />
                 <span>Desglose de presupuesto y roadmap por fases.</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-white/80" />
-                <span>Sesión de descubrimiento de 15 minutos sin costo.</span>
+                <CheckCircle2 className="w-4 h-4 text-white/80 shrink-0" />
+                <span>Sesión de descubrimiento de 15 minutos opcional.</span>
               </div>
             </div>
           </div>
@@ -122,7 +122,7 @@ const Estimator = () => {
                   </div>
                 </div>
                 <p className="text-white text-base md:text-lg font-light uppercase tracking-wider text-center mb-2">
-                  Procesando solicitud...
+                  Enviando solicitud a ingeniería...
                 </p>
               </div>
             )}
@@ -145,10 +145,10 @@ const Estimator = () => {
                             type="button"
                             key={type}
                             onClick={() => setProjectType(type)}
-                            className={`px-4 py-2.5 rounded-lg border text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                            className={`py-2.5 px-3 rounded-md text-[11px] font-medium transition-all duration-200 border uppercase tracking-wider ${
                               projectType === type
-                                ? "bg-white border-white text-black"
-                                : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
+                                ? "bg-white text-black border-white font-bold"
+                                : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
                             }`}
                           >
                             {type}
@@ -163,40 +163,42 @@ const Estimator = () => {
                       ¿Cuál es tu etapa actual?
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      {["Tengo una idea", "Tengo figma/wireframes", "Reemplazo de legado"].map(
-                        (stg) => (
-                          <button
-                            type="button"
-                            key={stg}
-                            onClick={() => setStage(stg)}
-                            className={`px-4 py-2.5 rounded-lg border text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
-                              stage === stg
-                                ? "bg-white border-white text-black"
-                                : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
-                            }`}
-                          >
-                            {stg}
-                          </button>
-                        )
-                      )}
+                      {[
+                        "Tengo una idea",
+                        "Tengo Figma/Wireframes",
+                        "Reemplazo de legado",
+                      ].map((s) => (
+                        <button
+                          type="button"
+                          key={s}
+                          onClick={() => setStage(s)}
+                          className={`py-2.5 px-3 rounded-md text-[11px] font-medium transition-all duration-200 border uppercase tracking-wider ${
+                            stage === s
+                              ? "bg-white text-black border-white font-bold"
+                              : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col space-y-2">
                       <label className="text-xs font-semibold text-white tracking-widest uppercase">Nombre Completo</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Ej. Juan Pérez" 
+                        placeholder="Ej. Juan Pérez"
                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white font-light"
                         required
                       />
                     </div>
                     <div className="flex flex-col space-y-2">
                       <label className="text-xs font-semibold text-white tracking-widest uppercase">Empresa (Opcional)</label>
-                      <input 
+                      <input
                         type="text" 
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
@@ -235,7 +237,7 @@ const Estimator = () => {
                     type="submit"
                     className="w-full py-4 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    Solicita tu presupuesto
+                    Solicitar Estimación (Respuesta en 24-48hs)
                   </button>
                 </div>
               </form>
@@ -263,10 +265,10 @@ const Estimator = () => {
                 </div>
                 <div className="space-y-4">
                   <p className="text-sm text-white/60 leading-relaxed font-light">
-                    Hemos recibido los detalles de tu proyecto ({projectType}). Nuestro equipo de ingeniería analizará tu requerimiento y nos pondremos en contacto contigo a la brevedad a través de <strong>{email}</strong> para enviarte una propuesta inicial.
+                    Hemos recibido los detalles de tu proyecto ({projectType}). Nuestro equipo técnico analizará tu requerimiento y te enviaremos una propuesta formal con un desglose estimado a <strong>{email}</strong> en un plazo de <strong>24 a 48 horas hábiles</strong>.
                   </p>
                   <p className="text-sm text-white/60 leading-relaxed font-light">
-                    Mientras tanto, puedes agendar una llamada de descubrimiento en cualquier momento usando el botón del menú principal.
+                    Si deseas acelerar el proceso, también puedes agendar una llamada de descubrimiento directa en el menú superior.
                   </p>
                 </div>
               </div>

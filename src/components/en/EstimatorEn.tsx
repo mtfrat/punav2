@@ -5,7 +5,8 @@ import {
   Sparkles,
   CheckCircle2,
   XCircle,
-  RotateCcw
+  RotateCcw,
+  Clock
 } from "lucide-react";
 
 const EstimatorEn = () => {
@@ -37,7 +38,7 @@ const EstimatorEn = () => {
         from_name: name,
         from_email: email,
         company: company || 'Not specified',
-        message: `AI Estimator (EN):\n- Type: ${projectType}\n- Stage: ${stage}\n- Name: ${name}\n- Company: ${company}\n- Email: ${email}\n- Description: ${description}`,
+        message: `Cotizador EN:\n- Type: ${projectType}\n- Stage: ${stage}\n- Name: ${name}\n- Company: ${company}\n- Email: ${email}\n- Description: ${description}`,
         to_name: 'PunaTech',
       };
 
@@ -82,27 +83,27 @@ const EstimatorEn = () => {
               </span>
             </div>
             <h2 className="text-3xl md:text-5xl font-extralight uppercase text-white tracking-tight leading-tight">
-              Calculate the budget for <br />
+              Get an estimate for <br />
               <span className="font-normal text-white">
                 your next project
               </span>
               .
             </h2>
             <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-xl font-light">
-              Instantly discover how much it would cost to develop your MVP, platform or autonomous agent assistant. Complete your details to schedule a strategy session and receive a real breakdown.
+              Send us your project details and our engineering team will evaluate your requirements. We will deliver a tailored technical estimate and phased roadmap within <strong>24 to 48 hours</strong>.
             </p>
             <div className="flex flex-col gap-3 text-sm text-white/50 pt-4 font-light">
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-white/80" />
-                <span>Personalized technical estimation.</span>
+                <Clock className="w-4 h-4 text-white/80 shrink-0" />
+                <span>Detailed technical estimate delivered in 24–48h.</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-white/80" />
+                <CheckCircle2 className="w-4 h-4 text-white/80 shrink-0" />
                 <span>Budget breakdown and phased roadmap.</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-white/80" />
-                <span>15-minute discovery session at no cost.</span>
+                <CheckCircle2 className="w-4 h-4 text-white/80 shrink-0" />
+                <span>Optional complimentary 15-minute discovery call.</span>
               </div>
             </div>
           </div>
@@ -117,7 +118,7 @@ const EstimatorEn = () => {
                   </div>
                 </div>
                 <p className="text-white text-base md:text-lg font-light uppercase tracking-wider text-center mb-2">
-                  Processing request...
+                  Submitting to engineering...
                 </p>
               </div>
             )}
@@ -139,10 +140,10 @@ const EstimatorEn = () => {
                             type="button"
                             key={type}
                             onClick={() => setProjectType(type)}
-                            className={`px-4 py-2.5 rounded-lg border text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                            className={`py-2.5 px-3 rounded-md text-[11px] font-medium transition-all duration-200 border uppercase tracking-wider ${
                               projectType === type
-                                ? "bg-white border-white text-black"
-                                : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
+                                ? "bg-white text-black border-white font-bold"
+                                : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
                             }`}
                           >
                             {type}
@@ -157,40 +158,42 @@ const EstimatorEn = () => {
                       What is your current stage?
                     </label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      {["I have an idea", "I have figma/wireframes", "Legacy replacement"].map(
-                        (stg) => (
-                          <button
-                            type="button"
-                            key={stg}
-                            onClick={() => setStage(stg)}
-                            className={`px-4 py-2.5 rounded-lg border text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
-                              stage === stg
-                                ? "bg-white border-white text-black"
-                                : "bg-white/5 border-white/10 text-white/50 hover:border-white/20"
-                            }`}
-                          >
-                            {stg}
-                          </button>
-                        )
-                      )}
+                      {[
+                        "I have an idea",
+                        "I have Figma/Wireframes",
+                        "Legacy replacement",
+                      ].map((s) => (
+                        <button
+                          type="button"
+                          key={s}
+                          onClick={() => setStage(s)}
+                          className={`py-2.5 px-3 rounded-md text-[11px] font-medium transition-all duration-200 border uppercase tracking-wider ${
+                            stage === s
+                              ? "bg-white text-black border-white font-bold"
+                              : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col space-y-2">
                       <label className="text-xs font-semibold text-white tracking-widest uppercase">Full Name</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Ex. John Doe" 
+                        placeholder="e.g. John Doe"
                         className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white font-light"
                         required
                       />
                     </div>
                     <div className="flex flex-col space-y-2">
                       <label className="text-xs font-semibold text-white tracking-widest uppercase">Company (Optional)</label>
-                      <input 
+                      <input
                         type="text" 
                         value={company}
                         onChange={(e) => setCompany(e.target.value)}
@@ -219,7 +222,7 @@ const EstimatorEn = () => {
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Ex: I need a web portal to manage appointments that integrates with our database..."
+                      placeholder="e.g. I need a web portal for managing client shifts integrated with our database..."
                       className="w-full h-24 bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white resize-none font-light"
                       required
                     ></textarea>
@@ -229,7 +232,7 @@ const EstimatorEn = () => {
                     type="submit"
                     className="w-full py-4 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    Request Proposal
+                    Request Estimate (Response in 24-48h)
                   </button>
                 </div>
               </form>
@@ -240,10 +243,10 @@ const EstimatorEn = () => {
                 <div className="flex justify-between items-start border-b border-white/5 pb-6">
                   <div>
                     <span className="text-[9px] font-mono text-white/40 tracking-widest uppercase block mb-1">
-                      Request Sent Successfully
+                      Request Submitted Successfully
                     </span>
                     <h3 className="text-lg md:text-xl font-light uppercase tracking-wide text-white">
-                      Thank you for contacting us!
+                      Thank you for reaching out!
                     </h3>
                   </div>
                   <button
@@ -256,10 +259,10 @@ const EstimatorEn = () => {
                 </div>
                 <div className="space-y-4">
                   <p className="text-sm text-white/60 leading-relaxed font-light">
-                    We have received your project details ({projectType}). Our engineering team will analyze your request and we will contact you shortly via <strong>{email}</strong> to send you an initial proposal.
+                    We have received your project details ({projectType}). Our technical team will analyze your requirements and send a formal proposal with a budget breakdown to <strong>{email}</strong> within <strong>24 to 48 business hours</strong>.
                   </p>
                   <p className="text-sm text-white/60 leading-relaxed font-light">
-                    In the meantime, you can schedule a discovery call anytime using the button in the main menu.
+                    If you would like to fast-track your project, you can also schedule a direct discovery call using the navigation bar.
                   </p>
                 </div>
               </div>
@@ -280,7 +283,7 @@ const EstimatorEn = () => {
                   onClick={resetEstimator}
                   className="mt-4 px-6 py-2 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 cursor-pointer"
                 >
-                  Try again
+                  Try Again
                 </button>
               </div>
             )}
