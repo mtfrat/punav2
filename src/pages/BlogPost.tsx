@@ -82,21 +82,44 @@ export default function BlogPost() {
     fetchPost();
   }, [id, navigate]);
 
-  // Extract Table of Contents from headings in markdown content
+  // Extract Table of Contents from headings (both HTML <h2>/<h3> and Markdown ##/###)
   useEffect(() => {
     if (!post?.content) return;
-    const headingLines = post.content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### '));
-    const extractedToc = headingLines.map((line, idx) => {
-      const isH3 = line.startsWith('### ');
-      const text = line.replace(/^###?\s+/, '').replace(/\*\*/g, '').trim();
-      const slug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-      return {
-        id: slug || `section-${idx}`,
-        text,
-        level: isH3 ? 3 : 2
-      };
-    });
-    setToc(extractedToc);
+    const items: { id: string; text: string; level: number }[] = [];
+
+    // Parse HTML <h2> and <h3> tags
+    const htmlHeadings = post.content.match(/<h[23][^>]*>(.*?)<\/h[23]>/gi) || [];
+    if (htmlHeadings.length > 0) {
+      htmlHeadings.forEach((headingTag, idx) => {
+        const isH3 = headingTag.toLowerCase().startsWith('<h3');
+        const text = headingTag.replace(/<[^>]*>/g, '').trim();
+        const slug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        if (text) {
+          items.push({
+            id: slug || `section-${idx}`,
+            text,
+            level: isH3 ? 3 : 2
+          });
+        }
+      });
+    } else {
+      // Parse Markdown ## and ### headings
+      const headingLines = post.content.split('\n').filter(line => line.startsWith('## ') || line.startsWith('### '));
+      headingLines.forEach((line, idx) => {
+        const isH3 = line.startsWith('### ');
+        const text = line.replace(/^###?\s+/, '').replace(/\*\*/g, '').trim();
+        const slug = text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        if (text) {
+          items.push({
+            id: slug || `section-${idx}`,
+            text,
+            level: isH3 ? 3 : 2
+          });
+        }
+      });
+    }
+
+    setToc(items);
   }, [post]);
 
   const handleShare = () => {
@@ -138,9 +161,36 @@ export default function BlogPost() {
   const cleanDescription = post.content
     .replace(/<[^>]*>?/gm, '')
     .replace(/^>\s*\*\*TL;DR\*\*:\s*/i, '')
+    .replace(/TL;DR \(Síntesis Ejecutiva\):/i, '')
     .substring(0, 155);
 
   const canonicalUrl = `https://www.puna-tech.com/blog/${post.id}`;
+
+  // Function to process content HTML and inject heading IDs for Table of Contents
+  const processHtmlContent = (rawContent: string) => {
+    let processed = rawContent;
+
+    // Convert markdown TL;DR to HTML blockquote if present in markdown format
+    processed = processed.replace(
+      /^>\s*\*\*(TL;DR.*?)\*\*/m,
+      '<blockquote class="tldr-box"><strong>$1</strong></blockquote>'
+    );
+
+    // Inject id attributes to HTML <h2> tags for TOC jump anchors
+    processed = processed.replace(/<h2>(.*?)<\/h2>/gi, (_, headingText) => {
+      const cleanText = headingText.replace(/<[^>]*>/g, '').trim();
+      const slug = cleanText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+      return `<h2 id="${slug}">${headingText}</h2>`;
+    });
+
+    // Convert Markdown ## headings if any exist
+    processed = processed.replace(/## (.*?)\n/g, (_, title) => {
+      const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+      return `<h2 id="${slug}">${title}</h2>\n`;
+    });
+
+    return processed;
+  };
 
   return (
     <>
@@ -296,25 +346,9 @@ export default function BlogPost() {
               className="puna-blog-content"
             >
               <div 
-                className="prose prose-invert max-w-none 
-                  prose-p:text-sm prose-p:leading-relaxed prose-p:text-white/70 prose-p:font-light
-                  prose-headings:font-light prose-headings:uppercase prose-headings:text-white prose-headings:tracking-wide
-                  prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4
-                  prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-4
-                  prose-a:text-white prose-a:underline hover:prose-a:opacity-80
-                  prose-blockquote:border-l-4 prose-blockquote:border-white/30 prose-blockquote:bg-white/5 prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:rounded-r-lg prose-blockquote:italic
-                  prose-table:w-full prose-table:my-8 prose-table:border-collapse prose-th:bg-white/10 prose-th:p-3 prose-th:text-xs prose-th:text-white prose-td:p-3 prose-td:border-t prose-td:border-white/10 prose-td:text-xs prose-td:text-white/70
-                  prose-ul:list-disc prose-ul:pl-6 prose-ul:text-white/70 prose-ul:text-sm prose-ul:font-light
-                  prose-ol:list-decimal prose-ol:pl-6 prose-ol:text-white/70 prose-ol:text-sm prose-ol:font-light
-                  prose-li:my-2
-                  prose-img:rounded-lg prose-img:border prose-img:border-white/10"
+                className="puna-blog-content"
                 dangerouslySetInnerHTML={{ 
-                  __html: post.content
-                    .replace(/^> \*\*(TL;DR.*?)\*\*/m, '<div className="p-4 mb-8 bg-white/5 border-l-4 border-white text-white/90 text-sm leading-relaxed rounded-r-lg"><strong>$1</strong></div>')
-                    .replace(/## (.*?)\n/g, (_, title) => {
-                      const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-                      return `<h2 id="${slug}">${title}</h2>\n`;
-                    })
+                  __html: processHtmlContent(post.content)
                 }} 
               />
             </motion.div>
