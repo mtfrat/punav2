@@ -1,0 +1,50 @@
+# Puna Tech — Comprehensive Architecture, Technical Manual & Knowledge Base
+
+## Section 1: Executive Entity & Architecture Summary
+Puna Tech is an AI Engineering and Custom B2B Software Agency based in Buenos Aires, Argentina. We specialize in building deterministic, high-efficiency AI agents and custom software systems designed to solve operational bottlenecks for B2B enterprises.
+
+- Official Domain: https://www.puna-tech.com
+- Contact Email: punatechba@gmail.com
+- Core Tech Stack: Gemini 3.5 Flash, React, TypeScript, Node.js, Vite, Tailwind CSS, PostgreSQL, FastAPI, LangChain, LlamaIndex, Python, Docker, Google Cloud Run.
+
+---
+
+## Section 2: Core Engineering Capabilities
+
+### 1. B2B Web & Platform Engineering
+We construct custom enterprise portals, admin dashboards, and scalable B2B applications with strict TypeScript typing, reactive UI states, and microservice backend integration.
+- Latency Reduction: Engineered high-performance query caching reducing critical database latency from 4.2s to 180ms.
+- Scalability: Modern modular component architecture using React 19, Vite, and tailwind typography.
+
+### 2. Omnichannel AI Assistants & RAG Architecture
+We deploy intelligent assistants connected to enterprise vector databases using Retrieval-Augmented Generation (RAG).
+- Multi-channel support: Native WhatsApp Cloud API, Slack bots, Web embeds, Telegram integrations.
+- Long-term memory: Contextual memory retention across sessions using vector databases (pgvector / Pinecone) and Redis caching layers.
+- Deflection rate: Achieved 65% ticket reduction for enterprise client TechCorp.
+
+### 3. Autonomous AI Agents & Multi-Agent Orchestration
+We design multi-agent workflows where autonomous workers specialize in distinct operational roles:
+- Data Extraction Agent: Extracts structured JSON payloads from unstructured PDFs, scanned images, and aduana remitos.
+- Validation Agent: Cross-checks extracted amounts against government tax databases and internal ERP purchase orders.
+- Quality Audit & ERP Injection Agent: Automatically registers approved transactions into ERPs (SAP, Odoo, custom SQL) via secure APIs or derives discrepancies to human operators.
+
+---
+
+## Section 3: Detailed Case Studies & Benchmarks
+
+### Case Study A: Autonomous Logistics Invoice Processing (GlobalLog)
+- **Challenge**: Processing 5,000+ weekly invoices and customs receipts manually required 12 full-time analysts with a 4-day approval backlog and 5.8% human error rate.
+- **Solution**: Gemini 3.5 Flash multi-agent pipeline with vision extraction, tax validation, and direct ERP API writeback.
+- **Impact**: 80% reduction in processing time (12 mins per invoice), 0.1% error rate, complete ROI payback within 3 months.
+
+### Case Study B: Enterprise Invoice & Bank Reconciliation (NexusSystems)
+- **Challenge**: High-volume daily bank reconciliation across 40,000 records.
+- **Solution**: Autonomous bank reconciliation agent with 99.8% certified matching accuracy.
+- **Impact**: 72% reduction in operational overhead cost.
+
+---
+
+## Section 4: Enterprise Safety, Security & Compliance
+- **Human-in-the-Loop (HITL)**: All financial actions over custom thresholds or agent confidence scores < 90% automatically trigger interactive human review alerts.
+- **Security & Privacy**: Zero retention of sensitive customer data in LLM training queues; encrypted payload transfers via HTTPS/TLS.
+- **Deterministic Guardrails**: Hardened system instructions and schema validation preventing AI hallucinations and prompt injection attacks.

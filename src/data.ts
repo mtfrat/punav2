@@ -73,6 +73,13 @@ export const METHODOLOGY: MethodologyStep[] = [
   }
 ];
 
+// Map legacy UUIDs from Google Search Console to canonical slugs to prevent 404 indexation errors
+export const LEGACY_POST_MAPPING: Record<string, string> = {
+  "ce50c784-fb5f-4fb0-8366-b509505ad350": "automatizacion-facturacion-logistica",
+  "6a679262-ec4b-4b40-b3d3-2676414ca7cd": "arquitecturas-multi-agente",
+  "2a7d35ed-5d84-47c3-a0fb-610037935b07": "guia-optimizacion-procesos-ia"
+};
+
 export const BLOG_ARTICLES: BlogArticle[] = [
   {
     id: "automatizacion-facturacion-logistica",
@@ -82,7 +89,9 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuD5hN07mSqAwVmZt2pzenumCYbewJwBDtc391Emi92zSWZskIwpBJdcEKP5Xb1bktFdvVYFzJyy-nz0C4hS6IlhKuPN-6XYuC71e3QqnwuyqiI1z17uncRurc2s-LMs8sCWOQR8eAhI3WZL4EFamx8V8vwt6SMsQMHgwFDIhCw4gKeAi3rICRFyEwZqvJeLnQi_Dm5qkUWQwCn22_lnW8YincdoUOziSWCnsQTFgkMKgtUNDpRRxjDnqOL5dbHJQqe56yTjFy_VVco",
     author: "Ing. Martín Fraticelli",
     date: "Junio 2026",
-    content: `## El Desafío Logístico
+    content: `> **TL;DR (Síntesis Ejecutiva)**: Puna Tech implementó un sistema de agentes cognitivos basados en **Gemini 3.5 Flash** para **GlobalLog**, automatizando el procesamiento de 5,000 facturas y remitos semanales. El resultado fue una **reducción del 80% en tiempo de procesamiento** (de 4 días a 12 minutos), un **error operativo del 0.1%** y un **retorno de inversión (ROI) completo en 3 meses**.
+
+## El Desafío Logístico
 
 El cliente, **GlobalLog**, uno de los operadores de transporte de carga más grandes de la región, procesaba manualmente más de **5,000 facturas y remitos de aduana por semana**. Este proceso requería un equipo dedicado de 12 analistas que extraían datos de PDFs escaneados, correos electrónicos informales y hojas de cálculo desorganizadas, para luego cargarlos manualmente en su ERP legado.
 
@@ -90,6 +99,17 @@ Los problemas eran críticos:
 - **Errores humanos:** Más del 5.8% de los registros ingresados contenían errores tipográficos, provocando demoras en pagos y multas aduaneras.
 - **Cuellos de botella:** El tiempo promedio de procesamiento para aprobar una factura era de **4 días hábiles**.
 - **Incapacidad de escalar:** En temporadas altas, la acumulación de documentos paralizaba las operaciones logísticas.
+
+---
+
+## Comparativa de Rendimiento (Benchmark de Automatización)
+
+| Métrica de Operación | Proceso Manual Histórico | Con Agentes de IA Puna Tech | Impacto Medible |
+| :--- | :--- | :--- | :--- |
+| **Tiempo de Procesamiento / Factura** | 4 días hábiles (96 horas) | **12 minutos** | ⚡ **80% de reducción** |
+| **Tasa de Error Tipográfico** | 5.8% de entradas incorrectas | **0.1% de error** | 🎯 **98.2% de precisión ganada** |
+| **Capacidad de Carga Semanal** | 5,000 documentos (límite humano) | **25,000+ documentos** | 📈 **5x escalabilidad inmediata** |
+| **Período de Retorno de Inversión (ROI)** | N/A | **3 Meses** | 💰 **Amortización directa** |
 
 ---
 
@@ -122,11 +142,24 @@ Tras un periodo de desarrollo e implementación ágil de **6 semanas**, logramos
     imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCcUyfM0EbSJAi5x-yzLXawT2JH_wCcL0ZYLByP5ODu4x-NKlouRV-NcckVKs8gZo_C4XBCxw8EYFhTHJHQVPZZnJ9RGwMv5lMzIXLOZoUUPya-9S6CpIwBsgOQiSUhTrPgj8VuxJc1lA8cblcZWbPI0J9Ao9pTLhY5chEh7-x_eMZ_ZcyJTSW9bouApOlleJgU5hR4DtUPWrjXL8U2EV63m8_WC3Z0ym_bYiwcsSJYLb0euXAOecEYSB9nGGG_PuQsH4c9qMqeSSc",
     author: "Tech Team Puna Tech",
     date: "Mayo 2026",
-    content: `## Introducción a la IA Agéntica
+    content: `> **TL;DR (Síntesis Ejecutiva)**: Las arquitecturas multi-agente sustituyen a los chatbots monolíticos mediante **especialización de roles, memoria semántica en vectores (RAG) y guardas Human-in-the-Loop**. Esta arquitectura permite ejecutar procesos B2B complejos con **baja latencia, alta precisión (99%+) y seguridad transaccional**.
+
+## Introducción a la IA Agéntica
 
 Durante los últimos años, el uso de la Inteligencia Artificial se limitó en gran medida al modelo de "Pregunta y Respuesta" (Chatbots sencillos). Sin embargo, el futuro corporativo reside en la **IA Agéntica**, donde múltiples agentes autónomos cooperan entre sí para lograr objetivos complejos con mínima supervisión humana.
 
 Este whitepaper técnico analiza los principios de arquitectura, patrones de comunicación y seguridad necesarios para implementar con éxito sistemas multi-agente en entornos B2B.
+
+---
+
+## Estructura Comparativa: Monolito vs. Sistema Multi-Agente
+
+| Dimensión Técnica | Chatbot Monolítico Tradicional | Arquitectura Multi-Agente Puna Tech |
+| :--- | :--- | :--- |
+| **Diseño de Instrucciones** | Un único prompt genérico con sobrecarga | Agentes especializados con system instructions concisas |
+| **Gestión de Contexto** | Memoria efímera de sesión | Vector Store RAG (pgvector/Pinecone) + Memoria de largo plazo |
+| **Control de Hallazgos** | Inexistente (riesgo de alucinación) | Evaluador de calidad y compuertas de seguridad HITL |
+| **Integración Empresarial** | Respuestas puramente textuales | Ejecución directa de APIs REST, SQL y escrituras ERP |
 
 ---
 
@@ -161,7 +194,9 @@ Las arquitecturas multi-agente ya no son ciencia ficción; son la herramienta co
     imageUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAEdqqmKViity7-mZsmS3K_j_GVLizb4PL8qioazaWnI3AIRnElOiYU0hXT_7S7ESEFai5LqFYmP1a3D5ty4RAg9dEnj096RZxJLrESimznflFzIQHVEA6VkLGl5SGAZhJ6a_1YbpS5b4yMECxCpvqPleXaZZoaUw-E4xDDiQ6p0xLsmJolkQLoRexU2L4NXrTFU0UdiBzFmcpsTE4uq4O2DdSHfW6aqf5zMQeFc5HpN5x6a6QLnQi-tUkWJOMAkK4e2lrtAzf6FAc",
     author: "Product Strategy Team",
     date: "Marzo 2026",
-    content: `## Cómo empezar con Inteligencia Artificial en tu Empresa
+    content: `> **TL;DR (Síntesis Ejecutiva)**: La automatización inteligente exitosa requiere priorizar casos de uso mediante la **Matriz de Impacto vs. Complejidad**. Los mejores resultados de ROI inicial provienen de automatizar tareas de alta fricción administrativa y datos estructurados (Quick Wins) antes de escalar a procesos más complejos.
+
+## Cómo empezar con Inteligencia Artificial en tu Empresa
 
 Una de las preguntas más frecuentes que recibimos en **Puna Tech** es: *"Sé que la Inteligencia Artificial es potente, pero ¿por dónde empiezo en mi empresa?"*
 

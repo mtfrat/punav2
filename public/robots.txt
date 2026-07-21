@@ -1,11 +1,31 @@
-# Robots.txt - Puna Tech
+# Robots.txt - Puna Tech SEO & GEO Directives
 # https://www.puna-tech.com
 
 User-agent: *
 Allow: /
 
-# Disallow admin or internal paths if added later
-# Disallow: /admin/
+# Explicit Generative AI & LLM Crawlers Allowed
+User-agent: GPTBot
+Allow: /
 
-# Sitemap location
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Sitemap & LLM Protocol References
 Sitemap: https://www.puna-tech.com/sitemap.xml
+Link: https://www.puna-tech.com/llms.txt; rel="author"; type="text/markdown"

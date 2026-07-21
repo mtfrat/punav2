@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
-import { Calendar, User, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import SEOTags from '../components/SEO/SEOTags';
 import { supabase, translatePostTitle } from '../lib/supabase';
+import { BLOG_ARTICLES } from '../data';
 
 interface Post {
   id: string;
@@ -22,22 +22,46 @@ export default function Blog() {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('posts')
         .select('*')
         .eq('status', 'published')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      const mappedPosts = (data || []).map(post => ({
+      const remotePosts = (data || []).map(post => ({
         ...post,
         title: translatePostTitle(post.id, post.title)
       }));
-      
-      setPosts(mappedPosts);
+
+      // Combine local static articles with remote posts, prioritizing unique IDs
+      const localPosts = BLOG_ARTICLES.map(article => ({
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        image_url: article.imageUrl,
+        category: article.category,
+        created_at: '2026-06-01T00:00:00.000Z'
+      }));
+
+      const allPosts = [...localPosts];
+      remotePosts.forEach(rp => {
+        if (!allPosts.some(p => p.id === rp.id)) {
+          allPosts.push(rp);
+        }
+      });
+
+      setPosts(allPosts);
     } catch (err) {
       console.error('Error fetching posts:', err);
+      // Fallback to local articles
+      setPosts(BLOG_ARTICLES.map(article => ({
+        id: article.id,
+        title: article.title,
+        content: article.content,
+        image_url: article.imageUrl,
+        category: article.category,
+        created_at: '2026-06-01T00:00:00.000Z'
+      })));
     } finally {
       setLoading(false);
     }
@@ -50,8 +74,9 @@ export default function Blog() {
   return (
     <>
       <SEOTags 
-        title="Blog - Insights sobre Automatización y GTM | Puna Tech"
-        description="Exploramos la intersección entre ingeniería, inteligencia artificial y crecimiento de negocios en el blog de Puna Tech."
+        title="[2026] Blog de Arquitectura de IA & Automatización B2B | Puna Tech"
+        description="Casos de éxito, whitepapers de sistemas multi-agente y guías de automatización para escalar operaciones B2B con Inteligencia Artificial."
+        keywords="blog inteligencia artificial, casos de exito ia, agentic workflows, whitepaper multi-agente, automatización facturas"
         canonicalUrl="https://www.puna-tech.com/blog"
         breadcrumbs={[
           { name: 'Inicio', url: 'https://www.puna-tech.com/' },
@@ -71,7 +96,7 @@ export default function Blog() {
               Insights &amp; Visión
             </h1>
             <p className="text-white/60 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-light">
-              Exploramos la intersección entre ingeniería, inteligencia artificial y crecimiento de negocios B2B.
+              Exploramos la intersección entre ingeniería de software, arquitectura agéntica de IA y crecimiento corporativo B2B.
             </p>
           </div>
 
@@ -83,11 +108,11 @@ export default function Blog() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {posts.map((post, idx) => (
+                {posts.map((post) => (
                   <Link
                     key={post.id}
                     to={`/blog/${post.id}`}
-                    className="group bg-[#0d0d0d] border border-white/10 rounded-lg overflow-hidden hover:border-white/30 hover:bg-[#121212] transition-all duration-300 flex flex-col h-[400px]"
+                    className="group bg-[#0d0d0d] border border-white/10 rounded-lg overflow-hidden hover:border-white/30 hover:bg-[#121212] transition-all duration-300 flex flex-col h-[420px]"
                   >
                     {/* Banner image wrapper */}
                     <div className="h-44 overflow-hidden relative shrink-0 border-b border-white/5">
@@ -110,12 +135,17 @@ export default function Blog() {
                         </h3>
                         <p 
                           className="text-xs text-white/50 leading-relaxed line-clamp-3 font-light"
-                          dangerouslySetInnerHTML={{ __html: post.content.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...' }}
+                          dangerouslySetInnerHTML={{ 
+                            __html: post.content
+                              .replace(/^>\s*\*\*TL;DR\*\*:\s*/i, '')
+                              .replace(/<[^>]*>?/gm, '')
+                              .substring(0, 120) + '...' 
+                          }}
                         />
                       </div>
 
                       <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-white/40 group-hover:text-white transition-colors pt-3 border-t border-white/5 mt-4">
-                        <span>Leer artículo</span>
+                        <span>Leer artículo completo</span>
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </div>

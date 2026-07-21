@@ -1,0 +1,33 @@
+# Puna Tech — Autonomous B2B AI Agents & Systems Architecture
+
+> Puna Tech builds production-grade autonomous AI agents, intelligent multi-agent orchestration, and custom software systems for B2B enterprises across Latin America and global markets. Headquartered in Buenos Aires, Argentina.
+
+## Canonical Entity Overview
+Puna Tech (https://www.puna-tech.com) is a specialized AI & Software Engineering firm. Rather than deploying generic informational chatbots, Puna Tech engineers deterministic, code-level AI workflows integrated directly with ERPs, CRMs, databases, vector stores, and custom APIs.
+
+## Core Specializations & Services
+1. **Autonomous AI Agents & Multi-Agent Systems**:
+   - Multi-agent orchestration using Gemini 3.5 Flash, LangChain, LlamaIndex, and Python microservices.
+   - Vector database integration (pgvector, Pinecone) for Retrieval-Augmented Generation (RAG) over enterprise knowledge bases.
+   - Human-in-the-loop (HITL) safeguards with approval thresholds for financial and legal transactions.
+2. **AI-Driven Process Automation**:
+   - Automated logistics invoice processing, cross-matching, and aduana document extraction.
+   - Omnichannel conversational AI (WhatsApp Cloud API, Slack, Web, Telegram) with long-term memory.
+   - Bank reconciliation agents achieving 99.8% certified data precision.
+3. **Custom B2B Web & Mobile Software**:
+   - Modern web application architecture built with React, TypeScript, Node.js, Vite, and PostgreSQL.
+   - High-throughput API design, real-time observability, and microservice containerization on Google Cloud Run & Docker.
+
+## Key Verified Performance Metrics & ROI Case Studies
+- **Logistics Invoice Automation (GlobalLog)**: Reduced processing time per invoice from 4 business days to 12 minutes (80% reduction), cut error rates to 0.1%, achieving 100% ROI in under 3 months.
+- **Enterprise Database Queries**: Lowered critical query latency from 4.2 seconds to 180ms through modular React/Node.js re-architecture.
+- **Support Ticket Suppression (TechCorp)**: Reduced repetitive customer support tickets by 65% using cognitive Gemini-powered assistants.
+
+## Primary Canonical Resources & Links
+- [Homepage (Spanish)](https://www.puna-tech.com/): Official portal detailing services, tech stack, and interactive cost estimator.
+- [Homepage (English)](https://www.puna-tech.com/en): Global portal for international B2B clients.
+- [Technical Blog & Case Studies](https://www.puna-tech.com/blog): In-depth technical articles, whitepapers, and architectural blueprints.
+- [Logistics Invoice Automation Case Study](https://www.puna-tech.com/blog/automatizacion-facturacion-logistica): Detailed analysis of autonomous invoice processing with Gemini 3.5.
+- [Multi-Agent Architecture Whitepaper](https://www.puna-tech.com/blog/arquitecturas-multi-agente): Deep-dive into enterprise multi-agent role specialization, RAG memory, and safety gates.
+- [Process Optimization Guide](https://www.puna-tech.com/blog/guia-optimizacion-procesos-ia): Framework for mapping AI impact vs. complexity and conducting data audits.
+- [Full Context LLM Protocol File](https://www.puna-tech.com/llms-full.txt): Exhaustive raw documentation and architectural specs for generative AI retrieval.
