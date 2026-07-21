@@ -160,36 +160,101 @@ export default function BlogPost() {
   // Clean description for metatags
   const cleanDescription = post.content
     .replace(/<[^>]*>?/gm, '')
-    .replace(/^>\s*\*\*TL;DR\*\*:\s*/i, '')
+    .replace(/^>\s*\*\*TL;DR.*?\*\*:\s*/i, '')
     .replace(/TL;DR \(Síntesis Ejecutiva\):/i, '')
     .substring(0, 155);
 
   const canonicalUrl = `https://www.puna-tech.com/blog/${post.id}`;
 
-  // Function to process content HTML and inject heading IDs for Table of Contents
+  // Complete Markdown & HTML parser for clean rendering
   const processHtmlContent = (rawContent: string) => {
-    let processed = rawContent;
+    let text = rawContent;
 
-    // Convert markdown TL;DR to HTML blockquote if present in markdown format
-    processed = processed.replace(
-      /^>\s*\*\*(TL;DR.*?)\*\*/m,
-      '<blockquote class="tldr-box"><strong>$1</strong></blockquote>'
-    );
+    // Check if content is predominantly Markdown (contains ## or ** or | table |)
+    const isMarkdown = /^##\s|^\s*>\s*\*\*TL;DR|\*\*.*?\*\*|\|.*?\|/m.test(text);
 
-    // Inject id attributes to HTML <h2> tags for TOC jump anchors
-    processed = processed.replace(/<h2>(.*?)<\/h2>/gi, (_, headingText) => {
-      const cleanText = headingText.replace(/<[^>]*>/g, '').trim();
-      const slug = cleanText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-      return `<h2 id="${slug}">${headingText}</h2>`;
-    });
+    if (isMarkdown) {
+      // 1. Process TL;DR Blockquote
+      text = text.replace(
+        /^>\s*\*\*(TL;DR.*?)\*\*:\s*(.*?)$/m,
+        `<blockquote class="tldr-box">
+          <div class="font-mono text-xs font-bold text-white uppercase tracking-wider mb-2">$1</div>
+          <p>$2</p>
+        </blockquote>`
+      );
 
-    // Convert Markdown ## headings if any exist
-    processed = processed.replace(/## (.*?)\n/g, (_, title) => {
-      const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
-      return `<h2 id="${slug}">${title}</h2>\n`;
-    });
+      // Generic blockquotes
+      text = text.replace(/^>\s*(.*?)$/gm, '<blockquote class="tldr-box"><p>$1</p></blockquote>');
 
-    return processed;
+      // 2. Process Markdown Tables
+      const tableRegex = /\|(.+)\|[ \t]*\n\|[ \t]*:?---.*\|[ \t]*\n((?:\|.+\|[ \t]*\n?)+)/g;
+      text = text.replace(tableRegex, (match, headerRow, bodyRows) => {
+        const headers = headerRow.split('|').map((h: string) => h.trim()).filter(Boolean);
+        const rows = bodyRows.trim().split('\n').map((row: string) =>
+          row.split('|').map((cell: string) => cell.trim()).filter(Boolean)
+        );
+
+        const headerHtml = `<thead><tr>${headers.map((h: string) => `<th>${h}</th>`).join('')}</tr></thead>`;
+        const bodyHtml = `<tbody>${rows.map((row: string[]) => `<tr>${row.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+        return `<div class="table-wrapper"><table>${headerHtml}${bodyHtml}</table></div>`;
+      });
+
+      // 3. Process Headings
+      text = text.replace(/^## (.*?)$/gm, (_, title) => {
+        const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        return `<h2 id="${slug}">${title}</h2>`;
+      });
+
+      text = text.replace(/^### (.*?)$/gm, (_, title) => {
+        const slug = title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        return `<h3 id="${slug}">${title}</h3>`;
+      });
+
+      // 4. Process Horizontal Rules
+      text = text.replace(/^---$/gm, '<hr class="my-8 border-white/10" />');
+
+      // 5. Process Bold and Italics
+      text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // 6. Process Lists (- item)
+      text = text.replace(/(?:^[ \t]*-[ \t]+.+$[ \t]*\n?)+/gm, (listMatch) => {
+        const items = listMatch.trim().split('\n').map(item => item.replace(/^[ \t]*-[ \t]+/, ''));
+        return `<ul>${items.map(item => `<li>${item}</li>`).join('')}</ul>`;
+      });
+
+      // 7. Wrap plain paragraph blocks in <p>
+      const blocks = text.split(/\n\s*\n/);
+      text = blocks.map(block => {
+        const trimmed = block.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<div') || trimmed.startsWith('<ul') || trimmed.startsWith('<ol') || trimmed.startsWith('<hr')) {
+          return trimmed;
+        }
+        return `<p>${trimmed.replace(/\n/g, ' ')}</p>`;
+      }).join('\n\n');
+    } else {
+      // HTML format from Supabase: Ensure classes and IDs are clean
+      text = text.replace(/className=/g, 'class=');
+
+      // Style tldr-box blockquote if it's raw HTML
+      text = text.replace(/<blockquote class="tldr-box">\s*<strong>TL;DR \((.*?)\):?<\/strong>\s*:?\s*(.*?)<\/blockquote>/gi, 
+        `<blockquote class="tldr-box">
+          <div class="font-mono text-xs font-bold text-white uppercase tracking-wider mb-2">TL;DR ($1)</div>
+          <p>$2</p>
+        </blockquote>`
+      );
+
+      // Inject id attributes to HTML <h2> tags for TOC jump anchors
+      text = text.replace(/<h2>(.*?)<\/h2>/gi, (_, headingText) => {
+        const cleanText = headingText.replace(/<[^>]*>/g, '').trim();
+        const slug = cleanText.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+        return `<h2 id="${slug}">${headingText}</h2>`;
+      });
+    }
+
+    return text;
   };
 
   return (
