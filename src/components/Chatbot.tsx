@@ -115,7 +115,8 @@ const Chatbot = () => {
     try {
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
       if (!apiKey) {
-        throw new Error("OpenAI API Key is missing. Configura VITE_OPENAI_API_KEY en tu archivo .env");
+        console.error("VITE_OPENAI_API_KEY no está definida en las variables de entorno de Vite o del hosting.");
+        throw new Error("OpenAI API Key is missing. Configura VITE_OPENAI_API_KEY en tu archivo .env o en el panel de tu hosting.");
       }
 
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -131,7 +132,9 @@ const Chatbot = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error al conectar con OpenAI');
+        const errJson = await response.json().catch(() => ({}));
+        console.error('Error en respuesta de OpenAI:', response.status, errJson);
+        throw new Error(`Error OpenAI: ${response.status}`);
       }
 
       const data = await response.json();
@@ -166,7 +169,7 @@ const Chatbot = () => {
 
       setMessages(updatedMessages);
     } catch (error) {
-      console.error(error);
+      console.error("Error en Chatbot:", error);
       setMessages(prev => [...prev, { role: 'assistant', content: 'Lo siento, estoy teniendo problemas de conexión. Por favor, contáctanos en punatechba@gmail.com' }]);
     } finally {
       setIsLoading(false);
