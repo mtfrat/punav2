@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Bot, X, Send, MessageSquare } from 'lucide-react';
+import emailjs from '@emailjs/browser';
+import { supabase } from '../lib/supabase';
 
 interface Message {
   role: 'system' | 'user' | 'assistant';
@@ -15,6 +17,7 @@ const Chatbot = () => {
   
   const logsContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const leadSentRef = useRef<boolean>(false);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -45,6 +48,59 @@ const Chatbot = () => {
       });
     }
   }, [messages]);
+
+  const sendLeadNotification = async ({ name, email, details, messagesHistory }: { name: string; email: string; details: string; messagesHistory: Message[] }) => {
+    const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_yy0g002';
+    const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_cr5obtd';
+    const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'uTD7ft0fVaE7j9YlO';
+
+    const chatLog = messagesHistory
+      .filter(m => m.role !== 'system')
+      .map(m => `${m.role === 'user' ? 'Usuario' : 'Bot'}: ${m.content}`)
+      .join('\n\n');
+
+    // 1. Guardar en Supabase (leads)
+    try {
+      await supabase.from('leads').insert([
+        {
+          name: name || 'Lead de Chatbot',
+          email: email,
+          company: 'N/A (Chatbot)',
+          source: 'chatbot',
+          notes: `Interés: ${details}\n\nHistorial completo:\n${chatLog}`
+        }
+      ]);
+    } catch (err) {
+      console.error('Error guardando lead de chatbot en Supabase:', err);
+    }
+
+    // 2. Enviar email por EmailJS
+    try {
+      const templateParams = {
+        from_name: `${name} (Lead de Chatbot)`,
+        from_email: email,
+        company: 'Lead de Chatbot IA',
+        message: `🤖 ¡NUEVA CONSULTA CAPTURADA POR EL CHATBOT!\n\n` +
+                 `👤 Nombre: ${name}\n` +
+                 `✉️ Email: ${email}\n` +
+                 `💡 Interés/Detalles: ${details}\n\n` +
+                 `========================================\n` +
+                 `💬 HISTORIAL COMPLETO DE LA CONVERSACIÓN:\n\n` +
+                 `${chatLog}`,
+        to_name: 'PunaTech',
+      };
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+      console.log('Notificación de lead de chatbot enviada por correo exitosamente.');
+    } catch (err) {
+      console.error('Error enviando notificación por email del chatbot:', err);
+    }
+  };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,9 +135,36 @@ const Chatbot = () => {
       }
 
       const data = await response.json();
-      const botReply = data.choices[0].message.content;
+      const rawBotReply = data.choices[0]?.message?.content || '';
 
-      setMessages(prev => [...prev, { role: 'assistant', content: botReply }]);
+      // Detectar etiqueta [[LEAD_CAPTURED: name="...", email="...", details="..."]]
+      const leadTagMatch = rawBotReply.match(/\[\[LEAD_CAPTURED:\s*name="([^"]*)",\s*email="([^"]*)",\s*details="([^"]*)"\]\]/i);
+      const cleanReply = rawBotReply.replace(/\[\[LEAD_CAPTURED:.*?\]\]/g, '').trim();
+
+      const updatedMessages: Message[] = [...newMessages, { role: 'assistant', content: cleanReply }];
+
+      if (leadTagMatch && !leadSentRef.current) {
+        const name = leadTagMatch[1];
+        const email = leadTagMatch[2];
+        const details = leadTagMatch[3];
+        leadSentRef.current = true;
+        sendLeadNotification({ name, email, details, messagesHistory: updatedMessages });
+      } else {
+        // Respálmulo: si el usuario escribió un email y el bot aún no ha enviado el lead
+        const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/;
+        const emailMatch = userMsg.match(emailRegex);
+        if (emailMatch && !leadSentRef.current) {
+          leadSentRef.current = true;
+          sendLeadNotification({ 
+            name: 'Usuario Chatbot', 
+            email: emailMatch[0], 
+            details: 'Consulta sobre productos/servicios en chatbot', 
+            messagesHistory: updatedMessages 
+          });
+        }
+      }
+
+      setMessages(updatedMessages);
     } catch (error) {
       console.error(error);
       setMessages(prev => [...prev, { role: 'assistant', content: 'Lo siento, estoy teniendo problemas de conexión. Por favor, contáctanos en punatechba@gmail.com' }]);
