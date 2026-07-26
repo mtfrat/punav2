@@ -14,6 +14,10 @@ const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [userMessageCount, setUserMessageCount] = useState<number>(0);
+  const [isLimitReached, setIsLimitReached] = useState<boolean>(false);
+  const [leadForm, setLeadForm] = useState({ name: '', email: '' });
+  const [isSubmittingLead, setIsSubmittingLead] = useState<boolean>(false);
   
   const logsContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -47,7 +51,7 @@ const Chatbot = () => {
         behavior: "smooth"
       });
     }
-  }, [messages]);
+  }, [messages, isLimitReached]);
 
   const sendLeadNotification = async ({ name, email, details, messagesHistory }: { name: string; email: string; details: string; messagesHistory: Message[] }) => {
     const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_yy0g002';
@@ -102,39 +106,68 @@ const Chatbot = () => {
     }
   };
 
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!leadForm.name.trim() || !leadForm.email.trim() || isSubmittingLead) return;
+
+    setIsSubmittingLead(true);
+    try {
+      leadSentRef.current = true;
+      await sendLeadNotification({
+        name: leadForm.name.trim(),
+        email: leadForm.email.trim(),
+        details: 'Usuario alcanzó el límite de 5 preguntas e ingresó sus datos para continuar.',
+        messagesHistory: messages
+      });
+
+      // Desbloquear el chat y reiniciar contador
+      setIsLimitReached(false);
+      setUserMessageCount(0);
+
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: `¡Gracias **${leadForm.name.trim()}**! Hemos recibido tus datos correctamente y te contactaremos en breve. Tu chat ha sido desbloqueado para que puedas continuar consultando.`
+        }
+      ]);
+      setLeadForm({ name: '', email: '' });
+    } catch (err) {
+      console.error('Error al enviar formulario de lead:', err);
+    } finally {
+      setIsSubmittingLead(false);
+    }
+  };
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || isLimitReached) return;
 
     const userMsg = input.trim();
     setInput('');
+    const newCount = userMessageCount + 1;
+    setUserMessageCount(newCount);
+
     const newMessages: Message[] = [...messages, { role: 'user', content: userMsg }];
     setMessages(newMessages);
     setIsLoading(true);
 
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!apiKey) {
-        console.error("VITE_OPENAI_API_KEY no está definida en las variables de entorno de Vite o del hosting.");
-        throw new Error("OpenAI API Key is missing. Configura VITE_OPENAI_API_KEY en tu archivo .env o en el panel de tu hosting.");
-      }
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Llamada al endpoint backend seguro /api/chat (la API Key nunca se expone al cliente)
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
           messages: newMessages
         })
       });
 
       if (!response.ok) {
         const errJson = await response.json().catch(() => ({}));
-        console.error('Error en respuesta de OpenAI:', response.status, errJson);
-        throw new Error(`Error OpenAI: ${response.status}`);
+        console.error('Error en respuesta de /api/chat:', response.status, errJson);
+        throw new Error(`Error en servidor: ${response.status}`);
       }
 
       const data = await response.json();
@@ -167,6 +200,15 @@ const Chatbot = () => {
         }
       }
 
+      // Si alcanzó las 5 preguntas en esta sesión, activar límite
+      if (newCount >= 5 && !leadSentRef.current) {
+        setIsLimitReached(true);
+        updatedMessages.push({
+          role: 'assistant',
+          content: '🔒 **Has alcanzado el límite de 5 consultas gratuitas en línea.**\nPara continuar la conversación o recibir un presupuesto detallado a la medida de tu empresa, por favor déjanos tu **Nombre** y **Email** a continuación.'
+        });
+      }
+
       setMessages(updatedMessages);
     } catch (error) {
       console.error("Error en Chatbot:", error);
@@ -185,7 +227,7 @@ const Chatbot = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="w-[350px] sm:w-[400px] h-[500px] bg-[#0d0d0d] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col mb-4"
+            className="w-[350px] sm:w-[400px] h-[520px] bg-[#0d0d0d] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col mb-4"
           >
             {/* Header */}
             <div className="p-4 bg-white/5 border-b border-white/10 flex justify-between items-center">
@@ -197,7 +239,7 @@ const Chatbot = () => {
                   <h3 className="text-sm font-semibold text-white tracking-wide uppercase">Asistente IA</h3>
                   <p className="text-[10px] font-mono text-white/60 flex items-center gap-1.5 uppercase tracking-widest mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    En línea
+                    En línea ({userMessageCount}/5 consultas)
                   </p>
                 </div>
               </div>
@@ -228,6 +270,7 @@ const Chatbot = () => {
                   </div>
                 </div>
               ))}
+
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-[85%] p-3 rounded-2xl bg-[#121212] text-white/80 rounded-tl-none border border-white/10 flex items-center gap-1">
@@ -239,36 +282,68 @@ const Chatbot = () => {
               )}
             </div>
 
-            {/* Input Area */}
-            <form onSubmit={sendMessage} className="p-3 bg-white/5 border-t border-white/10 flex gap-2 items-end">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (input.trim() && !isLoading) {
-                      sendMessage(e as unknown as React.FormEvent);
-                      if (textareaRef.current) {
-                        textareaRef.current.style.height = 'auto';
+            {/* Formulario de Captura de Contacto al alcanzar el límite */}
+            {isLimitReached ? (
+              <form onSubmit={handleLeadSubmit} className="p-4 bg-white/5 border-t border-white/10 space-y-3">
+                <p className="text-xs text-white/80 font-medium">Ingresa tus datos para continuar el chat:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Tu nombre"
+                    value={leadForm.name}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                  />
+                  <input
+                    type="email"
+                    required
+                    placeholder="tu@email.com"
+                    value={leadForm.email}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/40 outline-none focus:border-white/30"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmittingLead}
+                  className="w-full py-2.5 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-white/90 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {isSubmittingLead ? 'Enviando y Desbloqueando...' : 'Enviar y Continuar Chat'}
+                </button>
+              </form>
+            ) : (
+              /* Input Area Normal */
+              <form onSubmit={sendMessage} className="p-3 bg-white/5 border-t border-white/10 flex gap-2 items-end">
+                <textarea
+                  ref={textareaRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (input.trim() && !isLoading && !isLimitReached) {
+                        sendMessage(e as unknown as React.FormEvent);
+                        if (textareaRef.current) {
+                          textareaRef.current.style.height = 'auto';
+                        }
                       }
                     }
-                  }
-                }}
-                rows={1}
-                placeholder="Escribe tu mensaje..."
-                className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-colors resize-none overflow-y-auto no-scrollbar font-light placeholder:text-white/20"
-                style={{ maxHeight: '120px' }}
-              />
-              <button 
-                type="submit"
-                disabled={!input.trim() || isLoading}
-                className="w-11 h-11 shrink-0 rounded-xl bg-white text-black flex items-center justify-center hover:bg-white/80 transition-colors disabled:opacity-50 cursor-pointer mb-0.5"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </form>
+                  }}
+                  rows={1}
+                  placeholder="Escribe tu mensaje..."
+                  className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-colors resize-none overflow-y-auto no-scrollbar font-light placeholder:text-white/20"
+                  style={{ maxHeight: '120px' }}
+                />
+                <button 
+                  type="submit"
+                  disabled={!input.trim() || isLoading || isLimitReached}
+                  className="w-11 h-11 shrink-0 rounded-xl bg-white text-black flex items-center justify-center hover:bg-white/80 transition-colors disabled:opacity-50 cursor-pointer mb-0.5"
+                >
+                  <Send className="w-5 h-5" />
+                </button>
+              </form>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
