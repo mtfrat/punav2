@@ -19,13 +19,16 @@ export const translatePostTitle = (id: string, title: string): string => {
 export const getArticleExcerpt = (content: string, maxLength = 130): string => {
   if (!content) return '';
   const clean = content
-    .replace(/^(?:>\s*)?(?:\*\*)?TL;?DR(?:\s*\([^)]*\))?:?\s*(?:\*\*)?:?\s*/gi, '')
+    // 1. Eliminar etiquetas HTML como <blockquote...>, <strong>, etc.
+    .replace(/<[^>]*>?/gm, '')
+    // 2. Eliminar cualquier variante de TL;DR / TLDR y etiquetas asociadas (ej. TL;DR (Síntesis Ejecutiva):)
+    .replace(/^[\s\n>]*TL;?DR[^\n:]*:?\s*/gi, '')
+    // 3. Limpiar símbolos de formato markdown (negritas **, citas >, títulos #)
     .replace(/^>\s*/gm, '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\*(.*?)\*/g, '$1')
     .replace(/#+\s+/g, '')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/<[^>]*>?/gm, '')
     .replace(/\s+/g, ' ')
     .trim();
 

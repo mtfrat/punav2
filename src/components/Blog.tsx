@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { supabase, translatePostTitle } from '../lib/supabase';
+import { supabase, translatePostTitle, getArticleExcerpt } from '../lib/supabase';
 
 interface Post {
   id: string;
@@ -139,10 +139,9 @@ const Blog = () => {
                        <h3 className="text-lg md:text-xl font-body font-semibold tracking-tight text-foreground leading-[1.3] group-hover:text-primary transition-colors">
                          {post.title}
                        </h3>
-                       <p 
-                         className="text-sm text-foreground/60 leading-relaxed font-body line-clamp-2"
-                         dangerouslySetInnerHTML={{ __html: post.content.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...' }}
-                       />
+                       <p className="text-sm text-foreground/60 leading-relaxed font-body line-clamp-2">
+                         {getArticleExcerpt(post.content, 120)}
+                       </p>
                     </div>
                   </Link>
                   <div className="mt-6 px-2 w-full flex justify-center md:justify-start">
