@@ -19,7 +19,7 @@ export const translatePostTitle = (id: string, title: string): string => {
 export const getArticleExcerpt = (content: string, maxLength = 130): string => {
   if (!content) return '';
   const clean = content
-    .replace(/^>\s*\*\*(?:TL;DR|TLDR)[^*]*\*\*:?\s*/gi, '')
+    .replace(/^(?:>\s*)?(?:\*\*)?TL;?DR(?:\s*\([^)]*\))?:?\s*(?:\*\*)?:?\s*/gi, '')
     .replace(/^>\s*/gm, '')
     .replace(/\*\*(.*?)\*\*/g, '$1')
     .replace(/\*(.*?)\*/g, '$1')
