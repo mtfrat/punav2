@@ -15,3 +15,19 @@ export const translatePostTitle = (id: string, title: string): string => {
   }
   return title;
 };
+
+export const getArticleExcerpt = (content: string, maxLength = 130): string => {
+  if (!content) return '';
+  const clean = content
+    .replace(/^>\s*\*\*(?:TL;DR|TLDR)[^*]*\*\*:?\s*/gi, '')
+    .replace(/^>\s*/gm, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/#+\s+/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/<[^>]*>?/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return clean.length > maxLength ? clean.substring(0, maxLength).trim() + '...' : clean;
+};

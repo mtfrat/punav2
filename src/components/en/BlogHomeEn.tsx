@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from "lucide-react";
-import { supabase, translatePostTitle } from '../../lib/supabase';
+import { supabase, translatePostTitle, getArticleExcerpt } from '../../lib/supabase';
 import { BLOG_ARTICLES } from '../../data';
 
 interface Post {
@@ -12,6 +12,13 @@ interface Post {
   category?: string;
   created_at: string;
 }
+
+const getArticleDateISO = (dateStr?: string, index?: number) => {
+  if (dateStr === 'Junio 2026') return '2026-06-15T00:00:00.000Z';
+  if (dateStr === 'Mayo 2026') return '2026-05-10T00:00:00.000Z';
+  if (dateStr === 'Marzo 2026') return '2026-03-05T00:00:00.000Z';
+  return `2026-01-0${index ? 5 - index : 1}T00:00:00.000Z`;
+};
 
 const BlogHomeEn = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -24,8 +31,7 @@ const BlogHomeEn = () => {
           .from('posts')
           .select('*')
           .eq('status', 'published')
-          .order('created_at', { ascending: false })
-          .limit(3);
+          .order('created_at', { ascending: false });
 
         const remotePosts = (data || []).map(post => ({
           ...post,
@@ -33,13 +39,13 @@ const BlogHomeEn = () => {
         }));
 
         // Combine static local articles with remote posts
-        const localPosts = BLOG_ARTICLES.slice(0, 3).map(article => ({
+        const localPosts = BLOG_ARTICLES.map((article, idx) => ({
           id: article.id,
           title: article.title,
           content: article.content,
           image_url: article.imageUrl,
           category: article.category,
-          created_at: '2026-06-01T00:00:00.000Z'
+          created_at: getArticleDateISO(article.date, idx)
         }));
 
         const allPosts = [...localPosts];
@@ -49,17 +55,22 @@ const BlogHomeEn = () => {
           }
         });
 
+        // Sort newest first (newest on left)
+        allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
         setPosts(allPosts.slice(0, 3));
       } catch (err) {
         console.error('Error fetching posts:', err);
-        setPosts(BLOG_ARTICLES.slice(0, 3).map(article => ({
+        const fallback = BLOG_ARTICLES.map((article, idx) => ({
           id: article.id,
           title: article.title,
           content: article.content,
           image_url: article.imageUrl,
           category: article.category,
-          created_at: '2026-06-01T00:00:00.000Z'
-        })));
+          created_at: getArticleDateISO(article.date, idx)
+        })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+        setPosts(fallback.slice(0, 3));
       } finally {
         setLoading(false);
       }
@@ -121,16 +132,9 @@ const BlogHomeEn = () => {
                     <h3 className="text-base font-semibold uppercase tracking-wide text-white group-hover:text-white/80 transition-colors line-clamp-2">
                       {article.title}
                     </h3>
-                    <p 
-                      className="text-xs text-white/50 leading-relaxed line-clamp-3 font-light"
-                      dangerouslySetInnerHTML={{ 
-                        __html: article.content
-                          .replace(/^>\s*\*\*TL;DR\*\*:\s*/i, '')
-                          .replace(/TL;DR \(Síntesis Ejecutiva\):/i, '')
-                          .replace(/<[^>]*>?/gm, '')
-                          .substring(0, 120) + '...' 
-                      }}
-                    />
+                    <p className="text-xs text-white/50 leading-relaxed line-clamp-3 font-light">
+                      {getArticleExcerpt(article.content, 120)}
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-white/40 group-hover:text-white transition-colors pt-3 border-t border-white/5 mt-4">
