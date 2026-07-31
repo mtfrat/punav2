@@ -59,7 +59,7 @@ const Pricing = () => {
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              <div className="flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-8 inline-flex backdrop-blur-sm shadow-sm"
+              className="flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 mb-8 inline-flex backdrop-blur-sm shadow-sm"
             >
               <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center">
                  <svg width="8" height="8" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
