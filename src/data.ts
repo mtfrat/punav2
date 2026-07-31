@@ -45,10 +45,10 @@ export const SERVICES: ServiceItem[] = [
 export const METHODOLOGY: MethodologyStep[] = [
   {
     number: 1,
-    title: "Discovery & Auditoría",
-    description: "Análisis profundo de tus procesos actuales y detección de cuellos de botella con alto retorno de inversión (ROI).",
-    details: "Mapeamos tus operaciones actuales mediante entrevistas técnicas y análisis de bases de datos. Definimos el alcance del Producto Mínimo Viable (MVP) y calculamos los ahorros potenciales al automatizar flujos clave con Inteligencia Artificial.",
-    timelineContribution: "Semana 1 - Planificación e identificación de requerimientos."
+    title: "Auditoría de Infraestructura y Automatización",
+    description: "En 30 minutos mapeamos un cuello de botella en tu sistema actual (prospección, gestión de datos, etc.) y te llevas un diagrama de cómo la tecnología podría resolverlo, sin compromiso.",
+    details: "Analizamos tus procesos mediante una charla técnica enfocada. Definimos el alcance inicial y detectamos oportunidades de automatización con alto ROI. Te entregamos un esquema arquitectónico de solución, decidas trabajar con nosotros o no.",
+    timelineContribution: "Paso inicial gratuito (30 minutos)."
   },
   {
     number: 2,

@@ -65,7 +65,7 @@ export default function Navbar() {
             Solicita tu presupuesto
           </button>
           <button
-            onClick={() => scrollToSection("casos")}
+            onClick={() => scrollToSection("portfolio")}
             className="text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white transition-colors cursor-pointer"
           >
             Casos de Éxito
@@ -107,7 +107,7 @@ export default function Navbar() {
             data-cal-config='{"layout":"month_view"}'
             className="hidden md:block px-6 py-2.5 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer"
           >
-            Agendar Demo
+            Auditoría Técnica
           </button>
 
           <button
@@ -142,7 +142,7 @@ export default function Navbar() {
             Solicita tu presupuesto
           </button>
           <button
-            onClick={() => scrollToSection("casos")}
+            onClick={() => scrollToSection("portfolio")}
             className="text-sm uppercase tracking-wider font-semibold text-white/60 py-2 border-b border-white/5 text-left cursor-pointer"
           >
             Casos de Éxito
@@ -183,7 +183,7 @@ export default function Navbar() {
             onClick={() => setMobileMenuOpen(false)}
             className="w-full mt-2 py-3 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-bold text-xs tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer"
           >
-            Agendar Demo de IA
+            Auditoría de Infraestructura
           </button>
         </div>
       )}

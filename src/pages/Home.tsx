@@ -4,6 +4,8 @@ import Hero from '../components/Hero';
 import Services from '../components/Services';
 import Methodology from '../components/Methodology';
 import Estimator from '../components/Estimator';
+import Pricing from '../components/Pricing';
+import Portfolio from '../components/Portfolio';
 import Results from '../components/Results';
 import BlogHome from '../components/BlogHome';
 import Footer from '../components/Footer';
@@ -100,8 +102,10 @@ export default function Home() {
       <main className="flex-grow pt-16">
         <Hero />
         <Services />
+        <Portfolio />
         <Methodology />
         <Estimator />
+        <Pricing />
         <Results />
         <BlogHome />
       </main>

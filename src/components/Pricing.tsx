@@ -4,37 +4,40 @@ import { Check } from 'lucide-react';
 
 const plans = [
   {
-    name: 'Plan Inicial',
-    price: '$50.00',
+    name: 'Desarrollo a Medida',
+    price: 'Cotización',
+    suffix: 'según alcance',
     features: [
-      'Herramientas básicas de análisis',
-      'Hasta 3 cuentas de usuario',
-      'Monitoreo en tiempo real de operaciones',
-      'Reportes mensuales de rendimiento',
-      'Soporte por correo electrónico'
+      'Arquitectura B2B y multi-agente',
+      'Integración con ERPs y bases de datos',
+      'Despliegue en infraestructura escalable (GCP/AWS)',
+      'Diseño UX/UI de alta fidelidad',
+      'Propiedad total del código fuente'
     ]
   },
   {
-    name: 'Plan Crecimiento',
-    price: '$90.00',
+    name: 'Staff Augmentation',
+    price: 'Retainer',
+    suffix: 'mensual',
     features: [
-      'Herramientas avanzadas de análisis',
-      'Hasta 10 cuentas de usuario',
-      'Monitoreo en tiempo real de operaciones',
-      'Reportes mensuales personalizados',
-      'Soporte prioritario por correo'
+      'Ingenieros dedicados (React/Node/Python)',
+      'Especialistas en integraciones LLM y RAG',
+      'Metodología ágil (Sprints bisemanales)',
+      'Escalado de equipo on-demand',
+      'Reporte directo con líderes técnicos'
     ],
     active: true
   },
   {
-    name: 'Plan Escala',
-    price: '$150.00',
+    name: 'Infraestructura',
+    price: 'Horas',
+    suffix: 'a demanda',
     features: [
-      'Herramientas avanzadas de análisis',
-      'Cuentas de usuario ilimitadas',
-      'Monitoreo en tiempo real de operaciones',
-      'Reportes personalizados y exportables',
-      'Soporte dedicado por email y chat'
+      'Soporte técnico y resolución de incidencias',
+      'Monitoreo de latencia y observabilidad',
+      'Ajuste fino (fine-tuning) de modelos',
+      'Actualizaciones de seguridad críticas',
+      'Auditoría continua de sistemas'
     ]
   }
 ];
@@ -66,11 +69,11 @@ const Pricing = () => {
               </div>
               <span className="text-[10px] uppercase tracking-[0.2em] font-bold font-body text-foreground/50">Precios</span>
             </motion.div>
-            <h2 className="text-5xl md:text-7xl font-display tracking-tight mb-8">
-              Precios simples y <em className="italic opacity-60">transparentes</em>
+            <h2 className="text-5xl md:text-7xl font-display tracking-tight mb-8 text-balance">
+              Inversión en <em className="italic opacity-60">tecnología core</em>
             </h2>
             <p className="max-w-xl mx-auto text-foreground/40 font-body text-sm">
-              Elige el plan que mejor se adapte a las necesidades y presupuesto de tu negocio.
+              Esquemas flexibles diseñados para corporaciones y scale-ups que buscan construir o escalar infraestructura de alto rendimiento.
             </p>
           </div>
 
@@ -91,9 +94,9 @@ const Pricing = () => {
                   <span className="text-xs font-bold uppercase tracking-widest opacity-40 font-body">{plan.name}</span>
                 </div>
 
-                <div className="mb-8">
-                  <span className="text-5xl font-display tracking-tighter text-foreground">{plan.price}</span>
-                  <span className="text-sm opacity-40 ml-2 font-body text-foreground">/mes</span>
+                <div className="mb-8 flex flex-col xl:flex-row xl:items-baseline gap-1">
+                  <span className="text-4xl lg:text-5xl font-display tracking-tighter text-foreground">{plan.price}</span>
+                  <span className="text-sm opacity-40 font-body text-foreground">{plan.suffix}</span>
                 </div>
 
                 <div className="space-y-4 mb-12 flex-1">

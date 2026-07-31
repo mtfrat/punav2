@@ -150,7 +150,7 @@ const Hero = () => {
             </h1>
 
             <p className="text-white/60 text-sm md:text-base leading-relaxed max-w-xl font-light">
-              Transformamos tus ideas en productos digitales robustos. Desarrollamos plataformas web corporativas, asistentes cognitivos inteligentes y arquitecturas multi-agente de IA para escalar el rendimiento de tu negocio.
+              Diseñamos infraestructuras B2B, automatizamos pipelines operativos y construimos agentes de IA para agencias y empresas que necesitan escalar su facturación sin multiplicar su personal.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 w-full sm:w-auto">
@@ -159,7 +159,7 @@ const Hero = () => {
                 data-cal-config='{"layout":"month_view"}'
                 className="w-full sm:w-auto px-8 py-4 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-bold text-xs tracking-widest uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
               >
-                Agendar Sesión Gratuita
+                Auditoría de Infraestructura y Automatización
                 <ArrowRight className="w-4 h-4" />
               </button>
               <span className="font-mono text-[10px] text-white/40 flex items-center gap-1.5 uppercase tracking-wider">
