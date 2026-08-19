@@ -9,7 +9,44 @@ interface Message {
   content: string;
 }
 
-const Chatbot = () => {
+interface ChatbotProps {
+  lang?: 'es' | 'en';
+}
+
+const translations = {
+  es: {
+    greeting: '¡Hola! Soy el asistente virtual de Puna Tech. ¿En qué te puedo ayudar hoy?',
+    limitReachedTitle: '🔒 **Has alcanzado el límite de 5 consultas gratuitas en línea.**\nPara continuar la conversación o recibir un presupuesto detallado a la medida de tu empresa, por favor déjanos tu **Nombre** y **Email** a continuación.',
+    thankYou: (name: string) => `¡Gracias **${name}**! Hemos recibido tus datos correctamente y te contactaremos en breve. Tu chat ha sido desbloqueado para que puedas continuar consultando.`,
+    connectionError: 'Lo siento, estoy teniendo problemas de conexión. Por favor, contáctanos en punatechba@gmail.com',
+    assistantName: 'Asistente IA',
+    online: (count: number) => `En línea (${count}/5 consultas)`,
+    formTitle: 'Ingresa tus datos para continuar el chat:',
+    namePlaceholder: 'Tu nombre',
+    sending: 'Enviando y Desbloqueando...',
+    sendBtn: 'Enviar y Continuar Chat',
+    inputPlaceholder: 'Escribe tu mensaje...',
+    systemPromptSuffix: ''
+  },
+  en: {
+    greeting: 'Hi! I am the Puna Tech virtual assistant. How can I help you today?',
+    limitReachedTitle: '🔒 **You have reached the limit of 5 free online inquiries.**\nTo continue the conversation or receive a detailed custom quote for your company, please leave your **Name** and **Email** below.',
+    thankYou: (name: string) => `Thank you **${name}**! We have successfully received your details and will contact you shortly. Your chat has been unlocked so you can continue asking questions.`,
+    connectionError: 'Sorry, I am having connection issues. Please contact us at punatechba@gmail.com',
+    assistantName: 'AI Assistant',
+    online: (count: number) => `Online (${count}/5 inquiries)`,
+    formTitle: 'Enter your details to continue the chat:',
+    namePlaceholder: 'Your name',
+    sending: 'Sending & Unlocking...',
+    sendBtn: 'Send & Continue Chat',
+    inputPlaceholder: 'Type your message...',
+    systemPromptSuffix: '\n\nIMPORTANT: The user is browsing the English version of the site. You MUST always answer in English.'
+  }
+};
+
+const Chatbot = ({ lang = 'es' }: ChatbotProps) => {
+  const t = translations[lang];
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -37,12 +74,12 @@ const Chatbot = () => {
       .then(text => {
         // Start conversation with a greeting
         setMessages([
-          { role: 'system', content: text },
-          { role: 'assistant', content: '¡Hola! Soy el asistente virtual de Puna Tech. ¿En qué te puedo ayudar hoy?' }
+          { role: 'system', content: text + t.systemPromptSuffix },
+          { role: 'assistant', content: t.greeting }
         ]);
       })
       .catch(err => console.error("Error loading knowledge base:", err));
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     if (logsContainerRef.current) {
@@ -128,7 +165,7 @@ const Chatbot = () => {
         ...prev,
         {
           role: 'assistant',
-          content: `¡Gracias **${leadForm.name.trim()}**! Hemos recibido tus datos correctamente y te contactaremos en breve. Tu chat ha sido desbloqueado para que puedas continuar consultando.`
+          content: t.thankYou(leadForm.name.trim())
         }
       ]);
       setLeadForm({ name: '', email: '' });
@@ -205,14 +242,14 @@ const Chatbot = () => {
         setIsLimitReached(true);
         updatedMessages.push({
           role: 'assistant',
-          content: '🔒 **Has alcanzado el límite de 5 consultas gratuitas en línea.**\nPara continuar la conversación o recibir un presupuesto detallado a la medida de tu empresa, por favor déjanos tu **Nombre** y **Email** a continuación.'
+          content: t.limitReachedTitle
         });
       }
 
       setMessages(updatedMessages);
     } catch (error) {
       console.error("Error en Chatbot:", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Lo siento, estoy teniendo problemas de conexión. Por favor, contáctanos en punatechba@gmail.com' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: t.connectionError }]);
     } finally {
       setIsLoading(false);
     }
@@ -236,10 +273,10 @@ const Chatbot = () => {
                   <Bot className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-white tracking-wide uppercase">Asistente IA</h3>
+                  <h3 className="text-sm font-semibold text-white tracking-wide uppercase">{t.assistantName}</h3>
                   <p className="text-[10px] font-mono text-white/60 flex items-center gap-1.5 uppercase tracking-widest mt-0.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    En línea ({userMessageCount}/5 consultas)
+                    {t.online(userMessageCount)}
                   </p>
                 </div>
               </div>
@@ -285,12 +322,12 @@ const Chatbot = () => {
             {/* Formulario de Captura de Contacto al alcanzar el límite */}
             {isLimitReached ? (
               <form onSubmit={handleLeadSubmit} className="p-4 bg-white/5 border-t border-white/10 space-y-3">
-                <p className="text-xs text-white/80 font-medium">Ingresa tus datos para continuar el chat:</p>
+                <p className="text-xs text-white/80 font-medium">{t.formTitle}</p>
                 <div className="grid grid-cols-2 gap-2">
                   <input
                     type="text"
                     required
-                    placeholder="Tu nombre"
+                    placeholder={t.namePlaceholder}
                     value={leadForm.name}
                     onChange={(e) => setLeadForm(prev => ({ ...prev, name: e.target.value }))}
                     className="bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/40 outline-none focus:border-white/30"
@@ -309,7 +346,7 @@ const Chatbot = () => {
                   disabled={isSubmittingLead}
                   className="w-full py-2.5 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-wider hover:bg-white/90 transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmittingLead ? 'Enviando y Desbloqueando...' : 'Enviar y Continuar Chat'}
+                  {isSubmittingLead ? t.sending : t.sendBtn}
                 </button>
               </form>
             ) : (
@@ -331,7 +368,7 @@ const Chatbot = () => {
                     }
                   }}
                   rows={1}
-                  placeholder="Escribe tu mensaje..."
+                  placeholder={t.inputPlaceholder}
                   className="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30 transition-colors resize-none overflow-y-auto no-scrollbar font-light placeholder:text-white/20"
                   style={{ maxHeight: '120px' }}
                 />
@@ -368,3 +405,4 @@ const Chatbot = () => {
 };
 
 export default Chatbot;
+

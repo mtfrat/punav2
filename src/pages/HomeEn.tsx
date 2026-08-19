@@ -81,7 +81,7 @@ export default function HomeEn() {
         <BlogHomeEn />
       </main>
       <FooterEn />
-      <Chatbot />
+      <Chatbot lang="en" />
     </>
   );
 }
