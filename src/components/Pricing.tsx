@@ -110,8 +110,12 @@ const Pricing = () => {
                   ))}
                 </div>
 
-                <button className={`w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-300 border cursor-pointer ${plan.active ? 'bg-white text-black border-white hover:bg-white/90' : 'bg-transparent text-white border-white/20 hover:border-white/50'}`}>
-                   Comenzar
+                <button
+                  data-cal-link="puna-tech-r7xi5x/15min"
+                  data-cal-config='{"layout":"month_view"}'
+                  className={`w-full py-4 rounded-full text-xs uppercase tracking-widest font-bold transition-all duration-300 border cursor-pointer ${plan.active ? 'bg-white text-black border-white hover:bg-white/90' : 'bg-transparent text-white border-white/20 hover:border-white/50'}`}
+                >
+                   Agendar Auditoría Gratuita
                 </button>
               </motion.div>
             ))}

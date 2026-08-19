@@ -156,7 +156,7 @@ const HeroEn = () => {
                 data-cal-config='{"layout":"month_view"}'
                 className="w-full sm:w-auto px-8 py-4 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-bold text-xs tracking-widest uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
               >
-                Book Free Session
+                Book Free Audit
                 <ArrowRight className="w-4 h-4" />
               </button>
               <span className="font-mono text-[10px] text-white/40 flex items-center gap-1.5 uppercase tracking-wider">

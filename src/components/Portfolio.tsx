@@ -5,7 +5,7 @@ import { Database, GitBranch, Terminal, Shield, ArrowUpRight } from 'lucide-reac
 const cases = [
   {
     title: 'Automatización del 100% del pipeline de certificados',
-    client: 'EdTech Enterprise',
+    client: 'Plataforma de Educación Cripto',
     description: 'Eliminamos la intervención humana en la generación y entrega de certificados. Diseñamos un flujo de procesamiento en la nube que toma datos crudos, genera activos digitales seguros y los distribuye a miles de usuarios.',
     tech: ['Supabase', 'Python Pipelines', 'Google Cloud', 'PostgreSQL'],
     impact: 'Reducción de 45 horas de trabajo administrativo semanal a 0.',
@@ -13,7 +13,7 @@ const cases = [
   },
   {
     title: 'Integración CRM y Flujos de Outreach Autónomos (RevOps)',
-    client: 'Agencia B2B',
+    client: 'Agencia de Revenue Ops',
     description: 'Orquestamos arquitecturas multi-agente para manejar operaciones de ingresos. Los agentes se integran mediante APIs complejas al CRM, califican leads, extraen insights de llamadas y envían secuencias de outreach altamente personalizadas.',
     tech: ['LangChain', 'HubSpot API', 'OpenAI', 'Docker'],
     impact: 'Incremento del 300% en volumen de prospección con 0% de incremento en personal.',
@@ -21,7 +21,7 @@ const cases = [
   },
   {
     title: 'Conciliación Financiera y Entornos Persistentes',
-    client: 'Fintech Regional',
+    client: 'Fintech de Conciliación',
     description: 'Desarrollamos un entorno persistente para que agentes IA realicen conciliación cruzada de facturas y movimientos bancarios. Implementamos un sistema "Human-in-the-Loop" para transacciones críticas.',
     tech: ['Vector DBs', 'Gemini', 'Node.js', 'Redis'],
     impact: '99.9% de precisión en cruce de datos fiscales y operativos.',

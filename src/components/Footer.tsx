@@ -19,10 +19,10 @@ const Footer = () => {
         {/* Col 2 */}
         <div className="flex flex-col space-y-3">
           <span className="text-[11px] font-semibold text-white uppercase tracking-wider mb-1">Compañía</span>
-          <a href="/#servicios" className="hover:text-white transition-colors">Servicios</a>
-          <a href="/#metodologia" className="hover:text-white transition-colors">Metodología</a>
-          <a href="/#estimador" className="hover:text-white transition-colors">Solicita tu presupuesto</a>
-          <a href="/#casos" className="hover:text-white transition-colors">Casos de Éxito</a>
+          <a href="/es#servicios" className="hover:text-white transition-colors">Servicios</a>
+          <a href="/es#metodologia" className="hover:text-white transition-colors">Metodología</a>
+          <a href="/es#estimador" className="hover:text-white transition-colors">Solicita tu presupuesto</a>
+          <a href="/es#casos" className="hover:text-white transition-colors">Casos de Éxito</a>
           <Link to="/blog" className="hover:text-white transition-colors">Blog</Link>
         </div>
 
@@ -53,7 +53,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-16 border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <p>© 2026 PUNA TECH. Todos los derechos reservados.</p>
         <p className="font-mono text-[9px] text-white/30 tracking-widest uppercase">
-          ESTABLISHED IN SYSTEM 01 / POWERED BY GEMINI
+          PUNA TECH © 2026 / SOFTWARE FACTORY
         </p>
       </div>
     </footer>

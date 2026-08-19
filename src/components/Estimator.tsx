@@ -11,18 +11,15 @@ import {
 
 const Estimator = () => {
   const [projectType, setProjectType] = useState("Plataforma Web");
-  const [stage, setStage] = useState("Tengo una idea");
-  const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [company, setCompany] = useState("");
   
   const [loading, setLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | ''>('');
 
   const handleCalculate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!description.trim() || !email.trim() || !name.trim()) {
+    if (!email.trim() || !name.trim()) {
       return;
     }
 
@@ -37,8 +34,7 @@ const Estimator = () => {
       const templateParams = {
         from_name: name,
         from_email: email,
-        company: company || 'No especificada',
-        message: `Cotizador IA:\n- Tipo: ${projectType}\n- Etapa: ${stage}\n- Nombre: ${name}\n- Empresa: ${company}\n- Email: ${email}\n- Descripción: ${description}`,
+        message: `Cotizador IA:\n- Tipo: ${projectType}\n- Nombre: ${name}\n- Email: ${email}`,
         to_name: 'PunaTech',
       };
 
@@ -60,11 +56,8 @@ const Estimator = () => {
 
   const resetEstimator = () => {
     setProjectType("Plataforma Web");
-    setStage("Tengo una idea");
-    setDescription("");
     setEmail("");
     setName("");
-    setCompany("");
     setSubmitStatus('');
   };
 
@@ -159,53 +152,15 @@ const Estimator = () => {
                   </div>
 
                   <div className="flex flex-col space-y-2">
-                    <label className="text-xs font-semibold text-white tracking-widest uppercase">
-                      ¿Cuál es tu etapa actual?
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      {[
-                        "Tengo una idea",
-                        "Tengo Figma/Wireframes",
-                        "Reemplazo de legado",
-                      ].map((s) => (
-                        <button
-                          type="button"
-                          key={s}
-                          onClick={() => setStage(s)}
-                          className={`py-2.5 px-3 rounded-md text-[11px] font-medium transition-all duration-200 border uppercase tracking-wider ${
-                            stage === s
-                              ? "bg-white text-black border-white font-bold"
-                              : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col space-y-2">
-                      <label className="text-xs font-semibold text-white tracking-widest uppercase">Nombre Completo</label>
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Ej. Juan Pérez"
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white font-light"
-                        required
-                      />
-                    </div>
-                    <div className="flex flex-col space-y-2">
-                      <label className="text-xs font-semibold text-white tracking-widest uppercase">Empresa (Opcional)</label>
-                      <input
-                        type="text" 
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        placeholder="Tu Empresa" 
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white font-light"
-                      />
-                    </div>
+                    <label className="text-xs font-semibold text-white tracking-widest uppercase">Nombre Completo</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ej. Juan Pérez"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white font-light"
+                      required
+                    />
                   </div>
 
                   <div className="flex flex-col space-y-2">
@@ -220,24 +175,11 @@ const Estimator = () => {
                     />
                   </div>
 
-                  <div className="flex flex-col space-y-2">
-                    <label className="text-xs font-semibold text-white tracking-widest uppercase">
-                      Describe tu idea
-                    </label>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Ej: Necesito un portal web para administrar turnos que se integre con nuestra base de datos..."
-                      className="w-full h-24 bg-white/5 border border-white/10 rounded-lg p-4 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white focus:ring-1 focus:ring-white resize-none font-light"
-                      required
-                    ></textarea>
-                  </div>
-
                   <button
                     type="submit"
                     className="w-full py-4 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white text-xs font-bold tracking-widest uppercase rounded-full transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    Solicitar Estimación (Respuesta en 24-48hs)
+                    Solicitar Estimación
                   </button>
                 </div>
               </form>

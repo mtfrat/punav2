@@ -42,12 +42,7 @@ const NavbarEn = () => {
           <button onClick={() => scrollToSection('metodologia')} className="text-[11px] font-semibold text-white/60 hover:text-white uppercase tracking-widest transition-colors cursor-pointer">
             Methodology
           </button>
-          <button
-            onClick={() => scrollToSection("estimador")}
-            className="text-[11px] font-semibold uppercase tracking-widest text-white hover:text-white transition-colors flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/25 cursor-pointer"
-          >
-            Request a Quote
-          </button>
+
           <button onClick={() => scrollToSection('casos')} className="text-[11px] font-semibold text-white/60 hover:text-white uppercase tracking-widest transition-colors cursor-pointer">
             Success Cases
           </button>
@@ -57,7 +52,7 @@ const NavbarEn = () => {
 
           {/* Lang selector */}
           <div className="flex items-center gap-2 border-l border-white/20 pl-4 ml-2">
-            <Link to="/" className="text-[11px] font-semibold text-white/60 hover:text-white uppercase tracking-widest transition-colors cursor-pointer">ES</Link>
+            <Link to="/es" className="text-[11px] font-semibold text-white/60 hover:text-white uppercase tracking-widest transition-colors cursor-pointer">ES</Link>
             <span className="text-white/40">/</span>
             <span className="text-[11px] font-semibold text-white uppercase tracking-widest cursor-default">EN</span>
           </div>
@@ -67,7 +62,7 @@ const NavbarEn = () => {
             data-cal-config='{"layout":"month_view"}' 
             className="flex items-center gap-2 px-5 py-2.5 border border-white/20 hover:border-white hover:bg-white hover:text-black text-white text-[11px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 ml-4 cursor-pointer"
           >
-            Book Demo
+            Book Free Audit
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -93,9 +88,7 @@ const NavbarEn = () => {
         <button onClick={() => scrollToSection('metodologia')} className="text-2xl font-light text-white uppercase tracking-widest cursor-pointer">
           Methodology
         </button>
-        <button onClick={() => scrollToSection('estimador')} className="text-2xl font-light text-white uppercase tracking-widest cursor-pointer">
-          Request a Quote
-        </button>
+
         <button onClick={() => scrollToSection('casos')} className="text-2xl font-light text-white uppercase tracking-widest cursor-pointer">
           Success Cases
         </button>
@@ -103,7 +96,7 @@ const NavbarEn = () => {
           Blog
         </Link>
         <div className="flex gap-6 mt-4">
-          <Link to="/" className="text-lg font-light text-white/60 uppercase tracking-widest">ES</Link>
+          <Link to="/es" className="text-lg font-light text-white/60 uppercase tracking-widest">ES</Link>
           <span className="text-lg font-light text-white uppercase tracking-widest border-b border-white">EN</span>
         </div>
         <button 
@@ -111,7 +104,7 @@ const NavbarEn = () => {
           data-cal-config='{"layout":"month_view"}'
           className="mt-8 px-8 py-4 border border-white text-white hover:bg-white hover:text-black text-sm font-bold uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer"
         >
-          Book Discovery Call
+          Book Free Audit
         </button>
       </div>
     </nav>

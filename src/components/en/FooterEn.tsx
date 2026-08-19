@@ -45,7 +45,7 @@ const FooterEn = () => {
             data-cal-config='{"layout":"month_view"}'
             className="flex items-center gap-2 hover:text-white transition-colors text-left font-light cursor-pointer"
           >
-            <Calendar className="w-4 h-4 text-white/60" /> Book Discovery Call
+            <Calendar className="w-4 h-4 text-white/60" /> Book Free Audit
           </button>
         </div>
       </div>
@@ -53,7 +53,7 @@ const FooterEn = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-16 border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
         <p>© 2026 PUNA TECH. All rights reserved.</p>
         <p className="font-mono text-[9px] text-white/30 tracking-widest uppercase">
-          ESTABLISHED IN SYSTEM 01 / POWERED BY GEMINI
+          PUNA TECH © 2026 / SOFTWARE FACTORY
         </p>
       </div>
     </footer>

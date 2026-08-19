@@ -19,7 +19,7 @@ export default function Home() {
         title="[2026] Puna Tech | Agentes de IA y Arquitectura B2B"
         description="Construimos agentes autónomos de IA y software B2B de alto rendimiento. Reducción del 80% en tiempos operativos y 99.8% de precisión en automatización."
         keywords="automatización con IA, agentes de IA, AI agents B2B, agentic workflows, software personalizado, Buenos Aires, Gemini 3.5, LangChain"
-        canonicalUrl="https://www.puna-tech.com/"
+        canonicalUrl="https://www.puna-tech.com/es"
         lang="es"
         locale="es_AR"
         customSchema={{

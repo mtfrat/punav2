@@ -19,7 +19,7 @@ export default function HomeEn() {
         keywords="AI automation, AI agents, B2B AI agents, process automation, agentic workflows, custom software, Gemini 3.5, LangChain"
         lang="en"
         locale="en_US"
-        canonicalUrl="https://www.puna-tech.com/en"
+        canonicalUrl="https://www.puna-tech.com/"
         customSchema={{
           "@context": "https://schema.org",
           "@graph": [

@@ -33,7 +33,7 @@ export default function Navbar() {
     >
       <div className="flex justify-between items-center px-6 md:px-16 max-w-7xl mx-auto">
         {/* Logo and Brand */}
-        <Link to="/" className="flex items-center gap-3 select-none">
+        <Link to="/es" className="flex items-center gap-3 select-none">
           <div className="flex flex-col">
             <span className="text-sm font-bold tracking-widest text-white leading-none uppercase">
               PUNA <span className="font-light opacity-50">TECH</span>
@@ -58,12 +58,7 @@ export default function Navbar() {
           >
             Metodología
           </button>
-          <button
-            onClick={() => scrollToSection("estimador")}
-            className="text-xs font-semibold uppercase tracking-wider text-white hover:text-white transition-colors flex items-center gap-1 bg-white/5 hover:bg-white/10 px-3 py-1 rounded-full border border-white/25 cursor-pointer"
-          >
-            Solicita tu presupuesto
-          </button>
+
           <button
             onClick={() => scrollToSection("portfolio")}
             className="text-xs font-semibold uppercase tracking-wider text-white/50 hover:text-white transition-colors cursor-pointer"
@@ -90,7 +85,7 @@ export default function Navbar() {
             </button>
             <span className="text-white/20">/</span>
             <Link
-              to="/en"
+              to="/"
               className={`hover:text-white transition-colors uppercase cursor-pointer ${
                 lang === "EN" ? "text-white" : ""
               }`}
@@ -107,7 +102,7 @@ export default function Navbar() {
             data-cal-config='{"layout":"month_view"}'
             className="hidden md:block px-6 py-2.5 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer"
           >
-            Auditoría Técnica
+            Agendar Auditoría Gratuita
           </button>
 
           <button
@@ -135,12 +130,7 @@ export default function Navbar() {
           >
             Metodología
           </button>
-          <button
-            onClick={() => scrollToSection("estimador")}
-            className="text-sm uppercase tracking-wider font-semibold text-white py-2 border-b border-white/5 text-left cursor-pointer"
-          >
-            Solicita tu presupuesto
-          </button>
+
           <button
             onClick={() => scrollToSection("portfolio")}
             className="text-sm uppercase tracking-wider font-semibold text-white/60 py-2 border-b border-white/5 text-left cursor-pointer"
@@ -167,7 +157,7 @@ export default function Navbar() {
                 ES
               </button>
               <Link
-                to="/en"
+                to="/"
                 className={`px-2 py-1 rounded text-xs font-bold uppercase cursor-pointer ${
                   lang === "EN" ? "bg-white text-black" : "text-white/60"
                 }`}
@@ -183,7 +173,7 @@ export default function Navbar() {
             onClick={() => setMobileMenuOpen(false)}
             className="w-full mt-2 py-3 border border-white/30 hover:border-white hover:bg-white hover:text-black text-white font-bold text-xs tracking-wider uppercase rounded-full transition-all duration-300 cursor-pointer"
           >
-            Auditoría de Infraestructura
+            Agendar Auditoría Gratuita
           </button>
         </div>
       )}
