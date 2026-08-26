@@ -1,0 +1,39 @@
+{
+  "name": "Puna Tech - Prospecting Failure Logger",
+  "active": false,
+  "nodes": [
+    {
+      "id": "error-trigger",
+      "name": "Prospecting Workflow Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [-240, 0],
+      "parameters": {}
+    },
+    {
+      "id": "log-failure",
+      "name": "Log Failed Prospect Run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [20, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/prospect_runs' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ workflow_execution_id: String($json.execution?.id || ''), status: 'failed', error: String($json.execution?.error?.message || $json.error?.message || 'Unknown prospecting workflow error').slice(0, 4000), completed_at: new Date().toISOString() }) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": { "Prospecting Workflow Error": { "main": [[{ "node": "Log Failed Prospect Run", "type": "main", "index": 0 }]] } },
+  "settings": { "executionOrder": "v1", "saveManualExecutions": true, "saveDataErrorExecution": "all", "saveDataSuccessExecution": "all" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

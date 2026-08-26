@@ -1,0 +1,27 @@
+import { index, route, type RouteConfig } from "@react-router/dev/routes";
+
+export default [
+  index("./routes/home.tsx", { id: "home-en" }),
+  route("es", "./routes/home.tsx", { id: "home-es" }),
+  route("services/:slug", "./routes/service.tsx", { id: "service-en" }),
+  route("es/servicios/:slug", "./routes/service.tsx", { id: "service-es" }),
+  route("industries/:slug", "./routes/industry.tsx", { id: "industry-en" }),
+  route("es/industrias/:slug", "./routes/industry.tsx", { id: "industry-es" }),
+  route("case-studies/:slug", "./routes/case-study.tsx", { id: "case-en" }),
+  route("es/casos/:slug", "./routes/case-study.tsx", { id: "case-es" }),
+  route("blog", "./routes/blog-index.tsx", { id: "blog-en" }),
+  route("es/blog", "./routes/blog-index.tsx", { id: "blog-es" }),
+  route("blog/:slug", "./routes/blog-post.tsx", { id: "post-en" }),
+  route("es/blog/:slug", "./routes/blog-post.tsx", { id: "post-es" }),
+  route("privacy", "./routes/legal.tsx", { id: "privacy-en" }),
+  route("terms", "./routes/legal.tsx", { id: "terms-en" }),
+  route("es/privacidad", "./routes/legal.tsx", { id: "privacy-es" }),
+  route("es/terminos", "./routes/legal.tsx", { id: "terms-es" }),
+  route("en", "./routes/legacy-redirect.ts", { id: "legacy-en-root" }),
+  route("en/*", "./routes/legacy-redirect.ts", { id: "legacy-en-wildcard" }),
+  route("sitemap.xml", "./routes/sitemap.ts"),
+  route("llms.txt", "./routes/llms.ts"),
+  route("api/lead", "./routes/api-lead.ts"),
+  route("api/chat", "./routes/api-chat.ts"),
+  route("*", "./routes/not-found.tsx"),
+] satisfies RouteConfig;

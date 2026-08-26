@@ -1,0 +1,330 @@
+{
+  "name": "Puna Tech - Weekly Argentina Account Prospecting Drafts",
+  "active": false,
+  "nodes": [
+    {
+      "id": "schedule",
+      "name": "Weekly Prospecting Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [-1480, -80],
+      "parameters": { "rule": { "interval": [{ "field": "weeks", "triggerAtDay": [2], "triggerAtHour": 9 }] } }
+    },
+    {
+      "id": "manual",
+      "name": "Manual Review Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-1480, 80],
+      "parameters": {}
+    },
+    {
+      "id": "matrix",
+      "name": "Build Search Matrix",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1260, 0],
+      "parameters": {
+        "jsCode": "const provinces = ['Ciudad Autónoma de Buenos Aires','Buenos Aires','Córdoba','Santa Fe','Mendoza','Entre Ríos','Tucumán','La Pampa'];\nconst verticals = [\n  { key: 'automotive_dealers', queries: ['concesionaria oficial', 'agencia automotor'] },\n  { key: 'agricultural_equipment', queries: ['concesionario maquinaria agrícola', 'concesionario tractores e implementos'] },\n];\nconst queries = verticals.flatMap(vertical => provinces.flatMap(province => vertical.queries.map(query => ({ vertical: vertical.key, province, search: `${query} en ${province}, Argentina` }))));\nreturn [{ json: { queries, searchStringsArray: queries.map(item => item.search), requested_limit: 200, verticals: verticals.map(item => item.key) } }];"
+      }
+    },
+    {
+      "id": "start-run",
+      "name": "Create Prospect Run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1040, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/prospect_runs' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Prefer", "value": "return=representation" }] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ workflow_execution_id: $execution.id, status: 'started', verticals: $node['Build Search Matrix'].json.verticals, queries: $node['Build Search Matrix'].json.queries, requested_limit: $node['Build Search Matrix'].json.requested_limit }) }}",
+        "options": { "response": { "response": { "responseFormat": "json" } } }
+      }
+    },
+    {
+      "id": "apify",
+      "name": "Run Apify Google Places",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-820, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 10000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token=' + $env.APIFY_API_TOKEN + '&timeout=300&memory=1024' }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ searchStringsArray: $node['Build Search Matrix'].json.searchStringsArray, countryCode: 'ar', language: 'es', maxCrawledPlacesPerSearch: 7, skipClosedPlaces: true, scrapePlaceDetailPage: false, scrapeReviewsPersonalData: false, maxReviews: 0, maxImages: 0 }) }}",
+        "options": { "timeout": 310000, "response": { "response": { "responseFormat": "json" } } }
+      }
+    },
+    {
+      "id": "normalize",
+      "name": "Normalize and Filter Places",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-600, 0],
+      "parameters": {
+        "jsCode": "const raw = Array.isArray($json) ? $json : (Array.isArray($json.body) ? $json.body : []);\nconst matrix = $node['Build Search Matrix'].json.queries;\nconst cleanDomain = value => { try { const host = new URL(value).hostname.toLowerCase().replace(/^www\\./, ''); return /^(facebook|instagram|linkedin)\\.com$/.test(host) ? null : host; } catch { return null; } };\nconst relevant = /(concesion|automotor|veh[ií]cul|auto|maquinaria|tractor|implement|agr[ií]col)/i;\nconst seenPlaces = new Set(); const seenDomains = new Set(); const leads = [];\nfor (const place of raw) {\n  const placeId = String(place.placeId || place.place_id || place.cid || '').trim();\n  const name = String(place.title || place.name || '').trim();\n  const category = String(place.categoryName || place.category || '').trim();\n  const address = String(place.address || place.street || '').trim();\n  const countryCode = String(place.countryCode || place.country || 'AR').toUpperCase();\n  const closed = Boolean(place.permanentlyClosed || place.temporarilyClosed) || /permanently_closed|cerrado permanentemente/i.test(String(place.status || ''));\n  if (!placeId || !name || closed || !['AR','ARG','ARGENTINA'].includes(countryCode) || !relevant.test(`${name} ${category}`)) continue;\n  const domain = cleanDomain(place.website || place.url);\n  if (seenPlaces.has(placeId) || (domain && seenDomains.has(domain))) continue;\n  seenPlaces.add(placeId); if (domain) seenDomains.add(domain);\n  const searchText = String(place.searchString || place.searchPageUrl || '');\n  const vertical = /maquinaria|tractor|implement|agr[ií]col/i.test(`${name} ${category} ${searchText}`) ? 'agricultural_equipment' : 'automotive_dealers';\n  leads.push({ source: 'apify_google_places', source_record_id: placeId, place_id: placeId, vertical, business_name: name, category, country_code: 'AR', province: String(place.state || place.region || ''), city: String(place.city || ''), address, phone: String(place.phone || place.phoneUnformatted || ''), website: domain ? `https://${domain}` : null, normalized_domain: domain, public_email: null, maps_url: String(place.url || place.googleMapsUrl || ''), rating: Number.isFinite(Number(place.totalScore || place.rating)) ? Number(place.totalScore || place.rating) : null, review_count: Number.isFinite(Number(place.reviewsCount || place.reviewCount)) ? Number(place.reviewsCount || place.reviewCount) : null, signals: { maps_category: category, has_website: Boolean(domain) }, evidence: [{ type: 'google_places', url: String(place.url || place.googleMapsUrl || ''), observed_at: new Date().toISOString() }] });\n  if (leads.length >= 200) break;\n}\nreturn leads.length ? [{ json: { leads, result_count: raw.length, discarded_count: Math.max(0, raw.length - leads.length), estimated_cost_usd: Number((raw.length * 0.0015).toFixed(4)), run_id: (Array.isArray($node['Create Prospect Run'].json) ? $node['Create Prospect Run'].json[0]?.id : $node['Create Prospect Run'].json.id) } }] : [];"
+      }
+    },
+    {
+      "id": "existing",
+      "name": "Fetch Existing Accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-380, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/prospect_accounts?select=source_record_id,normalized_domain,status&limit=5000' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }] },
+        "options": { "response": { "response": { "responseFormat": "json" } } }
+      }
+    },
+    {
+      "id": "dedupe",
+      "name": "Dedupe and Prepare Robots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 0],
+      "parameters": {
+        "jsCode": "const rows = Array.isArray($json) ? $json : ($json.body || []);\nconst existingIds = new Set(rows.map(row => row.source_record_id).filter(Boolean));\nconst existingDomains = new Set(rows.map(row => row.normalized_domain).filter(Boolean));\nconst fresh = $node['Normalize and Filter Places'].json.leads.filter(lead => !existingIds.has(lead.source_record_id) && (!lead.normalized_domain || !existingDomains.has(lead.normalized_domain)));\nconst crawlable = fresh.filter(lead => lead.website && lead.normalized_domain);\nreturn crawlable.map(lead => ({ json: { lead, robots_url: `${lead.website}/robots.txt` } }));"
+      }
+    },
+    {
+      "id": "robots",
+      "name": "Check Robots.txt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [60, 0],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "url": "={{ $json.robots_url }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "User-Agent", "value": "PunaTechProspecting/1.0 (+https://www.puna-tech.com/)" }] },
+        "options": { "timeout": 10000, "response": { "response": { "responseFormat": "text", "neverError": true } } }
+      }
+    },
+    {
+      "id": "pages",
+      "name": "Build Allowed Page Requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [280, 0],
+      "parameters": {
+        "jsCode": "return $input.all().flatMap((item, index) => {\n  const source = $node['Dedupe and Prepare Robots'].all()[index]?.json; if (!source?.lead) return [];\n  const robots = String(item.json.body ?? item.json.data ?? item.json ?? '');\n  const blocked = /user-agent:\\s*\\*[\\s\\S]{0,500}?disallow:\\s*\\/(?:\\s|$)/i.test(robots);\n  if (blocked) return [];\n  const base = source.lead.website.replace(/\\/$/, '');\n  const spanish = /\\.ar$/.test(source.lead.normalized_domain || '');\n  const paths = spanish ? ['', '/contacto', '/empresa'] : ['', '/contact', '/about'];\n  return paths.map(path => ({ json: { lead: source.lead, url: base + path } }));\n});"
+      }
+    },
+    {
+      "id": "wait",
+      "name": "Polite Crawl Delay",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [500, 0],
+      "parameters": { "amount": 1, "unit": "seconds" }
+    },
+    {
+      "id": "crawl",
+      "name": "Crawl Public Business Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 0],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "User-Agent", "value": "PunaTechProspecting/1.0 (+https://www.puna-tech.com/)" }] },
+        "options": { "timeout": 12000, "redirect": { "redirect": { "followRedirects": true, "maxRedirects": 4 } }, "response": { "response": { "responseFormat": "text", "neverError": true } } }
+      }
+    },
+    {
+      "id": "score",
+      "name": "Extract Evidence and Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 0],
+      "parameters": {
+        "jsCode": "const pages = $input.all(); const requests = $node['Build Allowed Page Requests'].all(); const byDomain = new Map();\nconst forbiddenLocal = /^(info|contacto|contact|ventas|sales|administracion|administración|comercial|consultas|hola|recepcion|recepción|servicio|repuestos|postventa|webmaster)$/i;\nfor (let index = 0; index < pages.length; index++) {\n  const request = requests[index]?.json; if (!request?.lead?.normalized_domain) continue;\n  const body = String(pages[index].json.body ?? pages[index].json.data ?? pages[index].json ?? '').slice(0, 120000);\n  if (/ignore (all|previous)|system message|developer message|reveal.*prompt/i.test(body)) continue;\n  const text = body.replace(/<script[\\s\\S]*?<\\/script>/gi, ' ').replace(/<style[\\s\\S]*?<\\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim();\n  const emails = [...new Set((body.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/gi) || []).map(value => value.toLowerCase()).filter(value => { const [local, domain] = value.split('@'); return forbiddenLocal.test(local) && domain === request.lead.normalized_domain && !/example|test|noreply|no-reply/.test(value); }))];\n  const current = byDomain.get(request.lead.normalized_domain) || { lead: request.lead, texts: [], emails: [], urls: [] };\n  current.texts.push(text.slice(0, 16000)); current.emails.push(...emails); current.urls.push(request.url); byDomain.set(request.lead.normalized_domain, current);\n}\nconst accounts = [];\nfor (const current of byDomain.values()) {\n  const corpus = current.texts.join(' '); const signals = { has_stock_pages: /stock|inventario|unidades|usados/i.test(corpus), has_service_pages: /postventa|servicio t[eé]cnico|repuestos|mantenimiento/i.test(corpus), has_branches: /sucursales|concesionarios|red de distribuidores/i.test(corpus), has_forms: /<form|formulario|solicitar cotizaci[oó]n/i.test(corpus), has_financing: /financiaci[oó]n|cr[eé]dito|plan de ahorro/i.test(corpus) };\n  let score = 25 + (current.lead.normalized_domain ? 10 : 0) + (current.lead.review_count >= 20 ? 8 : 0) + (current.lead.rating >= 4 ? 4 : 0);\n  score += Object.values(signals).filter(Boolean).length * 9; score = Math.min(100, score);\n  const publicEmail = [...new Set(current.emails)][0] || null;\n  accounts.push({ ...current.lead, public_email: publicEmail, signals, score, status: score >= 55 ? 'qualified' : 'new', evidence: [...current.lead.evidence, ...current.urls.map(url => ({ type: 'public_website', url, observed_at: new Date().toISOString() }))] });\n}\nreturn accounts.length ? [{ json: { accounts, duplicate_count: Math.max(0, $node['Normalize and Filter Places'].json.leads.length - $node['Dedupe and Prepare Robots'].all().length), run_id: $node['Normalize and Filter Places'].json.run_id } }] : [];"
+      }
+    },
+    {
+      "id": "upsert",
+      "name": "Upsert Private Prospect Accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/prospect_accounts?on_conflict=source,source_record_id' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Prefer", "value": "resolution=merge-duplicates,return=representation" }] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($node['Extract Evidence and Score'].json.accounts) }}",
+        "options": { "response": { "response": { "responseFormat": "json" } } }
+      }
+    },
+    {
+      "id": "qualified",
+      "name": "Prepare Qualified Draft Inputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1380, 0],
+      "parameters": {
+        "jsCode": "const accounts = Array.isArray($json) ? $json : ($json.body || []);\nreturn accounts.filter(account => account.status === 'qualified' && account.score >= 55 && account.public_email && Array.isArray(account.evidence) && account.evidence.length >= 2).map(account => ({ json: { account } }));"
+      }
+    },
+    {
+      "id": "draft",
+      "name": "Draft Evidence-Based Spanish Email",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [1600, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "promptType": "define",
+        "text": "=PUBLIC ACCOUNT EVIDENCE:\n{{ JSON.stringify($json.account) }}",
+        "options": { "systemMessage": "Write a concise Argentine-Spanish cold-email draft for Puna Tech. Return strict JSON with subject and message. Maximum 120 words in the message. Mention exactly one operational signal supported by the supplied public evidence, explain that it may be worth reviewing rather than asserting a problem, and offer a free 15-minute audit of that process with Puna Tech's founder. Never claim sector experience, clients, savings, ROI, metrics, results, partnerships, urgency, or familiarity beyond the evidence. Do not mention scraping. Do not include tracking links. This is a draft for human review and must never be sent automatically." }
+      }
+    },
+    {
+      "id": "email-model",
+      "name": "Prospecting Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [1600, 220],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": { "model": { "__rl": true, "value": "gpt-4o-mini", "mode": "list" }, "options": { "temperature": 0.2 } }
+    },
+    {
+      "id": "validate-draft",
+      "name": "Validate Prospect Draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1820, 0],
+      "parameters": {
+        "jsCode": "const match = String($json.output || '').match(/\\{[\\s\\S]*\\}/); if (!match) return [];\nconst value = JSON.parse(match[0]); const account = $node['Prepare Qualified Draft Inputs'].json.account;\nconst words = String(value.message || '').trim().split(/\\s+/).filter(Boolean);\nconst prohibited = /ahorr|roi|garant|cliente|trabajamos con|resultados|%|experiencia en el sector/i;\nif (!value.subject || words.length < 20 || words.length > 120 || prohibited.test(`${value.subject} ${value.message}`)) return [];\nreturn [{ json: { prospect_id: account.id, subject: String(value.subject).slice(0, 180), message: String(value.message).trim(), evidence: account.evidence, status: 'draft' } }];"
+      }
+    },
+    {
+      "id": "aggregate",
+      "name": "Aggregate Manual Drafts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2040, 0],
+      "parameters": {
+        "jsCode": "const drafts = $input.all().map(item => item.json);\nreturn [{ json: { drafts, run_id: $node['Extract Evidence and Score'].json.run_id, stored_count: $node['Extract Evidence and Score'].json.accounts.length } }];"
+      }
+    },
+    {
+      "id": "insert-drafts",
+      "name": "Insert Manual Prospect Drafts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2260, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/prospect_drafts?on_conflict=prospect_id' }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Prefer", "value": "resolution=merge-duplicates,return=minimal" }] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($node['Aggregate Manual Drafts'].json.drafts) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "complete",
+      "name": "Complete Prospect Run",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2480, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL + '/rest/v1/prospect_runs?id=eq.' + $node['Aggregate Manual Drafts'].json.run_id }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "apikey", "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}" }, { "name": "Authorization", "value": "={{ 'Bearer ' + $env.SUPABASE_SERVICE_ROLE_KEY }}" }] },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ status: 'completed', result_count: $node['Normalize and Filter Places'].json.result_count, stored_count: $node['Aggregate Manual Drafts'].json.stored_count, discarded_count: $node['Normalize and Filter Places'].json.discarded_count, duplicate_count: $node['Extract Evidence and Score'].json.duplicate_count, estimated_cost_usd: $node['Normalize and Filter Places'].json.estimated_cost_usd, completed_at: new Date().toISOString() }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "summary",
+      "name": "Email Founder Review Summary",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2700, 0],
+      "parameters": {
+        "fromEmail": "={{ $env.OUTREACH_SUMMARY_FROM_EMAIL }}",
+        "toEmail": "={{ $env.FOUNDER_NOTIFICATION_EMAIL }}",
+        "subject": "={{ 'Puna Tech prospect review: ' + $node['Aggregate Manual Drafts'].json.drafts.length + ' drafts ready' }}",
+        "emailFormat": "text",
+        "text": "={{ 'The weekly prospecting run completed.\\n\\nAccounts stored: ' + $node['Aggregate Manual Drafts'].json.stored_count + '\\nDrafts awaiting human review: ' + $node['Aggregate Manual Drafts'].json.drafts.length + '\\nEstimated Apify base cost: US$' + $node['Normalize and Filter Places'].json.estimated_cost_usd + '\\n\\nReview prospect_accounts and prospect_drafts in Supabase. Nothing was sent to prospects.' }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Weekly Prospecting Trigger": { "main": [[{ "node": "Build Search Matrix", "type": "main", "index": 0 }]] },
+    "Manual Review Run": { "main": [[{ "node": "Build Search Matrix", "type": "main", "index": 0 }]] },
+    "Build Search Matrix": { "main": [[{ "node": "Create Prospect Run", "type": "main", "index": 0 }]] },
+    "Create Prospect Run": { "main": [[{ "node": "Run Apify Google Places", "type": "main", "index": 0 }]] },
+    "Run Apify Google Places": { "main": [[{ "node": "Normalize and Filter Places", "type": "main", "index": 0 }]] },
+    "Normalize and Filter Places": { "main": [[{ "node": "Fetch Existing Accounts", "type": "main", "index": 0 }]] },
+    "Fetch Existing Accounts": { "main": [[{ "node": "Dedupe and Prepare Robots", "type": "main", "index": 0 }]] },
+    "Dedupe and Prepare Robots": { "main": [[{ "node": "Check Robots.txt", "type": "main", "index": 0 }]] },
+    "Check Robots.txt": { "main": [[{ "node": "Build Allowed Page Requests", "type": "main", "index": 0 }]] },
+    "Build Allowed Page Requests": { "main": [[{ "node": "Polite Crawl Delay", "type": "main", "index": 0 }]] },
+    "Polite Crawl Delay": { "main": [[{ "node": "Crawl Public Business Page", "type": "main", "index": 0 }]] },
+    "Crawl Public Business Page": { "main": [[{ "node": "Extract Evidence and Score", "type": "main", "index": 0 }]] },
+    "Extract Evidence and Score": { "main": [[{ "node": "Upsert Private Prospect Accounts", "type": "main", "index": 0 }]] },
+    "Upsert Private Prospect Accounts": { "main": [[{ "node": "Prepare Qualified Draft Inputs", "type": "main", "index": 0 }]] },
+    "Prepare Qualified Draft Inputs": { "main": [[{ "node": "Draft Evidence-Based Spanish Email", "type": "main", "index": 0 }]] },
+    "Prospecting Chat Model": { "ai_languageModel": [[{ "node": "Draft Evidence-Based Spanish Email", "type": "ai_languageModel", "index": 0 }]] },
+    "Draft Evidence-Based Spanish Email": { "main": [[{ "node": "Validate Prospect Draft", "type": "main", "index": 0 }]] },
+    "Validate Prospect Draft": { "main": [[{ "node": "Aggregate Manual Drafts", "type": "main", "index": 0 }]] },
+    "Aggregate Manual Drafts": { "main": [[{ "node": "Insert Manual Prospect Drafts", "type": "main", "index": 0 }]] },
+    "Insert Manual Prospect Drafts": { "main": [[{ "node": "Complete Prospect Run", "type": "main", "index": 0 }]] },
+    "Complete Prospect Run": { "main": [[{ "node": "Email Founder Review Summary", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "America/Argentina/Buenos_Aires", "saveManualExecutions": true, "saveDataErrorExecution": "all", "saveDataSuccessExecution": "all" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}
