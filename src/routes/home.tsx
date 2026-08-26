@@ -39,8 +39,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     locale,
     title: locale === "en" ? "Founder-Led Custom Software & AI Automation | Puna Tech" : "Software a Medida y Automatización con IA | Puna Tech",
     description: locale === "en"
-      ? "Founder-led custom software, AI workflow automation, and systems integration for B2B operations teams across the US and Latin America."
-      : "Software a medida, automatización con IA e integración de sistemas para operaciones B2B de Estados Unidos y Latinoamérica.",
+      ? "Founder-led custom software, AI automation, and systems integration for B2B operations teams across the US and Latin America."
+      : "Software a medida, automatización con IA e integraciones para equipos de operaciones B2B de EE. UU. y Latinoamérica.",
     path,
     alternatePath,
     schema: organizationSchema(locale),
