@@ -29,7 +29,23 @@ function client() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  try {
+    return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  } catch {
+    // Marketing routes must remain available when the editorial database is
+    // temporarily misconfigured. No credentials or provider details are logged.
+    return null;
+  }
+}
+
+async function safely<T>(operation: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await operation();
+  } catch {
+    // A transient editorial dependency must not take down the blog index,
+    // sitemap, or other public acquisition routes.
+    return fallback;
+  }
 }
 
 function normalizeSources(value: unknown): Array<{ title?: string; url: string }> {
@@ -75,32 +91,40 @@ function mapPost(row: Record<string, unknown>): PublishedPost {
 export async function getPublishedPosts(locale: Locale, limit = 24) {
   const supabase = client();
   if (!supabase) return [];
-  const { data, error } = await supabase.from("posts").select("*").eq("status", "published").eq("locale", locale).order("published_at", { ascending: false }).limit(limit);
-  if (error || !data) return [];
-  return data.map((row) => mapPost(row as Record<string, unknown>));
+  return safely(async () => {
+    const { data, error } = await supabase.from("posts").select("*").eq("status", "published").eq("locale", locale).order("published_at", { ascending: false }).limit(limit);
+    if (error || !data) return [];
+    return data.map((row) => mapPost(row as Record<string, unknown>));
+  }, []);
 }
 
 export async function getPublishedPost(locale: Locale, slug: string) {
   const supabase = client();
   if (!supabase) return null;
-  const { data, error } = await supabase.from("posts").select("*").eq("status", "published").eq("locale", locale).eq("slug", slug).maybeSingle();
-  if (error || !data) return null;
-  return mapPost(data as Record<string, unknown>);
+  return safely(async () => {
+    const { data, error } = await supabase.from("posts").select("*").eq("status", "published").eq("locale", locale).eq("slug", slug).maybeSingle();
+    if (error || !data) return null;
+    return mapPost(data as Record<string, unknown>);
+  }, null);
 }
 
 export async function getTranslation(locale: Locale, translationGroupId: string) {
   const supabase = client();
   if (!supabase) return null;
-  const { data, error } = await supabase.from("posts").select("slug").eq("status", "published").eq("locale", locale).eq("translation_group_id", translationGroupId).maybeSingle();
-  return error || !data ? null : String(data.slug);
+  return safely(async () => {
+    const { data, error } = await supabase.from("posts").select("slug").eq("status", "published").eq("locale", locale).eq("translation_group_id", translationGroupId).maybeSingle();
+    return error || !data ? null : String(data.slug);
+  }, null);
 }
 
 export async function getLegacyPostRedirect(legacyPath: string) {
   const supabase = client();
   if (!supabase) return null;
-  const { data, error } = await supabase.from("post_legacy_redirects").select("locale,target_slug").eq("legacy_path", legacyPath).maybeSingle();
-  if (error || !data || (data.locale !== "en" && data.locale !== "es")) return null;
-  return { locale: data.locale as Locale, slug: String(data.target_slug) };
+  return safely(async () => {
+    const { data, error } = await supabase.from("post_legacy_redirects").select("locale,target_slug").eq("legacy_path", legacyPath).maybeSingle();
+    if (error || !data || (data.locale !== "en" && data.locale !== "es")) return null;
+    return { locale: data.locale as Locale, slug: String(data.target_slug) };
+  }, null);
 }
 
 function escapeHtml(value: string) {
