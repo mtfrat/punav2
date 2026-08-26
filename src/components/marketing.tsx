@@ -113,8 +113,7 @@ export function CalButton({ locale, placement, className = "", compact = false, 
     setLoading(true);
     try {
       const { getCalApi } = await import("@calcom/embed-react");
-      const cal = await getCalApi();
-      cal("ui", { styles: { branding: { brandColor: "#A8431F" } }, hideEventTypeDetails: false, layout: "month_view" });
+      const cal = await getCalApi({ namespace: "puna-audit" });
       cal("on", {
         action: "bookingSuccessfulV2",
         callback: () => trackEvent("cal_booked", { locale, placement }),
