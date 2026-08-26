@@ -1,8 +1,14 @@
 node_modules/
 build/
 dist/
+.react-router/
+.playwright-cli/
+.vercel/
+supabase/.temp/
 coverage/
+output/
 .DS_Store
 *.log
 .env*
 !.env.example
+.vercel
