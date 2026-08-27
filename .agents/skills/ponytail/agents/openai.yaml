@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ponytail"
+  short_description: "Choose the simplest viable implementation path before adding code or dependencies"
+  default_prompt: "Use $ponytail to pressure-test this implementation plan, prefer reuse and native features, and justify any new dependency."
