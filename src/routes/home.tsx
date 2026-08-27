@@ -6,19 +6,16 @@ import {
   Check,
   ChevronRight,
   Compass,
-  ExternalLink,
   Layers3,
   Link2,
   ScanSearch,
 } from "lucide-react";
 import { Accordion, CalButton, PageShell, ProjectBrief } from "../components/marketing";
-import { industries, industryPath } from "../content/industries";
 import {
   blogPath,
   casePath,
   caseStudies,
   copy,
-  founder,
   servicePath,
   services,
   type CaseStudyContent,
@@ -37,10 +34,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const alternatePath = locale === "en" ? "/es" : "/";
   return createMeta({
     locale,
-    title: locale === "en" ? "Founder-Led Custom Software & AI Automation | Puna Tech" : "Software a Medida y Automatización con IA | Puna Tech",
+    title: locale === "en" ? "Software Factory | Puna Tech" : "Software Factory | Puna Tech",
     description: locale === "en"
-      ? "Founder-led custom software, AI automation, and systems integration for B2B operations teams across the US and Latin America."
-      : "Software a medida, automatización con IA e integraciones para equipos de operaciones B2B de EE. UU. y Latinoamérica.",
+      ? "Bilingual software factory building custom software, AI automation, and systems integrations for complex operational workflows."
+      : "Software factory bilingüe que construye software a medida, automatización con IA e integraciones para flujos operativos complejos.",
     path,
     alternatePath,
     schema: organizationSchema(locale),
@@ -82,13 +79,13 @@ function SystemMap({ study, compact = false }: { study: CaseStudyContent; compac
 function HeroProof({ locale }: { locale: Locale }) {
   const study = caseStudies[locale][0];
   return (
-    <div className="hero-proof" aria-label={locale === "en" ? "Founder-led delivery and selected system architecture" : "Entrega liderada por el fundador y arquitectura seleccionada"}>
+    <div className="hero-proof" aria-label={locale === "en" ? "Software factory capabilities and selected system architecture" : "Capacidades de la software factory y arquitectura seleccionada"}>
       <SystemMap study={study} compact />
-      <div className="founder-proof-card">
+      <div className="factory-proof-card">
         <MountainSymbol />
         <div>
-          <span>{locale === "en" ? "FOUNDER-LED" : "LIDERADO POR SU FUNDADOR"}</span>
-          <strong>{locale === "en" ? "The first call and the hard decisions stay connected." : "La primera llamada y las decisiones difíciles siguen conectadas."}</strong>
+          <span>SOFTWARE FACTORY</span>
+          <strong>{locale === "en" ? "Product, automation, data, and deployment in one delivery system." : "Producto, automatización, datos y despliegue en un mismo sistema de entrega."}</strong>
         </div>
       </div>
     </div>
@@ -102,8 +99,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const t = copy[locale];
   const localizedCases = caseStudies[locale];
   const localizedServices = services[locale];
-  const localizedIndustries = industries[locale];
-  const founderCopy = founder[locale];
   const slowdownServices = [localizedServices[0], localizedServices[2], localizedServices[1]];
 
   return (
@@ -177,21 +172,19 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        <section className="industry-entry-section" aria-labelledby="industry-guides-title">
+        <section className="industry-entry-section" aria-labelledby="software-factory-title">
           <div className="shell industry-entry-grid">
             <div className="industry-entry-intro">
-              <p className="eyebrow">{locale === "en" ? "Industry workflow guides" : "Guías por industria"}</p>
-              <h2 id="industry-guides-title">{locale === "en" ? "Start with the operation you already run." : "Empezá por la operación que ya gestionás."}</h2>
-              <p>{locale === "en" ? "These guides map common constraints and illustrative solution patterns. They do not claim experience we cannot publicly verify." : "Estas guías mapean restricciones frecuentes y patrones ilustrativos de solución. No atribuyen experiencia que no podamos verificar públicamente."}</p>
+              <p className="eyebrow">Software factory</p>
+              <h2 id="software-factory-title">{locale === "en" ? "From operational problem to production software." : "Del problema operativo al software en producción."}</h2>
+              <p>{locale === "en" ? "We combine product design, engineering, automation, integrations, and deployment so the complete system remains coherent." : "Combinamos diseño de producto, ingeniería, automatización, integraciones y despliegue para que el sistema completo sea coherente."}</p>
             </div>
             <div className="industry-entry-links">
-              {localizedIndustries.map((industry, index) => (
-                <Link className="industry-entry-card" key={industry.key} to={industryPath(locale, industry.slug)}>
-                  <span>0{index + 1}</span>
-                  <div><small>{industry.eyebrow}</small><h3>{industry.title}</h3><p>{industry.introduction}</p></div>
-                  <ArrowRight aria-hidden="true" />
-                </Link>
-              ))}
+              <Link className="industry-entry-card" to={servicePath(locale, localizedServices[1].slug)}>
+                <span>01</span>
+                <div><small>{locale === "en" ? "End-to-end delivery" : "Entrega end-to-end"}</small><h3>{locale === "en" ? "One team across product, software, data, and launch." : "Un equipo para producto, software, datos y lanzamiento."}</h3><p>{locale === "en" ? "Start with a focused scope and expand on a maintainable technical foundation." : "Empezá con un alcance enfocado y crecé sobre una base técnica mantenible."}</p></div>
+                <ArrowRight aria-hidden="true" />
+              </Link>
             </div>
           </div>
         </section>
@@ -208,19 +201,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             <div className="delivery-ribbon" aria-label={t.processTitle}>
               <p>{t.processTitle}</p>
               <ol>{t.process.map(([title, description], index) => <li key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{title}</strong><small>{description}</small></div></li>)}</ol>
-            </div>
-          </div>
-        </section>
-
-        <section className="section founder-section">
-          <div className="shell founder-grid">
-            <div className="founder-art" aria-hidden="true"><MountainSymbol /><span>FOUNDER<br />LED</span></div>
-            <div className="founder-copy">
-              <p className="eyebrow">{founderCopy.role}</p>
-              <h2>{founderCopy.headline}</h2>
-              <p className="founder-lede">{founderCopy.bio}</p>
-              <p>{founderCopy.promise}</p>
-              <a className="text-link" href={founderCopy.linkedinUrl} target="_blank" rel="noreferrer">{locale === "en" ? "Meet Puna Tech on LinkedIn" : "Conocé Puna Tech en LinkedIn"}<ExternalLink aria-hidden="true" size={17} /></a>
             </div>
           </div>
         </section>

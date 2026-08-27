@@ -81,10 +81,6 @@ const localeRoutePairs: Record<string, string> = {
   "/es/servicios/automatizacion-ia": "/services/ai-automation",
   "/es/servicios/software-a-medida": "/services/custom-software",
   "/es/servicios/integraciones-de-datos": "/services/data-integrations",
-  "/industries/automotive-dealers": "/es/industrias/concesionarias",
-  "/industries/agricultural-equipment-dealers": "/es/industrias/maquinaria-agricola",
-  "/es/industrias/concesionarias": "/industries/automotive-dealers",
-  "/es/industrias/maquinaria-agricola": "/industries/agricultural-equipment-dealers",
   "/case-studies/edtech-web3-platform": "/es/casos/plataforma-edtech-web3",
   "/case-studies/b2b-gtm-automation": "/es/casos/automatizacion-gtm-b2b",
   "/case-studies/autopost-content-infrastructure": "/es/casos/autopost-infraestructura-contenido",
@@ -180,9 +176,8 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="footer-links">
           <Link to={`${home}#services`}>{copy[locale].nav.services}</Link>
           <Link to={`${home}#work`}>{copy[locale].nav.work}</Link>
-          <Link to={locale === "en" ? "/industries/automotive-dealers" : "/es/industrias/concesionarias"}>{locale === "en" ? "Automotive dealers" : "Concesionarias"}</Link>
-          <Link to={locale === "en" ? "/industries/agricultural-equipment-dealers" : "/es/industrias/maquinaria-agricola"}>{locale === "en" ? "Agricultural equipment" : "Maquinaria agrícola"}</Link>
-          <Link to={locale === "en" ? "/blog" : "/es/blog"}>{copy[locale].nav.insights}</Link>
+          <Link to={locale === "en" ? "/services/custom-software" : "/es/servicios/software-a-medida"}>{locale === "en" ? "Custom software" : "Software a medida"}</Link>
+          <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
         </div>
         <div className="footer-links">
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>

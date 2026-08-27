@@ -53,7 +53,7 @@ export function createMeta({
   const resolvedImageHeight = imageHeight ?? (usesDefaultImage ? 630 : undefined);
   const resolvedImageType = imageType ?? (usesDefaultImage ? "image/png" : undefined);
   const resolvedImageAlt = imageAlt || (locale === "en"
-    ? "Puna Tech — founder-led custom software and AI automation."
+    ? "Puna Tech — custom software, AI automation, and systems integration."
     : "Puna Tech — software a medida y automatización con IA.");
   const entries: Array<Record<string, unknown>> = [
     { title },
@@ -109,8 +109,8 @@ export function organizationSchema(locale: Locale) {
         url: `${SITE_URL}/`,
         logo: `${SITE_URL}/profile-picture.png`,
         description: locale === "en"
-          ? "Custom software, AI automation, and systems integration for B2B operations."
-          : "Software a medida, automatización con IA e integración de sistemas para operaciones B2B.",
+          ? "Bilingual software factory for custom software, AI automation, and systems integration."
+          : "Software factory bilingüe para software a medida, automatización con IA e integraciones de sistemas.",
         address: { "@type": "PostalAddress", addressLocality: "Buenos Aires", addressCountry: "AR" },
         sameAs: ["https://www.linkedin.com/company/puna-tech"],
       },

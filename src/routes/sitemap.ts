@@ -1,5 +1,4 @@
 import { caseStudies, casePath, servicePath, services, SITE_URL } from "../content/site";
-import { industries, industryPath } from "../content/industries";
 import { getPublishedPosts } from "../lib/posts.server";
 
 function esc(value: string) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -13,7 +12,6 @@ export async function loader() {
   const staticItems: SitemapItem[] = [
     ...localizedPair("/", "/es"),
     ...services.en.flatMap((service, index) => localizedPair(servicePath("en", service.slug), servicePath("es", services.es[index].slug))),
-    ...industries.en.flatMap((industry, index) => localizedPair(industryPath("en", industry.slug), industryPath("es", industries.es[index].slug))),
     ...caseStudies.en.flatMap((study, index) => localizedPair(casePath("en", study.slug), casePath("es", caseStudies.es[index].slug))),
     ...localizedPair("/blog", "/es/blog"),
     ...localizedPair("/privacy", "/es/privacidad"),

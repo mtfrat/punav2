@@ -9,6 +9,7 @@ Private SSR dashboard available at `https://www.puna-tech.com/ops` after the dat
    - `supabase/migrations/20260825190000_bilingual_editorial_content.sql`
    - `supabase/migrations/20260826170000_acquisition_and_content_briefs.sql`
    - `supabase/migrations/20260826220000_private_operations_dashboard.sql`
+   - `supabase/migrations/20260827013000_agency_positioning.sql`
 
    The production `public.posts` table was verified as the legacy six-column
    schema (`id`, `created_at`, `title`, `content`, `image_url`, `status`). The

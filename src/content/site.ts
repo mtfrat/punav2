@@ -33,15 +33,6 @@ export interface CaseStudyContent {
   relatedService: string;
 }
 
-export interface FounderContent {
-  name: string;
-  role: string;
-  headline: string;
-  bio: string;
-  promise: string;
-  linkedinUrl: string;
-}
-
 export const SITE_URL = "https://www.puna-tech.com";
 export const CAL_LINK = "puna-tech-r7xi5x/15min";
 export const CONTACT_EMAIL = "punatechba@gmail.com";
@@ -50,21 +41,21 @@ export const copy = {
   en: {
     locale: "en" as const,
     languageName: "English",
-    nav: { services: "Services", work: "Work", process: "How it works", insights: "Insights", brief: "Send a brief" },
+    nav: { services: "Services", work: "Work", process: "How it works", insights: "Blog", brief: "Send a brief" },
     book: "Get a free 15-minute bottleneck audit",
-    heroEyebrow: "Founder-led software studio · Buenos Aires / US & LATAM",
+    heroEyebrow: "Software factory",
     heroTitle: "Turn operational bottlenecks into software your team actually uses.",
-    heroBody: "Puna Tech designs and builds custom software, AI automations, and integrations for B2B operations teams that have outgrown spreadsheets and disconnected tools.",
-    heroMicrocopy: "Directly with the founder. No sales deck—just the bottleneck and the next useful step.",
+    heroBody: "Puna Tech designs and builds custom software, AI automation, and systems integrations for operations that have outgrown off-the-shelf tools.",
+    heroMicrocopy: "No sales deck—just the bottleneck, the technical options, and the next useful step.",
     seeWork: "See real work",
-    proof: ["Founder-led from first call through delivery", "Bilingual collaboration across the Americas", "Software, automation, and integrations in one team"],
+    proof: ["From discovery through production launch", "Bilingual collaboration across the Americas", "Software, automation, and integrations in one team"],
     fitEyebrow: "Where Puna fits best",
-    fitTitle: "For teams whose operation has outgrown spreadsheets, manual handoffs, and disconnected tools.",
+    fitTitle: "For operations that have outgrown spreadsheets, manual handoffs, and disconnected tools.",
     fitBody: "We are most useful when the problem crosses product, data, and operations—not when the answer is another generic website or an AI demo.",
     fit: [
-      ["B2B operations", "Teams coordinating critical work across spreadsheets, inboxes, CRMs, and internal tools."],
-      ["Agencies and service businesses", "Repeatable client delivery that needs cleaner data, approvals, and fewer manual transfers."],
-      ["Education and finance platforms", "Products that combine content, permissions, user accounts, and specialized workflows."],
+      ["Operational workflows", "Critical work coordinated across spreadsheets, inboxes, CRMs, and internal tools."],
+      ["Digital products", "Customer and internal experiences that need reliable permissions, workflows, and ownership."],
+      ["Connected systems", "Products that combine data, permissions, user accounts, and specialized workflows."],
     ],
     servicesEyebrow: "Three focused capabilities",
     servicesTitle: "Start with the bottleneck, not the technology.",
@@ -114,30 +105,30 @@ export const copy = {
     finalBody: "In 15 minutes, we will map the constraint and decide whether software, automation, integration—or no build at all—is the useful next step.",
     briefTitle: "Prefer to write it down?",
     briefBody: "Send a short project brief. We will reply with the next useful question—not an automated sales sequence.",
-    blogTitle: "Practical notes for B2B operators",
+    blogTitle: "Practical notes on software and operations",
     blogBody: "Evidence-backed guides, implementation lessons, and case-study analysis. Every article is reviewed before publication.",
     readMore: "Read more",
     emptyBlog: "Editorial work is in review. New articles will appear here after human approval.",
-    footerLine: "Custom software, AI automation, and systems integration for B2B operations.",
+    footerLine: "Custom software, AI automation, and systems integrations.",
   },
   es: {
     locale: "es" as const,
     languageName: "Español",
-    nav: { services: "Servicios", work: "Trabajo", process: "Cómo funciona", insights: "Insights", brief: "Enviar brief" },
+    nav: { services: "Servicios", work: "Trabajo", process: "Cómo funciona", insights: "Blog", brief: "Enviar brief" },
     book: "Pedí una auditoría gratuita de 15 minutos",
-    heroEyebrow: "Estudio de software liderado por su fundador · Buenos Aires / US & LATAM",
+    heroEyebrow: "Software factory",
     heroTitle: "Convertí cuellos de botella operativos en software que tu equipo realmente use.",
-    heroBody: "Puna Tech diseña y construye software a medida, automatizaciones con IA e integraciones para equipos B2B que ya superaron las planillas y las herramientas desconectadas.",
-    heroMicrocopy: "Directo con el fundador. Sin presentación de ventas: el cuello de botella y el próximo paso útil.",
+    heroBody: "Puna Tech diseña y construye software a medida, automatización con IA e integraciones para operaciones que ya superaron las herramientas estándar.",
+    heroMicrocopy: "Sin presentación de ventas: el cuello de botella, las opciones técnicas y el próximo paso útil.",
     seeWork: "Ver proyectos reales",
-    proof: ["El fundador participa desde la primera llamada hasta la entrega", "Colaboración bilingüe en todo el continente", "Software, automatización e integraciones en un solo equipo"],
+    proof: ["De discovery al lanzamiento productivo", "Colaboración bilingüe en todo el continente", "Software, automatización e integraciones en un solo equipo"],
     fitEyebrow: "Dónde encaja mejor Puna",
-    fitTitle: "Para equipos cuya operación ya superó las planillas, los traspasos manuales y las herramientas desconectadas.",
+    fitTitle: "Para operaciones que ya superaron las planillas, los traspasos manuales y las herramientas desconectadas.",
     fitBody: "Somos más útiles cuando el problema cruza producto, datos y operaciones, no cuando la respuesta es otro sitio genérico o una demo de IA.",
     fit: [
-      ["Operaciones B2B", "Equipos que coordinan trabajo crítico entre planillas, correos, CRMs y herramientas internas."],
-      ["Agencias y empresas de servicios", "Entregas repetibles que necesitan datos más claros, aprobaciones y menos traspasos manuales."],
-      ["Plataformas educativas y financieras", "Productos que combinan contenido, permisos, cuentas de usuario y flujos especializados."],
+      ["Flujos operativos", "Trabajo crítico coordinado entre planillas, correos, CRMs y herramientas internas."],
+      ["Productos digitales", "Experiencias internas y de clientes que necesitan permisos, flujos y propiedad confiables."],
+      ["Sistemas conectados", "Productos que combinan datos, permisos, cuentas de usuario y flujos especializados."],
     ],
     servicesEyebrow: "Tres capacidades enfocadas",
     servicesTitle: "Empezamos por el cuello de botella, no por la tecnología.",
@@ -187,11 +178,11 @@ export const copy = {
     finalBody: "En 15 minutos mapeamos la restricción y definimos si el próximo paso útil es software, automatización, integración o no construir todavía.",
     briefTitle: "¿Preferís explicarlo por escrito?",
     briefBody: "Enviá un brief corto. Te responderemos con la siguiente pregunta útil, no con una secuencia automática de ventas.",
-    blogTitle: "Notas prácticas para líderes de operaciones",
+    blogTitle: "Notas prácticas sobre software y operaciones",
     blogBody: "Guías con evidencia, aprendizajes de implementación y análisis de casos. Cada artículo se revisa antes de publicarse.",
     readMore: "Leer más",
     emptyBlog: "El contenido editorial está en revisión. Los nuevos artículos aparecerán después de la aprobación humana.",
-    footerLine: "Software a medida, automatización con IA e integración de sistemas para operaciones B2B.",
+    footerLine: "Software a medida, automatización con IA e integraciones de sistemas.",
   },
 };
 
@@ -256,25 +247,6 @@ export const services: Record<Locale, ServiceContent[]> = {
   ],
 };
 
-export const founder: Record<Locale, FounderContent> = {
-  en: {
-    name: "Puna Tech founder",
-    role: "Founder · Product and systems engineering",
-    headline: "The person who scopes the work stays close enough to challenge it.",
-    bio: "Puna Tech is a founder-led studio based in Buenos Aires, working with US and Latin American teams on operational software, automation, and the integrations between them.",
-    promise: "You will not be handed from a sales call to a delivery team that has never heard the problem. The founder remains involved in strategy, reviews, and the decisions that shape delivery.",
-    linkedinUrl: "https://www.linkedin.com/company/puna-tech",
-  },
-  es: {
-    name: "Fundador de Puna Tech",
-    role: "Fundador · Producto e ingeniería de sistemas",
-    headline: "La persona que define el trabajo se mantiene lo suficientemente cerca para cuestionarlo.",
-    bio: "Puna Tech es un estudio liderado por su fundador desde Buenos Aires. Trabajamos con equipos de Estados Unidos y Latinoamérica en software operativo, automatización y las integraciones que los conectan.",
-    promise: "No pasás de una llamada comercial a un equipo que nunca escuchó el problema. El fundador sigue involucrado en estrategia, revisiones y las decisiones que definen la entrega.",
-    linkedinUrl: "https://www.linkedin.com/company/puna-tech",
-  },
-};
-
 export const caseStudies: Record<Locale, CaseStudyContent[]> = {
   en: [
     {
@@ -290,7 +262,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
     },
     {
       key: "gtm-automation", slug: "b2b-gtm-automation", alternateSlug: "automatizacion-gtm-b2b", type: "Anonymized client engagement", sector: "B2B growth and acquisition",
-      displayName: "GTM Operations System", confidentialityLabel: "Confidential B2B growth agency", visualCaption: "Prospect-to-outreach system map", relatedService: "data-integrations",
+      displayName: "GTM Operations System", confidentialityLabel: "Confidential client engagement", visualCaption: "Prospect-to-outreach system map", relatedService: "data-integrations",
       title: "A controlled data pipeline from prospect research to outreach.",
       summary: "An orchestrated workflow that connects lead sourcing, enrichment, storage, CRM updates, and multichannel campaign tools.",
       challenge: "Manual movement between fragmented tools created delays, inconsistent records, and little visibility into where a prospect failed to reach a campaign.",
@@ -325,7 +297,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
     },
     {
       key: "gtm-automation", slug: "automatizacion-gtm-b2b", alternateSlug: "b2b-gtm-automation", type: "Proyecto de cliente anonimizado", sector: "Growth y adquisición B2B",
-      displayName: "Sistema de Operaciones GTM", confidentialityLabel: "Agencia B2B confidencial", visualCaption: "Mapa del sistema de prospección a outreach", relatedService: "integraciones-de-datos",
+      displayName: "Sistema de Operaciones GTM", confidentialityLabel: "Proyecto confidencial", visualCaption: "Mapa del sistema de prospección a outreach", relatedService: "integraciones-de-datos",
       title: "Un pipeline controlado desde la investigación de prospectos hasta el outreach.",
       summary: "Un flujo orquestado que conecta fuentes de leads, enriquecimiento, almacenamiento, CRM y campañas multicanal.",
       challenge: "El movimiento manual entre herramientas fragmentadas generaba demoras, registros inconsistentes y poca visibilidad sobre dónde se detenía cada prospecto.",

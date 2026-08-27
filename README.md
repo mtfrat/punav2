@@ -30,7 +30,7 @@ Legacy `VITE_SUPABASE_*` values are accepted temporarily for blog reads, but new
 - Marketing pages are statically prerendered. Blog indexes and posts are server-rendered from published Supabase records.
 - Metadata, canonical URLs, reciprocal language alternates, structured data, `sitemap.xml`, and `llms.txt` are rendered by route loaders.
 - `/en/*` and known legacy blog identifiers permanently redirect to their canonical paths.
-- Industry guides live at `/industries/automotive-dealers`, `/industries/agricultural-equipment-dealers`, `/es/industrias/concesionarias`, and `/es/industrias/maquinaria-agricola`. They are explicitly illustrative and do not claim undisclosed sector work.
+- Former agency, automotive, and agricultural-equipment URLs permanently redirect to the localized custom-software service and are excluded from the sitemap.
 - Open Graph cards are localized, full-frame 1200×630 assets at `/og-en.png` and `/og-es.png`.
 
 ## Database and editorial workflow

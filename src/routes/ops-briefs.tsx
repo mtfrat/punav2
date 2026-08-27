@@ -5,7 +5,7 @@ import { EmptyState, Field, formatDate, Notice, OpsPageHeader, Pager, StatusBadg
 import { audit, assertTrustedMutation, compactSnapshot, operationsHeaders, opsData, pageFrom, paginationRange, requireAdmin, sourcesFromText, sourcesToText, stringField } from "../lib/admin.server";
 
 const statuses = ["backlog", "approved", "drafting", "drafted", "used", "archived"];
-const verticals = ["general_b2b", "automotive_dealers", "agricultural_equipment"];
+const verticals = ["general_b2b", "general_agency", "marketing_agency", "growth_agency", "creative_agency"];
 const services = ["ai-automation", "custom-software", "data-integrations"];
 
 function briefPayload(form: FormData) {
