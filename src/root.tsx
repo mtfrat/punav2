@@ -1,5 +1,6 @@
 import type { LinksFunction, LoaderFunctionArgs } from "react-router";
 import type * as React from "react";
+import { useEffect, useState } from "react";
 import {
   Links,
   Meta,
@@ -10,7 +11,6 @@ import {
   useRouteError,
   useRouteLoaderData,
 } from "react-router";
-import { Analytics } from "./components/marketing";
 import plusJakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
 import "./index.css";
 
@@ -23,7 +23,7 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
-  return { locale: pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en" };
+  return { locale: pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en", isOperations: pathname === "/ops" || pathname.startsWith("/ops/") };
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -48,7 +48,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <><Analytics /><Outlet /></>;
+  const data = useRouteLoaderData<typeof loader>("root");
+  return <>{data?.isOperations ? null : <DeferredAnalytics />}<Outlet /></>;
+}
+
+function DeferredAnalytics() {
+  const [Component, setComponent] = useState<React.ComponentType | null>(null);
+  useEffect(() => {
+    let active = true;
+    import("./components/analytics").then((module) => { if (active) setComponent(() => module.Analytics); });
+    return () => { active = false; };
+  }, []);
+  return Component ? <Component /> : null;
 }
 
 export function ErrorBoundary() {

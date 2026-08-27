@@ -23,5 +23,18 @@ export default [
   route("llms.txt", "./routes/llms.ts"),
   route("api/lead", "./routes/api-lead.ts"),
   route("api/chat", "./routes/api-chat.ts"),
+  route("ops/login", "./routes/ops-login.tsx"),
+  route("ops/auth/callback", "./routes/ops-auth-callback.ts"),
+  route("ops", "./routes/ops-layout.tsx", [
+    index("./routes/ops-index.tsx"),
+    route("content", "./routes/ops-content.tsx"),
+    route("content/:translationGroupId", "./routes/ops-content-detail.tsx"),
+    route("briefs", "./routes/ops-briefs.tsx"),
+    route("distribution", "./routes/ops-distribution.tsx"),
+    route("prospects", "./routes/ops-prospects.tsx"),
+    route("prospects/:id", "./routes/ops-prospect-detail.tsx"),
+    route("leads", "./routes/ops-leads.tsx"),
+    route("runs", "./routes/ops-runs.tsx"),
+  ]),
   route("*", "./routes/not-found.tsx"),
 ] satisfies RouteConfig;

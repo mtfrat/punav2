@@ -12,78 +12,8 @@ import {
   X,
 } from "lucide-react";
 import { CAL_LINK, CONTACT_EMAIL, copy, type Locale } from "../content/site";
-
-declare global {
-  interface Window {
-    dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
-    clarity?: (...args: unknown[]) => void;
-  }
-}
-
-export type AnalyticsEvent =
-  | "cta_view"
-  | "cta_click"
-  | "cal_open"
-  | "cal_booked"
-  | "case_study_view"
-  | "industry_view"
-  | "service_view"
-  | "project_brief_start"
-  | "project_brief_submit"
-  | "chat_open"
-  | "chat_qualified"
-  | "language_switch";
-
-export function trackEvent(event: AnalyticsEvent, properties: Record<string, string | number | boolean | undefined> = {}) {
-  if (typeof window === "undefined") return;
-  const payload = { page: window.location.pathname, ...properties };
-  window.gtag?.("event", event, payload);
-  window.clarity?.("event", event);
-}
-
-export function Analytics() {
-  const location = useLocation();
-
-  useEffect(() => {
-    const host = window.location.hostname;
-    const isProduction = host === "www.puna-tech.com" || host === "puna-tech.com";
-    if (!isProduction || document.querySelector("script[data-puna-analytics]")) return;
-
-    const ga = document.createElement("script");
-    ga.async = true;
-    ga.src = "https://www.googletagmanager.com/gtag/js?id=G-JVV1Y4Y85Y";
-    ga.dataset.punaAnalytics = "true";
-    document.head.appendChild(ga);
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args: unknown[]) => window.dataLayer?.push(args);
-    window.gtag("js", new Date());
-    window.gtag("config", "G-JVV1Y4Y85Y", { anonymize_ip: true, send_page_view: false });
-
-    ((c: Window, d: Document, tag: string, src: string, id: string) => {
-      c.clarity = c.clarity || ((...args: unknown[]) => {
-        (c.clarity as unknown as { q?: unknown[] }).q = (c.clarity as unknown as { q?: unknown[] }).q || [];
-        (c.clarity as unknown as { q: unknown[] }).q.push(args);
-      });
-      const script = d.createElement(tag) as HTMLScriptElement;
-      script.async = true;
-      script.src = `${src}${id}`;
-      script.dataset.punaAnalytics = "true";
-      d.head.appendChild(script);
-    })(window, document, "script", "https://www.clarity.ms/tag/", "wuakxf8xet");
-  }, []);
-
-  useEffect(() => {
-    const host = window.location.hostname;
-    if (host !== "www.puna-tech.com" && host !== "puna-tech.com") return;
-    window.gtag?.("event", "page_view", {
-      page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
-      page_title: document.title,
-    });
-  }, [location.pathname, location.search]);
-  return null;
-}
+import { trackEvent } from "./tracking";
+export { trackEvent } from "./tracking";
 
 function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, placement: string) {
   useEffect(() => {

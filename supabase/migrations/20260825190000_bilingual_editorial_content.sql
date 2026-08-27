@@ -23,14 +23,17 @@ alter table public.posts
   add column if not exists published_at timestamptz,
   add column if not exists updated_at timestamptz not null default now();
 
-update public.posts
+-- The production schema was verified before this migration. Legacy posts have:
+-- id, created_at, title, content, image_url and status. There is no author
+-- column, so editorial attribution starts with the verified Puna Tech default.
+update public.posts as p
 set
   locale = coalesce(locale, 'es'),
   translation_group_id = coalesce(translation_group_id, id::text),
-  hero_image_url = coalesce(hero_image_url, image_url),
-  author_name = coalesce(author_name, author, 'Puna Tech Engineering'),
-  published_at = coalesce(published_at, created_at),
-  updated_at = coalesce(updated_at, created_at, now()),
+  hero_image_url = coalesce(hero_image_url, nullif(p.image_url, '')),
+  author_name = coalesce(author_name, 'Puna Tech Engineering'),
+  published_at = coalesce(published_at, p.created_at),
+  updated_at = coalesce(updated_at, p.created_at, now()),
   status = coalesce(status, 'draft'),
   slug = coalesce(
     nullif(slug, ''),
