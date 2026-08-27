@@ -12,7 +12,7 @@ export type AnalyticsEvent =
   | "cal_open"
   | "cal_booked"
   | "case_study_view"
-  | "industry_view"
+  | "audience_view"
   | "service_view"
   | "project_brief_start"
   | "project_brief_submit"

@@ -21,10 +21,11 @@ The Apify input uses the maintained `compass/crawler-google-places` actor, base 
 1. Back up the linked Supabase project.
 2. Apply `20260825190000_bilingual_editorial_content.sql`.
 3. Apply `20260826170000_acquisition_and_content_briefs.sql`.
-4. Import `puna-editorial-error-logger.json` and `puna-prospecting-error-logger.json`.
-5. Import `puna-editorial-drafts.json` and select the editorial error logger in workflow settings.
-6. Import `puna-prospecting-drafts.json` and select the prospecting error logger.
-7. Attach credentials, keep both workflows inactive, and run the checks below.
+4. Apply `20260826220000_private_operations_dashboard.sql` and `20260827013000_agency_positioning.sql`.
+5. Import `puna-editorial-error-logger.json` and `puna-prospecting-error-logger.json`.
+6. Import `puna-editorial-drafts.json` and select the editorial error logger in workflow settings.
+7. Import `puna-prospecting-drafts.json` and select the prospecting error logger.
+8. Attach credentials, keep both workflows inactive, and run the checks below.
 
 Run the repository-level static validation before importing:
 
@@ -50,15 +51,15 @@ If a run fails after a brief changes to `drafting`, review `editorial_runs`, fix
 
 ## Prospecting workflow
 
-The weekly workflow searches automotive dealerships and agricultural-equipment dealers across selected Argentine provinces. It:
+The weekly workflow searches marketing, growth, creative, and digital agencies across selected LATAM markets. It:
 
 - normalizes and limits the Apify result set;
-- removes closed, irrelevant and non-Argentine places;
+- removes closed, irrelevant and out-of-market places;
 - deduplicates by Place ID and normalized domain;
 - checks `robots.txt` and visits at most homepage, contact and company pages with a crawl delay;
 - accepts only business-role emails visibly published on the same company domain;
 - rejects prompt-like page content;
-- scores deterministic signals such as website, stock, service, branch and form pages;
+- scores deterministic signals such as services, case studies, client evidence, team, booking/forms, and technical-delivery pages;
 - stores account evidence privately with RLS;
 - creates Spanish email drafts only for qualified accounts with evidence and a public business address;
 - sends only a founder summary. Prospect messages remain `draft` until manually reviewed and sent outside v1.
@@ -66,7 +67,7 @@ The weekly workflow searches automotive dealerships and agricultural-equipment d
 Prospecting dry-run acceptance:
 
 1. Temporarily reduce `requested_limit` and `maxCrawledPlacesPerSearch` for the first manual run.
-2. Confirm every stored account has country `AR`, a source record ID and public evidence URLs.
+2. Confirm every stored account has an allowed LATAM country code, a source record ID and public evidence URLs.
 3. Re-run the same sample; the unique Place ID/domain rules must prevent duplicates.
 4. Confirm blocked domains produce no page crawl and no email extraction.
 5. Confirm pages with prompt-injection patterns are excluded from evidence.

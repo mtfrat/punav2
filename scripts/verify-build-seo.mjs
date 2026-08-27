@@ -7,10 +7,8 @@ const routes = [
   ["/es", "es", "https://www.puna-tech.com/es", "https://www.puna-tech.com/og-es.png"],
   ["/services/ai-automation", "en", "https://www.puna-tech.com/services/ai-automation", "https://www.puna-tech.com/og-en.png"],
   ["/es/servicios/automatizacion-ia", "es", "https://www.puna-tech.com/es/servicios/automatizacion-ia", "https://www.puna-tech.com/og-es.png"],
-  ["/industries/automotive-dealers", "en", "https://www.puna-tech.com/industries/automotive-dealers", "https://www.puna-tech.com/og-en.png"],
-  ["/industries/agricultural-equipment-dealers", "en", "https://www.puna-tech.com/industries/agricultural-equipment-dealers", "https://www.puna-tech.com/og-en.png"],
-  ["/es/industrias/concesionarias", "es", "https://www.puna-tech.com/es/industrias/concesionarias", "https://www.puna-tech.com/og-es.png"],
-  ["/es/industrias/maquinaria-agricola", "es", "https://www.puna-tech.com/es/industrias/maquinaria-agricola", "https://www.puna-tech.com/og-es.png"],
+  ["/services/custom-software", "en", "https://www.puna-tech.com/services/custom-software", "https://www.puna-tech.com/og-en.png"],
+  ["/es/servicios/software-a-medida", "es", "https://www.puna-tech.com/es/servicios/software-a-medida", "https://www.puna-tech.com/og-es.png"],
   ["/case-studies/autopost-content-infrastructure", "en", "https://www.puna-tech.com/case-studies/autopost-content-infrastructure", "https://www.puna-tech.com/og-en.png"],
   ["/es/casos/autopost-infraestructura-contenido", "es", "https://www.puna-tech.com/es/casos/autopost-infraestructura-contenido", "https://www.puna-tech.com/og-es.png"],
 ];

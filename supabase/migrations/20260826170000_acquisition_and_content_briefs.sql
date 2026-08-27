@@ -18,7 +18,7 @@ $$;
 create table if not exists public.content_briefs (
   id uuid primary key default gen_random_uuid(),
   title text not null,
-  vertical text not null check (vertical in ('general_b2b', 'automotive_dealers', 'agricultural_equipment')),
+  vertical text not null check (vertical in ('general_b2b', 'general_agency', 'marketing_agency', 'growth_agency', 'creative_agency')),
   service_cluster text not null check (service_cluster in ('ai-automation', 'custom-software', 'data-integrations')),
   audience text not null,
   target_query_en text not null,
@@ -68,10 +68,10 @@ create table if not exists public.prospect_accounts (
   source text not null default 'apify_google_places',
   source_record_id text not null,
   place_id text,
-  vertical text not null check (vertical in ('automotive_dealers', 'agricultural_equipment')),
+  vertical text not null check (vertical in ('general_agency', 'marketing_agency', 'growth_agency', 'creative_agency')),
   business_name text not null,
   category text,
-  country_code text not null default 'AR' check (country_code = 'AR'),
+  country_code text not null default 'AR' check (country_code in ('AR', 'MX', 'CL', 'CO', 'PE', 'UY', 'CR')),
   province text,
   city text,
   address text,
@@ -145,10 +145,10 @@ comment on column public.prospect_accounts.public_email is 'A business email vis
 insert into public.content_briefs
   (title, vertical, service_cluster, audience, target_query_en, target_query_es, angle, status, planned_for)
 values
-  ('Dealership lead routing without replacing the CRM', 'automotive_dealers', 'data-integrations', 'Dealership owner or operations manager', 'car dealership lead management integration', 'automatización de leads para concesionarias', 'A decision guide for unifying approved lead sources, ownership and auditability around the existing CRM.', 'backlog', date '2026-09-01'),
-  ('Where AI belongs in dealership follow-up', 'automotive_dealers', 'ai-automation', 'Commercial and operations leaders', 'AI automation for dealership follow up', 'IA para seguimiento comercial en concesionarias', 'Separate safe AI assistance from deterministic commercial promises and approvals.', 'backlog', date '2026-09-15'),
-  ('Integrating quote, stock and product data for machinery sales', 'agricultural_equipment', 'data-integrations', 'Agricultural equipment commercial operations', 'agricultural equipment inventory integration', 'integración de stock para maquinaria agrícola', 'Map the minimum reliable data contract between product, stock, quotation and reporting systems.', 'backlog', date '2026-10-01'),
-  ('A practical first workflow for field-service coordination', 'agricultural_equipment', 'custom-software', 'Service and branch operations leaders', 'agricultural equipment field service software', 'software para servicio técnico de maquinaria agrícola', 'Define a small first scope around requests, documents, ownership and visible status.', 'backlog', date '2026-10-15'),
+  ('How agencies productize a repeatable client workflow', 'general_agency', 'custom-software', 'Agency founders and operations leaders', 'custom software for marketing agencies', 'software a medida para agencias', 'A practical guide to turning a repeated client-delivery process into an owned product without overbuilding.', 'backlog', date '2026-09-01'),
+  ('Where AI belongs in agency delivery operations', 'marketing_agency', 'ai-automation', 'Marketing and creative agency operations', 'AI workflow automation for agencies', 'automatización con IA para agencias', 'Separate useful AI assistance from deterministic approvals, client promises and systems of record.', 'backlog', date '2026-09-15'),
+  ('A reliable data layer for multi-client reporting', 'growth_agency', 'data-integrations', 'Growth and performance agency leaders', 'agency client reporting integrations', 'integración de reportes para agencias', 'Map the minimum data contracts between campaign platforms, CRMs, databases and client reporting.', 'backlog', date '2026-10-01'),
+  ('When an agency should build a white-label client portal', 'creative_agency', 'custom-software', 'Digital and creative agency founders', 'white label client portal development', 'portal white label para agencias', 'A decision guide for ownership, permissions, reusable modules and handoff before building a client-facing product.', 'backlog', date '2026-10-15'),
   ('Automation or custom software: a B2B operations decision guide', 'general_b2b', 'custom-software', 'B2B operations leaders', 'workflow automation vs custom software', 'automatización vs software a medida', 'A risk-and-maintainability framework grounded in process variability, permissions and data ownership.', 'backlog', date '2026-11-01'),
   ('How to audit a manual handoff before automating it', 'general_b2b', 'ai-automation', 'B2B operations leaders', 'workflow automation audit checklist', 'auditoría de procesos para automatización', 'An implementation playbook for evidence, exceptions, ownership and success criteria before selecting tools.', 'backlog', date '2026-11-15')
 on conflict (title) do nothing;
