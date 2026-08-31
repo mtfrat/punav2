@@ -5,9 +5,34 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter()],
   ssr: {
-    noExternal: ["sanitize-html", "htmlparser2"],
+    noExternal: [
+      "sanitize-html",
+      "htmlparser2",
+      "escape-string-regexp",
+      "is-plain-object",
+      "deepmerge",
+      "parse-srcset",
+      "postcss",
+      "launder",
+      "dayjs",
+      "nanoid",
+      "picocolors",
+      "source-map-js",
+    ],
     optimizeDeps: {
-      include: ["sanitize-html"],
+      include: [
+        "sanitize-html",
+        "escape-string-regexp",
+        "is-plain-object",
+        "deepmerge",
+        "parse-srcset",
+        "postcss",
+        "launder",
+        "dayjs",
+        "nanoid",
+        "picocolors",
+        "source-map-js",
+      ],
     },
   },
 });
