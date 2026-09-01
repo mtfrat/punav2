@@ -11,7 +11,10 @@
     "test:workflows": "node scripts/validate-n8n-workflows.mjs",
     "test:seo": "node scripts/verify-build-seo.mjs",
     "test:safety": "node --experimental-strip-types scripts/verify-content-safety.mjs",
-    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run build && npm run test:seo"
+    "test:content-worker": "node --experimental-strip-types scripts/test-content-worker-client.mjs",
+    "test:worker-bundle": "node scripts/verify-content-worker-bundle.mjs",
+    "verify:content-worker": "node --env-file=.env.local --experimental-strip-types scripts/verify-content-worker.mjs",
+    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run build && npm run test:worker-bundle && npm run test:seo"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
