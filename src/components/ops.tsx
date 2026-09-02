@@ -93,7 +93,8 @@ export function formatDate(value: string | null | undefined, includeTime = false
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return "—";
-  return new Intl.DateTimeFormat("es-AR", includeTime ? { dateStyle: "medium", timeStyle: "short" } : { dateStyle: "medium" }).format(date);
+  const timeZone = "America/Argentina/Buenos_Aires";
+  return new Intl.DateTimeFormat("es-AR", includeTime ? { dateStyle: "medium", timeStyle: "short", timeZone } : { dateStyle: "medium", timeZone }).format(date);
 }
 
 export function jsonSummary(value: unknown) {
