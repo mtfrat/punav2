@@ -1,6 +1,6 @@
 export const SOCIAL_CHANNELS = ["linkedin", "x", "instagram"] as const;
 export const SOCIAL_DRAFT_STATUSES = ["draft", "approved", "rejected", "published", "archived"] as const;
-export const SOCIAL_CAMPAIGN_STATUSES = SOCIAL_DRAFT_STATUSES;
+export const SOCIAL_CAMPAIGN_STATUSES = ["idea", "generating", "generation_failed", ...SOCIAL_DRAFT_STATUSES] as const;
 export const SOCIAL_LOCALES = ["en", "es"] as const;
 
 export type SocialChannel = (typeof SOCIAL_CHANNELS)[number];
@@ -14,7 +14,10 @@ export const SOCIAL_CHANNEL_LIMITS: Record<SocialChannel, number> = {
   instagram: 2200,
 };
 
-const statusLabels: Record<SocialDraftStatus, string> = {
+const statusLabels: Record<SocialCampaignStatus, string> = {
+  idea: "Idea",
+  generating: "Generando",
+  generation_failed: "Generación fallida",
   draft: "Borrador",
   approved: "Aprobado",
   rejected: "Rechazado",
@@ -36,12 +39,16 @@ export function isSocialStatus(value: string): value is SocialDraftStatus {
   return SOCIAL_DRAFT_STATUSES.includes(value as SocialDraftStatus);
 }
 
+export function isSocialCampaignStatus(value: string): value is SocialCampaignStatus {
+  return SOCIAL_CAMPAIGN_STATUSES.includes(value as SocialCampaignStatus);
+}
+
 export function isSocialLocale(value: string): value is SocialLocale {
   return SOCIAL_LOCALES.includes(value as SocialLocale);
 }
 
 export function socialStatusLabel(value: string | null | undefined) {
-  return isSocialStatus(value || "") ? statusLabels[value as SocialDraftStatus] : "Sin estado";
+  return isSocialCampaignStatus(value || "") ? statusLabels[value as SocialCampaignStatus] : "Sin estado";
 }
 
 export function socialChannelLabel(value: string | null | undefined) {
@@ -95,4 +102,13 @@ export function canTransitionSocialDraft(from: string, to: string) {
 
 export function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+export function composeSocialContent(input: { hook?: string | null; body?: string | null; cta?: string | null; hashtags?: string[] | null }) {
+  const tags = (input.hashtags || []).map((tag) => tag.trim().replace(/^#/, "")).filter(Boolean).map((tag) => `#${tag}`).join(" ");
+  return [input.hook, input.body, input.cta, tags].map((part) => String(part || "").trim()).filter(Boolean).join("\n\n");
+}
+
+export function parseHashtags(value: string) {
+  return Array.from(new Set(value.split(/[\s,]+/).map((tag) => tag.trim().replace(/^#/, "")).filter(Boolean))).slice(0, 8);
 }

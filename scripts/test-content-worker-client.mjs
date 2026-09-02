@@ -30,11 +30,12 @@ globalThis.fetch = async (url, options) => {
   }
   return Response.json(String(url).endsWith("/health")
     ? { status: "ok", service: "puna-content-worker", version: "1" }
-    : { service: "puna-content-worker", version: "1", mutations_enabled: false, capabilities: ["text_generation", "brand_overlay", "brand_library"] });
+    : { service: "puna-content-worker", version: "1", mutations_enabled: false, capabilities: ["brand_overlay"] });
 };
 
 assert.equal((await getContentWorkerHealth()).status, "ok");
 assert.equal((await getContentWorkerCapabilities()).mutations_enabled, false);
+assert.deepEqual((await getContentWorkerCapabilities()).capabilities, ["brand_overlay"]);
 
 mode = "unauthorized";
 await assert.rejects(getContentWorkerCapabilities(), (error) => error instanceof ContentWorkerError && error.code === "unauthorized" && error.requestId === "worker-request");

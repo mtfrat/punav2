@@ -8,6 +8,7 @@ import {
   validateRejectionReason,
   validateSocialContent,
 } from "../src/lib/social-studio.ts";
+import { blockingQualityMessage, deterministicQualityFlags } from "../src/lib/social-quality.ts";
 
 assert.equal(deriveSocialCampaignStatus(["draft", "approved"]), "draft");
 assert.equal(deriveSocialCampaignStatus(["rejected", "draft"]), "rejected");
@@ -27,6 +28,11 @@ assert.match(validateSocialContent("linkedin", "   ") || "", /vacío/);
 assert.equal(validateRejectionReason("Motivo suficientemente claro"), null);
 assert.match(validateRejectionReason("corto") || "", /10/);
 
+const quantitativeVariant = { channel: "linkedin", locale: "es", hook: "Reducimos 30% del trabajo manual", body: "Un proceso verificable.", cta: "Hablemos.", hashtags: [], image_headline: "30% menos trabajo manual", image_alt: "Gráfico editorial", evidence_refs: [], quality_flags: [], generation_notes: [] };
+assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [], "puna_editorial")) || "", /30%/);
+quantitativeVariant.evidence_refs = [{ claim: "Reducimos 30% del trabajo manual", source_key: "source-1" }];
+assert.equal(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [{ key: "source-1", title: "Caso", excerpt: "Se redujo 30% del trabajo manual." }], "puna_editorial")), null);
+
 const migration = await readFile(new URL("../supabase/migrations/20260901190000_social_studio_phase1.sql", import.meta.url), "utf8");
 for (const contract of [
   "create table if not exists public.social_campaigns",
@@ -40,5 +46,17 @@ for (const contract of [
   "alter table public.social_campaigns enable row level security",
 ]) assert.ok(migration.includes(contract), `Missing migration contract: ${contract}`);
 assert.equal(/create policy[\s\S]+social_campaigns/i.test(migration), false, "Social campaigns must not receive browser policies");
+
+const phase2 = await readFile(new URL("../supabase/migrations/20260902120000_social_studio_phase2.sql", import.meta.url), "utf8");
+for (const contract of [
+  "create table if not exists public.brand_media_assets",
+  "create table if not exists public.brand_media_templates",
+  "create table if not exists public.social_generation_runs",
+  "create or replace function public.begin_social_generation",
+  "create or replace function public.persist_social_generation_variants",
+  "('brand-assets', 'brand-assets', false",
+  "('generated-media', 'generated-media', false",
+  "alter table public.social_generation_runs enable row level security",
+]) assert.ok(phase2.includes(contract), `Missing Phase 2 migration contract: ${contract}`);
 
 console.log("Social Studio contracts passed.");

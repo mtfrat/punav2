@@ -2,12 +2,12 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from "react
 import { Outlet, redirect } from "react-router";
 import { OpsShell } from "../components/ops";
 import { assertTrustedMutation, createAdminAuthClient, operationsHeaders, opsData, requireAdmin } from "../lib/admin.server";
-import { contentStudioEnabled } from "../lib/content-worker.server";
+import { contentComposerEnabled, contentStudioEnabled } from "../lib/content-worker.server";
 import "../ops.css";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const context = await requireAdmin(request);
-  return opsData({ email: context.email, contentStudioEnabled: contentStudioEnabled() }, context.headers);
+  return opsData({ email: context.email, contentStudioEnabled: contentStudioEnabled(), contentComposerEnabled: contentComposerEnabled() }, context.headers);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -24,6 +24,6 @@ export async function action({ request }: ActionFunctionArgs) {
 export const meta: MetaFunction = () => [{ title: "Puna Operations" }, { name: "robots", content: "noindex, nofollow, noarchive" }];
 export const headers = () => operationsHeaders();
 
-export default function OperationsLayout({ loaderData }: { loaderData: { email: string; contentStudioEnabled: boolean } }) {
-  return <OpsShell email={loaderData.email} contentStudioEnabled={loaderData.contentStudioEnabled}><Outlet/></OpsShell>;
+export default function OperationsLayout({ loaderData }: { loaderData: { email: string; contentStudioEnabled: boolean; contentComposerEnabled: boolean } }) {
+  return <OpsShell email={loaderData.email} contentStudioEnabled={loaderData.contentStudioEnabled} contentComposerEnabled={loaderData.contentComposerEnabled}><Outlet/></OpsShell>;
 }

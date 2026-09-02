@@ -16,6 +16,7 @@
     "test:worker-bundle": "node scripts/verify-content-worker-bundle.mjs",
     "verify:content-worker": "node --env-file=.env.local --experimental-strip-types scripts/verify-content-worker.mjs",
     "verify:social-studio": "node --env-file=.env.local --experimental-strip-types scripts/verify-social-studio.mjs",
+    "import:legacy-brand-assets": "node --env-file=.env.local scripts/import-autopost-brand-assets.mjs",
     "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run build && npm run test:worker-bundle && npm run test:seo"
   },
   "dependencies": {

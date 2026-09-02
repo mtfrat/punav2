@@ -19,7 +19,33 @@ export interface WorkerCapabilities {
   service: "puna-content-worker";
   version: "1";
   mutations_enabled: boolean;
-  capabilities: Array<"text_generation" | "brand_overlay" | "brand_library">;
+  capabilities: Array<"brand_overlay">;
+}
+
+export interface RenderOverlayRequest {
+  layout: "editorial" | "image_overlay";
+  output_format: "instagram_portrait" | "linkedin_square" | "linkedin_horizontal" | "x_horizontal";
+  source_url?: string;
+  destination_upload_url: string;
+  output_path: string;
+  headline: string;
+  safe_zone: { x: number; y: number; width: number; height: number };
+  text_align: "left" | "center";
+  vertical_align: "top" | "center" | "bottom";
+  overlay_color: string;
+  overlay_opacity: number;
+  text_color: string;
+  min_font_size: number;
+  max_font_size: number;
+  logo_enabled: boolean;
+}
+
+export interface RenderOverlayResponse {
+  output_path: string;
+  width: number;
+  height: number;
+  mime_type: "image/png";
+  sha256: string;
 }
 
 export class ContentWorkerError extends Error {
@@ -80,6 +106,10 @@ function configuration() {
 
 export function contentStudioEnabled() {
   return process.env.CONTENT_STUDIO_ENABLED?.trim().toLowerCase() === "true";
+}
+
+export function contentComposerEnabled() {
+  return contentStudioEnabled() && process.env.CONTENT_COMPOSER_ENABLED?.trim().toLowerCase() === "true";
 }
 
 export async function contentWorkerRequest<T>(
@@ -144,4 +174,8 @@ export function getContentWorkerHealth() {
 
 export function getContentWorkerCapabilities() {
   return contentWorkerRequest<WorkerCapabilities>("/api/v1/capabilities");
+}
+
+export function renderContentOverlay(body: RenderOverlayRequest, idempotencyKey: string) {
+  return contentWorkerRequest<RenderOverlayResponse>("/api/v1/render/overlay", { method: "POST", body, idempotencyKey, timeoutMs: 45_000 });
 }

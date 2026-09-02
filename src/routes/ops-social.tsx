@@ -1,9 +1,9 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
-import { ArrowRight, FileText, Languages, Send } from "lucide-react";
+import { ArrowRight, FileText, Languages, Plus, Send } from "lucide-react";
 import { EmptyState, OpsPageHeader, Pager, StatusBadge, formatDate } from "../components/ops";
 import { operationsHeaders, opsData, pageFrom, paginationRange, requireAdmin } from "../lib/admin.server";
-import { contentStudioEnabled } from "../lib/content-worker.server";
+import { contentComposerEnabled, contentStudioEnabled } from "../lib/content-worker.server";
 import {
   SOCIAL_CHANNELS,
   SOCIAL_DRAFT_STATUSES,
@@ -80,17 +80,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     count: result.count,
     page,
     filters: { status: validStatus, channel: validChannel, locale: validLocale },
+    composerEnabled: contentComposerEnabled(),
   }, context.headers);
 }
 
-export default function OpsSocial({ loaderData }: { loaderData: { campaigns: Array<CampaignRow & { variants: VariantSummary[] }>; count: number | null; page: number; filters: { status: string; channel: string; locale: string } } }) {
+export default function OpsSocial({ loaderData }: { loaderData: { campaigns: Array<CampaignRow & { variants: VariantSummary[] }>; count: number | null; page: number; filters: { status: string; channel: string; locale: string }; composerEnabled: boolean } }) {
   const params = new URLSearchParams();
   if (loaderData.filters.status !== "attention") params.set("status", loaderData.filters.status);
   if (loaderData.filters.channel) params.set("channel", loaderData.filters.channel);
   if (loaderData.filters.locale) params.set("locale", loaderData.filters.locale);
 
   return <>
-    <OpsPageHeader eyebrow="Editorial · Social" title="Social Studio" description="Revisá cada campaña por canal e idioma. Aprobar deja el contenido listo; nunca lo programa ni lo publica."/>
+    <OpsPageHeader eyebrow="Editorial · Social" title="Social Studio" description="Revisá cada campaña por canal e idioma. Aprobar deja el contenido listo; nunca lo programa ni lo publica." action={loaderData.composerEnabled ? <Link className="ops-button" to="/ops/social/new"><Plus size={17}/>Nueva campaña</Link> : null}/>
     <Form method="get" className="ops-filters ops-social-filters">
       <label><span>Atención</span><select name="status" defaultValue={loaderData.filters.status}><option value="attention">Necesita revisión</option><option value="all">Todas</option>{SOCIAL_DRAFT_STATUSES.map((item) => <option key={item} value={item}>{item === "draft" ? "Borrador" : item === "approved" ? "Aprobado" : item === "rejected" ? "Rechazado" : item === "published" ? "Publicado" : "Archivado"}</option>)}</select></label>
       <label><span>Canal</span><select name="channel" defaultValue={loaderData.filters.channel}><option value="">Todos</option>{SOCIAL_CHANNELS.map((item) => <option key={item} value={item}>{socialChannelLabel(item)}</option>)}</select></label>
