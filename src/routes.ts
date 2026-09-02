@@ -32,6 +32,8 @@ export default [
     route("content", "./routes/ops-content.tsx"),
     route("content/:translationGroupId", "./routes/ops-content-detail.tsx"),
     route("briefs", "./routes/ops-briefs.tsx"),
+    route("social", "./routes/ops-social.tsx"),
+    route("social/:campaignId", "./routes/ops-social-detail.tsx"),
     route("distribution", "./routes/ops-distribution.tsx"),
     route("prospects", "./routes/ops-prospects.tsx"),
     route("prospects/:id", "./routes/ops-prospect-detail.tsx"),
