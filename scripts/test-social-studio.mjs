@@ -9,15 +9,29 @@ import {
   validateSocialContent,
 } from "../src/lib/social-studio.ts";
 import { blockingQualityMessage, deterministicQualityFlags } from "../src/lib/social-quality.ts";
+import {
+  addCalendarDays,
+  calendarDateTimeInput,
+  calendarLocalToUtc,
+  calendarWeekDays,
+  calendarWeekRange,
+  calendarWeekStart,
+  isSafeCalendarReturnTo,
+} from "../src/lib/social-calendar.ts";
 
 assert.equal(deriveSocialCampaignStatus(["draft", "approved"]), "draft");
 assert.equal(deriveSocialCampaignStatus(["rejected", "draft"]), "rejected");
 assert.equal(deriveSocialCampaignStatus(["approved", "published"]), "approved");
+assert.equal(deriveSocialCampaignStatus(["scheduled", "published"]), "scheduled");
+assert.equal(deriveSocialCampaignStatus(["approved", "scheduled"]), "approved");
 assert.equal(deriveSocialCampaignStatus(["published", "published"]), "published");
 assert.equal(deriveSocialCampaignStatus(["archived", "archived"]), "archived");
 
 assert.equal(canTransitionSocialDraft("draft", "approved"), true);
 assert.equal(canTransitionSocialDraft("approved", "published"), true);
+assert.equal(canTransitionSocialDraft("approved", "scheduled"), true);
+assert.equal(canTransitionSocialDraft("scheduled", "approved"), true);
+assert.equal(canTransitionSocialDraft("scheduled", "rejected"), true);
 assert.equal(canTransitionSocialDraft("published", "draft"), false);
 assert.equal(canTransitionSocialDraft("archived", "approved"), false);
 
@@ -27,6 +41,16 @@ assert.match(validateSocialContent("x", "x".repeat(SOCIAL_CHANNEL_LIMITS.x + 1))
 assert.match(validateSocialContent("linkedin", "   ") || "", /vacío/);
 assert.equal(validateRejectionReason("Motivo suficientemente claro"), null);
 assert.match(validateRejectionReason("corto") || "", /10/);
+
+assert.equal(calendarWeekStart("2027-01-01"), "2026-12-28");
+assert.deepEqual(calendarWeekDays("2026-12-28"), ["2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31", "2027-01-01", "2027-01-02", "2027-01-03"]);
+assert.equal(addCalendarDays("2026-12-31", 1), "2027-01-01");
+assert.equal(calendarLocalToUtc("2026-09-07T09:00").toISOString(), "2026-09-07T12:00:00.000Z");
+assert.equal(calendarDateTimeInput("2026-09-07T12:00:00.000Z"), "2026-09-07T09:00");
+assert.deepEqual(calendarWeekRange("2026-09-07"), { from: "2026-09-07T03:00:00.000Z", to: "2026-09-14T03:00:00.000Z" });
+assert.throws(() => calendarLocalToUtc("2026-09-07T09:07"), /invalid_calendar_datetime/);
+assert.equal(isSafeCalendarReturnTo("/ops/calendar?view=week&variant=abc"), true);
+assert.equal(isSafeCalendarReturnTo("//evil.test/ops/calendar"), false);
 
 const quantitativeVariant = { channel: "linkedin", locale: "es", hook: "Reducimos 30% del trabajo manual", body: "Un proceso verificable.", cta: "Hablemos.", hashtags: [], image_headline: "30% menos trabajo manual", image_alt: "Gráfico editorial", evidence_refs: [], quality_flags: [], generation_notes: [] };
 assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [], "puna_editorial")) || "", /30%/);
@@ -58,5 +82,19 @@ for (const contract of [
   "('generated-media', 'generated-media', false",
   "alter table public.social_generation_runs enable row level security",
 ]) assert.ok(phase2.includes(contract), `Missing Phase 2 migration contract: ${contract}`);
+
+const phase3 = await readFile(new URL("../supabase/migrations/20260903120000_social_calendar_phase3.sql", import.meta.url), "utf8");
+for (const contract of [
+  "add column if not exists scheduled_for timestamptz",
+  "'scheduled'",
+  "content_distribution_drafts_calendar_idx",
+  "create or replace function public.schedule_social_variant",
+  "create or replace function public.unschedule_social_variant",
+  "at time zone 'America/Argentina/Buenos_Aires'",
+  "< 7200",
+  "for update",
+  "grant execute on function public.schedule_social_variant(uuid, timestamptz, text, boolean) to service_role",
+]) assert.ok(phase3.includes(contract), `Missing Phase 3 migration contract: ${contract}`);
+assert.equal(/create table/i.test(phase3), false, "Phase 3 must not create a calendar table");
 
 console.log("Social Studio contracts passed.");

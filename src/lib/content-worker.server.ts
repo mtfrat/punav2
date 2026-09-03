@@ -112,6 +112,10 @@ export function contentComposerEnabled() {
   return contentStudioEnabled() && process.env.CONTENT_COMPOSER_ENABLED?.trim().toLowerCase() === "true";
 }
 
+export function contentCalendarEnabled() {
+  return contentStudioEnabled() && process.env.CONTENT_CALENDAR_ENABLED?.trim().toLowerCase() === "true";
+}
+
 export async function contentWorkerRequest<T>(
   path: string,
   options: {

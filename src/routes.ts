@@ -35,6 +35,7 @@ export default [
     route("social", "./routes/ops-social.tsx"),
     route("social/new", "./routes/ops-social-new.tsx"),
     route("social/:campaignId", "./routes/ops-social-detail.tsx"),
+    route("calendar", "./routes/ops-calendar.tsx"),
     route("brand", "./routes/ops-brand.tsx"),
     route("distribution", "./routes/ops-distribution.tsx"),
     route("prospects", "./routes/ops-prospects.tsx"),

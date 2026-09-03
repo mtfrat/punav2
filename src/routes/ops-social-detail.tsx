@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
-import { Archive, ArrowLeft, Check, ExternalLink, Image as ImageIcon, RotateCcw, Save, Send, Sparkles, X } from "lucide-react";
+import { Archive, ArrowLeft, CalendarClock, Check, Clock3, ExternalLink, Image as ImageIcon, RotateCcw, Save, Send, Sparkles, X } from "lucide-react";
 import { Notice, OpsPageHeader, StatusBadge, formatDate } from "../components/ops";
 import { audit, assertTrustedMutation, operationsHeaders, opsData, requireAdmin, stringField } from "../lib/admin.server";
-import { contentComposerEnabled, contentStudioEnabled, renderContentOverlay } from "../lib/content-worker.server";
+import { contentCalendarEnabled, contentComposerEnabled, contentStudioEnabled, renderContentOverlay } from "../lib/content-worker.server";
+import { calendarCollisionMessage, calendarDateTimeInput, formatCalendarDateTime, isSafeCalendarReturnTo, todayCalendarKey } from "../lib/social-calendar";
 import { regenerateSocialSection, stableHash } from "../lib/social-generation.server";
+import { SocialScheduleError, scheduleSocialVariant, unscheduleSocialVariant, type ScheduleConflict } from "../lib/social-scheduling.server";
 import { blockingQualityMessage, deterministicQualityFlags, type EvidenceSource, type GeneratedSocialVariant, type QualityFlag } from "../lib/social-quality";
 import {
   SOCIAL_CHANNEL_LIMITS,
@@ -54,6 +56,7 @@ type SocialVariant = {
   status: string;
   rejection_reason: string | null;
   published_at: string | null;
+  scheduled_for: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -62,6 +65,8 @@ type ActionData = {
   error?: string;
   draftId?: string;
   fieldErrors?: { content?: string; rejection_reason?: string; image_alt?: string };
+  pendingSchedule?: { variantId: string; updatedAt: string; localScheduledFor: string; returnTo: string };
+  conflicts?: ScheduleConflict[];
 };
 
 function structuredVariant(row: SocialVariant): GeneratedSocialVariant {
@@ -72,15 +77,16 @@ function qualityFor(row: SocialVariant, campaign: Campaign) {
   return deterministicQualityFlags(structuredVariant(row), campaign.generation_context?.sources || [], row.media_strategy);
 }
 
-function detailUrl(campaignId: string, variantId?: string, saved?: string) {
+function detailUrl(campaignId: string, variantId?: string, saved?: string, returnTo?: string) {
   const query = new URLSearchParams();
   if (variantId) query.set("variant", variantId);
   if (saved) query.set("saved", saved);
+  if (returnTo && isSafeCalendarReturnTo(returnTo)) query.set("return_to", returnTo);
   return `/ops/social/${campaignId}${query.size ? `?${query}` : ""}`;
 }
 
-function actionError(context: Awaited<ReturnType<typeof requireAdmin>>, error: string, status: number, draftId?: string, fieldErrors?: ActionData["fieldErrors"]) {
-  return opsData({ error, draftId, fieldErrors } satisfies ActionData, context.headers, status);
+function actionError(context: Awaited<ReturnType<typeof requireAdmin>>, error: string, status: number, draftId?: string, fieldErrors?: ActionData["fieldErrors"], extra: Pick<ActionData, "pendingSchedule" | "conflicts"> = {}) {
+  return opsData({ error, draftId, fieldErrors, ...extra } satisfies ActionData, context.headers, status);
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -91,7 +97,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const [campaignResult, variantsResult] = await Promise.all([
     context.service.from("social_campaigns").select("id,title,source_type,source_id,status,updated_at,generation_context").eq("id", campaignId).maybeSingle(),
-    context.service.from("content_distribution_drafts").select("id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,created_at,updated_at").eq("campaign_id", campaignId).order("locale").order("channel"),
+    context.service.from("content_distribution_drafts").select("id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at").eq("campaign_id", campaignId).order("locale").order("channel"),
   ]);
   if (campaignResult.error || !campaignResult.data) throw new Response("Campaña no encontrada.", { status: 404 });
   if (variantsResult.error) throw new Response("No se pudieron cargar las variantes.", { status: 500 });
@@ -107,7 +113,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   let mediaUrl: string | null = null;
   const mediaPath = selected?.media_urls?.primary?.output_path;
   if (mediaPath) mediaUrl = (await context.service.storage.from("generated-media").createSignedUrl(mediaPath, 3600)).data?.signedUrl || null;
-  return opsData({ campaign, variants, selectedId: selected?.id || null, mediaUrl, composerEnabled: contentComposerEnabled(), saved: new URL(request.url).searchParams.get("saved") || "" }, context.headers);
+  const returnToParam = new URL(request.url).searchParams.get("return_to");
+  return opsData({ campaign, variants, selectedId: selected?.id || null, mediaUrl, composerEnabled: contentComposerEnabled(), calendarEnabled: contentCalendarEnabled(), returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "" }, context.headers);
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -118,6 +125,8 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (!isUuid(campaignId)) return actionError(context, "Campaña inválida.", 404);
   const form = await request.formData();
   const intent = stringField(form, "intent", 40);
+  const requestedReturnTo = stringField(form, "return_to", 2000);
+  const returnTo = isSafeCalendarReturnTo(requestedReturnTo) ? requestedReturnTo : "";
 
   const campaignResult = await context.service.from("social_campaigns").select("id,title,source_type,source_id,status,updated_at,generation_context").eq("id", campaignId).maybeSingle();
   if (campaignResult.error || !campaignResult.data) return actionError(context, "Campaña no encontrada.", 404);
@@ -153,7 +162,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       before: { status: campaign.status, variants: eligible.map((variant) => ({ id: variant.id, status: variant.status })) },
       after: { approved_variant_ids: eligible.map((variant) => variant.id) },
     });
-    throw redirect(detailUrl(campaignId, undefined, "campaign-approved"), { headers: operationsHeaders(context.headers) });
+    throw redirect(detailUrl(campaignId, undefined, "campaign-approved", returnTo), { headers: operationsHeaders(context.headers) });
   }
 
   const variantId = stringField(form, "variant_id", 80);
@@ -164,6 +173,49 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const before = beforeResult.data as SocialVariant;
   if (!expectedUpdatedAt || expectedUpdatedAt !== before.updated_at) return actionError(context, "Esta variante cambió en otra pestaña. Recargá para evitar sobrescribirla.", 409, variantId);
   if (!isSocialChannel(before.channel)) return actionError(context, "La variante tiene un canal inválido.", 422, variantId);
+
+  if (intent === "schedule_variant" || intent === "reschedule_variant") {
+    if (!contentCalendarEnabled()) return actionError(context, "El calendario está deshabilitado.", 503, variantId);
+    const localScheduledFor = stringField(form, "scheduled_for", 30);
+    try {
+      const result = await scheduleSocialVariant(context, {
+        variantId,
+        expectedUpdatedAt,
+        localScheduledFor,
+        allowConflict: form.get("confirm_conflict") === "yes",
+      });
+      if (!result.applied) {
+        return actionError(
+          context,
+          calendarCollisionMessage(result.conflicts.length || 1, before.channel),
+          409,
+          variantId,
+          undefined,
+          {
+            pendingSchedule: { variantId, updatedAt: expectedUpdatedAt, localScheduledFor, returnTo },
+            conflicts: result.conflicts,
+          },
+        );
+      }
+      throw redirect(detailUrl(campaignId, variantId, intent === "reschedule_variant" ? "reschedule" : "schedule", returnTo), { headers: operationsHeaders(context.headers) });
+    } catch (error) {
+      if (error instanceof Response) throw error;
+      if (error instanceof SocialScheduleError) return actionError(context, error.message, error.status, variantId);
+      return actionError(context, "No se pudo actualizar la programación.", 500, variantId);
+    }
+  }
+
+  if (intent === "unschedule_variant") {
+    if (!contentCalendarEnabled()) return actionError(context, "El calendario está deshabilitado.", 503, variantId);
+    try {
+      await unscheduleSocialVariant(context, { variantId, expectedUpdatedAt });
+      throw redirect(detailUrl(campaignId, variantId, "unschedule", returnTo), { headers: operationsHeaders(context.headers) });
+    } catch (error) {
+      if (error instanceof Response) throw error;
+      if (error instanceof SocialScheduleError) return actionError(context, error.message, error.status, variantId);
+      return actionError(context, "No se pudo quitar la programación.", 500, variantId);
+    }
+  }
 
   if (intent === "render_media") {
     if (!contentComposerEnabled()) return actionError(context, "La composición visual está deshabilitada.", 503, variantId);
@@ -192,7 +244,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         return actionError(context, "No se pudo recomponer la imagen. El copy y el medio anterior siguen intactos.", 502, variantId);
       }
     }
-    throw redirect(detailUrl(campaignId, variantId, "render"), { headers: operationsHeaders(context.headers) });
+    throw redirect(detailUrl(campaignId, variantId, "render", returnTo), { headers: operationsHeaders(context.headers) });
   }
 
   if (intent === "regenerate_section") {
@@ -223,7 +275,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         return actionError(context, "No se pudo regenerar la sección. El contenido anterior sigue intacto.", 502, variantId);
       }
     }
-    throw redirect(detailUrl(campaignId, variantId, "regenerate"), { headers: operationsHeaders(context.headers) });
+    throw redirect(detailUrl(campaignId, variantId, "regenerate", returnTo), { headers: operationsHeaders(context.headers) });
   }
 
   let changes: Record<string, unknown>;
@@ -254,12 +306,12 @@ export async function action({ request, params }: ActionFunctionArgs) {
     changes = { status: "rejected", rejection_reason: rejectionReason };
     auditAction = "reject";
   } else if (intent === "mark_published") {
-    if (!canTransitionSocialDraft(before.status, "published")) return actionError(context, "Sólo una variante aprobada puede marcarse como publicada.", 409, variantId);
+    if (!canTransitionSocialDraft(before.status, "published")) return actionError(context, "Sólo una variante aprobada o programada puede marcarse como publicada.", 409, variantId);
     changes = { status: "published", published_at: new Date().toISOString(), rejection_reason: null };
     auditAction = "mark_published";
   } else if (intent === "undo_published") {
     if (before.status !== "published" || !canTransitionSocialDraft(before.status, "approved")) return actionError(context, "La variante no está marcada como publicada.", 409, variantId);
-    changes = { status: "approved", published_at: null, rejection_reason: null };
+    changes = { status: "approved", published_at: null, scheduled_for: null, rejection_reason: null };
     auditAction = "undo_published";
   } else if (intent === "archive_variant") {
     if (!canTransitionSocialDraft(before.status, "archived")) return actionError(context, "La variante ya está archivada.", 409, variantId);
@@ -273,7 +325,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (updateResult.error) return actionError(context, "No se pudo guardar la variante. Revisá los campos e intentá otra vez.", 400, variantId);
   if (!updateResult.data) return actionError(context, "Esta variante cambió mientras la editabas. Recargá antes de continuar.", 409, variantId);
   await audit(context, { action: auditAction, entityType: "distribution_draft", entityId: variantId, before: { status: before.status, channel: before.channel, locale: before.locale, content_length: before.content.length }, after: { status: updateResult.data.status, content_length: String(updateResult.data.content || "").length } });
-  throw redirect(detailUrl(campaignId, variantId, auditAction), { headers: operationsHeaders(context.headers) });
+  throw redirect(detailUrl(campaignId, variantId, auditAction, returnTo), { headers: operationsHeaders(context.headers) });
 }
 
 const savedMessages: Record<string, string> = {
@@ -285,10 +337,13 @@ const savedMessages: Record<string, string> = {
   archive: "Variante archivada.",
   regenerate: "Sección regenerada y revisada. La variante volvió a borrador.",
   render: "Pieza visual recompuesta con el título guardado.",
+  schedule: "Variante programada. Esto no publica automáticamente.",
+  reschedule: "Horario actualizado en hora de Buenos Aires.",
+  unschedule: "Programación eliminada; la variante volvió a aprobada.",
   "campaign-approved": "Campaña aprobada. Ninguna variante fue publicada ni programada.",
 };
 
-export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; selectedId: string | null; mediaUrl: string | null; composerEnabled: boolean; saved: string }; actionData?: ActionData }) {
+export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; selectedId: string | null; mediaUrl: string | null; composerEnabled: boolean; calendarEnabled: boolean; returnTo: string; today: string; saved: string }; actionData?: ActionData }) {
   const selected = loaderData.variants.find((variant) => variant.id === loaderData.selectedId) || null;
   const [sections, setSections] = useState(() => ({ hook: selected?.hook || "", body: selected?.body ?? selected?.content ?? "", cta: selected?.cta || "", hashtags: (selected?.hashtags || []).join(" "), image_headline: selected?.image_headline || "", image_alt: selected?.image_alt || "" }));
   const errorRef = useRef<HTMLDivElement>(null);
@@ -308,16 +363,17 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
   const updateSection = (field: keyof typeof sections, value: string) => setSections((current) => ({ ...current, [field]: value }));
 
   return <>
-    <Link className="ops-back" to="/ops/social"><ArrowLeft aria-hidden="true" size={16}/>Volver a Social Studio</Link>
-    <OpsPageHeader eyebrow="Campaña social" title={loaderData.campaign.title} description="Revisá el copy por separado. Las decisiones quedan registradas y aprobar nunca publica." action={<Form method="post"><input type="hidden" name="intent" value="approve_campaign"/><input type="hidden" name="campaign_updated_at" value={loaderData.campaign.updated_at}/><button className="ops-button" type="submit" disabled={!canApproveCampaign || dirty} onClick={(event) => { if (!window.confirm("¿Aprobar todas las variantes pendientes de esta campaña? Esto no publica nada.")) event.preventDefault(); }}><Check aria-hidden="true" size={17}/>Aprobar campaña</button></Form>}/>
+    <Link className="ops-back" to={loaderData.returnTo || "/ops/social"}><ArrowLeft aria-hidden="true" size={16}/>{loaderData.returnTo ? "Volver al calendario" : "Volver a Social Studio"}</Link>
+    <OpsPageHeader eyebrow="Campaña social" title={loaderData.campaign.title} description="Revisá el copy por separado. Las decisiones quedan registradas y aprobar nunca publica." action={<Form method="post"><input type="hidden" name="intent" value="approve_campaign"/><input type="hidden" name="campaign_updated_at" value={loaderData.campaign.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button" type="submit" disabled={!canApproveCampaign || dirty} onClick={(event) => { if (!window.confirm("¿Aprobar todas las variantes pendientes de esta campaña? Esto no publica nada.")) event.preventDefault(); }}><Check aria-hidden="true" size={17}/>Aprobar campaña</button></Form>}/>
     {loaderData.saved && savedMessages[loaderData.saved] ? <Notice tone="success">{savedMessages[loaderData.saved]}</Notice> : null}
     {actionData?.error ? <div ref={errorRef} className="ops-notice ops-notice-error" role="alert" tabIndex={-1}>{actionData.error}</div> : null}
+    {actionData?.pendingSchedule ? <section className="ops-calendar-conflict" aria-labelledby="social-schedule-conflict-title"><Clock3 aria-hidden="true"/><div><h2 id="social-schedule-conflict-title">Confirmar horario con colisión</h2>{actionData.conflicts?.map((item) => <p key={item.id}><strong>{item.campaign_title}</strong> · {formatCalendarDateTime(item.scheduled_for)}</p>)}<Form method="post"><input type="hidden" name="intent" value={selected?.status === "scheduled" ? "reschedule_variant" : "schedule_variant"}/><input type="hidden" name="variant_id" value={actionData.pendingSchedule.variantId}/><input type="hidden" name="updated_at" value={actionData.pendingSchedule.updatedAt}/><input type="hidden" name="scheduled_for" value={actionData.pendingSchedule.localScheduledFor}/><input type="hidden" name="return_to" value={actionData.pendingSchedule.returnTo}/><input type="hidden" name="confirm_conflict" value="yes"/><button className="ops-button" type="submit">Programar igualmente</button></Form></div></section> : null}
 
     <div className="ops-social-review">
       <aside className="ops-variant-panel" aria-label="Variantes de la campaña">
         <div className="ops-variant-panel-header"><div><span>Estado general</span><StatusBadge value={loaderData.campaign.status}/></div><small>{loaderData.variants.length} variantes · actualizada {formatDate(loaderData.campaign.updated_at, true)}</small></div>
         <nav className="ops-variant-list" aria-label="Elegir variante">
-          {loaderData.variants.map((variant) => <Link key={variant.id} to={detailUrl(loaderData.campaign.id, variant.id)} className={variant.id === selected?.id ? "active" : undefined} aria-current={variant.id === selected?.id ? "page" : undefined}><span><Send aria-hidden="true" size={17}/><strong>{socialChannelLabel(variant.channel)}</strong><small>{socialLocaleLabel(variant.locale)}</small></span><StatusBadge value={variant.status}/></Link>)}
+          {loaderData.variants.map((variant) => <Link key={variant.id} to={detailUrl(loaderData.campaign.id, variant.id, undefined, loaderData.returnTo)} className={variant.id === selected?.id ? "active" : undefined} aria-current={variant.id === selected?.id ? "page" : undefined}><span><Send aria-hidden="true" size={17}/><strong>{socialChannelLabel(variant.channel)}</strong><small>{socialLocaleLabel(variant.locale)}</small></span><StatusBadge value={variant.status}/></Link>)}
         </nav>
         {loaderData.campaign.source_type === "article" ? <Link className="ops-source-link" to={`/ops/content/${loaderData.campaign.source_id}`}><ExternalLink aria-hidden="true" size={16}/>Abrir artículo fuente</Link> : null}
       </aside>
@@ -327,8 +383,9 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
         {selected.rejection_reason ? <div className="ops-rejection-note"><strong>Motivo del rechazo</strong><p>{selected.rejection_reason}</p></div> : null}
         {selected.status === "published" ? <Notice>Esta variante es de sólo lectura. Deshacé la marca de publicación para corregirla.</Notice> : null}
         {selected.status === "archived" ? <Notice>Esta variante está archivada y permanece disponible como registro.</Notice> : null}
+        {selected.status === "scheduled" ? <Notice>Editar el copy la devuelve a borrador y elimina su programación.</Notice> : null}
         <Form method="post" className="ops-form ops-social-copy-form">
-          <input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/>
+          <input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/>
           {([['hook','Gancho',3],['body','Cuerpo',selected.channel === 'x' ? 5 : 10],['cta','CTA',3]] as const).map(([field,label,rows]) => <div className="ops-section-field" key={field}><label className="ops-field"><span>{label}</span><textarea name={field} rows={rows} value={sections[field]} onChange={(event) => updateSection(field, event.target.value)} readOnly={readOnly}/></label></div>)}
           <label className="ops-field"><span>Hashtags</span><input name="hashtags" value={sections.hashtags} onChange={(event) => updateSection("hashtags", event.target.value)} readOnly={readOnly} placeholder="#automatizacion #operaciones"/></label>
           <div className="ops-field-grid"><label className="ops-field"><span>Título visual</span><input name="image_headline" maxLength={120} value={sections.image_headline} onChange={(event) => updateSection("image_headline", event.target.value)} readOnly={readOnly}/><small>{sections.image_headline.length} / 120</small></label><label className="ops-field"><span>Texto alternativo</span><textarea name="image_alt" maxLength={500} rows={3} value={sections.image_alt} onChange={(event) => updateSection("image_alt", event.target.value)} readOnly={readOnly} aria-invalid={Boolean(altError)}/>{altError ? <small className="ops-field-error" role="alert">{altError}</small> : null}</label></div>
@@ -340,14 +397,24 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
         </Form>
         {loaderData.composerEnabled && !readOnly ? <div className="ops-regenerate-row" aria-label="Acciones asistidas">{([['hook','gancho'],['body','cuerpo'],['cta','CTA']] as const).map(([field,label]) => <Form method="post" key={field}><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="section" value={field}/><input type="hidden" name="idempotency_key" value={`regen:${selected.id}:${selected.updated_at}:${field}`}/><button className="ops-inline-action" name="intent" value="regenerate_section" type="submit" disabled={dirty}><Sparkles size={15}/>Regenerar {label}</button></Form>)}{selected.media_strategy !== "text_only" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="idempotency_key" value={`render:${selected.id}:${selected.updated_at}:${selected.image_headline}`}/><button className="ops-inline-action" name="intent" value="render_media" type="submit" disabled={dirty}><ImageIcon size={15}/>Recomponer imagen</button></Form> : null}</div> : null}
 
+        {loaderData.calendarEnabled && (selected.status === "approved" || selected.status === "scheduled") ? <section className="ops-schedule-block" aria-labelledby="social-schedule-title">
+          <div><p className="ops-eyebrow">Planificación manual</p><h3 id="social-schedule-title">{selected.status === "scheduled" ? "Reprogramar variante" : "Programar variante"}</h3><p><Clock3 size={15}/>Hora de Buenos Aires · programar no publica.</p>{selected.scheduled_for ? <strong>Fecha actual: {formatCalendarDateTime(selected.scheduled_for)}</strong> : null}</div>
+          <Form method="post" className="ops-form ops-calendar-schedule-form">
+            <input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/>
+            <label className="ops-field"><span>Fecha y hora</span><input type="datetime-local" name="scheduled_for" step="900" min={`${loaderData.today}T00:00`} defaultValue={calendarDateTimeInput(selected.scheduled_for)} required/></label>
+            <button className="ops-button" type="submit" name="intent" value={selected.status === "scheduled" ? "reschedule_variant" : "schedule_variant"} disabled={dirty}><CalendarClock size={17}/>{selected.status === "scheduled" ? "Reprogramar" : "Programar"}</button>
+          </Form>
+          {selected.status === "scheduled" ? <div className="ops-schedule-links"><Link to={`/ops/calendar?variant=${selected.id}`}><CalendarClock size={16}/>Ver en calendario</Link><Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-inline-action" type="submit" name="intent" value="unschedule_variant"><RotateCcw size={16}/>Desprogramar</button></Form></div> : null}
+        </section> : null}
+
         <div className="ops-review-actions">
           <div><h3>Decisión editorial</h3><p>Aprobá esta versión, rechazala con instrucciones o registrá una publicación ya realizada manualmente.</p></div>
           <div className="ops-review-buttons">
             {(selected.status === "draft" || selected.status === "rejected") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="approve_variant" disabled={dirty}><Check aria-hidden="true" size={17}/>Aprobar variante</button></Form> : null}
-            {selected.status === "approved" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="mark_published" disabled={dirty} onClick={(event) => { if (!window.confirm("Confirmá únicamente si ya publicaste esta variante manualmente en la red.")) event.preventDefault(); }}><Send aria-hidden="true" size={17}/>Marcar publicada</button></Form> : null}
-            {selected.status === "published" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="undo_published" onClick={(event) => { if (!window.confirm("¿Deshacer el registro de publicación y volver a aprobado?")) event.preventDefault(); }}><RotateCcw aria-hidden="true" size={17}/>Deshacer publicación</button></Form> : null}
+            {(selected.status === "approved" || selected.status === "scheduled") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="mark_published" disabled={dirty} onClick={(event) => { if (!window.confirm("Confirmá únicamente si ya publicaste esta variante manualmente en la red.")) event.preventDefault(); }}><Send aria-hidden="true" size={17}/>Marcar publicada</button></Form> : null}
+            {selected.status === "published" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="undo_published" onClick={(event) => { if (!window.confirm("¿Deshacer el registro de publicación y volver a aprobado?")) event.preventDefault(); }}><RotateCcw aria-hidden="true" size={17}/>Deshacer publicación</button></Form> : null}
           </div>
-          {(selected.status === "draft" || selected.status === "approved") ? <details className="ops-reject-form" open={Boolean(reasonError)}><summary><X aria-hidden="true" size={16}/>Rechazar con motivo</summary><Form method="post" className="ops-form"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><label className="ops-field" htmlFor="rejection-reason"><span>Qué debe corregirse <b aria-hidden="true">*</b></span><textarea id="rejection-reason" name="rejection_reason" minLength={10} maxLength={1000} required rows={4} aria-invalid={Boolean(reasonError)} aria-describedby={reasonError ? "rejection-reason-error" : "rejection-reason-hint"}/>{reasonError ? <small id="rejection-reason-error" className="ops-field-error" role="alert">{reasonError}</small> : <small id="rejection-reason-hint">Entre 10 y 1000 caracteres. El motivo queda en la auditoría.</small>}</label><button className="ops-button ops-button-danger" type="submit" name="intent" value="reject_variant"><X aria-hidden="true" size={17}/>Confirmar rechazo</button></Form></details> : null}
+          {(selected.status === "draft" || selected.status === "approved" || selected.status === "scheduled") ? <details className="ops-reject-form" open={Boolean(reasonError)}><summary><X aria-hidden="true" size={16}/>Rechazar con motivo</summary><Form method="post" className="ops-form"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><label className="ops-field" htmlFor="rejection-reason"><span>Qué debe corregirse <b aria-hidden="true">*</b></span><textarea id="rejection-reason" name="rejection_reason" minLength={10} maxLength={1000} required rows={4} aria-invalid={Boolean(reasonError)} aria-describedby={reasonError ? "rejection-reason-error" : "rejection-reason-hint"}/>{reasonError ? <small id="rejection-reason-error" className="ops-field-error" role="alert">{reasonError}</small> : <small id="rejection-reason-hint">Entre 10 y 1000 caracteres. El motivo queda en la auditoría.</small>}</label><button className="ops-button ops-button-danger" type="submit" name="intent" value="reject_variant"><X aria-hidden="true" size={17}/>Confirmar rechazo</button></Form></details> : null}
           {selected.status !== "archived" ? <Form method="post" className="ops-archive-form"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><button className="ops-button ops-button-danger" type="submit" name="intent" value="archive_variant" onClick={(event) => { if (!window.confirm("¿Archivar esta variante? Permanecerá disponible en el historial.")) event.preventDefault(); }}><Archive aria-hidden="true" size={17}/>Archivar variante</button></Form> : null}
         </div>
       </section> : <section className="ops-empty"><h2>La campaña no tiene variantes</h2><p>Los próximos borradores de n8n se asociarán automáticamente.</p></section>}

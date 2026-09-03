@@ -1,5 +1,5 @@
 export const SOCIAL_CHANNELS = ["linkedin", "x", "instagram"] as const;
-export const SOCIAL_DRAFT_STATUSES = ["draft", "approved", "rejected", "published", "archived"] as const;
+export const SOCIAL_DRAFT_STATUSES = ["draft", "approved", "rejected", "scheduled", "published", "archived"] as const;
 export const SOCIAL_CAMPAIGN_STATUSES = ["idea", "generating", "generation_failed", ...SOCIAL_DRAFT_STATUSES] as const;
 export const SOCIAL_LOCALES = ["en", "es"] as const;
 
@@ -21,6 +21,7 @@ const statusLabels: Record<SocialCampaignStatus, string> = {
   draft: "Borrador",
   approved: "Aprobado",
   rejected: "Rechazado",
+  scheduled: "Programado",
   published: "Publicado",
   archived: "Archivado",
 };
@@ -83,15 +84,17 @@ export function deriveSocialCampaignStatus(statuses: SocialDraftStatus[]): Socia
   const active = statuses.filter((status) => status !== "archived");
   if (!active.length) return "archived";
   if (active.every((status) => status === "published")) return "published";
-  if (active.every((status) => status === "approved" || status === "published")) return "approved";
+  if (active.every((status) => status === "scheduled" || status === "published") && active.some((status) => status === "scheduled")) return "scheduled";
+  if (active.every((status) => status === "approved" || status === "scheduled" || status === "published")) return "approved";
   if (active.some((status) => status === "rejected")) return "rejected";
   return "draft";
 }
 
 const socialTransitions: Record<SocialDraftStatus, SocialDraftStatus[]> = {
   draft: ["approved", "rejected", "archived"],
-  approved: ["draft", "rejected", "published", "archived"],
+  approved: ["draft", "rejected", "scheduled", "published", "archived"],
   rejected: ["draft", "approved", "archived"],
+  scheduled: ["draft", "approved", "rejected", "published", "archived"],
   published: ["approved", "archived"],
   archived: [],
 };
