@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { isSocialChannel, isSocialLocale } from "./social-studio.ts";
-import type { EvidenceSource, GeneratedSocialVariant, QualityFlag } from "./social-quality.ts";
+import type { EvidenceSource, GeneratedSocialVariant, QualityFlag, QualityReview, QualityScorecard } from "./social-quality.ts";
 export type { EvidenceSource, GeneratedSocialVariant, QualityFlag } from "./social-quality.ts";
 export { blockingQualityMessage, deterministicQualityFlags } from "./social-quality.ts";
 
@@ -34,31 +34,60 @@ const sectionSchema = { type: "object", additionalProperties: false, required: [
   quality_flags: variantItemSchema.properties.quality_flags, generation_notes: variantItemSchema.properties.generation_notes,
 } };
 
+const qualityDimensionSchema = { type: "object", additionalProperties: false, required: ["score", "rationale"], properties: {
+  score: { type: "integer", minimum: 0, maximum: 100 }, rationale: { type: "string" },
+} };
+const qualityReviewSchema = { type: "object", additionalProperties: false, required: ["scores", "flags", "evidence_checks"], properties: {
+  scores: { type: "object", additionalProperties: false, required: ["clarity", "specificity", "credibility", "channel_fit"], properties: {
+    clarity: qualityDimensionSchema, specificity: qualityDimensionSchema, credibility: qualityDimensionSchema, channel_fit: qualityDimensionSchema,
+  } },
+  flags: variantItemSchema.properties.quality_flags,
+  evidence_checks: { type: "array", items: { type: "object", additionalProperties: false, required: ["claim", "source_key", "supported"], properties: {
+    claim: { type: "string" }, source_key: { type: ["string", "null"] }, supported: { type: "boolean" },
+  } } },
+} };
+
 function extractResponseText(payload: any) {
   if (typeof payload?.output_text === "string") return payload.output_text;
   for (const item of payload?.output || []) for (const content of item?.content || []) if (content?.type === "output_text" && typeof content.text === "string") return content.text;
   throw new Error("invalid_model_response");
 }
 
-async function structuredResponse<T>(name: string, schema: Record<string, unknown>, instructions: string, input: unknown): Promise<{ value: T; requestId: string; usage: Record<string, unknown> }> {
+async function structuredResponse<T>(name: string, schema: Record<string, unknown>, instructions: string, input: unknown): Promise<{ value: T; requestId: string; usage: Record<string, unknown>; durationMs: number }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("openai_not_configured");
   const model = process.env.CONTENT_TEXT_MODEL || "gpt-5.6-terra";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 45_000);
+  const startedAt = Date.now();
+  let providerRequestId = "";
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST", signal: controller.signal, headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}`, "X-Client-Request-Id": randomUUID() },
       body: JSON.stringify({ model, instructions, input: JSON.stringify(input), text: { format: { type: "json_schema", name, strict: true, schema } } }),
     });
     const payload = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(response.status === 429 ? "model_rate_limited" : "model_unavailable");
+    providerRequestId = response.headers.get("x-request-id") || String(payload?.id || "");
+    if (!response.ok) throw Object.assign(new Error(response.status === 429 ? "model_rate_limited" : "model_unavailable"), { requestId: providerRequestId });
     const value = JSON.parse(extractResponseText(payload)) as T;
-    return { value, requestId: response.headers.get("x-request-id") || String(payload?.id || ""), usage: payload?.usage || {} };
+    return { value, requestId: providerRequestId, usage: payload?.usage || {}, durationMs: Date.now() - startedAt };
   } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") throw new Error("model_timeout");
+    if (error instanceof Error && error.name === "AbortError") throw Object.assign(new Error("model_timeout"), { requestId: providerRequestId });
+    if (error instanceof Error && providerRequestId && !("requestId" in error)) Object.assign(error, { requestId: providerRequestId });
     throw error;
   } finally { clearTimeout(timeout); }
+}
+
+export async function reviewSocialVariant(context: Record<string, unknown>, variant: GeneratedSocialVariant) {
+  const result = await structuredResponse<Omit<QualityReview, "content_hash">>("puna_social_quality_review", qualityReviewSchema,
+    "Review this Puna Tech social post without rewriting it. Score clarity, specificity, credibility and channel fit from 0 to 100 with a concise rationale. Check every factual claim against only the supplied sources. Flag unsupported claims, confidentiality risk, probable locale errors, clichés and weak CTAs. Unsupported quantitative claims and confidentiality risks are blocking. Low scores are warnings, never blockers by themselves. Return no copy or prompt text.",
+    { context, variant });
+  const scores = result.value.scores as QualityScorecard;
+  for (const key of ["clarity", "specificity", "credibility", "channel_fit"] as const) {
+    const dimension = scores?.[key];
+    if (!Number.isInteger(dimension?.score) || dimension.score < 0 || dimension.score > 100 || typeof dimension.rationale !== "string") throw new Error("invalid_quality_review");
+  }
+  return { ...result, value: result.value };
 }
 
 export function stableHash(value: unknown) {
@@ -93,7 +122,7 @@ export async function regenerateSocialSection(context: Record<string, unknown>, 
   const second = await structuredResponse<typeof first.value>("puna_social_section_critic", sectionSchema,
     `Act as a strict editor for only the ${section} section. Improve clarity, credibility and channel fit. Never introduce new facts. Return blocking flags for unsupported claims.`, { context, variant, section, candidate: first.value });
   if (typeof second.value.text !== "string" || !second.value.text.trim()) throw new Error("invalid_generated_variant");
-  return { ...second, value: { ...second.value, text: second.value.text.trim() }, draftingUsage: first.usage, draftingRequestId: first.requestId };
+  return { ...second, value: { ...second.value, text: second.value.text.trim() }, draftingUsage: first.usage, draftingRequestId: first.requestId, draftingDurationMs: first.durationMs };
 }
 
 function validateGeneratedShape(value: unknown): GeneratedSocialVariant[] {

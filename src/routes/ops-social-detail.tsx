@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
-import { Archive, ArrowLeft, CalendarClock, Check, Clock3, ExternalLink, Image as ImageIcon, RotateCcw, Save, Send, Sparkles, X } from "lucide-react";
+import { Archive, ArrowLeft, CalendarClock, Check, Clock3, ExternalLink, FileClock, Image as ImageIcon, RotateCcw, Save, Send, ShieldCheck, Sparkles, X } from "lucide-react";
 import { Notice, OpsPageHeader, StatusBadge, formatDate } from "../components/ops";
 import { audit, assertTrustedMutation, operationsHeaders, opsData, requireAdmin, stringField } from "../lib/admin.server";
-import { contentCalendarEnabled, contentComposerEnabled, contentStudioEnabled, renderContentOverlay } from "../lib/content-worker.server";
+import { contentCalendarEnabled, contentComposerEnabled, contentQualityEnabled, contentStudioEnabled, renderContentOverlay } from "../lib/content-worker.server";
 import { calendarCollisionMessage, calendarDateTimeInput, formatCalendarDateTime, isSafeCalendarReturnTo, todayCalendarKey } from "../lib/social-calendar";
 import { regenerateSocialSection, stableHash } from "../lib/social-generation.server";
 import { SocialScheduleError, scheduleSocialVariant, unscheduleSocialVariant, type ScheduleConflict } from "../lib/social-scheduling.server";
-import { blockingQualityMessage, deterministicQualityFlags, type EvidenceSource, type GeneratedSocialVariant, type QualityFlag } from "../lib/social-quality";
+import { blockingQualityMessage, deterministicQualityFlags, type DuplicateMatch, type EvidenceSource, type GeneratedSocialVariant, type QualityFlag } from "../lib/social-quality";
+import type { QualityScorecard } from "../lib/social-quality";
+import { buildRunTelemetry, contentQualityConfigurationValid, isRetryableGenerationError } from "../lib/social-observability.server";
+import { prepareQualityReview } from "../lib/social-quality.server";
 import {
   SOCIAL_CHANNEL_LIMITS,
   canTransitionSocialDraft,
@@ -29,6 +32,8 @@ type Campaign = {
   source_type: string;
   source_id: string;
   status: string;
+  cta_type?: string | null;
+  cta_url?: string | null;
   updated_at: string;
   generation_context?: { sources?: EvidenceSource[]; visual?: { asset_id?: string } };
 };
@@ -51,6 +56,10 @@ type SocialVariant = {
   media_urls: { primary?: { output_path?: string; sha256?: string } };
   brand_template_id: string | null;
   quality_flags: QualityFlag[];
+  quality_scorecard: QualityScorecard | Record<string, never>;
+  quality_review_hash: string | null;
+  quality_reviewed_at: string | null;
+  quality_review_run_id: string | null;
   generation_metadata: Record<string, unknown>;
   original_sections: Record<string, unknown> | null;
   status: string;
@@ -67,14 +76,18 @@ type ActionData = {
   fieldErrors?: { content?: string; rejection_reason?: string; image_alt?: string };
   pendingSchedule?: { variantId: string; updatedAt: string; localScheduledFor: string; returnTo: string };
   conflicts?: ScheduleConflict[];
+  pendingQuality?: { scope: "variant" | "campaign"; variantId?: string; updatedAt?: string; campaignUpdatedAt?: string; warnings: QualityFlag[] };
+  qualityMatches?: DuplicateMatch[];
 };
+
+type VariantVersion = { id: string; draft_id: string; version_number: number; change_type: string; snapshot: Record<string, any>; content_hash: string; source_version_id: string | null; created_at: string };
 
 function structuredVariant(row: SocialVariant): GeneratedSocialVariant {
   return { channel: row.channel as GeneratedSocialVariant["channel"], locale: row.locale as GeneratedSocialVariant["locale"], hook: row.hook || "", body: row.body ?? row.content, cta: row.cta || "", hashtags: row.hashtags || [], image_headline: row.image_headline || "", image_alt: row.image_alt || "", evidence_refs: row.evidence_refs || [], quality_flags: [], generation_notes: [] };
 }
 
-function qualityFor(row: SocialVariant, campaign: Campaign) {
-  return deterministicQualityFlags(structuredVariant(row), campaign.generation_context?.sources || [], row.media_strategy);
+function qualityFor(row: SocialVariant, campaign: Campaign, enforceCampaign = false) {
+  return deterministicQualityFlags(structuredVariant(row), campaign.generation_context?.sources || [], row.media_strategy, enforceCampaign ? { ctaType: campaign.cta_type, ctaUrl: campaign.cta_url } : undefined);
 }
 
 function detailUrl(campaignId: string, variantId?: string, saved?: string, returnTo?: string) {
@@ -85,7 +98,7 @@ function detailUrl(campaignId: string, variantId?: string, saved?: string, retur
   return `/ops/social/${campaignId}${query.size ? `?${query}` : ""}`;
 }
 
-function actionError(context: Awaited<ReturnType<typeof requireAdmin>>, error: string, status: number, draftId?: string, fieldErrors?: ActionData["fieldErrors"], extra: Pick<ActionData, "pendingSchedule" | "conflicts"> = {}) {
+function actionError(context: Awaited<ReturnType<typeof requireAdmin>>, error: string, status: number, draftId?: string, fieldErrors?: ActionData["fieldErrors"], extra: Partial<Pick<ActionData, "pendingSchedule" | "conflicts" | "pendingQuality" | "qualityMatches">> = {}) {
   return opsData({ error, draftId, fieldErrors, ...extra } satisfies ActionData, context.headers, status);
 }
 
@@ -94,16 +107,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!contentStudioEnabled()) throw redirect("/ops/distribution", { headers: operationsHeaders(context.headers) });
   const campaignId = params.campaignId || "";
   if (!isUuid(campaignId)) throw new Response("Campaña inválida.", { status: 404 });
+  const qualityEnabled = contentQualityEnabled();
+  const campaignColumns = `id,title,source_type,source_id,status,updated_at,generation_context${qualityEnabled ? ",cta_type,cta_url" : ""}`;
+  const variantColumns = `id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at${qualityEnabled ? ",quality_scorecard,quality_review_hash,quality_reviewed_at,quality_review_run_id" : ""}`;
 
-  const [campaignResult, variantsResult] = await Promise.all([
-    context.service.from("social_campaigns").select("id,title,source_type,source_id,status,updated_at,generation_context").eq("id", campaignId).maybeSingle(),
-    context.service.from("content_distribution_drafts").select("id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at").eq("campaign_id", campaignId).order("locale").order("channel"),
+  const [campaignResult, variantsResult, versionsResult] = await Promise.all([
+    context.service.from("social_campaigns").select(campaignColumns).eq("id", campaignId).maybeSingle(),
+    context.service.from("content_distribution_drafts").select(variantColumns).eq("campaign_id", campaignId).order("locale").order("channel"),
+    qualityEnabled ? context.service.from("social_variant_versions").select("id,draft_id,version_number,change_type,snapshot,content_hash,source_version_id,created_at").eq("campaign_id", campaignId).order("version_number", { ascending: false }).limit(500) : Promise.resolve({ data: [], error: null }),
   ]);
   if (campaignResult.error || !campaignResult.data) throw new Response("Campaña no encontrada.", { status: 404 });
-  if (variantsResult.error) throw new Response("No se pudieron cargar las variantes.", { status: 500 });
+  if (variantsResult.error || versionsResult.error) throw new Response("No se pudieron cargar las variantes.", { status: 500 });
 
-  const campaign = campaignResult.data as Campaign;
-  const variants = (variantsResult.data || []) as SocialVariant[];
+  const campaign = campaignResult.data as unknown as Campaign;
+  const variants = (variantsResult.data || []) as unknown as SocialVariant[];
   const requestedVariant = new URL(request.url).searchParams.get("variant");
   const selected = variants.find((variant) => variant.id === requestedVariant)
     || variants.find((variant) => variant.status === "draft" || variant.status === "rejected")
@@ -114,7 +131,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const mediaPath = selected?.media_urls?.primary?.output_path;
   if (mediaPath) mediaUrl = (await context.service.storage.from("generated-media").createSignedUrl(mediaPath, 3600)).data?.signedUrl || null;
   const returnToParam = new URL(request.url).searchParams.get("return_to");
-  return opsData({ campaign, variants, selectedId: selected?.id || null, mediaUrl, composerEnabled: contentComposerEnabled(), calendarEnabled: contentCalendarEnabled(), returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "" }, context.headers);
+  return opsData({ campaign, variants, versions: (versionsResult.data || []) as VariantVersion[], selectedId: selected?.id || null, mediaUrl, composerEnabled: contentComposerEnabled(), calendarEnabled: contentCalendarEnabled(), qualityEnabled, returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "", versionA: new URL(request.url).searchParams.get("version_a") || "", versionB: new URL(request.url).searchParams.get("version_b") || "" }, context.headers);
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -128,9 +145,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const requestedReturnTo = stringField(form, "return_to", 2000);
   const returnTo = isSafeCalendarReturnTo(requestedReturnTo) ? requestedReturnTo : "";
 
-  const campaignResult = await context.service.from("social_campaigns").select("id,title,source_type,source_id,status,updated_at,generation_context").eq("id", campaignId).maybeSingle();
+  const qualityEnabled = contentQualityEnabled();
+  const campaignResult = await context.service.from("social_campaigns").select(`id,title,source_type,source_id,status,updated_at,generation_context${qualityEnabled ? ",cta_type,cta_url" : ""}`).eq("id", campaignId).maybeSingle();
   if (campaignResult.error || !campaignResult.data) return actionError(context, "Campaña no encontrada.", 404);
-  const campaign = campaignResult.data as Campaign;
+  const campaign = campaignResult.data as unknown as Campaign;
+
+  if (intent === "save_campaign_cta") {
+    if (!qualityEnabled) return actionError(context, "La calidad editorial está deshabilitada.", 503);
+    const expectedUpdatedAt = stringField(form, "campaign_updated_at", 80);
+    if (!expectedUpdatedAt || expectedUpdatedAt !== campaign.updated_at) return actionError(context, "La campaña cambió en otra pestaña. Recargá antes de guardar.", 409);
+    const ctaUrl = stringField(form, "cta_url", 1000);
+    if (ctaUrl) { try { if (new URL(ctaUrl).protocol !== "https:") throw new Error("invalid"); } catch { return actionError(context, "Ingresá un destino HTTPS válido.", 422); } }
+    const updated = await context.service.from("social_campaigns").update({ cta_url: ctaUrl || null }).eq("id", campaignId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+    if (!updated.data) return actionError(context, "La campaña cambió mientras guardabas el CTA.", 409);
+    await audit(context, { action: "save_cta_url", entityType: "social_campaign", entityId: campaignId, before: { configured: Boolean(campaign.cta_url) }, after: { configured: Boolean(ctaUrl) } });
+    throw redirect(detailUrl(campaignId, undefined, "cta", returnTo), { headers: operationsHeaders(context.headers) });
+  }
 
   if (intent === "approve_campaign") {
     const expectedUpdatedAt = stringField(form, "campaign_updated_at", 80);
@@ -138,19 +168,29 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const variantsResult = await context.service.from("content_distribution_drafts").select("*").eq("campaign_id", campaignId);
     if (variantsResult.error) return actionError(context, "No se pudieron validar las variantes.", 500);
     const variants = (variantsResult.data || []) as SocialVariant[];
-    const invalid = variants.flatMap((variant) => {
-      if (variant.status === "published" || variant.status === "archived") return [];
-      if (!isSocialChannel(variant.channel)) return [{ id: variant.id, message: "Canal inválido." }];
-      const message = validateSocialContent(variant.channel, variant.content) || blockingQualityMessage(qualityFor(variant, campaign));
-      return message ? [{ id: variant.id, message }] : [];
-    });
-    if (invalid.length) return actionError(context, `No se aprobó la campaña: ${invalid[0].message}`, 422, invalid[0].id, { content: invalid[0].message });
     const eligible = variants.filter((variant) => variant.status === "draft" || variant.status === "rejected");
     if (!eligible.length) return actionError(context, "La campaña no tiene variantes pendientes para aprobar.", 409);
-    const updateResult = await context.service.rpc("approve_social_campaign", {
-      target_campaign_id: campaignId,
-      expected_updated_at: expectedUpdatedAt,
-    });
+    let updateResult;
+    if (contentQualityEnabled()) {
+      if (!contentQualityConfigurationValid()) return actionError(context, "Configurá las tarifas del modelo antes de usar la revisión de calidad.", 503);
+      let reviews;
+      try { reviews = await Promise.all(eligible.map((variant) => prepareQualityReview(context.service, context.userId, campaign, variant))); }
+      catch { return actionError(context, "No se pudo completar la revisión editorial. Ninguna variante fue aprobada.", 502); }
+      const blocking = reviews.flatMap((review, index) => review.flags.filter((flag) => flag.severity === "blocking").map((flag) => ({ ...flag, id: eligible[index].id })));
+      const qualityMatches = reviews.flatMap((review) => review.duplicateMatches);
+      if (blocking.length) return actionError(context, `No se aprobó la campaña: ${blocking[0].message}`, 422, blocking[0].id, { content: blocking[0].message }, { qualityMatches });
+      const warnings = reviews.flatMap((review) => review.flags.filter((flag) => flag.severity === "warning"));
+      if (warnings.length && form.get("confirm_warnings") !== "yes") return actionError(context, "La campaña tiene advertencias que requieren confirmación.", 409, undefined, undefined, { pendingQuality: { scope: "campaign", campaignUpdatedAt: expectedUpdatedAt, warnings }, qualityMatches });
+      updateResult = await context.service.rpc("approve_social_campaign_with_quality", { target_campaign_id: campaignId, expected_updated_at: expectedUpdatedAt, target_reviews: reviews.map((review, index) => ({ draft_id: eligible[index].id, content_hash: review.content_hash, scores: review.scores, flags: review.flags, reviewed_at: review.reviewedAt, run_id: review.runId })), target_created_by: context.userId });
+    } else {
+      const invalid = eligible.flatMap((variant) => {
+        if (!isSocialChannel(variant.channel)) return [{ id: variant.id, message: "Canal inválido." }];
+        const message = validateSocialContent(variant.channel, variant.content) || blockingQualityMessage(qualityFor(variant, campaign));
+        return message ? [{ id: variant.id, message }] : [];
+      });
+      if (invalid.length) return actionError(context, `No se aprobó la campaña: ${invalid[0].message}`, 422, invalid[0].id, { content: invalid[0].message });
+      updateResult = await context.service.rpc("approve_social_campaign", { target_campaign_id: campaignId, expected_updated_at: expectedUpdatedAt });
+    }
     if (updateResult.error?.code === "40001") return actionError(context, "La campaña cambió mientras la aprobabas. Recargá antes de continuar.", 409);
     if (updateResult.error) return actionError(context, "No se pudo aprobar la campaña completa. Ningún estado fue actualizado.", 400);
     const updatedCount = Number((updateResult.data as Array<{ updated_count?: number }> | null)?.[0]?.updated_count || 0);
@@ -173,6 +213,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const before = beforeResult.data as SocialVariant;
   if (!expectedUpdatedAt || expectedUpdatedAt !== before.updated_at) return actionError(context, "Esta variante cambió en otra pestaña. Recargá para evitar sobrescribirla.", 409, variantId);
   if (!isSocialChannel(before.channel)) return actionError(context, "La variante tiene un canal inválido.", 422, variantId);
+
+  if (intent === "restore_variant_version") {
+    if (!contentQualityEnabled()) return actionError(context, "El historial de versiones está deshabilitado.", 503, variantId);
+    const versionId = stringField(form, "version_id", 80);
+    if (!isUuid(versionId)) return actionError(context, "Versión inválida.", 422, variantId);
+    const restored = await context.service.rpc("restore_social_variant_version", { target_variant_id: variantId, target_version_id: versionId, expected_updated_at: expectedUpdatedAt, target_created_by: context.userId });
+    if (restored.error?.code === "40001") return actionError(context, "La variante cambió antes de restaurarse. Recargá la página.", 409, variantId);
+    if (restored.error) return actionError(context, before.status === "published" || before.status === "archived" ? "Deshacé la publicación o el archivado antes de restaurar una versión." : "No se pudo restaurar la versión.", 409, variantId);
+    await audit(context, { action: "restore_version", entityType: "distribution_draft", entityId: variantId, before: { status: before.status }, after: { status: "draft", source_version_id: versionId } });
+    throw redirect(detailUrl(campaignId, variantId, "restore", returnTo), { headers: operationsHeaders(context.headers) });
+  }
 
   if (intent === "schedule_variant" || intent === "reschedule_variant") {
     if (!contentCalendarEnabled()) return actionError(context, "El calendario está deshabilitado.", 503, variantId);
@@ -227,6 +278,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     if (begun.error) return actionError(context, "No se pudo iniciar la composición.", 409, variantId);
     const run = (Array.isArray(begun.data) ? begun.data[0] : begun.data) as Record<string, any>;
     if (run.status !== "succeeded") {
+      const renderingStarted = Date.now();
       try {
         await context.service.from("social_generation_runs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", run.id);
         let sourceUrl: string | undefined;
@@ -235,12 +287,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
           if (!asset.data) throw new Error("brand_asset_unavailable"); const signed = await context.service.storage.from("brand-assets").createSignedUrl(asset.data.storage_path, 600); if (!signed.data?.signedUrl) throw new Error("brand_asset_unavailable"); sourceUrl = signed.data.signedUrl;
         }
         const outputPath = `${campaignId}/${variantId}.png`; const upload = await context.service.storage.from("generated-media").createSignedUploadUrl(outputPath, { upsert: true }); if (!upload.data?.signedUrl) throw new Error("media_upload_unavailable");
-        const rendered = await renderContentOverlay({ layout: template.data.layout, output_format: template.data.output_format, ...(sourceUrl ? { source_url: sourceUrl } : {}), destination_upload_url: upload.data.signedUrl, output_path: outputPath, headline: before.image_headline, safe_zone: template.data.safe_zone, text_align: template.data.text_align, vertical_align: template.data.vertical_align, overlay_color: template.data.overlay_color, overlay_opacity: Number(template.data.overlay_opacity), text_color: template.data.text_color, min_font_size: template.data.min_font_size, max_font_size: template.data.max_font_size, logo_enabled: template.data.logo_enabled }, `render:${run.id}:${variantId}`);
-        const update = await context.service.from("content_distribution_drafts").update({ media_urls: { primary: rendered } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle(); if (!update.data) throw new Error("render_conflict");
-        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", result_summary: { output_path: rendered.output_path, sha256: rendered.sha256 }, completed_at: new Date().toISOString() }).eq("id", run.id);
+        const rendered = await renderContentOverlay({ layout: template.data.layout, output_format: template.data.output_format, ...(sourceUrl ? { source_url: sourceUrl } : {}), destination_upload_url: upload.data.signedUrl, output_path: outputPath, headline: before.image_headline, safe_zone: template.data.safe_zone, text_align: template.data.text_align, vertical_align: template.data.vertical_align, overlay_color: template.data.overlay_color, overlay_opacity: Number(template.data.overlay_opacity), text_color: template.data.text_color, min_font_size: template.data.min_font_size, max_font_size: template.data.max_font_size, logo_enabled: template.data.logo_enabled }, `render:${run.id}:${variantId}`, run.id);
+        const update = await context.service.from("content_distribution_drafts").update({ media_urls: { primary: rendered }, generation_metadata: { ...before.generation_metadata, media_stale: false, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle(); if (!update.data) throw new Error("render_conflict");
+        const completedAt = new Date().toISOString();
+        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", result_summary: { output_path: rendered.output_path, sha256: rendered.sha256 }, completed_at: completedAt, ...(contentQualityEnabled() ? buildRunTelemetry({ rendering: { requestId: run.id, durationMs: Date.now() - renderingStarted } }, run.started_at || completedAt, completedAt) : {}) }).eq("id", run.id);
         await audit(context, { action: "render_media", entityType: "distribution_draft", entityId: variantId, after: { run_id: run.id, output_path: rendered.output_path, sha256: rendered.sha256 } });
-      } catch {
-        await context.service.from("social_generation_runs").update({ status: "failed", error_code: "render_failed", error_message: "No se pudo componer la pieza.", completed_at: new Date().toISOString() }).eq("id", run.id);
+      } catch (error) {
+        const completedAt = new Date().toISOString();
+        const rawCode = typeof (error as { code?: unknown })?.code === "string" ? String((error as { code: string }).code) : "render_failed";
+        const code = ["worker_timeout", "worker_unavailable", "worker_request_failed", "invalid_worker_response"].includes(rawCode) ? rawCode : "render_failed";
+        const requestId = typeof (error as { requestId?: unknown })?.requestId === "string" ? String((error as { requestId: string }).requestId) : run.id;
+        const retryable = typeof (error as { retryable?: unknown })?.retryable === "boolean" ? Boolean((error as { retryable: boolean }).retryable) : isRetryableGenerationError(code);
+        await context.service.from("social_generation_runs").update({ status: "failed", error_code: code, error_message: "No se pudo componer la pieza.", completed_at: completedAt, ...(contentQualityEnabled() ? { retryable, request_id: requestId, request_trace: { rendering: requestId }, duration_ms: run.started_at ? Math.max(0, Date.parse(completedAt) - Date.parse(run.started_at)) : Date.now() - renderingStarted } : {}) }).eq("id", run.id);
         return actionError(context, "No se pudo recomponer la imagen. El copy y el medio anterior siguen intactos.", 502, variantId);
       }
     }
@@ -265,13 +323,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
         const generated = await regenerateSocialSection(modelContext, structuredVariant(before), validSection);
         const next = { ...structuredVariant(before), [validSection]: generated.value.text, evidence_refs: generated.value.evidence_refs || before.evidence_refs, quality_flags: generated.value.quality_flags || [] };
         const qualityFlags = deterministicQualityFlags(next, campaign.generation_context?.sources || [], before.media_strategy);
-        const changes = { [validSection]: generated.value.text, content: composeSocialContent(next), evidence_refs: next.evidence_refs, quality_flags: qualityFlags, status: "draft", rejection_reason: null, generation_metadata: { ...before.generation_metadata, last_regeneration_run_id: run.id, last_regenerated_section: validSection } };
+        const changes = { [validSection]: generated.value.text, content: composeSocialContent(next), evidence_refs: next.evidence_refs, quality_flags: qualityFlags, status: "draft", rejection_reason: null, generation_metadata: { ...before.generation_metadata, last_regeneration_run_id: run.id, last_regenerated_section: validSection, version_actor_id: context.userId } };
         const update = await context.service.from("content_distribution_drafts").update(changes).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("*").maybeSingle();
         if (!update.data) throw new Error("generation_conflict");
-        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", usage: { drafting: generated.draftingUsage, critic: generated.usage }, request_id: generated.requestId, result_summary: { section: validSection }, completed_at: new Date().toISOString() }).eq("id", run.id);
+        const completedAt = new Date().toISOString();
+        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", usage: { drafting: generated.draftingUsage, critic: generated.usage }, request_id: generated.requestId, result_summary: { section: validSection }, completed_at: completedAt, ...(contentQualityEnabled() ? buildRunTelemetry({ drafting: { usage: generated.draftingUsage, requestId: generated.draftingRequestId, durationMs: generated.draftingDurationMs }, critic: { usage: generated.usage, requestId: generated.requestId, durationMs: generated.durationMs } }, run.started_at || completedAt, completedAt) : {}) }).eq("id", run.id);
         await audit(context, { action: "regenerate_section", entityType: "distribution_draft", entityId: variantId, before: { section: validSection }, after: { section: validSection, run_id: run.id } });
-      } catch {
-        await context.service.from("social_generation_runs").update({ status: "failed", error_code: "generation_failed", error_message: "No se pudo regenerar la sección.", completed_at: new Date().toISOString() }).eq("id", run.id);
+      } catch (error) {
+        const completedAt = new Date().toISOString();
+        const raw = error instanceof Error ? error.message : "generation_failed";
+        const code = ["model_timeout", "model_rate_limited", "model_unavailable", "invalid_model_response", "invalid_generated_variant"].includes(raw) ? raw : "generation_failed";
+        const requestId = typeof (error as { requestId?: unknown })?.requestId === "string" ? String((error as { requestId: string }).requestId) : "";
+        await context.service.from("social_generation_runs").update({ status: "failed", error_code: code, error_message: "No se pudo regenerar la sección.", completed_at: completedAt, ...(contentQualityEnabled() ? { retryable: isRetryableGenerationError(code), request_id: requestId || null, request_trace: requestId ? { [run.stage || "drafting"]: requestId } : {}, duration_ms: run.started_at ? Math.max(0, Date.parse(completedAt) - Date.parse(run.started_at)) : null } : {}) }).eq("id", run.id);
         return actionError(context, "No se pudo regenerar la sección. El contenido anterior sigue intacto.", 502, variantId);
       }
     }
@@ -290,13 +353,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
     if (contentError) return actionError(context, "Corregí el contenido antes de guardar.", 422, variantId, { content: contentError });
     if (before.media_strategy !== "text_only" && !imageAlt) return actionError(context, "Agregá texto alternativo para la pieza visual.", 422, variantId, { image_alt: "El texto alternativo es obligatorio cuando existe una imagen." });
     const qualityFlags = deterministicQualityFlags(generated, campaign.generation_context?.sources || [], before.media_strategy);
-    changes = { hook, body, cta, hashtags, image_headline: imageHeadline || null, image_alt: imageAlt || null, content, quality_flags: qualityFlags, content_type: "structured", ...(before.status === "approved" || before.status === "rejected" ? { status: "draft", rejection_reason: null } : {}) };
+    changes = { hook, body, cta, hashtags, image_headline: imageHeadline || null, image_alt: imageAlt || null, content, quality_flags: qualityFlags, content_type: "structured", generation_metadata: { ...before.generation_metadata, media_stale: before.media_strategy !== "text_only" && Boolean(before.media_urls?.primary?.output_path) && imageHeadline !== (before.image_headline || "") }, ...(before.status === "approved" || before.status === "rejected" ? { status: "draft", rejection_reason: null } : {}) };
     auditAction = "save";
   } else if (intent === "approve_variant") {
     if (!['draft', 'rejected'].includes(before.status) || !canTransitionSocialDraft(before.status, "approved")) return actionError(context, "Sólo se pueden aprobar borradores o variantes rechazadas.", 409, variantId);
-    const contentError = validateSocialContent(before.channel, before.content) || blockingQualityMessage(qualityFor(before, campaign));
-    if (contentError) return actionError(context, "Corregí el contenido antes de aprobar.", 422, variantId, { content: contentError });
-    changes = { status: "approved", rejection_reason: null };
+    if (contentQualityEnabled()) {
+      if (!contentQualityConfigurationValid()) return actionError(context, "Configurá las tarifas del modelo antes de usar la revisión de calidad.", 503, variantId);
+      let review;
+      try { review = await prepareQualityReview(context.service, context.userId, campaign, before); }
+      catch { return actionError(context, "No se pudo completar la revisión editorial. Intentá nuevamente.", 502, variantId); }
+      const blocking = review.flags.find((flag) => flag.severity === "blocking");
+      if (blocking) return actionError(context, "Corregí el contenido antes de aprobar.", 422, variantId, { content: blocking.message }, { qualityMatches: review.duplicateMatches });
+      const warnings = review.flags.filter((flag) => flag.severity === "warning");
+      if (warnings.length && form.get("confirm_warnings") !== "yes") return actionError(context, "La variante tiene advertencias que requieren confirmación.", 409, variantId, undefined, { pendingQuality: { scope: "variant", variantId, updatedAt: expectedUpdatedAt, warnings }, qualityMatches: review.duplicateMatches });
+      changes = { status: "approved", rejection_reason: null, quality_flags: review.flags, quality_scorecard: review.scores, quality_review_hash: review.content_hash, quality_reviewed_at: review.reviewedAt, quality_review_run_id: review.runId };
+    } else {
+      const contentError = validateSocialContent(before.channel, before.content) || blockingQualityMessage(qualityFor(before, campaign));
+      if (contentError) return actionError(context, "Corregí el contenido antes de aprobar.", 422, variantId, { content: contentError });
+      changes = { status: "approved", rejection_reason: null };
+    }
     auditAction = "approve";
   } else if (intent === "reject_variant") {
     if (!canTransitionSocialDraft(before.status, "rejected")) return actionError(context, "Esta variante no se puede rechazar desde su estado actual.", 409, variantId);
@@ -321,6 +396,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return actionError(context, "Acción inválida.", 400, variantId);
   }
 
+  changes.generation_metadata = { ...before.generation_metadata, ...((changes.generation_metadata && typeof changes.generation_metadata === "object") ? changes.generation_metadata as Record<string, unknown> : {}), version_actor_id: context.userId };
   const updateResult = await context.service.from("content_distribution_drafts").update(changes).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("*").maybeSingle();
   if (updateResult.error) return actionError(context, "No se pudo guardar la variante. Revisá los campos e intentá otra vez.", 400, variantId);
   if (!updateResult.data) return actionError(context, "Esta variante cambió mientras la editabas. Recargá antes de continuar.", 409, variantId);
@@ -340,10 +416,12 @@ const savedMessages: Record<string, string> = {
   schedule: "Variante programada. Esto no publica automáticamente.",
   reschedule: "Horario actualizado en hora de Buenos Aires.",
   unschedule: "Programación eliminada; la variante volvió a aprobada.",
+  restore: "La versión se restauró como un nuevo borrador.",
+  cta: "Destino del CTA actualizado.",
   "campaign-approved": "Campaña aprobada. Ninguna variante fue publicada ni programada.",
 };
 
-export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; selectedId: string | null; mediaUrl: string | null; composerEnabled: boolean; calendarEnabled: boolean; returnTo: string; today: string; saved: string }; actionData?: ActionData }) {
+export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; versions: VariantVersion[]; selectedId: string | null; mediaUrl: string | null; composerEnabled: boolean; calendarEnabled: boolean; qualityEnabled: boolean; returnTo: string; today: string; saved: string; versionA: string; versionB: string }; actionData?: ActionData }) {
   const selected = loaderData.variants.find((variant) => variant.id === loaderData.selectedId) || null;
   const [sections, setSections] = useState(() => ({ hook: selected?.hook || "", body: selected?.body ?? selected?.content ?? "", cta: selected?.cta || "", hashtags: (selected?.hashtags || []).join(" "), image_headline: selected?.image_headline || "", image_alt: selected?.image_alt || "" }));
   const errorRef = useRef<HTMLDivElement>(null);
@@ -359,7 +437,8 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
   const altError = selected && actionData?.draftId === selected.id ? actionData.fieldErrors?.image_alt : undefined;
   const canApproveCampaign = loaderData.variants.some((variant) => variant.status === "draft" || variant.status === "rejected");
   const readOnly = selected?.status === "published" || selected?.status === "archived";
-  const qualityFlags = selected ? qualityFor({ ...selected, hook: sections.hook, body: sections.body, cta: sections.cta, hashtags: parseHashtags(sections.hashtags), image_headline: sections.image_headline, image_alt: sections.image_alt, content: currentContent }, loaderData.campaign) : [];
+  const liveQualityFlags = selected ? qualityFor({ ...selected, hook: sections.hook, body: sections.body, cta: sections.cta, hashtags: parseHashtags(sections.hashtags), image_headline: sections.image_headline, image_alt: sections.image_alt, content: currentContent }, loaderData.campaign, loaderData.qualityEnabled) : [];
+  const qualityFlags = [...(!dirty && selected?.quality_review_hash ? selected.quality_flags : []), ...liveQualityFlags].filter((flag, index, all) => all.findIndex((item) => item.code === flag.code && item.message === flag.message) === index);
   const updateSection = (field: keyof typeof sections, value: string) => setSections((current) => ({ ...current, [field]: value }));
 
   return <>
@@ -367,8 +446,11 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
     <OpsPageHeader eyebrow="Campaña social" title={loaderData.campaign.title} description="Revisá el copy por separado. Las decisiones quedan registradas y aprobar nunca publica." action={<Form method="post"><input type="hidden" name="intent" value="approve_campaign"/><input type="hidden" name="campaign_updated_at" value={loaderData.campaign.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button" type="submit" disabled={!canApproveCampaign || dirty} onClick={(event) => { if (!window.confirm("¿Aprobar todas las variantes pendientes de esta campaña? Esto no publica nada.")) event.preventDefault(); }}><Check aria-hidden="true" size={17}/>Aprobar campaña</button></Form>}/>
     {loaderData.saved && savedMessages[loaderData.saved] ? <Notice tone="success">{savedMessages[loaderData.saved]}</Notice> : null}
     {actionData?.error ? <div ref={errorRef} className="ops-notice ops-notice-error" role="alert" tabIndex={-1}>{actionData.error}</div> : null}
+    {actionData?.qualityMatches?.length ? <section className="ops-quality-matches" aria-labelledby="quality-matches-title"><h2 id="quality-matches-title">Contenido coincidente</h2>{actionData.qualityMatches.map((match) => <article key={match.id}><div><strong>{match.campaignTitle}</strong><small>{socialChannelLabel(match.channel)} · {formatDate(match.occurredAt, true)} · {Math.round(match.similarity * 100)}% de coincidencia</small></div><Link to={`/ops/social/${match.campaignId}?variant=${match.id}`}>Abrir contenido</Link></article>)}</section> : null}
+    {actionData?.pendingQuality ? <section className="ops-quality-confirm" aria-labelledby="quality-confirm-title"><ShieldCheck aria-hidden="true"/><div><h2 id="quality-confirm-title">Confirmar advertencias editoriales</h2><ul>{actionData.pendingQuality.warnings.map((warning, index) => <li key={`${warning.code}-${index}`}>{warning.message}</li>)}</ul><Form method="post"><input type="hidden" name="intent" value={actionData.pendingQuality.scope === "campaign" ? "approve_campaign" : "approve_variant"}/><input type="hidden" name="return_to" value={loaderData.returnTo}/>{actionData.pendingQuality.scope === "campaign" ? <input type="hidden" name="campaign_updated_at" value={actionData.pendingQuality.campaignUpdatedAt}/> : <><input type="hidden" name="variant_id" value={actionData.pendingQuality.variantId}/><input type="hidden" name="updated_at" value={actionData.pendingQuality.updatedAt}/></>}<input type="hidden" name="confirm_warnings" value="yes"/><button className="ops-button" type="submit">Aprobar con advertencias</button></Form></div></section> : null}
     {actionData?.pendingSchedule ? <section className="ops-calendar-conflict" aria-labelledby="social-schedule-conflict-title"><Clock3 aria-hidden="true"/><div><h2 id="social-schedule-conflict-title">Confirmar horario con colisión</h2>{actionData.conflicts?.map((item) => <p key={item.id}><strong>{item.campaign_title}</strong> · {formatCalendarDateTime(item.scheduled_for)}</p>)}<Form method="post"><input type="hidden" name="intent" value={selected?.status === "scheduled" ? "reschedule_variant" : "schedule_variant"}/><input type="hidden" name="variant_id" value={actionData.pendingSchedule.variantId}/><input type="hidden" name="updated_at" value={actionData.pendingSchedule.updatedAt}/><input type="hidden" name="scheduled_for" value={actionData.pendingSchedule.localScheduledFor}/><input type="hidden" name="return_to" value={actionData.pendingSchedule.returnTo}/><input type="hidden" name="confirm_conflict" value="yes"/><button className="ops-button" type="submit">Programar igualmente</button></Form></div></section> : null}
 
+    {loaderData.qualityEnabled ? <section className="ops-cta-config"><div><p className="ops-eyebrow">Destino verificable</p><h2>CTA de la campaña</h2><p>{["audit", "service", "article"].includes(loaderData.campaign.cta_type || "") ? "Esta campaña requiere una URL HTTPS antes de aprobar." : "Para conversación o sin CTA, el enlace puede quedar vacío."}</p></div><Form method="post" className="ops-form"><input type="hidden" name="intent" value="save_campaign_cta"/><input type="hidden" name="campaign_updated_at" value={loaderData.campaign.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><label className="ops-field"><span>Destino HTTPS</span><input name="cta_url" type="url" defaultValue={loaderData.campaign.cta_url || ""} placeholder="https://www.puna-tech.com/…"/></label><button className="ops-button ops-button-secondary" type="submit">Guardar destino</button></Form></section> : null}
     <div className="ops-social-review">
       <aside className="ops-variant-panel" aria-label="Variantes de la campaña">
         <div className="ops-variant-panel-header"><div><span>Estado general</span><StatusBadge value={loaderData.campaign.status}/></div><small>{loaderData.variants.length} variantes · actualizada {formatDate(loaderData.campaign.updated_at, true)}</small></div>
@@ -384,6 +466,7 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
         {selected.status === "published" ? <Notice>Esta variante es de sólo lectura. Deshacé la marca de publicación para corregirla.</Notice> : null}
         {selected.status === "archived" ? <Notice>Esta variante está archivada y permanece disponible como registro.</Notice> : null}
         {selected.status === "scheduled" ? <Notice>Editar el copy la devuelve a borrador y elimina su programación.</Notice> : null}
+        {selected.generation_metadata?.media_stale ? <Notice>El título visual cambió al restaurar una versión. Recomponé la imagen antes de aprobar.</Notice> : null}
         <Form method="post" className="ops-form ops-social-copy-form">
           <input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/>
           {([['hook','Gancho',3],['body','Cuerpo',selected.channel === 'x' ? 5 : 10],['cta','CTA',3]] as const).map(([field,label,rows]) => <div className="ops-section-field" key={field}><label className="ops-field"><span>{label}</span><textarea name={field} rows={rows} value={sections[field]} onChange={(event) => updateSection(field, event.target.value)} readOnly={readOnly}/></label></div>)}
@@ -392,6 +475,7 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
           {loaderData.mediaUrl ? <figure className="ops-generated-media"><img src={loaderData.mediaUrl} alt={selected.image_alt || "Vista previa de la pieza"}/><figcaption><ImageIcon size={15}/>Pieza generada{sections.image_headline !== (selected.image_headline || "") ? " · el título cambió; la imagen todavía no fue recompuesta" : ""}</figcaption></figure> : null}
           <div className="ops-copy-preview"><strong>Vista previa del copy final</strong><pre>{currentContent}</pre><small id="social-counter" className={characterCount > limit ? "ops-counter is-over" : "ops-counter"} aria-live="polite">{characterCount} / {limit} caracteres{selected.channel === "x" ? " · conteo conservador" : ""}</small>{contentError ? <small id="social-content-error" className="ops-field-error" role="alert">{contentError}</small> : null}</div>
           {qualityFlags.length ? <div className="ops-quality-flags" aria-label="Controles de calidad"><strong>Controles de calidad</strong><ul>{qualityFlags.map((flag, index) => <li className={`is-${flag.severity}`} key={`${flag.code}-${index}`}><StatusBadge value={flag.severity}/>{flag.message}</li>)}</ul></div> : <Notice tone="success">Sin bloqueos automáticos de calidad.</Notice>}
+          {loaderData.qualityEnabled && selected.quality_scorecard && "clarity" in selected.quality_scorecard ? <QualityScorecardView scorecard={selected.quality_scorecard as QualityScorecard} reviewedAt={selected.quality_reviewed_at}/> : loaderData.qualityEnabled ? <p className="ops-muted">La puntuación editorial se calculará al aprobar esta versión.</p> : null}
           {selected.original_sections ? <details className="ops-original-copy"><summary>Comparar con la versión generada</summary><pre>{composeSocialContent({ ...structuredVariant(selected), ...(selected.original_sections as Partial<GeneratedSocialVariant>) })}</pre></details> : null}
           <div className="ops-editor-primary"><span>{selected.status === "approved" || selected.status === "rejected" ? "Editar devuelve esta variante a borrador." : "Los cambios se guardan antes de actualizar la pantalla."}</span><button className="ops-button" type="submit" name="intent" value="save_variant" disabled={!dirty || characterCount === 0 || characterCount > limit || selected.status === "published" || selected.status === "archived"}><Save aria-hidden="true" size={17}/>Guardar cambios</button></div>
         </Form>
@@ -410,14 +494,27 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
         <div className="ops-review-actions">
           <div><h3>Decisión editorial</h3><p>Aprobá esta versión, rechazala con instrucciones o registrá una publicación ya realizada manualmente.</p></div>
           <div className="ops-review-buttons">
-            {(selected.status === "draft" || selected.status === "rejected") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="approve_variant" disabled={dirty}><Check aria-hidden="true" size={17}/>Aprobar variante</button></Form> : null}
+            {(selected.status === "draft" || selected.status === "rejected") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="approve_variant" disabled={dirty}><Check aria-hidden="true" size={17}/>Aprobar variante</button></Form> : null}
             {(selected.status === "approved" || selected.status === "scheduled") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="mark_published" disabled={dirty} onClick={(event) => { if (!window.confirm("Confirmá únicamente si ya publicaste esta variante manualmente en la red.")) event.preventDefault(); }}><Send aria-hidden="true" size={17}/>Marcar publicada</button></Form> : null}
             {selected.status === "published" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="undo_published" onClick={(event) => { if (!window.confirm("¿Deshacer el registro de publicación y volver a aprobado?")) event.preventDefault(); }}><RotateCcw aria-hidden="true" size={17}/>Deshacer publicación</button></Form> : null}
           </div>
           {(selected.status === "draft" || selected.status === "approved" || selected.status === "scheduled") ? <details className="ops-reject-form" open={Boolean(reasonError)}><summary><X aria-hidden="true" size={16}/>Rechazar con motivo</summary><Form method="post" className="ops-form"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><label className="ops-field" htmlFor="rejection-reason"><span>Qué debe corregirse <b aria-hidden="true">*</b></span><textarea id="rejection-reason" name="rejection_reason" minLength={10} maxLength={1000} required rows={4} aria-invalid={Boolean(reasonError)} aria-describedby={reasonError ? "rejection-reason-error" : "rejection-reason-hint"}/>{reasonError ? <small id="rejection-reason-error" className="ops-field-error" role="alert">{reasonError}</small> : <small id="rejection-reason-hint">Entre 10 y 1000 caracteres. El motivo queda en la auditoría.</small>}</label><button className="ops-button ops-button-danger" type="submit" name="intent" value="reject_variant"><X aria-hidden="true" size={17}/>Confirmar rechazo</button></Form></details> : null}
           {selected.status !== "archived" ? <Form method="post" className="ops-archive-form"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><button className="ops-button ops-button-danger" type="submit" name="intent" value="archive_variant" onClick={(event) => { if (!window.confirm("¿Archivar esta variante? Permanecerá disponible en el historial.")) event.preventDefault(); }}><Archive aria-hidden="true" size={17}/>Archivar variante</button></Form> : null}
         </div>
+        {loaderData.qualityEnabled ? <VersionHistory versions={loaderData.versions.filter((version) => version.draft_id === selected.id)} selected={selected} campaignId={loaderData.campaign.id} versionA={loaderData.versionA} versionB={loaderData.versionB} returnTo={loaderData.returnTo}/> : null}
       </section> : <section className="ops-empty"><h2>La campaña no tiene variantes</h2><p>Los próximos borradores de n8n se asociarán automáticamente.</p></section>}
     </div>
   </>;
+}
+
+const scoreLabels: Record<keyof QualityScorecard, string> = { clarity: "Claridad", specificity: "Especificidad", credibility: "Credibilidad", channel_fit: "Ajuste al canal" };
+function QualityScorecardView({ scorecard, reviewedAt }: { scorecard: QualityScorecard; reviewedAt: string | null }) {
+  return <section className="ops-quality-scorecard" aria-labelledby="quality-scorecard-title"><div><h3 id="quality-scorecard-title">Puntuación editorial</h3><small>{reviewedAt ? `Revisada ${formatDate(reviewedAt, true)}` : "Revisión pendiente"}</small></div><div>{(Object.entries(scorecard) as Array<[keyof QualityScorecard, QualityScorecard[keyof QualityScorecard]]>).map(([key, value]) => <article key={key}><span>{scoreLabels[key]}</span><strong>{value.score}</strong><meter min="0" max="100" low="60" optimum="90" value={value.score}>{value.score}/100</meter><p>{value.rationale}</p></article>)}</div></section>;
+}
+
+const snapshotFields = [["hook", "Gancho"], ["body", "Cuerpo"], ["cta", "CTA"], ["hashtags", "Hashtags"], ["image_headline", "Título visual"], ["image_alt", "Alt text"], ["evidence_refs", "Evidencia"], ["status", "Estado"]] as const;
+function snapshotText(value: unknown) { return Array.isArray(value) ? value.map((item) => typeof item === "string" ? item : JSON.stringify(item)).join(" · ") : value == null || value === "" ? "—" : typeof value === "object" ? JSON.stringify(value) : String(value); }
+function VersionHistory({ versions, selected, campaignId, versionA, versionB, returnTo }: { versions: VariantVersion[]; selected: SocialVariant; campaignId: string; versionA: string; versionB: string; returnTo: string }) {
+  const left = versions.find((version) => version.id === versionA) || versions[1] || versions[0]; const right = versions.find((version) => version.id === versionB) || versions[0];
+  return <section className="ops-version-history" aria-labelledby="version-history-title"><header><div><p className="ops-eyebrow">Trazabilidad</p><h3 id="version-history-title"><FileClock aria-hidden="true"/>Historial de versiones</h3></div><span>{versions.length} versiones</span></header>{versions.length ? <><Form method="get" className="ops-version-selectors"><input type="hidden" name="variant" value={selected.id}/>{returnTo ? <input type="hidden" name="return_to" value={returnTo}/> : null}<label><span>Comparar desde</span><select name="version_a" defaultValue={left?.id}>{versions.map((version) => <option key={version.id} value={version.id}>v{version.version_number} · {version.change_type}</option>)}</select></label><label><span>Contra</span><select name="version_b" defaultValue={right?.id}>{versions.map((version) => <option key={version.id} value={version.id}>v{version.version_number} · {version.change_type}</option>)}</select></label><button className="ops-button ops-button-secondary">Comparar</button></Form>{left && right ? <div className="ops-version-compare">{snapshotFields.map(([key, label]) => { const before = snapshotText(left.snapshot[key]); const after = snapshotText(right.snapshot[key]); return <article className={before !== after ? "is-changed" : ""} key={key}><h4>{label}{before !== after ? <span>Cambió</span> : null}</h4><div><pre>{before}</pre><pre>{after}</pre></div></article>; })}</div> : null}<div className="ops-version-list">{versions.map((version) => <article key={version.id}><div><strong>v{version.version_number} · {version.change_type.replace(/_/g, " ")}</strong><small>{formatDate(version.created_at, true)}</small></div><Form method="post"><input type="hidden" name="intent" value="restore_variant_version"/><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="version_id" value={version.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={returnTo}/><button className="ops-inline-action" type="submit" disabled={selected.status === "published" || selected.status === "archived"} onClick={(event) => { if (!window.confirm(`¿Restaurar la versión ${version.version_number} como nuevo borrador?`)) event.preventDefault(); }}><RotateCcw size={15}/>Restaurar</button></Form></article>)}</div></> : <p className="ops-muted">Todavía no hay snapshots para esta variante.</p>}</section>;
 }

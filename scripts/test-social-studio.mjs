@@ -8,7 +8,8 @@ import {
   validateRejectionReason,
   validateSocialContent,
 } from "../src/lib/social-studio.ts";
-import { blockingQualityMessage, deterministicQualityFlags } from "../src/lib/social-quality.ts";
+import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, duplicateQualityFlags, normalizeSocialCopy, socialCopySimilarity } from "../src/lib/social-quality.ts";
+import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
 import {
   addCalendarDays,
   calendarDateTimeInput,
@@ -56,6 +57,23 @@ const quantitativeVariant = { channel: "linkedin", locale: "es", hook: "Reducimo
 assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [], "puna_editorial")) || "", /30%/);
 quantitativeVariant.evidence_refs = [{ claim: "Reducimos 30% del trabajo manual", source_key: "source-1" }];
 assert.equal(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [{ key: "source-1", title: "Caso", excerpt: "Se redujo 30% del trabajo manual." }], "puna_editorial")), null);
+assert.equal(normalizeSocialCopy("¡Automatización! https://puna-tech.com #IA"), "automatizacion ia");
+assert.equal(socialCopySimilarity("uno dos tres cuatro", "uno dos tres cuatro"), 1);
+const duplicateCandidates = [{ id: "other", campaignId: "campaign", campaignTitle: "Otra campaña", channel: "instagram", content: "Un proceso claro reduce errores operativos", occurredAt: "2026-09-01T00:00:00Z" }];
+const exactMatches = duplicateMatches("Un proceso claro reduce errores operativos", duplicateCandidates);
+assert.equal(exactMatches[0].exact, true);
+assert.equal(blockingQualityMessage(duplicateQualityFlags(exactMatches)), "El copy es idéntico a “Otra campaña” (instagram).");
+assert.equal(duplicateMatches("Texto completamente diferente", duplicateCandidates).length, 0);
+assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [{ key: "source-1", title: "Caso", excerpt: "Se redujo 30% del trabajo manual." }], "puna_editorial", { ctaType: "article", ctaUrl: null })) || "", /HTTPS/);
+
+process.env.CONTENT_MODEL_INPUT_USD_PER_MILLION = "2";
+process.env.CONTENT_MODEL_CACHED_INPUT_USD_PER_MILLION = "1";
+process.env.CONTENT_MODEL_OUTPUT_USD_PER_MILLION = "8";
+process.env.CONTENT_PRICING_VERSION = "test";
+const telemetry = buildRunTelemetry({ critic: { usage: { input_tokens: 1000, input_tokens_details: { cached_tokens: 200 }, output_tokens: 100 }, requestId: "req_test", durationMs: 400 } }, "2026-09-01T00:00:00.000Z", "2026-09-01T00:00:01.000Z");
+assert.equal(telemetry.duration_ms, 1000);
+assert.equal(telemetry.estimated_cost_usd, 0.0026);
+assert.deepEqual(telemetry.request_trace, { critic: "req_test" });
 
 const migration = await readFile(new URL("../supabase/migrations/20260901190000_social_studio_phase1.sql", import.meta.url), "utf8");
 for (const contract of [
@@ -96,5 +114,21 @@ for (const contract of [
   "grant execute on function public.schedule_social_variant(uuid, timestamptz, text, boolean) to service_role",
 ]) assert.ok(phase3.includes(contract), `Missing Phase 3 migration contract: ${contract}`);
 assert.equal(/create table/i.test(phase3), false, "Phase 3 must not create a calendar table");
+
+const phase4 = await readFile(new URL("../supabase/migrations/20260904120000_social_quality_phase4.sql", import.meta.url), "utf8");
+for (const contract of [
+  "add column if not exists cta_url text",
+  "create table if not exists public.social_variant_versions",
+  "create or replace function public.capture_social_variant_version",
+  "create or replace function public.restore_social_variant_version",
+  "create or replace function public.approve_social_campaign_with_quality",
+  "set content = coalesce(snap->>'content', '')",
+  "new.generation_metadata->>'restored_from_version_id'",
+  "'quality_review'",
+  "estimated_cost_usd",
+  "alter table public.social_variant_versions enable row level security",
+  "grant execute on function public.restore_social_variant_version(uuid, uuid, timestamptz, uuid) to service_role",
+]) assert.ok(phase4.includes(contract), `Missing Phase 4 migration contract: ${contract}`);
+assert.equal(/create policy[\s\S]+social_variant_versions/i.test(phase4), false, "Variant history must not receive browser policies");
 
 console.log("Social Studio contracts passed.");

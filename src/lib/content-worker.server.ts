@@ -116,12 +116,17 @@ export function contentCalendarEnabled() {
   return contentStudioEnabled() && process.env.CONTENT_CALENDAR_ENABLED?.trim().toLowerCase() === "true";
 }
 
+export function contentQualityEnabled() {
+  return contentStudioEnabled() && process.env.CONTENT_QUALITY_ENABLED?.trim().toLowerCase() === "true";
+}
+
 export async function contentWorkerRequest<T>(
   path: string,
   options: {
     method?: "GET" | "POST" | "PATCH" | "DELETE";
     body?: unknown;
     idempotencyKey?: string;
+    requestId?: string;
     timeoutMs?: number;
   } = {},
 ): Promise<T> {
@@ -129,7 +134,7 @@ export async function contentWorkerRequest<T>(
   if (!path.startsWith("/") || path.startsWith("//")) {
     throw new ContentWorkerError("Invalid worker path.", "invalid_worker_path", 500, false, randomUUID());
   }
-  const requestId = randomUUID();
+  const requestId = options.requestId?.trim() || randomUUID();
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 10_000);
 
@@ -180,6 +185,6 @@ export function getContentWorkerCapabilities() {
   return contentWorkerRequest<WorkerCapabilities>("/api/v1/capabilities");
 }
 
-export function renderContentOverlay(body: RenderOverlayRequest, idempotencyKey: string) {
-  return contentWorkerRequest<RenderOverlayResponse>("/api/v1/render/overlay", { method: "POST", body, idempotencyKey, timeoutMs: 45_000 });
+export function renderContentOverlay(body: RenderOverlayRequest, idempotencyKey: string, requestId?: string) {
+  return contentWorkerRequest<RenderOverlayResponse>("/api/v1/render/overlay", { method: "POST", body, idempotencyKey, requestId, timeoutMs: 45_000 });
 }

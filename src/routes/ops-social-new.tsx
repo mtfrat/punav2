@@ -30,6 +30,7 @@ import {
 } from "../lib/admin.server";
 import {
   contentComposerEnabled,
+  contentQualityEnabled,
   renderContentOverlay,
 } from "../lib/content-worker.server";
 import {
@@ -43,6 +44,7 @@ import {
   type OpeningOption,
 } from "../lib/social-generation.server";
 import { isSocialChannel, isSocialLocale, isUuid } from "../lib/social-studio";
+import { buildRunTelemetry, isRetryableGenerationError } from "../lib/social-observability.server";
 
 const objectives = {
   educate: "Educar",
@@ -110,7 +112,9 @@ function manualSources(value: string): EvidenceSource[] {
 }
 
 function generationErrorCode(error: unknown) {
-  const value = error instanceof Error ? error.message : "generation_failed";
+  const value = typeof (error as { code?: unknown })?.code === "string"
+    ? String((error as { code: string }).code)
+    : error instanceof Error ? error.message : "generation_failed";
   return [
     "model_timeout",
     "model_rate_limited",
@@ -118,6 +122,10 @@ function generationErrorCode(error: unknown) {
     "invalid_model_response",
     "invalid_generated_variants",
     "unsupported_verified_opening",
+    "worker_timeout",
+    "worker_unavailable",
+    "worker_request_failed",
+    "invalid_worker_response",
   ].includes(value)
     ? value
     : "generation_failed";
@@ -143,6 +151,7 @@ function campaignModelContext(campaign: Record<string, any>) {
     service_cluster: campaign.service_cluster,
     problem_statement: campaign.problem_statement,
     cta_type: campaign.cta_type,
+    cta_url: campaign.cta_url,
     locales: campaign.locale_strategy?.locales || ["es"],
     channels: campaign.locale_strategy?.channels || ["linkedin", "instagram"],
     opening: campaign.selected_opening,
@@ -272,6 +281,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       step,
       actionKey: randomUUID(),
       saved: url.searchParams.get("saved") || "",
+      qualityEnabled: contentQualityEnabled(),
     },
     context.headers,
   );
@@ -333,6 +343,14 @@ export async function action({ request }: ActionFunctionArgs) {
         422,
       );
     const ctaType = ctaForObjective(objective);
+    const ctaUrl = stringField(form, "cta_url", 1000);
+    if (contentQualityEnabled() && ["audit", "service", "article"].includes(ctaType)) {
+      try {
+        if (new URL(ctaUrl).protocol !== "https:") throw new Error("invalid_protocol");
+      } catch {
+        return opsData({ error: "El CTA necesita un destino HTTPS válido." }, context.headers, 422);
+      }
+    }
     let sourceId = stringField(form, "source_id", 200);
     let title = stringField(form, "title", 180);
     let sources: EvidenceSource[] = [];
@@ -452,6 +470,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       },
       cta_type: ctaType,
+      ...(contentQualityEnabled() ? { cta_url: ctaUrl || null } : {}),
       created_by: context.userId,
     };
     const result = campaign
@@ -527,15 +546,17 @@ export async function action({ request }: ActionFunctionArgs) {
       throw redirect(`/ops/social/new?campaign=${campaign.id}&step=2`, {
         headers: operationsHeaders(context.headers),
       });
+    const startedAt = run.started_at || new Date().toISOString();
     await context.service
       .from("social_generation_runs")
-      .update({ status: "running", started_at: new Date().toISOString() })
+      .update({ status: "running", started_at: startedAt })
       .eq("id", run.id);
     try {
       const sources = (campaign.generation_context?.sources ||
         []) as EvidenceSource[];
       const hasEvidence = sources.some((source) => /\d/.test(source.excerpt));
       const generated = await generateOpeningOptions(modelContext, hasEvidence);
+      const completedAt = new Date().toISOString();
       await context.service
         .from("social_campaigns")
         .update({ opening_options: generated.options })
@@ -547,8 +568,9 @@ export async function action({ request }: ActionFunctionArgs) {
           stage: "complete",
           request_id: generated.requestId,
           usage: generated.usage,
+          ...(contentQualityEnabled() ? buildRunTelemetry({ drafting: { usage: generated.usage, requestId: generated.requestId, durationMs: generated.durationMs } }, startedAt, completedAt) : {}),
           result_summary: { option_count: 3 },
-          completed_at: new Date().toISOString(),
+          completed_at: completedAt,
         })
         .eq("id", run.id);
       await audit(context, {
@@ -563,13 +585,16 @@ export async function action({ request }: ActionFunctionArgs) {
     } catch (error) {
       if (error instanceof Response) throw error;
       const code = generationErrorCode(error);
+      const completedAt = new Date().toISOString();
+      const requestId = typeof (error as any)?.requestId === "string" ? (error as any).requestId : "";
       await context.service
         .from("social_generation_runs")
         .update({
           status: "failed",
           error_code: code,
           error_message: safeMessage(error),
-          completed_at: new Date().toISOString(),
+          ...(contentQualityEnabled() ? { retryable: isRetryableGenerationError(code), request_id: requestId || null, request_trace: requestId ? { drafting: requestId } : {}, duration_ms: Math.max(0, Date.parse(completedAt) - Date.parse(startedAt)) } : {}),
+          completed_at: completedAt,
         })
         .eq("id", run.id);
       return opsData(
@@ -613,7 +638,12 @@ export async function action({ request }: ActionFunctionArgs) {
       action: "select_opening",
       entityType: "social_campaign",
       entityId: campaign.id,
-      after: selected,
+      after: {
+        opening_index: index,
+        opening_type: selected.kind,
+        edited: text !== original.text,
+        character_count: text.length,
+      },
     });
     throw redirect(`/ops/social/new?campaign=${campaign.id}&step=3`, {
       headers: operationsHeaders(context.headers),
@@ -786,6 +816,7 @@ export async function action({ request }: ActionFunctionArgs) {
           checkpoint_payload: { drafts: generated.variants },
           request_id: generated.requestId,
           usage: { drafting: generated.usage },
+          ...(contentQualityEnabled() ? { request_trace: { ...(run.request_trace || {}), drafting: generated.requestId }, stage_timings: { ...(run.stage_timings || {}), drafting: { duration_ms: generated.durationMs } } } : {}),
         })
         .eq("id", run.id);
     } else if (intent === "run_critic" && run.stage === "critic") {
@@ -811,9 +842,11 @@ export async function action({ request }: ActionFunctionArgs) {
           checkpoint_payload: { drafts, critic: variants },
           request_id: generated.requestId,
           usage: { ...(run.usage || {}), critic: generated.usage },
+          ...(contentQualityEnabled() ? { request_trace: { ...(run.request_trace || {}), critic: generated.requestId }, stage_timings: { ...(run.stage_timings || {}), critic: { duration_ms: generated.durationMs } } } : {}),
         })
         .eq("id", run.id);
     } else if (intent === "run_persisting" && run.stage === "persisting") {
+      const persistingStarted = Date.now();
       await context.service
         .from("social_generation_runs")
         .update({ status: "running", error_code: null, error_message: null })
@@ -873,9 +906,11 @@ export async function action({ request }: ActionFunctionArgs) {
           status: "pending",
           stage: "rendering",
           result_summary: { draft_ids: draftIds },
+          ...(contentQualityEnabled() ? { stage_timings: { ...(run.stage_timings || {}), persisting: { duration_ms: Date.now() - persistingStarted } } } : {}),
         })
         .eq("id", run.id);
     } else if (intent === "run_rendering" && run.stage === "rendering") {
+      const renderingStarted = Date.now();
       await context.service
         .from("social_generation_runs")
         .update({ status: "running", error_code: null, error_message: null })
@@ -939,19 +974,28 @@ export async function action({ request }: ActionFunctionArgs) {
             logo_enabled: template.data.logo_enabled,
           },
           `${run.id}:${draft.id}`,
+          run.id,
         );
         await context.service
           .from("content_distribution_drafts")
           .update({ media_urls: { primary: rendered } })
           .eq("id", draft.id);
       }
+      const completedAt = new Date().toISOString();
+      const telemetry = buildRunTelemetry({
+        drafting: { usage: run.usage?.drafting, requestId: run.request_trace?.drafting, durationMs: run.stage_timings?.drafting?.duration_ms },
+        critic: { usage: run.usage?.critic, requestId: run.request_trace?.critic, durationMs: run.stage_timings?.critic?.duration_ms },
+        persisting: { durationMs: run.stage_timings?.persisting?.duration_ms },
+        rendering: { requestId: run.id, durationMs: Date.now() - renderingStarted },
+      }, run.started_at, completedAt);
       await context.service
         .from("social_generation_runs")
         .update({
           status: "succeeded",
           stage: "complete",
           checkpoint_payload: null,
-          completed_at: new Date().toISOString(),
+          completed_at: completedAt,
+          ...(contentQualityEnabled() ? telemetry : {}),
           error_code: null,
           error_message: null,
         })
@@ -974,12 +1018,15 @@ export async function action({ request }: ActionFunctionArgs) {
     return opsData({ ok: true }, context.headers);
   } catch (error) {
     const code = generationErrorCode(error);
+    const completedAt = new Date().toISOString();
+    const requestId = typeof (error as any)?.requestId === "string" ? (error as any).requestId : "";
     await context.service
       .from("social_generation_runs")
       .update({
         status: "failed",
         error_code: code,
         error_message: safeMessage(error),
+        ...(contentQualityEnabled() ? { retryable: isRetryableGenerationError(code), request_id: requestId || run.request_id || null, request_trace: requestId ? { ...(run.request_trace || {}), [run.stage]: requestId } : (run.request_trace || {}), duration_ms: run.started_at ? Math.max(0, Date.parse(completedAt) - Date.parse(run.started_at)) : null, completed_at: completedAt } : {}),
       })
       .eq("id", run.id);
     await context.service
@@ -1191,6 +1238,13 @@ export default function OpsSocialNew({
             required
             rows={4}
           />
+          {loaderData.qualityEnabled ? <Field
+            label="Destino del CTA"
+            name="cta_url"
+            type="url"
+            value={campaign?.cta_url}
+            hint="URL HTTPS para auditoría, servicio o artículo. El objetivo Conversar no requiere enlace."
+          /> : null}
           <div className="ops-field-grid">
             <Field label="Tipo de fuente" name="source_type">
               <select

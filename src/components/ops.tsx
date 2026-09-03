@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Form, Link, NavLink, useNavigation } from "react-router";
 import {
   Activity,
+  BarChart3,
   BookOpenText,
   CalendarDays,
   FileCheck2,
@@ -16,7 +17,7 @@ import {
 import { socialStatusLabel } from "../lib/social-studio";
 const PAGE_SIZE = 25;
 
-const nav = (contentStudioEnabled: boolean, contentComposerEnabled: boolean, contentCalendarEnabled: boolean) => [
+const nav = (contentStudioEnabled: boolean, contentComposerEnabled: boolean, contentCalendarEnabled: boolean, contentQualityEnabled: boolean) => [
   { label: "Inicio", items: [{ to: "/ops", label: "Resumen", icon: LayoutDashboard, end: true }] },
   { label: "Editorial", items: [
     { to: "/ops/content", label: "Artículos", icon: BookOpenText },
@@ -24,6 +25,7 @@ const nav = (contentStudioEnabled: boolean, contentComposerEnabled: boolean, con
     { to: contentStudioEnabled ? "/ops/social" : "/ops/distribution", label: "Social Studio", icon: Send },
     ...(contentCalendarEnabled ? [{ to: "/ops/calendar", label: "Calendario", icon: CalendarDays }] : []),
     ...(contentComposerEnabled ? [{ to: "/ops/brand", label: "Marca y plantillas", icon: Shapes }] : []),
+    ...(contentQualityEnabled ? [{ to: "/ops/insights", label: "Calidad y métricas", icon: BarChart3 }] : []),
   ] },
   { label: "Adquisición", items: [
     { to: "/ops/prospects", label: "Prospectos", icon: UsersRound },
@@ -36,20 +38,20 @@ function OpsBrand() {
   return <span className="ops-brand"><svg aria-hidden="true" viewBox="0 0 76 48"><path d="M0 48 23 12l18 36H0Z" fill="#ff6b00"/><path d="M18 48 48 0l28 48H18Z" fill="currentColor"/><path d="M51 48 64 25l12 23H51Z" fill="#7d2935"/></svg><span><strong>Puna</strong><small>Operations</small></span></span>;
 }
 
-function Navigation({ contentStudioEnabled, contentComposerEnabled, contentCalendarEnabled }: { contentStudioEnabled: boolean; contentComposerEnabled: boolean; contentCalendarEnabled: boolean }) {
+function Navigation({ contentStudioEnabled, contentComposerEnabled, contentCalendarEnabled, contentQualityEnabled }: { contentStudioEnabled: boolean; contentComposerEnabled: boolean; contentCalendarEnabled: boolean; contentQualityEnabled: boolean }) {
   return <nav className="ops-navigation" aria-label="Operaciones">
-    {nav(contentStudioEnabled, contentComposerEnabled, contentCalendarEnabled).map((group) => <section className="ops-navigation-group" key={group.label} aria-label={group.label}><span>{group.label}</span>{group.items.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => isActive ? "active" : undefined}><Icon aria-hidden="true" size={19}/><span>{label}</span></NavLink>)}</section>)}
+    {nav(contentStudioEnabled, contentComposerEnabled, contentCalendarEnabled, contentQualityEnabled).map((group) => <section className="ops-navigation-group" key={group.label} aria-label={group.label}><span>{group.label}</span>{group.items.map(({ to, label, icon: Icon, end }) => <NavLink key={to} to={to} end={end} className={({ isActive }) => isActive ? "active" : undefined}><Icon aria-hidden="true" size={19}/><span>{label}</span></NavLink>)}</section>)}
   </nav>;
 }
 
-export function OpsShell({ email, contentStudioEnabled, contentComposerEnabled, contentCalendarEnabled, children }: { email: string; contentStudioEnabled: boolean; contentComposerEnabled: boolean; contentCalendarEnabled: boolean; children: ReactNode }) {
+export function OpsShell({ email, contentStudioEnabled, contentComposerEnabled, contentCalendarEnabled, contentQualityEnabled, children }: { email: string; contentStudioEnabled: boolean; contentComposerEnabled: boolean; contentCalendarEnabled: boolean; contentQualityEnabled: boolean; children: ReactNode }) {
   const navigation = useNavigation();
   const busy = navigation.state !== "idle";
   return <div className={`ops-shell${busy ? " is-busy" : ""}`}>
     <a className="skip-link" href="#ops-main">Saltar al contenido</a>
     {busy ? <div className="ops-progress" role="status" aria-live="polite"><span/>Procesando…</div> : null}
-    <aside className="ops-sidebar"><Link to="/ops" aria-label="Puna Operations"><OpsBrand/></Link><Navigation contentStudioEnabled={contentStudioEnabled} contentComposerEnabled={contentComposerEnabled} contentCalendarEnabled={contentCalendarEnabled}/><div className="ops-sidebar-user"><span>Sesión privada</span><strong>{email}</strong><Form method="post" action="/ops"><input type="hidden" name="intent" value="logout"/><button type="submit"><LogOut aria-hidden="true" size={18}/>Cerrar sesión</button></Form></div></aside>
-    <header className="ops-mobile-header"><Link to="/ops" aria-label="Puna Operations"><OpsBrand/></Link><details><summary aria-label="Abrir navegación"><Menu aria-hidden="true"/></summary><div><Navigation contentStudioEnabled={contentStudioEnabled} contentComposerEnabled={contentComposerEnabled} contentCalendarEnabled={contentCalendarEnabled}/><Form method="post" action="/ops"><input type="hidden" name="intent" value="logout"/><button className="ops-link-button" type="submit"><LogOut aria-hidden="true" size={18}/>Cerrar sesión</button></Form></div></details></header>
+    <aside className="ops-sidebar"><Link to="/ops" aria-label="Puna Operations"><OpsBrand/></Link><Navigation contentStudioEnabled={contentStudioEnabled} contentComposerEnabled={contentComposerEnabled} contentCalendarEnabled={contentCalendarEnabled} contentQualityEnabled={contentQualityEnabled}/><div className="ops-sidebar-user"><span>Sesión privada</span><strong>{email}</strong><Form method="post" action="/ops"><input type="hidden" name="intent" value="logout"/><button type="submit"><LogOut aria-hidden="true" size={18}/>Cerrar sesión</button></Form></div></aside>
+    <header className="ops-mobile-header"><Link to="/ops" aria-label="Puna Operations"><OpsBrand/></Link><details><summary aria-label="Abrir navegación"><Menu aria-hidden="true"/></summary><div><Navigation contentStudioEnabled={contentStudioEnabled} contentComposerEnabled={contentComposerEnabled} contentCalendarEnabled={contentCalendarEnabled} contentQualityEnabled={contentQualityEnabled}/><Form method="post" action="/ops"><input type="hidden" name="intent" value="logout"/><button className="ops-link-button" type="submit"><LogOut aria-hidden="true" size={18}/>Cerrar sesión</button></Form></div></details></header>
     <main id="ops-main" className="ops-main" aria-busy={busy}>{children}</main>
   </div>;
 }
@@ -61,7 +63,8 @@ export function OpsPageHeader({ eyebrow, title, description, action }: { eyebrow
 export function StatusBadge({ value }: { value: string | null | undefined }) {
   const status = value || "unknown";
   const socialStatuses = ["idea", "generating", "generation_failed", "draft", "approved", "rejected", "scheduled", "published", "archived"];
-  const label = socialStatuses.includes(status) ? socialStatusLabel(status) : status.replace(/_/g, " ");
+  const genericLabels: Record<string, string> = { warning: "Advertencia", blocking: "Bloqueo", succeeded: "Exitoso", failed: "Fallido", running: "En curso", pending: "Pendiente", unknown: "Sin estado" };
+  const label = socialStatuses.includes(status) ? socialStatusLabel(status) : genericLabels[status] || status.replace(/_/g, " ");
   return <span className={`ops-status ops-status-${status.replace(/_/g, "-")}`}><span aria-hidden="true"/>{label}</span>;
 }
 
