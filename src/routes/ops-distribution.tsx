@@ -3,10 +3,15 @@ import { Form, redirect } from "react-router";
 import { Save, Send } from "lucide-react";
 import { EmptyState, Notice, OpsPageHeader, Pager, StatusBadge, SubmitButton, TextAreaField } from "../components/ops";
 import { audit, assertTrustedMutation, compactSnapshot, operationsHeaders, opsData, pageFrom, paginationRange, requireAdmin, stringField } from "../lib/admin.server";
+import { contentStudioEnabled } from "../lib/content-worker.server";
 
 const statuses = ["draft", "approved", "published", "archived"];
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  if (contentStudioEnabled()) {
+    const url = new URL(request.url);
+    throw redirect(`/ops/social${url.search}`, { headers: operationsHeaders() });
+  }
   const context = await requireAdmin(request); const url = new URL(request.url); const page = pageFrom(request); const status = url.searchParams.get("status") || ""; const channel = url.searchParams.get("channel") || ""; const { from, to } = paginationRange(page);
   let query = context.service.from("content_distribution_drafts").select("*", { count: "exact" }).order("updated_at", { ascending: false }).range(from, to); if (status) query = query.eq("status", status); if (channel) query = query.eq("channel", channel);
   const result = await query; if (result.error) throw new Response("No se pudieron cargar los borradores.", { status: 500 });
@@ -14,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-  assertTrustedMutation(request); const context = await requireAdmin(request); const form = await request.formData(); const id = stringField(form, "id", 80); const intent = stringField(form, "intent", 30);
+  assertTrustedMutation(request); const context = await requireAdmin(request); if (contentStudioEnabled()) throw redirect("/ops/social", { headers: operationsHeaders(context.headers) }); const form = await request.formData(); const id = stringField(form, "id", 80); const intent = stringField(form, "intent", 30);
   const beforeResult = await context.service.from("content_distribution_drafts").select("*").eq("id", id).maybeSingle(); if (!beforeResult.data) return opsData({ error: "Borrador no encontrado." }, context.headers, 404); const before = beforeResult.data;
   if (intent === "save") {
     const content = stringField(form, "content", 10_000); if (!content) return opsData({ error: "El contenido no puede quedar vacío." }, context.headers, 400);

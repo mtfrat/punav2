@@ -44,6 +44,13 @@ for (const image of ["og-en.png", "og-es.png"]) {
   try { await access(join(root, image)); } catch { failures.push(`/${image}: generated asset is missing from build`); }
 }
 
+for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
+  const source = await readFile(new URL(`../src/routes/${routeFile}`, import.meta.url), "utf8");
+  if (!source.includes('timeZone: "America/Argentina/Buenos_Aires"')) {
+    failures.push(`${routeFile}: blog dates must use the Buenos Aires timezone during SSR and hydration`);
+  }
+}
+
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);
