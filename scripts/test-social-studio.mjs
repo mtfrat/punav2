@@ -57,6 +57,12 @@ const quantitativeVariant = { channel: "linkedin", locale: "es", hook: "Reducimo
 assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [], "puna_editorial")) || "", /30%/);
 quantitativeVariant.evidence_refs = [{ claim: "Reducimos 30% del trabajo manual", source_key: "source-1" }];
 assert.equal(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [{ key: "source-1", title: "Caso", excerpt: "Se redujo 30% del trabajo manual." }], "puna_editorial")), null);
+const identifierVariant = { ...quantitativeVariant, hook: "Equipos B2B", body: "Trabajo operativo respaldado. [manual-1]", image_headline: "Seguimiento B2B", evidence_refs: [] };
+assert.equal(blockingQualityMessage(deterministicQualityFlags(identifierVariant, [], "text_only")), null);
+for (const value of ["30%", "US$ 500", "3.6", "15 minutos", "2x"]) {
+  const unsupported = { ...identifierVariant, body: `Resultado: ${value}.` };
+  assert.match(blockingQualityMessage(deterministicQualityFlags(unsupported, [], "text_only")) || "", new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+}
 assert.equal(normalizeSocialCopy("¡Automatización! https://puna-tech.com #IA"), "automatizacion ia");
 assert.equal(socialCopySimilarity("uno dos tres cuatro", "uno dos tres cuatro"), 1);
 const duplicateCandidates = [{ id: "other", campaignId: "campaign", campaignTitle: "Otra campaña", channel: "instagram", content: "Un proceso claro reduce errores operativos", occurredAt: "2026-09-01T00:00:00Z" }];

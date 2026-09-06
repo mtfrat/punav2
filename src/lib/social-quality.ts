@@ -27,7 +27,17 @@ export type GeneratedSocialVariant = {
 const BANNED_PHRASES = ["en la era digital", "revolucionar", "desbloquear", "el futuro es ahora", "soluciones innovadoras", "de vanguardia", "transformar tu negocio", "impulsar el crecimiento", "aprovechar el poder de"];
 
 function numericTokens(value: string) {
-  return Array.from(new Set(value.match(/(?:US\$|[$€£])?\s?\d+(?:[.,]\d+)?(?:\s?%|\s?(?:minutos?|minutes?|horas?|hours?|d[ií]as?|days?|x))?/gi) || [])).map((token) => token.trim().toLowerCase());
+  const candidates = value.matchAll(/(?:US\$\s?|[$€£]\s?)?\d+(?:[.,]\d+)?(?:\s?%|\s?(?:minutos?|minutes?|horas?|hours?|d[ií]as?|days?|x))?/giu);
+  const identifierCharacter = /[\p{L}\p{N}_-]/u;
+  return Array.from(new Set(Array.from(candidates).flatMap((match) => {
+    const token = match[0];
+    const start = match.index;
+    const before = start > 0 ? value[start - 1] : "";
+    const after = value[start + token.length] || "";
+    return identifierCharacter.test(before) || identifierCharacter.test(after)
+      ? []
+      : [token.trim().toLowerCase()];
+  })));
 }
 
 function isHttps(value: string | null | undefined) {
