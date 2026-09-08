@@ -1,4 +1,4 @@
-import { caseStudies, casePath, servicePath, services, SITE_URL } from "../content/site";
+import { caseStudies, casePath, CONTACT_EMAIL, servicePath, services, SITE_URL } from "../content/site";
 import { getPublishedPosts } from "../lib/posts.server";
 
 export async function loader() {
