@@ -113,6 +113,23 @@ export function organizationSchema(locale: Locale) {
           : "Software factory bilingüe para software a medida, automatización con IA e integraciones de sistemas.",
         address: { "@type": "PostalAddress", addressLocality: "Buenos Aires", addressCountry: "AR" },
         sameAs: ["https://www.linkedin.com/company/puna-tech"],
+        knowsAbout: [
+          "AI Agents",
+          "AI Workflow Automation",
+          "n8n Automation",
+          "Clay Data Enrichment",
+          "Custom B2B Software",
+          "Systems Integration",
+          "Supabase",
+          "TypeScript",
+          "Python",
+        ],
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "sales",
+          email: "punatechba@gmail.com",
+          availableLanguage: ["English", "Spanish"],
+        },
       },
       {
         "@type": "WebSite",

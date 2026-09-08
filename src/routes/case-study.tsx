@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { CheckCircle2 } from "lucide-react";
 import { CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
-import { casePath, getCaseStudy, type Locale } from "../content/site";
+import { casePath, getCaseStudy, SITE_URL, type Locale } from "../content/site";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -19,8 +19,28 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const path = casePath(locale, study.slug);
   const alternatePath = casePath(locale === "en" ? "es" : "en", study.alternateSlug);
   return createMeta({
-    locale, title: `${study.title} | Puna Tech`, description: study.summary, path, alternatePath,
-    schema: breadcrumbSchema([{ name: "Puna Tech", path: locale === "en" ? "/" : "/es" }, { name: study.title, path }]),
+    locale,
+    title: `${study.title} | Puna Tech`,
+    description: study.summary,
+    path,
+    alternatePath,
+    schema: [
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        headline: study.title,
+        description: study.summary,
+        inLanguage: locale === "en" ? "en" : "es-AR",
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        author: { "@id": `${SITE_URL}/#organization` },
+        about: study.stack,
+        proficiencyLevel: "Expert",
+      },
+      breadcrumbSchema([
+        { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
+        { name: study.title, path },
+      ]),
+    ],
   });
 };
 

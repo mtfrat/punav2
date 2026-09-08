@@ -23,6 +23,7 @@ export default [
   route("en/*", "./routes/legacy-redirect.ts", { id: "legacy-en-wildcard" }),
   route("sitemap.xml", "./routes/sitemap.ts"),
   route("llms.txt", "./routes/llms.ts"),
+  route("llms-full.txt", "./routes/llms-full.ts"),
   route("api/lead", "./routes/api-lead.ts"),
   route("api/chat", "./routes/api-chat.ts"),
   route("ops/login", "./routes/ops-login.tsx"),
