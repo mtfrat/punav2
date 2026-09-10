@@ -28,6 +28,7 @@ export interface RenderOverlayRequest {
   source_url?: string;
   destination_upload_url: string;
   output_path: string;
+  output_mime?: "image/png" | "image/jpeg";
   headline: string;
   safe_zone: { x: number; y: number; width: number; height: number };
   text_align: "left" | "center";
@@ -44,7 +45,7 @@ export interface RenderOverlayResponse {
   output_path: string;
   width: number;
   height: number;
-  mime_type: "image/png";
+  mime_type: "image/png" | "image/jpeg";
   sha256: string;
 }
 

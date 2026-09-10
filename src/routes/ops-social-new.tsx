@@ -918,7 +918,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const draftIds = (run.result_summary?.draft_ids || []) as string[];
       const drafts = await context.service
         .from("content_distribution_drafts")
-        .select("id,image_headline,media_strategy,brand_template_id")
+        .select("id,channel,image_headline,media_strategy,brand_template_id")
         .in("id", draftIds);
       if (drafts.error) throw new Error("drafts_unavailable");
       for (const draft of drafts.data || []) {
@@ -946,7 +946,8 @@ export async function action({ request }: ActionFunctionArgs) {
             throw new Error("brand_asset_unavailable");
           sourceUrl = signed.data.signedUrl;
         }
-        const outputPath = `${campaign.id}/${draft.id}.png`;
+        const jpeg = draft.channel === "instagram";
+        const outputPath = `${campaign.id}/${draft.id}.${jpeg ? "jpg" : "png"}`;
         const upload = await context.service.storage
           .from("generated-media")
           .createSignedUploadUrl(outputPath, { upsert: true });
@@ -959,6 +960,7 @@ export async function action({ request }: ActionFunctionArgs) {
             ...(sourceUrl ? { source_url: sourceUrl } : {}),
             destination_upload_url: upload.data.signedUrl,
             output_path: outputPath,
+            output_mime: jpeg ? "image/jpeg" : "image/png",
             headline: String(draft.image_headline || campaign.title).slice(
               0,
               120,
