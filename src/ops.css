@@ -22,7 +22,7 @@
 .ops-sidebar-user > strong { overflow: hidden; margin-bottom: 0.65rem; color: #fff8ee; font-size: 0.7rem; text-overflow: ellipsis; }
 .ops-sidebar-user button { padding-inline: 0.45rem; }
 .ops-mobile-header { display: none; }
-.ops-main { width: min(1440px, 100%); min-height: 100dvh; margin-left: 248px; padding: clamp(2rem, 4vw, 4.5rem); }
+.ops-main { width: min(1440px, calc(100% - 248px)); min-height: 100dvh; margin-left: 248px; padding: clamp(2rem, 4vw, 4.5rem); }
 .ops-page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem; margin-bottom: 2.5rem; }
 .ops-page-header > div:first-child { max-width: 840px; }
 .ops-page-header h1, .ops-login h1 { font-family: var(--font-editorial); font-size: clamp(2.45rem, 5vw, 4.75rem); font-weight: 520; letter-spacing: -0.045em; line-height: .96; }
