@@ -558,7 +558,7 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
         {selected.status === "published" ? <Notice>Esta variante es de sólo lectura. Deshacé la marca de publicación para corregirla.</Notice> : null}
         {selected.status === "archived" ? <Notice>Esta variante está archivada y permanece disponible como registro.</Notice> : null}
         {selected.status === "scheduled" ? <Notice>Editar el copy la devuelve a borrador y elimina su programación.</Notice> : null}
-        {selected.generation_metadata?.media_stale ? <Notice>El título visual cambió al restaurar una versión. Recomponé la imagen antes de aprobar.</Notice> : null}
+        {selected.generation_metadata?.media_stale ? <Notice>El contenido visual cambió. Recomponé el medio antes de aprobar.</Notice> : null}
         <Form method="post" className="ops-form ops-social-copy-form">
           <input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/>
           {([['hook','Gancho',3],['body','Cuerpo',selected.channel === 'x' ? 5 : 10],['cta','CTA',3]] as const).map(([field,label,rows]) => <div className="ops-section-field" key={field}><label className="ops-field"><span>{label}</span><textarea name={field} rows={rows} value={sections[field]} onChange={(event) => updateSection(field, event.target.value)} readOnly={readOnly}/></label></div>)}
