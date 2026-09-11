@@ -31,18 +31,21 @@ import {
 import {
   contentComposerEnabled,
   contentQualityEnabled,
-  renderContentOverlay,
+  contentVisualStudioEnabled,
 } from "../lib/content-worker.server";
 import {
   criticSocialVariants,
   deterministicQualityFlags,
   draftSocialVariants,
   generateOpeningOptions,
+  generateSocialCarousel,
   stableHash,
   type EvidenceSource,
   type GeneratedSocialVariant,
   type OpeningOption,
 } from "../lib/social-generation.server";
+import { carouselQualityFlags, type VisualPreset } from "../lib/social-visual";
+import { renderSocialVisual } from "../lib/social-visual-render.server";
 import { isSocialChannel, isSocialLocale, isUuid } from "../lib/social-studio";
 import { buildRunTelemetry, isRetryableGenerationError } from "../lib/social-observability.server";
 
@@ -157,6 +160,7 @@ function campaignModelContext(campaign: Record<string, any>) {
     opening: campaign.selected_opening,
     sources: campaign.generation_context?.sources || [],
     tone_notes: campaign.generation_context?.tone_notes || "",
+    visual: campaign.generation_context?.visual || {},
     confidentiality: "Use only the supplied, non-confidential context.",
   };
 }
@@ -282,6 +286,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       actionKey: randomUUID(),
       saved: url.searchParams.get("saved") || "",
       qualityEnabled: contentQualityEnabled(),
+      visualEnabled: contentVisualStudioEnabled(),
     },
     context.headers,
   );
@@ -652,10 +657,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (intent === "save_visual") {
     const strategy = stringField(form, "media_strategy", 40);
+    const visualKind = contentVisualStudioEnabled() ? stringField(form, "visual_kind", 20) : (strategy === "text_only" ? "text" : "single");
+    const preset = contentVisualStudioEnabled() ? stringField(form, "preset_key", 30) : (strategy === "approved_image" ? "image" : "editorial");
+    const slideCount = Number(form.get("slide_count") || 5);
     const assetId = stringField(form, "asset_id", 80) || null;
     const linkedinFormat = stringField(form, "linkedin_format", 40);
     if (
       !["puna_editorial", "approved_image", "text_only"].includes(strategy) ||
+      !["text", "single", "carousel"].includes(visualKind) ||
+      !["editorial", "evidence", "system", "image"].includes(preset) ||
+      (visualKind === "carousel" && (!Number.isInteger(slideCount) || slideCount < 3 || slideCount > 7)) ||
       !["linkedin_square", "linkedin_horizontal"].includes(linkedinFormat)
     )
       return opsData(
@@ -663,7 +674,7 @@ export async function action({ request }: ActionFunctionArgs) {
         context.headers,
         422,
       );
-    if (strategy === "approved_image") {
+    if (preset === "image" && visualKind !== "text") {
       const asset = await context.service
         .from("brand_media_assets")
         .select("id")
@@ -678,7 +689,7 @@ export async function action({ request }: ActionFunctionArgs) {
         );
     }
     const altText = stringField(form, "visual_alt", 500);
-    if (strategy !== "text_only" && !altText)
+    if (visualKind === "single" && strategy !== "text_only" && !altText)
       return opsData(
         { error: "Escribí el texto alternativo antes de generar la pieza." },
         context.headers,
@@ -688,6 +699,9 @@ export async function action({ request }: ActionFunctionArgs) {
       ...campaign.generation_context,
       visual: {
         strategy,
+        visual_kind: visualKind,
+        preset_key: preset,
+        slide_count: slideCount,
         asset_id: assetId,
         linkedin_format: linkedinFormat,
         headline:
@@ -715,6 +729,9 @@ export async function action({ request }: ActionFunctionArgs) {
       entityId: campaign.id,
       after: {
         strategy,
+        visual_kind: visualKind,
+        preset_key: preset,
+        slide_count: slideCount,
         asset_id: assetId,
         linkedin_format: linkedinFormat,
         has_alt_text: Boolean(altText),
@@ -834,17 +851,31 @@ export async function action({ request }: ActionFunctionArgs) {
         ...variant,
         quality_flags: deterministicQualityFlags(variant, sources, strategy),
       }));
+      const carousel = contentVisualStudioEnabled() && campaign.generation_context?.visual?.visual_kind === "carousel";
       await context.service
         .from("social_generation_runs")
         .update({
           status: "pending",
-          stage: "persisting",
+          stage: carousel ? "visual_drafting" : "persisting",
           checkpoint_payload: { drafts, critic: variants },
           request_id: generated.requestId,
           usage: { ...(run.usage || {}), critic: generated.usage },
           ...(contentQualityEnabled() ? { request_trace: { ...(run.request_trace || {}), critic: generated.requestId }, stage_timings: { ...(run.stage_timings || {}), critic: { duration_ms: generated.durationMs } } } : {}),
         })
         .eq("id", run.id);
+    } else if (intent === "run_visual_drafting" && run.stage === "visual_drafting") {
+      await context.service.from("social_generation_runs").update({ status: "running", error_code: null, error_message: null }).eq("id", run.id);
+      const variants = run.checkpoint_payload?.critic as GeneratedSocialVariant[];
+      if (!Array.isArray(variants)) throw new Error("missing_critic_checkpoint");
+      const visual = campaign.generation_context?.visual || {};
+      const locales = [...new Set(variants.map((variant) => variant.locale))] as Array<"es" | "en">;
+      const blueprints: Record<string, unknown> = {};
+      const traces: Record<string, string> = {}; const usage: Record<string, unknown> = {}; let duration = 0;
+      for (const locale of locales) {
+        const generated = await generateSocialCarousel(modelContext, locale, Number(visual.slide_count || 5), (visual.preset_key || "editorial") as VisualPreset, visual.asset_id || null);
+        blueprints[locale] = generated.slides; traces[locale] = generated.requestId; usage[locale] = generated.usage; duration += generated.durationMs;
+      }
+      await context.service.from("social_generation_runs").update({ status: "pending", stage: "persisting", checkpoint_payload: { ...(run.checkpoint_payload || {}), carousel: blueprints }, usage: { ...(run.usage || {}), visual_drafting: usage }, ...(contentQualityEnabled() ? { request_trace: { ...(run.request_trace || {}), visual_drafting: traces }, stage_timings: { ...(run.stage_timings || {}), visual_drafting: { duration_ms: duration } } } : {}) }).eq("id", run.id);
     } else if (intent === "run_persisting" && run.stage === "persisting") {
       const persistingStarted = Date.now();
       await context.service
@@ -855,19 +886,19 @@ export async function action({ request }: ActionFunctionArgs) {
         ?.critic as GeneratedSocialVariant[];
       if (!Array.isArray(variants))
         throw new Error("missing_critic_checkpoint");
-      const strategy =
-        campaign.generation_context?.visual?.strategy || "puna_editorial";
+      const visual = campaign.generation_context?.visual || {};
+      const visualKind = contentVisualStudioEnabled() ? (visual.visual_kind || (visual.strategy === "text_only" ? "text" : "single")) : (visual.strategy === "text_only" ? "text" : "single");
+      const preset = (contentVisualStudioEnabled() ? visual.preset_key : (visual.strategy === "approved_image" ? "image" : "editorial")) || "editorial";
+      const strategy = visualKind === "text" ? "text_only" : preset === "image" ? "approved_image" : "puna_editorial";
       const linkedinFormat =
         campaign.generation_context?.visual?.linkedin_format ||
         "linkedin_square";
-      const templates = await context.service
-        .from("brand_media_templates")
-        .select("id,name,output_format")
+      const templates = await (context.service
+        .from("brand_media_templates") as any)
+        .select(contentVisualStudioEnabled() ? "id,name,preset_key,output_format" : "id,name,output_format")
         .eq("is_active", true)
-        .eq(
-          "name",
-          strategy === "approved_image" ? "Puna Imagen" : "Puna Editorial",
-        );
+        .eq(contentVisualStudioEnabled() ? "preset_key" : "name", contentVisualStudioEnabled() ? preset : (strategy === "approved_image" ? "Puna Imagen" : "Puna Editorial"));
+      const carouselByLocale = run.checkpoint_payload?.carousel || {};
       const enriched = variants.map((variant) => {
         const format =
           variant.channel === "instagram"
@@ -878,6 +909,9 @@ export async function action({ request }: ActionFunctionArgs) {
         const template = templates.data?.find(
           (item) => item.output_format === format,
         );
+        const variantVisualKind = variant.channel === "x" ? "text" : visualKind;
+        const carouselSlides = variantVisualKind === "carousel" ? carouselByLocale[variant.locale] || [] : [];
+        const slideFlags = variantVisualKind === "carousel" ? carouselQualityFlags(carouselSlides, sources, preset as VisualPreset) : [];
         return {
           ...variant,
           image_headline:
@@ -885,9 +919,12 @@ export async function action({ request }: ActionFunctionArgs) {
             variant.image_headline,
           image_alt:
             campaign.generation_context?.visual?.alt_text || variant.image_alt,
-          media_strategy: strategy,
+          media_strategy: variantVisualKind === "text" ? "text_only" : strategy,
+          visual_kind: variantVisualKind,
+          carousel_slides: carouselSlides,
+          quality_flags: [...variant.quality_flags, ...slideFlags],
           brand_template_id:
-            strategy === "text_only" ? null : template?.id || null,
+            variantVisualKind === "text" ? null : template?.id || null,
         };
       });
       const persisted = await context.service.rpc(
@@ -916,9 +953,9 @@ export async function action({ request }: ActionFunctionArgs) {
         .update({ status: "running", error_code: null, error_message: null })
         .eq("id", run.id);
       const draftIds = (run.result_summary?.draft_ids || []) as string[];
-      const drafts = await context.service
-        .from("content_distribution_drafts")
-        .select("id,channel,image_headline,media_strategy,brand_template_id")
+      const drafts = await (context.service
+        .from("content_distribution_drafts") as any)
+        .select(contentVisualStudioEnabled() ? "id,channel,image_headline,image_alt,media_strategy,brand_template_id,visual_kind,carousel_slides,media_urls,generation_metadata" : "id,channel,image_headline,image_alt,media_strategy,brand_template_id,media_urls,generation_metadata")
         .in("id", draftIds);
       if (drafts.error) throw new Error("drafts_unavailable");
       for (const draft of drafts.data || []) {
@@ -929,59 +966,7 @@ export async function action({ request }: ActionFunctionArgs) {
           .eq("id", draft.brand_template_id)
           .maybeSingle();
         if (!template.data) throw new Error("template_unavailable");
-        let sourceUrl: string | undefined;
-        const assetId = campaign.generation_context?.visual?.asset_id;
-        if (template.data.layout === "image_overlay") {
-          const asset = await context.service
-            .from("brand_media_assets")
-            .select("storage_path")
-            .eq("id", assetId)
-            .eq("is_active", true)
-            .maybeSingle();
-          if (!asset.data) throw new Error("brand_asset_unavailable");
-          const signed = await context.service.storage
-            .from("brand-assets")
-            .createSignedUrl(asset.data.storage_path, 600);
-          if (!signed.data?.signedUrl)
-            throw new Error("brand_asset_unavailable");
-          sourceUrl = signed.data.signedUrl;
-        }
-        const jpeg = draft.channel === "instagram";
-        const outputPath = `${campaign.id}/${draft.id}.${jpeg ? "jpg" : "png"}`;
-        const upload = await context.service.storage
-          .from("generated-media")
-          .createSignedUploadUrl(outputPath, { upsert: true });
-        if (!upload.data?.signedUrl)
-          throw new Error("media_upload_unavailable");
-        const rendered = await renderContentOverlay(
-          {
-            layout: template.data.layout,
-            output_format: template.data.output_format,
-            ...(sourceUrl ? { source_url: sourceUrl } : {}),
-            destination_upload_url: upload.data.signedUrl,
-            output_path: outputPath,
-            output_mime: jpeg ? "image/jpeg" : "image/png",
-            headline: String(draft.image_headline || campaign.title).slice(
-              0,
-              120,
-            ),
-            safe_zone: template.data.safe_zone,
-            text_align: template.data.text_align,
-            vertical_align: template.data.vertical_align,
-            overlay_color: template.data.overlay_color,
-            overlay_opacity: Number(template.data.overlay_opacity),
-            text_color: template.data.text_color,
-            min_font_size: template.data.min_font_size,
-            max_font_size: template.data.max_font_size,
-            logo_enabled: template.data.logo_enabled,
-          },
-          `${run.id}:${draft.id}`,
-          run.id,
-        );
-        await context.service
-          .from("content_distribution_drafts")
-          .update({ media_urls: { primary: rendered } })
-          .eq("id", draft.id);
+        await renderSocialVisual(context.service, campaign, draft, template.data, run.id, contentVisualStudioEnabled());
       }
       const completedAt = new Date().toISOString();
       const telemetry = buildRunTelemetry({
@@ -1086,9 +1071,11 @@ function Steps({ step, campaignId }: { step: number; campaignId?: string }) {
 function GenerationRunner({
   campaignId,
   run,
+  carousel,
 }: {
   campaignId: string;
   run: Record<string, any>;
+  carousel: boolean;
 }) {
   const fetcher = useFetcher<{ ok?: boolean; error?: string }>();
   const submitted = useRef("");
@@ -1097,11 +1084,13 @@ function GenerationRunner({
       ? "run_drafting"
       : run.stage === "critic"
         ? "run_critic"
-        : run.stage === "persisting"
-          ? "run_persisting"
-          : run.stage === "rendering"
-            ? "run_rendering"
-            : "";
+        : run.stage === "visual_drafting"
+          ? "run_visual_drafting"
+          : run.stage === "persisting"
+            ? "run_persisting"
+            : run.stage === "rendering"
+              ? "run_rendering"
+              : "";
   useEffect(() => {
     const signature = `${run.id}:${run.stage}:${run.updated_at}`;
     if (
@@ -1128,6 +1117,7 @@ function GenerationRunner({
   const labels: Record<string, string> = {
     drafting: "Redactando variantes",
     critic: "Revisando evidencia y calidad",
+    visual_drafting: "Diseñando el carrusel",
     persisting: "Guardando borradores",
     rendering: "Componiendo piezas visuales",
     complete: "Generación completa",
@@ -1160,10 +1150,10 @@ function GenerationRunner({
         <strong>{labels[run.stage] || "Preparando"}</strong>
         <p>
           Etapa{" "}
-          {["drafting", "critic", "persisting", "rendering"].indexOf(
+          {(carousel ? ["drafting", "critic", "visual_drafting", "persisting", "rendering"] : ["drafting", "critic", "persisting", "rendering"]).indexOf(
             run.stage,
           ) + 1}{" "}
-          de 4. No cierres esta pestaña.
+          de {carousel ? 5 : 4}. No cierres esta pestaña.
         </p>
       </div>
     </div>
@@ -1179,6 +1169,7 @@ export default function OpsSocialNew({
 }) {
   const { campaign, step, assets, run } = loaderData;
   const visual = campaign?.generation_context?.visual || {};
+  const presetLabels: Record<string, string> = { editorial: "Puna Editorial", evidence: "Puna Evidencia", system: "Puna Sistema", image: "Puna Imagen" };
   return (
     <>
       <Link className="ops-back" to="/ops/social">
@@ -1480,7 +1471,22 @@ export default function OpsSocialNew({
         <Form method="post" className="ops-panel ops-form ops-composer-form">
           <input type="hidden" name="campaign_id" value={campaign.id} />
           <h2>Formato visual</h2>
+          {loaderData.visualEnabled ? <>
+          <input type="hidden" name="media_strategy" value="puna_editorial"/>
           <fieldset className="ops-visual-options">
+            <legend>Tipo de pieza</legend>
+            <label><input type="radio" name="visual_kind" value="single" defaultChecked={(visual.visual_kind || "single") === "single"}/><span><ImageIcon/>Imagen individual<small>Una pieza por canal.</small></span></label>
+            <label><input type="radio" name="visual_kind" value="carousel" defaultChecked={visual.visual_kind === "carousel"}/><span><Shapes/>Carrusel asistido<small>Entre 3 y 7 placas editables.</small></span></label>
+            <label><input type="radio" name="visual_kind" value="text" defaultChecked={visual.visual_kind === "text"}/><span>Solo texto<small>No compone archivos.</small></span></label>
+          </fieldset>
+          <fieldset className="ops-preset-options"><legend>Estilo Puna</legend>{[
+            ["editorial","Puna Editorial","Tesis breve con grilla y acento."],
+            ["evidence","Puna Evidencia","Una cifra respaldada como protagonista."],
+            ["system","Puna Sistema","Proceso, lista o marco operativo."],
+            ["image","Puna Imagen","Fotografía aprobada y título."],
+          ].map(([key,label,description]) => <label key={key} className={`is-${key}`}><input type="radio" name="preset_key" value={key} defaultChecked={(visual.preset_key || "editorial") === key}/><span><strong>{label}</strong><small>{description}</small></span></label>)}</fieldset>
+          <Field label="Cantidad de placas" name="slide_count" hint="Se usa sólo para carruseles; luego podés agregar, quitar y ordenar."><select name="slide_count" defaultValue={visual.slide_count || 5}>{[3,4,5,6,7].map((count) => <option value={count} key={count}>{count} placas</option>)}</select></Field>
+          </> : <fieldset className="ops-visual-options">
             <legend>Elegí un resultado</legend>
             <label>
               <input
@@ -1520,7 +1526,7 @@ export default function OpsSocialNew({
                 Solo texto<small>No compone ningún archivo.</small>
               </span>
             </label>
-          </fieldset>
+          </fieldset>}
           <Field label="Imagen aprobada" name="asset_id">
             <select name="asset_id" defaultValue={visual.asset_id || ""}>
               <option value="">Elegir cuando corresponda…</option>
@@ -1562,6 +1568,7 @@ export default function OpsSocialNew({
               <span>{visual.headline || campaign.selected_opening?.text}</span>
             </div>
           </div>
+          {loaderData.visualEnabled && visual.visual_kind === "carousel" ? <div className="ops-carousel-examples" aria-label="Ejemplos de estructura del carrusel"><article><small>01 · Portada</small><strong>Una tesis clara</strong></article><article><small>02 · Contenido</small><strong>Un paso por placa</strong></article><article><small>05 · Cierre</small><strong>Próxima acción</strong></article></div> : null}
           <button className="ops-button" name="intent" value="save_visual">
             Revisar configuración <ArrowRight size={16} />
           </button>
@@ -1596,16 +1603,22 @@ export default function OpsSocialNew({
             <div>
               <dt>Formato</dt>
               <dd>
-                {visual.strategy === "puna_editorial"
-                  ? "Puna Editorial"
-                  : visual.strategy === "approved_image"
-                    ? "Imagen aprobada + título"
-                    : "Solo texto"}
+                {loaderData.visualEnabled
+                  ? visual.visual_kind === "carousel"
+                    ? `Carrusel de ${visual.slide_count || 5} placas · ${presetLabels[visual.preset_key || "editorial"]}`
+                    : visual.visual_kind === "text"
+                      ? "Solo texto"
+                      : `Imagen individual · ${presetLabels[visual.preset_key || "editorial"]}`
+                  : visual.strategy === "puna_editorial"
+                    ? "Puna Editorial"
+                    : visual.strategy === "approved_image"
+                      ? "Imagen aprobada + título"
+                      : "Solo texto"}
               </dd>
             </div>
           </dl>
           {run ? (
-            <GenerationRunner campaignId={campaign.id} run={run} />
+            <GenerationRunner campaignId={campaign.id} run={run} carousel={visual.visual_kind === "carousel"} />
           ) : (
             <Form method="post">
               <input type="hidden" name="campaign_id" value={campaign.id} />

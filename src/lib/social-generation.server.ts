@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { isSocialChannel, isSocialLocale } from "./social-studio.ts";
 import type { EvidenceSource, GeneratedSocialVariant, QualityFlag, QualityReview, QualityScorecard } from "./social-quality.ts";
+import { parseCarouselSlides, type SocialCarouselSlide, type VisualPreset } from "./social-visual.ts";
 export type { EvidenceSource, GeneratedSocialVariant, QualityFlag } from "./social-quality.ts";
 export { blockingQualityMessage, deterministicQualityFlags } from "./social-quality.ts";
 
@@ -47,6 +48,14 @@ const qualityReviewSchema = { type: "object", additionalProperties: false, requi
   } } },
 } };
 
+const carouselSlideSchema = { type: "object", additionalProperties: false, required: ["id","role","eyebrow","headline","body","bullets","emphasis","evidence_refs","asset_id","alt_text"], properties: {
+  id: { type: "string" }, role: { type: "string", enum: ["cover","content","cta"] }, eyebrow: { type: "string" }, headline: { type: "string" }, body: { type: "string" },
+  bullets: { type: "array", maxItems: 4, items: { type: "string" } }, emphasis: { type: ["string","null"] }, evidence_refs: variantItemSchema.properties.evidence_refs,
+  asset_id: { type: ["string","null"] }, alt_text: { type: "string" },
+} };
+const carouselSchema = { type: "object", additionalProperties: false, required: ["slides"], properties: { slides: { type: "array", minItems: 3, maxItems: 7, items: carouselSlideSchema } } };
+const carouselSlideOutputSchema = { type: "object", additionalProperties: false, required: ["slide"], properties: { slide: carouselSlideSchema } };
+
 function extractResponseText(payload: any) {
   if (typeof payload?.output_text === "string") return payload.output_text;
   for (const item of payload?.output || []) for (const content of item?.content || []) if (content?.type === "output_text" && typeof content.text === "string") return content.text;
@@ -78,7 +87,7 @@ async function structuredResponse<T>(name: string, schema: Record<string, unknow
   } finally { clearTimeout(timeout); }
 }
 
-export async function reviewSocialVariant(context: Record<string, unknown>, variant: GeneratedSocialVariant) {
+export async function reviewSocialVariant(context: Record<string, unknown>, variant: GeneratedSocialVariant & { visual_kind?: string; carousel_slides?: unknown }) {
   const result = await structuredResponse<Omit<QualityReview, "content_hash">>("puna_social_quality_review", qualityReviewSchema,
     "Review this Puna Tech social post without rewriting it. Score clarity, specificity, credibility and channel fit from 0 to 100 with a concise rationale. Check every factual claim against only the supplied sources. Flag unsupported claims, confidentiality risk, probable locale errors, clichés and weak CTAs. Unsupported quantitative claims and confidentiality risks are blocking. Low scores are warnings, never blockers by themselves. Return no copy or prompt text.",
     { context, variant });
@@ -114,6 +123,25 @@ export async function criticSocialVariants(context: Record<string, unknown>, var
   const result = await structuredResponse<{ variants: GeneratedSocialVariant[] }>("puna_social_critic", variantsSchema,
     "Act as a strict editor. Return the same channel/locale pairs, improved for clarity, credibility and a specific CTA. Remove clichés and unsupported claims. Never add facts. Preserve valid evidence references. Zero emojis. Return blocking quality flags for anything that cannot be supported.", { context, variants });
   return { ...result, variants: validateGeneratedShape(result.value.variants) };
+}
+
+export async function generateSocialCarousel(context: Record<string, unknown>, locale: "es" | "en", slideCount: number, preset: VisualPreset, assetId: string | null) {
+  const result = await structuredResponse<{ slides: SocialCarouselSlide[] }>("puna_social_carousel", carouselSchema,
+    `Create exactly ${slideCount} concise carousel slides in ${locale === "es" ? "Spanish" : "English"}. The first role is cover, the last is cta and every other slide is content. Use only supplied facts and evidence. Keep eyebrow <=40, headline <=100, body <=260, at most four bullets <=90 each, and alt text <=500. Use emphasis only for the evidence preset and only when sourced. No hype, emojis, invented facts or repeated slides.`,
+    { context, locale, slide_count: slideCount, preset, default_asset_id: assetId });
+  const slides = result.value.slides.map((slide) => ({ ...slide, id: randomUUID(), asset_id: assetId }));
+  return { ...result, slides: parseCarouselSlides(slides) };
+}
+
+export async function regenerateSocialCarouselSlide(context: Record<string, unknown>, slides: SocialCarouselSlide[], slideIndex: number, preset: VisualPreset) {
+  const current = slides[slideIndex];
+  if (!current) throw new Error("invalid_carousel_slide");
+  const result = await structuredResponse<{ slide: SocialCarouselSlide }>("puna_social_carousel_slide", carouselSlideOutputSchema,
+    "Rewrite only the requested carousel slide. Preserve its id and role. Improve clarity and visual brevity, use only supplied evidence, and do not repeat another slide. Respect all supplied field limits. No hype, emojis or invented facts.",
+    { context, preset, slide_index: slideIndex, current_slide: current, surrounding_slides: slides });
+  const candidate = { ...result.value.slide, id: current.id, role: current.role, asset_id: current.asset_id };
+  const next = slides.map((slide, index) => index === slideIndex ? candidate : slide);
+  return { ...result, slide: parseCarouselSlides(next)[slideIndex] };
 }
 
 export async function regenerateSocialSection(context: Record<string, unknown>, variant: GeneratedSocialVariant, section: "hook" | "body" | "cta") {

@@ -14,15 +14,18 @@ import {
   type QualityReview,
   type QualityScorecard,
 } from "./social-quality";
+import { carouselQualityFlags, parseCarouselSlides, type VisualPreset } from "./social-visual";
+import { contentVisualStudioEnabled } from "./content-worker.server";
 
-type Campaign = { id: string; title: string; objective?: string; audience?: string; service_cluster?: string; problem_statement?: string; cta_type?: string | null; cta_url?: string | null; generation_context?: { sources?: EvidenceSource[] } };
-type Draft = { id: string; campaign_id: string; channel: string; locale: string; content: string; hook?: string | null; body?: string | null; cta?: string | null; hashtags?: string[]; image_headline?: string | null; image_alt?: string | null; evidence_refs?: GeneratedSocialVariant["evidence_refs"]; media_strategy?: string; quality_flags?: QualityFlag[]; quality_scorecard?: QualityScorecard | Record<string, never>; quality_review_hash?: string | null; quality_review_run_id?: string | null; generation_metadata?: Record<string, unknown> };
+type Campaign = { id: string; title: string; objective?: string; audience?: string; service_cluster?: string; problem_statement?: string; cta_type?: string | null; cta_url?: string | null; generation_context?: { sources?: EvidenceSource[]; visual?: { preset_key?: VisualPreset } } };
+type Draft = { id: string; campaign_id: string; channel: string; locale: string; content: string; hook?: string | null; body?: string | null; cta?: string | null; hashtags?: string[]; image_headline?: string | null; image_alt?: string | null; evidence_refs?: GeneratedSocialVariant["evidence_refs"]; media_strategy?: string; visual_kind?: string; carousel_slides?: unknown; rendered_visual_hash?: string | null; brand_template_id?: string | null; quality_flags?: QualityFlag[]; quality_scorecard?: QualityScorecard | Record<string, never>; quality_review_hash?: string | null; quality_review_run_id?: string | null; generation_metadata?: Record<string, unknown> };
 
 export type PreparedQualityReview = QualityReview & { runId: string | null; reviewedAt: string; duplicateMatches: DuplicateMatch[] };
 
 export function socialQualityHash(draft: Draft, campaign?: Pick<Campaign, "cta_url">) {
   const variant = toVariant(draft);
-  return createHash("sha256").update(`${qualityContentMaterial(variant, draft.media_strategy || "text_only")}\n--puna-quality--\n${campaign?.cta_url || ""}`).digest("hex");
+  const legacyMaterial = [qualityContentMaterial(variant, draft.media_strategy || "text_only", false), campaign?.cta_url || ""].join("\n--puna-quality--\n");
+  return createHash("sha256").update(legacyMaterial).digest("hex");
 }
 
 function toVariant(draft: Draft): GeneratedSocialVariant {
@@ -65,7 +68,12 @@ function cachedReview(draft: Draft, hash: string): PreparedQualityReview | null 
 }
 
 export async function prepareQualityReview(service: SupabaseClient, userId: string, campaign: Campaign, draft: Draft): Promise<PreparedQualityReview> {
-  const hash = socialQualityHash(draft, campaign);
+  let hash = socialQualityHash(draft, campaign);
+  if (contentVisualStudioEnabled()) {
+    const result = await service.rpc("social_variant_quality_hash", { target_variant_id: draft.id });
+    if (result.error || typeof result.data !== "string" || !/^[0-9a-f]{64}$/.test(result.data)) throw new Error("quality_hash_unavailable");
+    hash = result.data;
+  }
   const duplicates = await recentDuplicates(service, draft);
   const cached = cachedReview(draft, hash);
   if (cached) return { ...cached, duplicateMatches: duplicates };
@@ -86,11 +94,13 @@ export async function prepareQualityReview(service: SupabaseClient, userId: stri
   const startedAt = run.started_at || new Date().toISOString();
   await service.from("social_generation_runs").update({ status: "running", started_at: startedAt, error_code: null, error_message: null }).eq("id", run.id);
   try {
-    const variant = toVariant(draft);
+    const variant = { ...toVariant(draft), visual_kind: draft.visual_kind, carousel_slides: draft.carousel_slides };
     const generated = await reviewSocialVariant({ campaign: { title: campaign.title, objective: campaign.objective, audience: campaign.audience, service_cluster: campaign.service_cluster, problem_statement: campaign.problem_statement, cta_type: campaign.cta_type, cta_url: campaign.cta_url }, sources: campaign.generation_context?.sources || [] }, variant);
     const deterministic = deterministicQualityFlags(variant, campaign.generation_context?.sources || [], draft.media_strategy || "text_only", { ctaType: campaign.cta_type, ctaUrl: campaign.cta_url });
+    let visualFlags: QualityFlag[] = [];
+    if (draft.visual_kind === "carousel") try { visualFlags = carouselQualityFlags(parseCarouselSlides(draft.carousel_slides), campaign.generation_context?.sources || [], (campaign.generation_context?.visual?.preset_key || "editorial") as VisualPreset); } catch { visualFlags = [{ code: "invalid_carousel", severity: "blocking", message: "El carrusel no cumple su estructura editorial." }]; }
     const mediaFlags: QualityFlag[] = draft.generation_metadata?.media_stale ? [{ code: "media_stale", severity: "blocking", message: "La imagen debe recomponerse después de cambiar el título visual." }] : [];
-    const flags = mergeFlags(generated.value.flags || [], deterministic, duplicateQualityFlags(duplicates), mediaFlags, lowScoreFlags(generated.value.scores));
+    const flags = mergeFlags(generated.value.flags || [], deterministic, visualFlags, duplicateQualityFlags(duplicates), mediaFlags, lowScoreFlags(generated.value.scores));
     const completedAt = new Date().toISOString();
     const telemetry = buildRunTelemetry({ critic: { usage: generated.usage, requestId: generated.requestId, durationMs: generated.durationMs } }, startedAt, completedAt);
     await service.from("social_generation_runs").update({

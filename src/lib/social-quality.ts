@@ -45,8 +45,10 @@ function isHttps(value: string | null | undefined) {
   try { return new URL(value).protocol === "https:"; } catch { return false; }
 }
 
-export function qualityContentMaterial(variant: Pick<GeneratedSocialVariant, "hook" | "body" | "cta" | "hashtags" | "image_headline" | "image_alt"> & { channel: SocialChannel; locale: SocialLocale }, mediaStrategy = "text_only") {
-  return [composeSocialContent(variant), variant.image_headline || "", variant.image_alt || "", mediaStrategy].join("\n--puna-quality--\n");
+export function qualityContentMaterial(variant: Pick<GeneratedSocialVariant, "hook" | "body" | "cta" | "hashtags" | "image_headline" | "image_alt"> & { channel: SocialChannel; locale: SocialLocale; visual_kind?: string; carousel_slides?: unknown }, mediaStrategy = "text_only", includeVisual = true) {
+  const fields: unknown[] = [composeSocialContent(variant), variant.image_headline || "", variant.image_alt || "", mediaStrategy];
+  if (includeVisual) fields.push(variant.visual_kind || "single", JSON.stringify(variant.carousel_slides || []));
+  return fields.join("\n--puna-quality--\n");
 }
 
 export function normalizeSocialCopy(value: string) {

@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
-import { Archive, ArrowLeft, CalendarClock, Check, Clock3, ExternalLink, FileClock, Image as ImageIcon, RotateCcw, Save, Send, ShieldCheck, Sparkles, X } from "lucide-react";
+import { Archive, ArrowDown, ArrowLeft, ArrowUp, CalendarClock, Check, Clock3, Copy, Download, ExternalLink, FileClock, Image as ImageIcon, Plus, RotateCcw, Save, Send, ShieldCheck, Sparkles, Trash2, X } from "lucide-react";
 import { Notice, OpsPageHeader, StatusBadge, formatDate } from "../components/ops";
 import { audit, assertTrustedMutation, operationsHeaders, opsData, requireAdmin, stringField } from "../lib/admin.server";
-import { contentCalendarEnabled, contentComposerEnabled, contentQualityEnabled, contentStudioEnabled, renderContentOverlay } from "../lib/content-worker.server";
+import { contentCalendarEnabled, contentComposerEnabled, contentQualityEnabled, contentStudioEnabled, contentVisualStudioEnabled } from "../lib/content-worker.server";
 import { calendarCollisionMessage, calendarDateTimeInput, formatCalendarDateTime, isSafeCalendarReturnTo, todayCalendarKey } from "../lib/social-calendar";
-import { regenerateSocialSection, stableHash } from "../lib/social-generation.server";
+import { regenerateSocialCarouselSlide, regenerateSocialSection, stableHash } from "../lib/social-generation.server";
 import { SocialScheduleError, scheduleSocialVariant, unscheduleSocialVariant, type ScheduleConflict } from "../lib/social-scheduling.server";
 import { blockingQualityMessage, deterministicQualityFlags, type DuplicateMatch, type EvidenceSource, type GeneratedSocialVariant, type QualityFlag } from "../lib/social-quality";
 import type { QualityScorecard } from "../lib/social-quality";
 import { buildRunTelemetry, contentQualityConfigurationValid, isRetryableGenerationError } from "../lib/social-observability.server";
 import { prepareQualityReview } from "../lib/social-quality.server";
+import { carouselQualityFlags, parseCarouselSlides, type SocialCarouselSlide, type VisualPreset } from "../lib/social-visual";
+import { renderSocialVisual, socialVisualHash } from "../lib/social-visual-render.server";
 import {
   SOCIAL_CHANNEL_LIMITS,
   canTransitionSocialDraft,
@@ -35,7 +37,7 @@ type Campaign = {
   cta_type?: string | null;
   cta_url?: string | null;
   updated_at: string;
-  generation_context?: { sources?: EvidenceSource[]; visual?: { asset_id?: string } };
+  generation_context?: { sources?: EvidenceSource[]; visual?: { asset_id?: string; preset_key?: VisualPreset } };
 };
 
 type SocialVariant = {
@@ -53,7 +55,10 @@ type SocialVariant = {
   image_alt: string | null;
   evidence_refs: GeneratedSocialVariant["evidence_refs"];
   media_strategy: "text_only" | "puna_editorial" | "approved_image";
-  media_urls: { primary?: { output_path?: string; sha256?: string } };
+  media_urls: { primary?: { output_path?: string; sha256?: string }; slides?: Array<{ output_path?: string; sha256?: string }>; document?: { output_path?: string; sha256?: string } };
+  visual_kind?: "text" | "single" | "carousel";
+  carousel_slides?: SocialCarouselSlide[];
+  rendered_visual_hash?: string | null;
   brand_template_id: string | null;
   quality_flags: QualityFlag[];
   quality_scorecard: QualityScorecard | Record<string, never>;
@@ -90,6 +95,21 @@ function qualityFor(row: SocialVariant, campaign: Campaign, enforceCampaign = fa
   return deterministicQualityFlags(structuredVariant(row), campaign.generation_context?.sources || [], row.media_strategy, enforceCampaign ? { ctaType: campaign.cta_type, ctaUrl: campaign.cta_url } : undefined);
 }
 
+async function visualApprovalError(service: any, campaign: Campaign, row: SocialVariant) {
+  if (!contentVisualStudioEnabled() || row.visual_kind === "text" || row.media_strategy === "text_only") return null;
+  if (!row.brand_template_id) return "Elegí un preset visual antes de aprobar.";
+  const template = await service.from("brand_media_templates").select("*").eq("id", row.brand_template_id).maybeSingle();
+  if (!template.data) return "El preset visual ya no está disponible.";
+  try {
+    const preset = template.data.preset_key as VisualPreset;
+    if (row.visual_kind === "carousel") {
+      const blocking = carouselQualityFlags(parseCarouselSlides(row.carousel_slides), campaign.generation_context?.sources || [], preset).find((flag) => flag.severity === "blocking");
+      if (blocking) return blocking.message;
+    }
+    return row.rendered_visual_hash === await socialVisualHash(service, campaign, row, template.data, true) ? null : "Recomponé la pieza visual antes de aprobar esta versión.";
+  } catch { return "El carrusel no cumple su estructura de 3 a 7 placas."; }
+}
+
 function detailUrl(campaignId: string, variantId?: string, saved?: string, returnTo?: string) {
   const query = new URLSearchParams();
   if (variantId) query.set("variant", variantId);
@@ -109,15 +129,17 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (!isUuid(campaignId)) throw new Response("Campaña inválida.", { status: 404 });
   const qualityEnabled = contentQualityEnabled();
   const campaignColumns = `id,title,source_type,source_id,status,updated_at,generation_context${qualityEnabled ? ",cta_type,cta_url" : ""}`;
-  const variantColumns = `id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at${qualityEnabled ? ",quality_scorecard,quality_review_hash,quality_reviewed_at,quality_review_run_id" : ""}`;
+  const visualEnabled = contentVisualStudioEnabled();
+  const variantColumns = `id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at${qualityEnabled ? ",quality_scorecard,quality_review_hash,quality_reviewed_at,quality_review_run_id" : ""}${visualEnabled ? ",visual_kind,carousel_slides,rendered_visual_hash" : ""}`;
 
-  const [campaignResult, variantsResult, versionsResult] = await Promise.all([
+  const [campaignResult, variantsResult, versionsResult, assetsResult] = await Promise.all([
     context.service.from("social_campaigns").select(campaignColumns).eq("id", campaignId).maybeSingle(),
     context.service.from("content_distribution_drafts").select(variantColumns).eq("campaign_id", campaignId).order("locale").order("channel"),
     qualityEnabled ? context.service.from("social_variant_versions").select("id,draft_id,version_number,change_type,snapshot,content_hash,source_version_id,created_at").eq("campaign_id", campaignId).order("version_number", { ascending: false }).limit(500) : Promise.resolve({ data: [], error: null }),
+    visualEnabled ? context.service.from("brand_media_assets").select("id,title").eq("is_active", true).order("title") : Promise.resolve({ data: [], error: null }),
   ]);
   if (campaignResult.error || !campaignResult.data) throw new Response("Campaña no encontrada.", { status: 404 });
-  if (variantsResult.error || versionsResult.error) throw new Response("No se pudieron cargar las variantes.", { status: 500 });
+  if (variantsResult.error || versionsResult.error || assetsResult.error) throw new Response("No se pudieron cargar las variantes.", { status: 500 });
 
   const campaign = campaignResult.data as unknown as Campaign;
   const variants = (variantsResult.data || []) as unknown as SocialVariant[];
@@ -127,11 +149,21 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     || variants[0]
     || null;
 
-  let mediaUrl: string | null = null;
+  let mediaUrl: string | null = null; let mediaDownloadUrl: string | null = null; let slideUrls: string[] = []; let documentUrl: string | null = null;
   const mediaPath = selected?.media_urls?.primary?.output_path;
-  if (mediaPath) mediaUrl = (await context.service.storage.from("generated-media").createSignedUrl(mediaPath, 3600)).data?.signedUrl || null;
+  if (mediaPath) {
+    mediaUrl = (await context.service.storage.from("generated-media").createSignedUrl(mediaPath, 3600)).data?.signedUrl || null;
+    const extension = selected?.channel === "instagram" ? "jpg" : "png";
+    mediaDownloadUrl = (await context.service.storage.from("generated-media").createSignedUrl(mediaPath, 3600, { download: `${campaign.title}-${selected?.channel}.${extension}` })).data?.signedUrl || null;
+  }
+  if (visualEnabled && selected?.visual_kind === "carousel") {
+    const slidePaths = (selected.media_urls?.slides || []).map((item) => item.output_path).filter(Boolean) as string[];
+    if (slidePaths.length) slideUrls = (await Promise.all(slidePaths.map(async (path, index) => (await context.service.storage.from("generated-media").createSignedUrl(path, 3600, { download: `${campaign.title}-${selected.channel}-${index + 1}.${selected.channel === "instagram" ? "jpg" : "png"}` })).data?.signedUrl || ""))).filter(Boolean);
+    const documentPath = selected.media_urls?.document?.output_path;
+    if (documentPath) documentUrl = (await context.service.storage.from("generated-media").createSignedUrl(documentPath, 3600, { download: `${campaign.title}-linkedin.pdf` })).data?.signedUrl || null;
+  }
   const returnToParam = new URL(request.url).searchParams.get("return_to");
-  return opsData({ campaign, variants, versions: (versionsResult.data || []) as VariantVersion[], selectedId: selected?.id || null, mediaUrl, composerEnabled: contentComposerEnabled(), calendarEnabled: contentCalendarEnabled(), qualityEnabled, returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "", versionA: new URL(request.url).searchParams.get("version_a") || "", versionB: new URL(request.url).searchParams.get("version_b") || "" }, context.headers);
+  return opsData({ campaign, variants, versions: (versionsResult.data || []) as VariantVersion[], selectedId: selected?.id || null, mediaUrl, mediaDownloadUrl, slideUrls, documentUrl, assets: assetsResult.data || [], composerEnabled: contentComposerEnabled(), visualEnabled, calendarEnabled: contentCalendarEnabled(), qualityEnabled, returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "", versionA: new URL(request.url).searchParams.get("version_a") || "", versionB: new URL(request.url).searchParams.get("version_b") || "" }, context.headers);
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -170,6 +202,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const variants = (variantsResult.data || []) as SocialVariant[];
     const eligible = variants.filter((variant) => variant.status === "draft" || variant.status === "rejected");
     if (!eligible.length) return actionError(context, "La campaña no tiene variantes pendientes para aprobar.", 409);
+    for (const variant of eligible) { const visualError = await visualApprovalError(context.service, campaign, variant); if (visualError) return actionError(context, `No se aprobó la campaña: ${visualError}`, 422, variant.id, { content: visualError }); }
     let updateResult;
     if (contentQualityEnabled()) {
       if (!contentQualityConfigurationValid()) return actionError(context, "Configurá las tarifas del modelo antes de usar la revisión de calidad.", 503);
@@ -268,12 +301,54 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
+  if (intent === "save_carousel") {
+    if (!contentVisualStudioEnabled() || before.visual_kind !== "carousel") return actionError(context, "El editor de carrusel está deshabilitado.", 503, variantId);
+    if (before.status === "published" || before.status === "archived") return actionError(context, "Esta variante no puede editarse en su estado actual.", 409, variantId);
+    let slides: SocialCarouselSlide[];
+    try { slides = parseCarouselSlides(JSON.parse(stringField(form, "carousel_slides", 60_000))); }
+    catch { return actionError(context, "Revisá la estructura, longitudes y alt text de las placas.", 422, variantId); }
+    const preset = campaign.generation_context?.visual?.preset_key || "editorial";
+    const flags = carouselQualityFlags(slides, campaign.generation_context?.sources || [], preset);
+    const blocking = flags.find((flag) => flag.severity === "blocking");
+    if (blocking) return actionError(context, blocking.message, 422, variantId, { content: blocking.message });
+    const updated = await context.service.from("content_distribution_drafts").update({ carousel_slides: slides, rendered_visual_hash: null, quality_flags: [...qualityFor(before, campaign), ...flags], generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+    if (!updated.data) return actionError(context, "La variante cambió mientras editabas el carrusel. Recargá antes de continuar.", 409, variantId);
+    await audit(context, { action: "save_carousel", entityType: "distribution_draft", entityId: variantId, before: { slide_count: before.carousel_slides?.length || 0 }, after: { slide_count: slides.length } });
+    throw redirect(detailUrl(campaignId, variantId, "carousel", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
+  if (intent === "regenerate_carousel_slide") {
+    if (!contentVisualStudioEnabled() || before.visual_kind !== "carousel") return actionError(context, "La regeneración visual está deshabilitada.", 503, variantId);
+    const slideIndex = Number(form.get("slide_index")); const slides = parseCarouselSlides(before.carousel_slides);
+    if (!Number.isInteger(slideIndex) || !slides[slideIndex]) return actionError(context, "Placa inválida.", 422, variantId);
+    const key = stringField(form, "idempotency_key", 200); const preset = campaign.generation_context?.visual?.preset_key || "editorial";
+    const modelContext = { campaign: { title: campaign.title }, sources: campaign.generation_context?.sources || [], current_variant: structuredVariant(before) };
+    const hash = stableHash({ operation: "carousel", draft_id: variantId, slide_index: slideIndex, slides, preset });
+    const begun = await context.service.rpc("begin_social_generation", { target_campaign_id: campaignId, target_draft_id: variantId, target_operation: "carousel", target_stage: "drafting", target_section: null, target_idempotency_key: key, target_request_hash: hash, target_model: process.env.CONTENT_TEXT_MODEL || "gpt-5.6-terra", target_created_by: context.userId });
+    if (begun.error) return actionError(context, "No se pudo iniciar la regeneración de la placa.", 409, variantId);
+    const run = (Array.isArray(begun.data) ? begun.data[0] : begun.data) as Record<string, any>;
+    if (run.status !== "succeeded") try {
+      await context.service.from("social_generation_runs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", run.id);
+      const generated = await regenerateSocialCarouselSlide(modelContext, slides, slideIndex, preset);
+      const next = slides.map((slide, index) => index === slideIndex ? generated.slide : slide);
+      const updated = await context.service.from("content_distribution_drafts").update({ carousel_slides: next, rendered_visual_hash: null, status: "draft", generation_metadata: { ...before.generation_metadata, media_stale: true, last_regeneration_run_id: run.id, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+      if (!updated.data) throw new Error("generation_conflict");
+      await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", request_id: generated.requestId, usage: generated.usage, result_summary: { slide_index: slideIndex }, completed_at: new Date().toISOString() }).eq("id", run.id);
+      await audit(context, { action: "regenerate_carousel_slide", entityType: "distribution_draft", entityId: variantId, after: { slide_index: slideIndex, run_id: run.id } });
+    } catch (error) {
+      await context.service.from("social_generation_runs").update({ status: "failed", error_code: "generation_failed", error_message: "No se pudo regenerar la placa.", completed_at: new Date().toISOString() }).eq("id", run.id);
+      return actionError(context, "No se pudo regenerar la placa. El carrusel anterior sigue intacto.", 502, variantId);
+    }
+    throw redirect(detailUrl(campaignId, variantId, "carousel", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
   if (intent === "render_media") {
     if (!contentComposerEnabled()) return actionError(context, "La composición visual está deshabilitada.", 503, variantId);
-    if (before.media_strategy === "text_only" || !before.brand_template_id || !before.image_headline || !before.image_alt) return actionError(context, "Completá título visual, alt text y plantilla antes de componer.", 422, variantId);
+    if (before.media_strategy === "text_only" || !before.brand_template_id || (before.visual_kind !== "carousel" && (!before.image_headline || !before.image_alt))) return actionError(context, "Completá el contenido visual, alt text y preset antes de componer.", 422, variantId);
     const template = await context.service.from("brand_media_templates").select("*").eq("id", before.brand_template_id).eq("is_active", true).maybeSingle();
     if (!template.data) return actionError(context, "La plantilla ya no está disponible.", 422, variantId);
-    const key = stringField(form, "idempotency_key", 200); const hash = stableHash({ operation: "render_media", draft_id: variantId, headline: before.image_headline, template_id: before.brand_template_id, media_strategy: before.media_strategy });
+    const desiredVisualHash = await socialVisualHash(context.service, campaign, before, template.data, contentVisualStudioEnabled());
+    const key = `render:${variantId}:${desiredVisualHash}`; const hash = stableHash({ operation: "render_media", draft_id: variantId, visual_hash: desiredVisualHash });
     const begun = await context.service.rpc("begin_social_generation", { target_campaign_id: campaignId, target_draft_id: variantId, target_operation: "render_media", target_stage: "rendering", target_section: null, target_idempotency_key: key, target_request_hash: hash, target_model: null, target_created_by: context.userId });
     if (begun.error) return actionError(context, "No se pudo iniciar la composición.", 409, variantId);
     const run = (Array.isArray(begun.data) ? begun.data[0] : begun.data) as Record<string, any>;
@@ -281,17 +356,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const renderingStarted = Date.now();
       try {
         await context.service.from("social_generation_runs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", run.id);
-        let sourceUrl: string | undefined;
-        if (template.data.layout === "image_overlay") {
-          const assetId = campaign.generation_context?.visual?.asset_id; const asset = await context.service.from("brand_media_assets").select("storage_path").eq("id", assetId).eq("is_active", true).maybeSingle();
-          if (!asset.data) throw new Error("brand_asset_unavailable"); const signed = await context.service.storage.from("brand-assets").createSignedUrl(asset.data.storage_path, 600); if (!signed.data?.signedUrl) throw new Error("brand_asset_unavailable"); sourceUrl = signed.data.signedUrl;
-        }
-        const jpeg = before.channel === "instagram"; const outputPath = `${campaignId}/${variantId}.${jpeg ? "jpg" : "png"}`; const upload = await context.service.storage.from("generated-media").createSignedUploadUrl(outputPath, { upsert: true }); if (!upload.data?.signedUrl) throw new Error("media_upload_unavailable");
-        const rendered = await renderContentOverlay({ layout: template.data.layout, output_format: template.data.output_format, output_mime: jpeg ? "image/jpeg" : "image/png", ...(sourceUrl ? { source_url: sourceUrl } : {}), destination_upload_url: upload.data.signedUrl, output_path: outputPath, headline: before.image_headline, safe_zone: template.data.safe_zone, text_align: template.data.text_align, vertical_align: template.data.vertical_align, overlay_color: template.data.overlay_color, overlay_opacity: Number(template.data.overlay_opacity), text_color: template.data.text_color, min_font_size: template.data.min_font_size, max_font_size: template.data.max_font_size, logo_enabled: template.data.logo_enabled }, `render:${run.id}:${variantId}`, run.id);
-        const update = await context.service.from("content_distribution_drafts").update({ media_urls: { primary: rendered }, generation_metadata: { ...before.generation_metadata, media_stale: false, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle(); if (!update.data) throw new Error("render_conflict");
+        const rendered = await renderSocialVisual(context.service, campaign, before, template.data, run.id, contentVisualStudioEnabled());
         const completedAt = new Date().toISOString();
-        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", result_summary: { output_path: rendered.output_path, sha256: rendered.sha256 }, completed_at: completedAt, ...(contentQualityEnabled() ? buildRunTelemetry({ rendering: { requestId: run.id, durationMs: Date.now() - renderingStarted } }, run.started_at || completedAt, completedAt) : {}) }).eq("id", run.id);
-        await audit(context, { action: "render_media", entityType: "distribution_draft", entityId: variantId, after: { run_id: run.id, output_path: rendered.output_path, sha256: rendered.sha256 } });
+        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", result_summary: { visual_hash: rendered.visualHash }, completed_at: completedAt, ...(contentQualityEnabled() ? buildRunTelemetry({ rendering: { requestId: run.id, durationMs: Date.now() - renderingStarted } }, run.started_at || completedAt, completedAt) : {}) }).eq("id", run.id);
+        await audit(context, { action: "render_media", entityType: "distribution_draft", entityId: variantId, after: { run_id: run.id, visual_hash: rendered.visualHash, slide_count: before.carousel_slides?.length || 1 } });
       } catch (error) {
         const completedAt = new Date().toISOString();
         const rawCode = typeof (error as { code?: unknown })?.code === "string" ? String((error as { code: string }).code) : "render_failed";
@@ -357,6 +425,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     auditAction = "save";
   } else if (intent === "approve_variant") {
     if (!['draft', 'rejected'].includes(before.status) || !canTransitionSocialDraft(before.status, "approved")) return actionError(context, "Sólo se pueden aprobar borradores o variantes rechazadas.", 409, variantId);
+    const visualError = await visualApprovalError(context.service, campaign, before); if (visualError) return actionError(context, visualError, 422, variantId, { content: visualError });
     if (contentQualityEnabled()) {
       if (!contentQualityConfigurationValid()) return actionError(context, "Configurá las tarifas del modelo antes de usar la revisión de calidad.", 503, variantId);
       let review;
@@ -413,6 +482,7 @@ const savedMessages: Record<string, string> = {
   archive: "Variante archivada.",
   regenerate: "Sección regenerada y revisada. La variante volvió a borrador.",
   render: "Pieza visual recompuesta con el título guardado.",
+  carousel: "Carrusel guardado. Recomponé sus medios antes de aprobar.",
   schedule: "Variante programada. Esto no publica automáticamente.",
   reschedule: "Horario actualizado en hora de Buenos Aires.",
   unschedule: "Programación eliminada; la variante volvió a aprobada.",
@@ -421,7 +491,29 @@ const savedMessages: Record<string, string> = {
   "campaign-approved": "Campaña aprobada. Ninguna variante fue publicada ni programada.",
 };
 
-export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; versions: VariantVersion[]; selectedId: string | null; mediaUrl: string | null; composerEnabled: boolean; calendarEnabled: boolean; qualityEnabled: boolean; returnTo: string; today: string; saved: string; versionA: string; versionB: string }; actionData?: ActionData }) {
+function evidenceText(slide: SocialCarouselSlide) { return slide.evidence_refs.map((ref) => `${ref.claim} | ${ref.source_key}`).join("\n"); }
+function CarouselEditor({ variant, campaign, assets, urls, documentUrl, readOnly }: { key?: string; variant: SocialVariant; campaign: Campaign; assets: Array<{ id: string; title: string }>; urls: string[]; documentUrl: string | null; readOnly: boolean }) {
+  const initial = parseCarouselSlides(variant.carousel_slides || []);
+  const [slides, setSlides] = useState(initial); const [selectedIndex, setSelectedIndex] = useState(0);
+  const selected = slides[selectedIndex]; const preset = campaign.generation_context?.visual?.preset_key || "editorial";
+  const update = (changes: Partial<SocialCarouselSlide>) => setSlides((current) => current.map((slide, index) => index === selectedIndex ? { ...slide, ...changes } : slide));
+  const parseEvidence = (value: string) => value.split(/\r?\n/).flatMap((line) => { const split = line.lastIndexOf("|"); return split > 0 ? [{ claim: line.slice(0, split).trim(), source_key: line.slice(split + 1).trim() }].filter((ref) => ref.claim && ref.source_key) : []; });
+  const addSlide = () => { if (slides.length >= 7) return; const index = slides.length - 1; const slide: SocialCarouselSlide = { id: crypto.randomUUID(), role: "content", eyebrow: "", headline: "Nueva idea", body: "", bullets: [], emphasis: null, evidence_refs: [], asset_id: null, alt_text: "Placa de contenido de Puna Tech." }; setSlides((current) => [...current.slice(0, index), slide, ...current.slice(index)]); setSelectedIndex(index); };
+  const duplicate = () => { if (slides.length >= 7) return; const index = Math.min(Math.max(1, selectedIndex + 1), slides.length - 1); const slide = { ...selected, id: crypto.randomUUID(), role: "content" as const }; setSlides((current) => [...current.slice(0, index), slide, ...current.slice(index)]); setSelectedIndex(index); };
+  const remove = () => { if (slides.length <= 3 || selected.role !== "content") return; setSlides((current) => current.filter((_, index) => index !== selectedIndex)); setSelectedIndex(Math.max(0, selectedIndex - 1)); };
+  const move = (direction: -1 | 1) => { const target = selectedIndex + direction; if (selected.role !== "content" || target < 1 || target > slides.length - 2) return; setSlides((current) => { const next = [...current]; [next[selectedIndex], next[target]] = [next[target], next[selectedIndex]]; return next; }); setSelectedIndex(target); };
+  const dirty = JSON.stringify(slides) !== JSON.stringify(initial);
+  return <section className="ops-carousel-editor" aria-labelledby="carousel-editor-title"><header><div><p className="ops-eyebrow">Pieza multipágina</p><h3 id="carousel-editor-title">Carrusel · {slides.length} placas</h3></div>{variant.rendered_visual_hash ? <StatusBadge value="active"/> : <StatusBadge value="warning"/>}</header>
+    <nav className="ops-slide-tabs" aria-label="Elegir placa">{slides.map((slide, index) => <button type="button" className={index === selectedIndex ? "active" : ""} aria-current={index === selectedIndex ? "step" : undefined} onClick={() => setSelectedIndex(index)} key={slide.id}><span>{index + 1}</span>{slide.role === "cover" ? "Portada" : slide.role === "cta" ? "Cierre" : "Contenido"}</button>)}</nav>
+    <div className="ops-carousel-workspace"><div className="ops-carousel-preview">{urls[selectedIndex] ? <img src={urls[selectedIndex]} alt={selected.alt_text}/> : <div className={`ops-preset-preview is-${preset}`}><span>{selected.eyebrow || `${selectedIndex + 1} / ${slides.length}`}</span>{selected.emphasis ? <b>{selected.emphasis}</b> : null}<strong>{selected.headline}</strong><p>{selected.body}</p></div>}<small>{urls[selectedIndex] ? "Render actual" : "Vista previa editorial; falta componer"}</small></div>
+      <div className="ops-carousel-fields"><label className="ops-field"><span>Antetítulo</span><input value={selected.eyebrow} maxLength={40} onChange={(event) => update({ eyebrow: event.target.value })} readOnly={readOnly}/><small>{selected.eyebrow.length}/40</small></label><label className="ops-field"><span>Título</span><textarea value={selected.headline} maxLength={100} rows={3} onChange={(event) => update({ headline: event.target.value })} readOnly={readOnly}/><small>{selected.headline.length}/100</small></label>{preset === "evidence" ? <label className="ops-field"><span>Dato destacado</span><input value={selected.emphasis || ""} maxLength={40} onChange={(event) => update({ emphasis: event.target.value || null })} readOnly={readOnly}/></label> : null}<label className="ops-field"><span>Desarrollo</span><textarea value={selected.body} maxLength={260} rows={4} onChange={(event) => update({ body: event.target.value })} readOnly={readOnly}/><small>{selected.body.length}/260</small></label><label className="ops-field"><span>Bullets, uno por línea</span><textarea value={selected.bullets.join("\n")} rows={4} onChange={(event) => update({ bullets: event.target.value.split(/\r?\n/).slice(0, 4) })} readOnly={readOnly}/></label><label className="ops-field"><span>Evidencia: afirmación | clave</span><textarea value={evidenceText(selected)} rows={3} onChange={(event) => update({ evidence_refs: parseEvidence(event.target.value) })} readOnly={readOnly}/></label><label className="ops-field"><span>Imagen aprobada</span><select value={selected.asset_id || ""} onChange={(event) => update({ asset_id: event.target.value || null })} disabled={readOnly}><option value="">Usar la imagen general</option>{assets.map((asset) => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select></label><label className="ops-field"><span>Texto alternativo</span><textarea value={selected.alt_text} maxLength={500} rows={3} onChange={(event) => update({ alt_text: event.target.value })} readOnly={readOnly}/></label></div></div>
+    {!readOnly ? <div className="ops-carousel-toolbar"><button type="button" className="ops-inline-action" onClick={() => move(-1)} disabled={selected.role !== "content" || selectedIndex <= 1}><ArrowUp size={15}/>Mover antes</button><button type="button" className="ops-inline-action" onClick={() => move(1)} disabled={selected.role !== "content" || selectedIndex >= slides.length - 2}><ArrowDown size={15}/>Mover después</button><button type="button" className="ops-inline-action" onClick={duplicate} disabled={slides.length >= 7}><Copy size={15}/>Duplicar</button><button type="button" className="ops-inline-action" onClick={addSlide} disabled={slides.length >= 7}><Plus size={15}/>Agregar</button><button type="button" className="ops-inline-action is-danger" onClick={remove} disabled={slides.length <= 3 || selected.role !== "content"}><Trash2 size={15}/>Quitar</button></div> : null}
+    {!readOnly ? <div className="ops-carousel-actions"><Form method="post"><input type="hidden" name="intent" value="save_carousel"/><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><input type="hidden" name="carousel_slides" value={JSON.stringify(slides)}/><button className="ops-button" disabled={!dirty}><Save size={16}/>Guardar carrusel</button></Form><Form method="post"><input type="hidden" name="intent" value="regenerate_carousel_slide"/><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><input type="hidden" name="slide_index" value={selectedIndex}/><input type="hidden" name="idempotency_key" value={`carousel:${variant.id}:${variant.updated_at}:${selectedIndex}`}/><button className="ops-button ops-button-secondary" disabled={dirty}><Sparkles size={16}/>Regenerar esta placa</button></Form></div> : null}
+    <div className="ops-carousel-downloads">{urls.map((url, index) => <a href={url} target="_blank" rel="noreferrer" key={url}><Download size={15}/>Placa {index + 1}</a>)}{documentUrl ? <a href={documentUrl}><Download size={15}/>PDF para LinkedIn</a> : null}</div>
+  </section>;
+}
+
+export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; versions: VariantVersion[]; selectedId: string | null; mediaUrl: string | null; mediaDownloadUrl: string | null; slideUrls: string[]; documentUrl: string | null; assets: Array<{ id: string; title: string }>; composerEnabled: boolean; visualEnabled: boolean; calendarEnabled: boolean; qualityEnabled: boolean; returnTo: string; today: string; saved: string; versionA: string; versionB: string }; actionData?: ActionData }) {
   const selected = loaderData.variants.find((variant) => variant.id === loaderData.selectedId) || null;
   const [sections, setSections] = useState(() => ({ hook: selected?.hook || "", body: selected?.body ?? selected?.content ?? "", cta: selected?.cta || "", hashtags: (selected?.hashtags || []).join(" "), image_headline: selected?.image_headline || "", image_alt: selected?.image_alt || "" }));
   const errorRef = useRef<HTMLDivElement>(null);
@@ -471,15 +563,16 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
           <input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/>
           {([['hook','Gancho',3],['body','Cuerpo',selected.channel === 'x' ? 5 : 10],['cta','CTA',3]] as const).map(([field,label,rows]) => <div className="ops-section-field" key={field}><label className="ops-field"><span>{label}</span><textarea name={field} rows={rows} value={sections[field]} onChange={(event) => updateSection(field, event.target.value)} readOnly={readOnly}/></label></div>)}
           <label className="ops-field"><span>Hashtags</span><input name="hashtags" value={sections.hashtags} onChange={(event) => updateSection("hashtags", event.target.value)} readOnly={readOnly} placeholder="#automatizacion #operaciones"/></label>
-          <div className="ops-field-grid"><label className="ops-field"><span>Título visual</span><input name="image_headline" maxLength={120} value={sections.image_headline} onChange={(event) => updateSection("image_headline", event.target.value)} readOnly={readOnly}/><small>{sections.image_headline.length} / 120</small></label><label className="ops-field"><span>Texto alternativo</span><textarea name="image_alt" maxLength={500} rows={3} value={sections.image_alt} onChange={(event) => updateSection("image_alt", event.target.value)} readOnly={readOnly} aria-invalid={Boolean(altError)}/>{altError ? <small className="ops-field-error" role="alert">{altError}</small> : null}</label></div>
-          {loaderData.mediaUrl ? <figure className="ops-generated-media"><img src={loaderData.mediaUrl} alt={selected.image_alt || "Vista previa de la pieza"}/><figcaption><ImageIcon size={15}/>Pieza generada{sections.image_headline !== (selected.image_headline || "") ? " · el título cambió; la imagen todavía no fue recompuesta" : ""}</figcaption></figure> : null}
+          {selected.visual_kind !== "carousel" ? <div className="ops-field-grid"><label className="ops-field"><span>Título visual</span><input name="image_headline" maxLength={120} value={sections.image_headline} onChange={(event) => updateSection("image_headline", event.target.value)} readOnly={readOnly}/><small>{sections.image_headline.length} / 120</small></label><label className="ops-field"><span>Texto alternativo</span><textarea name="image_alt" maxLength={500} rows={3} value={sections.image_alt} onChange={(event) => updateSection("image_alt", event.target.value)} readOnly={readOnly} aria-invalid={Boolean(altError)}/>{altError ? <small className="ops-field-error" role="alert">{altError}</small> : null}</label></div> : <><input type="hidden" name="image_headline" value={sections.image_headline}/><input type="hidden" name="image_alt" value={sections.image_alt}/></>}
+          {loaderData.mediaUrl && selected.visual_kind !== "carousel" ? <figure className="ops-generated-media"><img src={loaderData.mediaUrl} alt={selected.image_alt || "Vista previa de la pieza"}/><figcaption><ImageIcon size={15}/>Pieza generada{sections.image_headline !== (selected.image_headline || "") ? " · el título cambió; la imagen todavía no fue recompuesta" : ""}</figcaption>{loaderData.mediaDownloadUrl ? <a className="ops-inline-action" href={loaderData.mediaDownloadUrl}><Download size={15}/>Descargar {selected.channel === "instagram" ? "JPEG" : "PNG"}</a> : null}</figure> : null}
           <div className="ops-copy-preview"><strong>Vista previa del copy final</strong><pre>{currentContent}</pre><small id="social-counter" className={characterCount > limit ? "ops-counter is-over" : "ops-counter"} aria-live="polite">{characterCount} / {limit} caracteres{selected.channel === "x" ? " · conteo conservador" : ""}</small>{contentError ? <small id="social-content-error" className="ops-field-error" role="alert">{contentError}</small> : null}</div>
           {qualityFlags.length ? <div className="ops-quality-flags" aria-label="Controles de calidad"><strong>Controles de calidad</strong><ul>{qualityFlags.map((flag, index) => <li className={`is-${flag.severity}`} key={`${flag.code}-${index}`}><StatusBadge value={flag.severity}/>{flag.message}</li>)}</ul></div> : <Notice tone="success">Sin bloqueos automáticos de calidad.</Notice>}
           {loaderData.qualityEnabled && selected.quality_scorecard && "clarity" in selected.quality_scorecard ? <QualityScorecardView scorecard={selected.quality_scorecard as QualityScorecard} reviewedAt={selected.quality_reviewed_at}/> : loaderData.qualityEnabled ? <p className="ops-muted">La puntuación editorial se calculará al aprobar esta versión.</p> : null}
           {selected.original_sections ? <details className="ops-original-copy"><summary>Comparar con la versión generada</summary><pre>{composeSocialContent({ ...structuredVariant(selected), ...(selected.original_sections as Partial<GeneratedSocialVariant>) })}</pre></details> : null}
           <div className="ops-editor-primary"><span>{selected.status === "approved" || selected.status === "rejected" ? "Editar devuelve esta variante a borrador." : "Los cambios se guardan antes de actualizar la pantalla."}</span><button className="ops-button" type="submit" name="intent" value="save_variant" disabled={!dirty || characterCount === 0 || characterCount > limit || selected.status === "published" || selected.status === "archived"}><Save aria-hidden="true" size={17}/>Guardar cambios</button></div>
         </Form>
-        {loaderData.composerEnabled && !readOnly ? <div className="ops-regenerate-row" aria-label="Acciones asistidas">{([['hook','gancho'],['body','cuerpo'],['cta','CTA']] as const).map(([field,label]) => <Form method="post" key={field}><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="section" value={field}/><input type="hidden" name="idempotency_key" value={`regen:${selected.id}:${selected.updated_at}:${field}`}/><button className="ops-inline-action" name="intent" value="regenerate_section" type="submit" disabled={dirty}><Sparkles size={15}/>Regenerar {label}</button></Form>)}{selected.media_strategy !== "text_only" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="idempotency_key" value={`render:${selected.id}:${selected.updated_at}:${selected.image_headline}`}/><button className="ops-inline-action" name="intent" value="render_media" type="submit" disabled={dirty}><ImageIcon size={15}/>Recomponer imagen</button></Form> : null}</div> : null}
+        {loaderData.visualEnabled && selected.visual_kind === "carousel" ? <CarouselEditor key={`${selected.id}:${selected.updated_at}`} variant={selected} campaign={loaderData.campaign} assets={loaderData.assets} urls={loaderData.slideUrls} documentUrl={loaderData.documentUrl} readOnly={readOnly}/> : null}
+        {loaderData.composerEnabled && !readOnly ? <div className="ops-regenerate-row" aria-label="Acciones asistidas">{([['hook','gancho'],['body','cuerpo'],['cta','CTA']] as const).map(([field,label]) => <Form method="post" key={field}><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="section" value={field}/><input type="hidden" name="idempotency_key" value={`regen:${selected.id}:${selected.updated_at}:${field}`}/><button className="ops-inline-action" name="intent" value="regenerate_section" type="submit" disabled={dirty}><Sparkles size={15}/>Regenerar {label}</button></Form>)}{selected.media_strategy !== "text_only" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="idempotency_key" value={`render:${selected.id}:${selected.updated_at}:${selected.image_headline}:${selected.rendered_visual_hash || "pending"}`}/><button className="ops-inline-action" name="intent" value="render_media" type="submit" disabled={dirty}><ImageIcon size={15}/>{selected.visual_kind === "carousel" ? "Recomponer carrusel" : "Recomponer imagen"}</button></Form> : null}</div> : null}
 
         {loaderData.calendarEnabled && (selected.status === "approved" || selected.status === "scheduled") ? <section className="ops-schedule-block" aria-labelledby="social-schedule-title">
           <div><p className="ops-eyebrow">Planificación manual</p><h3 id="social-schedule-title">{selected.status === "scheduled" ? "Reprogramar variante" : "Programar variante"}</h3><p><Clock3 size={15}/>Hora de Buenos Aires · programar no publica.</p>{selected.scheduled_for ? <strong>Fecha actual: {formatCalendarDateTime(selected.scheduled_for)}</strong> : null}</div>
@@ -512,7 +605,7 @@ function QualityScorecardView({ scorecard, reviewedAt }: { scorecard: QualitySco
   return <section className="ops-quality-scorecard" aria-labelledby="quality-scorecard-title"><div><h3 id="quality-scorecard-title">Puntuación editorial</h3><small>{reviewedAt ? `Revisada ${formatDate(reviewedAt, true)}` : "Revisión pendiente"}</small></div><div>{(Object.entries(scorecard) as Array<[keyof QualityScorecard, QualityScorecard[keyof QualityScorecard]]>).map(([key, value]) => <article key={key}><span>{scoreLabels[key]}</span><strong>{value.score}</strong><meter min="0" max="100" low="60" optimum="90" value={value.score}>{value.score}/100</meter><p>{value.rationale}</p></article>)}</div></section>;
 }
 
-const snapshotFields = [["hook", "Gancho"], ["body", "Cuerpo"], ["cta", "CTA"], ["hashtags", "Hashtags"], ["image_headline", "Título visual"], ["image_alt", "Alt text"], ["evidence_refs", "Evidencia"], ["status", "Estado"]] as const;
+const snapshotFields = [["hook", "Gancho"], ["body", "Cuerpo"], ["cta", "CTA"], ["hashtags", "Hashtags"], ["image_headline", "Título visual"], ["image_alt", "Alt text"], ["evidence_refs", "Evidencia"], ["visual_kind", "Tipo visual"], ["carousel_slides", "Placas del carrusel"], ["rendered_visual_hash", "Versión del medio"], ["status", "Estado"]] as const;
 function snapshotText(value: unknown) { return Array.isArray(value) ? value.map((item) => typeof item === "string" ? item : JSON.stringify(item)).join(" · ") : value == null || value === "" ? "—" : typeof value === "object" ? JSON.stringify(value) : String(value); }
 function VersionHistory({ versions, selected, campaignId, versionA, versionB, returnTo }: { versions: VariantVersion[]; selected: SocialVariant; campaignId: string; versionA: string; versionB: string; returnTo: string }) {
   const left = versions.find((version) => version.id === versionA) || versions[1] || versions[0]; const right = versions.find((version) => version.id === versionB) || versions[0];

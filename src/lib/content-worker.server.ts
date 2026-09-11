@@ -19,17 +19,26 @@ export interface WorkerCapabilities {
   service: "puna-content-worker";
   version: "1";
   mutations_enabled: boolean;
-  capabilities: Array<"brand_overlay">;
+  capabilities: Array<"brand_overlay" | "carousel_document">;
 }
 
 export interface RenderOverlayRequest {
-  layout: "editorial" | "image_overlay";
+  layout: "editorial" | "image_overlay" | "metric" | "framework";
+  composition_kind?: "single" | "carousel_slide";
+  slide_role?: "cover" | "content" | "cta";
   output_format: "instagram_portrait" | "linkedin_square" | "linkedin_horizontal" | "x_horizontal";
   source_url?: string;
   destination_upload_url: string;
   output_path: string;
   output_mime?: "image/png" | "image/jpeg";
   headline: string;
+  eyebrow?: string;
+  body?: string;
+  bullets?: string[];
+  emphasis?: string;
+  slide_number?: number;
+  slide_count?: number;
+  focal_point?: { x: number; y: number };
   safe_zone: { x: number; y: number; width: number; height: number };
   text_align: "left" | "center";
   vertical_align: "top" | "center" | "bottom";
@@ -40,6 +49,8 @@ export interface RenderOverlayRequest {
   max_font_size: number;
   logo_enabled: boolean;
 }
+
+export interface RenderDocumentResponse { output_path: string; mime_type: "application/pdf"; sha256: string; page_count: number }
 
 export interface RenderOverlayResponse {
   output_path: string;
@@ -121,6 +132,10 @@ export function contentQualityEnabled() {
   return contentStudioEnabled() && process.env.CONTENT_QUALITY_ENABLED?.trim().toLowerCase() === "true";
 }
 
+export function contentVisualStudioEnabled() {
+  return contentComposerEnabled() && process.env.CONTENT_VISUAL_STUDIO_ENABLED?.trim().toLowerCase() === "true";
+}
+
 export async function contentWorkerRequest<T>(
   path: string,
   options: {
@@ -188,4 +203,8 @@ export function getContentWorkerCapabilities() {
 
 export function renderContentOverlay(body: RenderOverlayRequest, idempotencyKey: string, requestId?: string) {
   return contentWorkerRequest<RenderOverlayResponse>("/api/v1/render/overlay", { method: "POST", body, idempotencyKey, requestId, timeoutMs: 45_000 });
+}
+
+export function renderContentDocument(body: { source_urls: string[]; destination_upload_url: string; output_path: string }, idempotencyKey: string, requestId?: string) {
+  return contentWorkerRequest<RenderDocumentResponse>("/api/v1/render/document", { method: "POST", body, idempotencyKey, requestId, timeoutMs: 60_000 });
 }

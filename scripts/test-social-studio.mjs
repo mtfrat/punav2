@@ -10,6 +10,7 @@ import {
 } from "../src/lib/social-studio.ts";
 import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, duplicateQualityFlags, normalizeSocialCopy, socialCopySimilarity } from "../src/lib/social-quality.ts";
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
+import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
 import {
   addCalendarDays,
   calendarDateTimeInput,
@@ -71,6 +72,24 @@ assert.equal(exactMatches[0].exact, true);
 assert.equal(blockingQualityMessage(duplicateQualityFlags(exactMatches)), "El copy es idéntico a “Otra campaña” (instagram).");
 assert.equal(duplicateMatches("Texto completamente diferente", duplicateCandidates).length, 0);
 assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [{ key: "source-1", title: "Caso", excerpt: "Se redujo 30% del trabajo manual." }], "puna_editorial", { ctaType: "article", ctaUrl: null })) || "", /HTTPS/);
+
+const slide = (id, role, headline) => ({ id, role, eyebrow: "Sistema", headline, body: "Una explicación breve y operativa.", bullets: [], emphasis: null, evidence_refs: [], asset_id: null, alt_text: `Placa: ${headline}` });
+const carousel = [
+  slide("00000000-0000-4000-8000-000000000001", "cover", "Un sistema editorial claro"),
+  slide("00000000-0000-4000-8000-000000000002", "content", "Separá creación y aprobación"),
+  slide("00000000-0000-4000-8000-000000000003", "cta", "Revisá el próximo paso"),
+];
+assert.equal(parseCarouselSlides(carousel).length, 3);
+assert.throws(() => parseCarouselSlides(carousel.slice(0, 2)), /carousel_slide_count/);
+assert.throws(() => parseCarouselSlides([...carousel, ...carousel, ...carousel].slice(0, 8)), /carousel_slide_count/);
+assert.throws(() => parseCarouselSlides(carousel.map((item, index) => index === 0 ? { ...item, role: "content" } : item)), /invalid_carousel_slide/);
+assert.throws(() => parseCarouselSlides(carousel.map((item, index) => index === 1 ? { ...item, alt_text: "" } : item)), /invalid_carousel_slide/);
+assert.throws(() => parseCarouselSlides([...carousel, { ...carousel[2], id: "00000000-0000-4000-8000-000000000004", role: "extra" }]), /invalid_carousel_slide/);
+assert.throws(() => parseCarouselSlides(carousel.map((item, index) => index === 1 ? { ...item, unexpected: true } : item)), /invalid_carousel_slide/);
+assert.match(blockingQualityMessage(carouselQualityFlags(carousel.map((item, index) => index === 1 ? { ...item, body: "El proceso mejora 30%." } : item), [], "system")) || "", /30%/);
+const supportedCarousel = carousel.map((item, index) => index === 1 ? { ...item, body: "El proceso mejora 30%.", evidence_refs: [{ claim: "El proceso mejora 30%.", source_key: "source-1" }] } : item);
+assert.equal(blockingQualityMessage(carouselQualityFlags(supportedCarousel, [{ key: "source-1", title: "Caso", excerpt: "El proceso mejora 30%." }], "system")), null);
+assert.equal(carouselMaterial(carousel, "system", "00000000-0000-4000-8000-000000000099").slides.length, 3);
 
 process.env.CONTENT_MODEL_INPUT_USD_PER_MILLION = "2";
 process.env.CONTENT_MODEL_CACHED_INPUT_USD_PER_MILLION = "1";
@@ -136,5 +155,22 @@ for (const contract of [
   "grant execute on function public.restore_social_variant_version(uuid, uuid, timestamptz, uuid) to service_role",
 ]) assert.ok(phase4.includes(contract), `Missing Phase 4 migration contract: ${contract}`);
 assert.equal(/create policy[\s\S]+social_variant_versions/i.test(phase4), false, "Variant history must not receive browser policies");
+
+const phase6 = await readFile(new URL("../supabase/migrations/20260906120000_social_visual_system_phase6.sql", import.meta.url), "utf8");
+for (const contract of [
+  "add column if not exists focal_x",
+  "add column if not exists visual_kind",
+  "create or replace function public.valid_social_carousel",
+  "'visual_drafting'",
+  "'quality_review','carousel'",
+  "'Puna Evidencia'",
+  "'Puna Sistema'",
+  "'application/pdf'",
+  "'carousel_slides',draft.carousel_slides",
+  "new.rendered_visual_hash is distinct from old.rendered_visual_hash",
+  "create or replace function public.social_variant_quality_hash",
+  "grant execute on function public.valid_social_carousel(jsonb) to service_role",
+]) assert.ok(phase6.includes(contract), `Missing Phase 6 migration contract: ${contract}`);
+assert.equal(/create policy[\s\S]+(brand_media_assets|content_distribution_drafts)/i.test(phase6), false, "Phase 6 must not expose visual data to browser roles");
 
 console.log("Social Studio contracts passed.");
