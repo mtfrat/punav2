@@ -256,6 +256,16 @@ grant execute on function public.persist_social_generation_variants(uuid,jsonb) 
 revoke all on function public.restore_social_variant_version(uuid,uuid,timestamptz,uuid) from public,anon,authenticated;
 grant execute on function public.restore_social_variant_version(uuid,uuid,timestamptz,uuid) to service_role;
 
+alter table public.content_distribution_drafts enable row level security;
+alter table public.social_generation_runs enable row level security;
+alter table public.social_variant_versions enable row level security;
+revoke all privileges on table public.content_distribution_drafts from anon, authenticated;
+revoke all privileges on table public.social_generation_runs from anon, authenticated;
+revoke all privileges on table public.social_variant_versions from anon, authenticated;
+grant all privileges on table public.content_distribution_drafts to service_role;
+grant all privileges on table public.social_generation_runs to service_role;
+grant all privileges on table public.social_variant_versions to service_role;
+
 comment on column public.content_distribution_drafts.reel_scenes is 'Strict private five-scene Instagram reel storyboard.';
 comment on column public.content_distribution_drafts.reel_provider_metadata is 'Private provider candidates and imported clip identifiers; never exposed outside Operations.';
 comment on column public.social_generation_runs.external_job_id is 'Opaque external render job identifier; never a signed URL.';
