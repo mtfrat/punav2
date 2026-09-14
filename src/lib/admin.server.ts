@@ -45,7 +45,7 @@ export function createAdminAuthClient(request: Request) {
   return { supabase, headers };
 }
 
-function serviceClient() {
+export function createOperationsServiceClient() {
   const { url } = env();
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) throw new Response("Operations database access is not configured.", { status: 503 });
@@ -59,7 +59,7 @@ export function operationsHeaders(existing?: HeadersInit) {
   headers.set("X-Frame-Options", "DENY");
   headers.set("Referrer-Policy", "no-referrer");
   headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
+  headers.set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; media-src 'self' https:; connect-src 'self' https://*.supabase.co; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
   return headers;
 }
 
@@ -75,7 +75,7 @@ export async function requireAdmin(request: Request): Promise<AdminContext> {
     if (userData.user) await supabase.auth.signOut();
     throw redirect("/ops/login", { headers: operationsHeaders(headers) });
   }
-  return { email, userId: userData.user.id, service: serviceClient(), headers };
+  return { email, userId: userData.user.id, service: createOperationsServiceClient(), headers };
 }
 
 export function assertTrustedMutation(request: Request) {

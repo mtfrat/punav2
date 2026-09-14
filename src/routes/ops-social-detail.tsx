@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
-import { Archive, ArrowDown, ArrowLeft, ArrowUp, CalendarClock, Check, Clock3, Copy, Download, ExternalLink, FileClock, Image as ImageIcon, Plus, RotateCcw, Save, Send, ShieldCheck, Sparkles, Trash2, X } from "lucide-react";
+import { Archive, ArrowDown, ArrowLeft, ArrowUp, CalendarClock, Check, Clock3, Copy, Download, ExternalLink, FileClock, Image as ImageIcon, Plus, RefreshCw, RotateCcw, Save, Send, ShieldCheck, Sparkles, Trash2, Video, X } from "lucide-react";
 import { Notice, OpsPageHeader, StatusBadge, formatDate } from "../components/ops";
 import { audit, assertTrustedMutation, operationsHeaders, opsData, requireAdmin, stringField } from "../lib/admin.server";
-import { contentCalendarEnabled, contentComposerEnabled, contentQualityEnabled, contentStudioEnabled, contentVisualStudioEnabled } from "../lib/content-worker.server";
+import { contentCalendarEnabled, contentComposerEnabled, contentQualityEnabled, contentReelsEnabled, contentStudioEnabled, contentVisualStudioEnabled } from "../lib/content-worker.server";
 import { calendarCollisionMessage, calendarDateTimeInput, formatCalendarDateTime, isSafeCalendarReturnTo, todayCalendarKey } from "../lib/social-calendar";
 import { regenerateSocialCarouselSlide, regenerateSocialSection, stableHash } from "../lib/social-generation.server";
 import { SocialScheduleError, scheduleSocialVariant, unscheduleSocialVariant, type ScheduleConflict } from "../lib/social-scheduling.server";
@@ -14,6 +14,9 @@ import { buildRunTelemetry, contentQualityConfigurationValid, isRetryableGenerat
 import { prepareQualityReview } from "../lib/social-quality.server";
 import { carouselQualityFlags, parseCarouselSlides, type SocialCarouselSlide, type VisualPreset } from "../lib/social-visual";
 import { renderSocialVisual, socialVisualHash } from "../lib/social-visual-render.server";
+import { renderReelCover } from "../lib/social-visual-render.server";
+import { parseReelCandidates, parseReelScenes, reelDuration, reelMaterial, reelQualityFlags, type ReelClipCandidate, type ReelImportedClip, type SocialReelScene } from "../lib/social-reels";
+import { importReelClip, reelResource, searchReelClips, signedCloudinaryDownload, startReelRender } from "../lib/social-reels.server";
 import {
   SOCIAL_CHANNEL_LIMITS,
   canTransitionSocialDraft,
@@ -55,9 +58,12 @@ type SocialVariant = {
   image_alt: string | null;
   evidence_refs: GeneratedSocialVariant["evidence_refs"];
   media_strategy: "text_only" | "puna_editorial" | "approved_image";
-  media_urls: { primary?: { output_path?: string; sha256?: string }; slides?: Array<{ output_path?: string; sha256?: string }>; document?: { output_path?: string; sha256?: string } };
-  visual_kind?: "text" | "single" | "carousel";
+  media_urls: { primary?: { output_path?: string; sha256?: string }; slides?: Array<{ output_path?: string; sha256?: string }>; document?: { output_path?: string; sha256?: string }; cover?: { output_path?: string; sha256?: string }; video?: { public_id?: string; format?: string; width?: number; height?: number; duration?: number; bytes?: number; hash?: string } };
+  visual_kind?: "text" | "single" | "carousel" | "reel";
   carousel_slides?: SocialCarouselSlide[];
+  reel_scenes?: SocialReelScene[];
+  reel_duration_seconds?: number | null;
+  reel_provider_metadata?: { candidates?: Record<string, ReelClipCandidate[]>; source_urls?: Record<string, string>; imported_clips?: Record<string, ReelImportedClip>; render?: Record<string, unknown> };
   rendered_visual_hash?: string | null;
   brand_template_id: string | null;
   quality_flags: QualityFlag[];
@@ -97,6 +103,18 @@ function qualityFor(row: SocialVariant, campaign: Campaign, enforceCampaign = fa
 
 async function visualApprovalError(service: any, campaign: Campaign, row: SocialVariant) {
   if (!contentVisualStudioEnabled() || row.visual_kind === "text" || row.media_strategy === "text_only") return null;
+  if (row.visual_kind === "reel") {
+    try {
+      const scenes = parseReelScenes(row.reel_scenes);
+      const metadata = row.reel_provider_metadata || {};
+      const candidates = Object.fromEntries(scenes.map((scene) => [scene.id, parseReelCandidates(metadata.candidates?.[scene.id], scene.id)]));
+      const blocking = reelQualityFlags(scenes, campaign.generation_context?.sources || [], candidates, metadata.imported_clips || {}).find((flag) => flag.severity === "blocking");
+      if (blocking) return blocking.message;
+      const current = await service.rpc("social_variant_quality_hash", { target_variant_id: row.id });
+      if (current.error || row.rendered_visual_hash !== current.data || !row.media_urls?.video || !row.media_urls?.cover) return "Renderizá el MP4 y la portada de esta versión antes de aprobar.";
+      return null;
+    } catch { return "El reel no cumple su estructura de cinco escenas."; }
+  }
   if (!row.brand_template_id) return "Elegí un preset visual antes de aprobar.";
   const template = await service.from("brand_media_templates").select("*").eq("id", row.brand_template_id).maybeSingle();
   if (!template.data) return "El preset visual ya no está disponible.";
@@ -130,7 +148,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const qualityEnabled = contentQualityEnabled();
   const campaignColumns = `id,title,source_type,source_id,status,updated_at,generation_context${qualityEnabled ? ",cta_type,cta_url" : ""}`;
   const visualEnabled = contentVisualStudioEnabled();
-  const variantColumns = `id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at${qualityEnabled ? ",quality_scorecard,quality_review_hash,quality_reviewed_at,quality_review_run_id" : ""}${visualEnabled ? ",visual_kind,carousel_slides,rendered_visual_hash" : ""}`;
+  const reelsEnabled = contentReelsEnabled();
+  const variantColumns = `id,campaign_id,translation_group_id,locale,channel,content,hook,body,cta,hashtags,image_headline,image_alt,evidence_refs,media_strategy,media_urls,brand_template_id,quality_flags,generation_metadata,original_sections,status,rejection_reason,published_at,scheduled_for,created_at,updated_at${qualityEnabled ? ",quality_scorecard,quality_review_hash,quality_reviewed_at,quality_review_run_id" : ""}${visualEnabled ? ",visual_kind,carousel_slides,rendered_visual_hash" : ""}${reelsEnabled ? ",reel_scenes,reel_duration_seconds,reel_provider_metadata" : ""}`;
 
   const [campaignResult, variantsResult, versionsResult, assetsResult] = await Promise.all([
     context.service.from("social_campaigns").select(campaignColumns).eq("id", campaignId).maybeSingle(),
@@ -142,14 +161,15 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   if (variantsResult.error || versionsResult.error || assetsResult.error) throw new Response("No se pudieron cargar las variantes.", { status: 500 });
 
   const campaign = campaignResult.data as unknown as Campaign;
-  const variants = (variantsResult.data || []) as unknown as SocialVariant[];
+  const rawVariants = (variantsResult.data || []) as unknown as SocialVariant[];
+  const variants = rawVariants.map((variant) => variant.visual_kind === "reel" ? { ...variant, reel_provider_metadata: { candidates: variant.reel_provider_metadata?.candidates || {}, imported_clips: variant.reel_provider_metadata?.imported_clips || {}, render: variant.reel_provider_metadata?.render || {} } } : variant);
   const requestedVariant = new URL(request.url).searchParams.get("variant");
   const selected = variants.find((variant) => variant.id === requestedVariant)
     || variants.find((variant) => variant.status === "draft" || variant.status === "rejected")
     || variants[0]
     || null;
 
-  let mediaUrl: string | null = null; let mediaDownloadUrl: string | null = null; let slideUrls: string[] = []; let documentUrl: string | null = null;
+  let mediaUrl: string | null = null; let mediaDownloadUrl: string | null = null; let slideUrls: string[] = []; let documentUrl: string | null = null; let reelVideoUrl: string | null = null; let reelCoverUrl: string | null = null;
   const mediaPath = selected?.media_urls?.primary?.output_path;
   if (mediaPath) {
     mediaUrl = (await context.service.storage.from("generated-media").createSignedUrl(mediaPath, 3600)).data?.signedUrl || null;
@@ -162,8 +182,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const documentPath = selected.media_urls?.document?.output_path;
     if (documentPath) documentUrl = (await context.service.storage.from("generated-media").createSignedUrl(documentPath, 3600, { download: `${campaign.title}-linkedin.pdf` })).data?.signedUrl || null;
   }
+  if (reelsEnabled && selected?.visual_kind === "reel") {
+    const coverPath = selected.media_urls?.cover?.output_path;
+    if (coverPath) reelCoverUrl = (await context.service.storage.from("generated-media").createSignedUrl(coverPath, 600, { download: `${campaign.title}-reel-cover.jpg` })).data?.signedUrl || null;
+    if (selected.media_urls?.video?.public_id) reelVideoUrl = signedCloudinaryDownload(selected.media_urls.video.public_id, selected.media_urls.video.format || "mp4", String(selected.reel_provider_metadata?.render?.transformation || ""));
+  }
   const returnToParam = new URL(request.url).searchParams.get("return_to");
-  return opsData({ campaign, variants, versions: (versionsResult.data || []) as VariantVersion[], selectedId: selected?.id || null, mediaUrl, mediaDownloadUrl, slideUrls, documentUrl, assets: assetsResult.data || [], composerEnabled: contentComposerEnabled(), visualEnabled, calendarEnabled: contentCalendarEnabled(), qualityEnabled, returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "", versionA: new URL(request.url).searchParams.get("version_a") || "", versionB: new URL(request.url).searchParams.get("version_b") || "" }, context.headers);
+  return opsData({ campaign, variants, versions: (versionsResult.data || []) as VariantVersion[], selectedId: selected?.id || null, mediaUrl, mediaDownloadUrl, slideUrls, documentUrl, reelVideoUrl, reelCoverUrl, assets: assetsResult.data || [], composerEnabled: contentComposerEnabled(), visualEnabled, reelsEnabled, calendarEnabled: contentCalendarEnabled(), qualityEnabled, returnTo: isSafeCalendarReturnTo(returnToParam) ? returnToParam : "", today: todayCalendarKey(), saved: new URL(request.url).searchParams.get("saved") || "", versionA: new URL(request.url).searchParams.get("version_a") || "", versionB: new URL(request.url).searchParams.get("version_b") || "" }, context.headers);
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -342,6 +367,130 @@ export async function action({ request, params }: ActionFunctionArgs) {
     throw redirect(detailUrl(campaignId, variantId, "carousel", returnTo), { headers: operationsHeaders(context.headers) });
   }
 
+  if (intent === "save_reel_storyboard") {
+    if (!contentReelsEnabled() || before.visual_kind !== "reel") return actionError(context, "El estudio de reels está deshabilitado.", 503, variantId);
+    if (before.status === "published" || before.status === "archived") return actionError(context, "Este reel no puede editarse en su estado actual.", 409, variantId);
+    let scenes: SocialReelScene[];
+    try { scenes = parseReelScenes(JSON.parse(stringField(form, "reel_scenes", 100_000))); }
+    catch { return actionError(context, "Revisá la estructura, duración, textos y alt text de las cinco escenas.", 422, variantId); }
+    const previousById = new Map((before.reel_scenes || []).map((scene) => [scene.id, scene]));
+    const selectionChanged = scenes.some((scene) => previousById.get(scene.id)?.selected_candidate_key !== scene.selected_candidate_key);
+    const metadata = before.reel_provider_metadata || {};
+    const imported = selectionChanged ? Object.fromEntries(Object.entries(metadata.imported_clips || {}).filter(([sceneId, clip]) => scenes.some((scene) => scene.id === sceneId && scene.selected_candidate_key === clip.candidate_key))) : metadata.imported_clips || {};
+    const flags = reelQualityFlags(scenes, campaign.generation_context?.sources || [], metadata.candidates || {}, imported);
+    const updated = await context.service.from("content_distribution_drafts").update({ reel_scenes: scenes, reel_duration_seconds: reelDuration(scenes), reel_provider_metadata: { ...metadata, imported_clips: imported }, rendered_visual_hash: null, quality_flags: [...qualityFor(before, campaign), ...flags], generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+    if (!updated.data) return actionError(context, "El reel cambió mientras lo editabas. Recargá antes de continuar.", 409, variantId);
+    await audit(context, { action: "save_reel_storyboard", entityType: "distribution_draft", entityId: variantId, before: { duration_seconds: before.reel_duration_seconds }, after: { duration_seconds: reelDuration(scenes), selections_changed: selectionChanged } });
+    throw redirect(detailUrl(campaignId, variantId, "reel", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
+  if (intent === "refresh_reel_sources") {
+    if (!contentReelsEnabled() || before.visual_kind !== "reel") return actionError(context, "El estudio de reels está deshabilitado.", 503, variantId);
+    const sceneId = stringField(form, "scene_id", 80); const scenes = parseReelScenes(before.reel_scenes); const scene = scenes.find((item) => item.id === sceneId);
+    if (!scene) return actionError(context, "Escena inválida.", 422, variantId);
+    const hash = stableHash({ operation: "reel_sources", draft_id: variantId, scene_id: sceneId, query: scene.search_query, version: before.updated_at });
+    const begun = await context.service.rpc("begin_social_generation", { target_campaign_id: campaignId, target_draft_id: variantId, target_operation: "reel_sources", target_stage: "visual_drafting", target_section: null, target_idempotency_key: `reel-sources:${variantId}:${sceneId}:${before.updated_at}`, target_request_hash: hash, target_model: null, target_created_by: context.userId });
+    if (begun.error) return actionError(context, "No se pudo iniciar la búsqueda visual.", 409, variantId);
+    const run = (Array.isArray(begun.data) ? begun.data[0] : begun.data) as Record<string, any>;
+    if (run.status === "succeeded" && before.reel_provider_metadata?.candidates?.[sceneId]?.length === 3) throw redirect(detailUrl(campaignId, variantId, "reel-sources", returnTo), { headers: operationsHeaders(context.headers) });
+    try {
+      const claimed = await context.service.from("social_generation_runs").update({ status: "running", provider: "pexels", started_at: run.started_at || new Date().toISOString() }).eq("id", run.id).in("status", ["pending", "failed"]).select("id").maybeSingle();
+      if (!claimed.data) return actionError(context, "La búsqueda de clips ya está en curso.", 409, variantId);
+      const found = await searchReelClips(scene.id, scene.search_query);
+      const metadata = before.reel_provider_metadata || {};
+      const nextScenes = scenes.map((item) => item.id === scene.id ? { ...item, selected_candidate_key: null } : item);
+      const imported = { ...(metadata.imported_clips || {}) }; delete imported[scene.id];
+      const updated = await context.service.from("content_distribution_drafts").update({ reel_scenes: nextScenes, reel_provider_metadata: { ...metadata, candidates: { ...(metadata.candidates || {}), [scene.id]: found.candidates }, source_urls: { ...(metadata.source_urls || {}), ...found.sources }, imported_clips: imported }, rendered_visual_hash: null, generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+      if (!updated.data) throw new Error("reel_conflict");
+      await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", result_summary: { scene_id: scene.id, candidate_count: found.candidates.length }, completed_at: new Date().toISOString(), retryable: false }).eq("id", run.id);
+      await audit(context, { action: "refresh_reel_sources", entityType: "distribution_draft", entityId: variantId, after: { scene_id: scene.id, candidate_count: found.candidates.length, run_id: run.id } });
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "reel_sources_failed";
+      await context.service.from("social_generation_runs").update({ status: "failed", error_code: code, error_message: "No se pudieron obtener clips para esta escena.", retryable: true, completed_at: new Date().toISOString() }).eq("id", run.id);
+      return actionError(context, code === "pexels_rate_limited" ? "Pexels alcanzó su límite temporal. Reintentá más tarde." : "No se pudieron obtener tres clips verticales para esta escena.", 502, variantId);
+    }
+    throw redirect(detailUrl(campaignId, variantId, "reel-sources", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
+  if (intent === "select_reel_candidate") {
+    if (!contentReelsEnabled() || before.visual_kind !== "reel") return actionError(context, "El estudio de reels está deshabilitado.", 503, variantId);
+    const sceneId = stringField(form, "scene_id", 80); const candidateKey = stringField(form, "candidate_key", 100);
+    const scenes = parseReelScenes(before.reel_scenes); const scene = scenes.find((item) => item.id === sceneId); const metadata = before.reel_provider_metadata || {};
+    if (!scene) return actionError(context, "Escena inválida.", 422, variantId);
+    let candidates: ReelClipCandidate[];
+    try { candidates = parseReelCandidates(metadata.candidates?.[sceneId], sceneId); } catch { return actionError(context, "Renová las opciones de esta escena.", 422, variantId); }
+    const candidate = candidates.find((item) => item.key === candidateKey); const sourceUrl = metadata.source_urls?.[candidateKey];
+    if (!candidate || !sourceUrl) return actionError(context, "El clip elegido no pertenece a las opciones vigentes.", 422, variantId);
+    const existing = metadata.imported_clips?.[sceneId];
+    const importHash = stableHash({ operation: "reel_sources", action: "import", draft_id: variantId, scene_id: sceneId, candidate_key: candidate.key });
+    const begun = await context.service.rpc("begin_social_generation", { target_campaign_id: campaignId, target_draft_id: variantId, target_operation: "reel_sources", target_stage: "importing", target_section: `import:${sceneId}`, target_idempotency_key: `reel-import:${variantId}:${sceneId}:${candidate.key}`, target_request_hash: importHash, target_model: null, target_created_by: context.userId });
+    if (begun.error) return actionError(context, "No se pudo iniciar la importación del clip.", 409, variantId);
+    const run = (Array.isArray(begun.data) ? begun.data[0] : begun.data) as Record<string, any>;
+    try {
+      let imported = existing?.candidate_key === candidate.key ? existing : run.provider_metadata?.imported_clip as ReelImportedClip | undefined;
+      if (!imported) {
+        const claimed = await context.service.from("social_generation_runs").update({ status: "running", provider: "cloudinary", provider_status: "importing", started_at: run.started_at || new Date().toISOString() }).eq("id", run.id).in("status", ["pending", "failed"]).select("id").maybeSingle();
+        if (!claimed.data) return actionError(context, "La importación de este clip ya está en curso.", 409, variantId);
+        imported = await importReelClip({ campaignId, draftId: variantId, scene, candidate, sourceUrl });
+        await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", provider_status: "ready", provider_metadata: { imported_clip: imported }, result_summary: { scene_id: sceneId, candidate_key: candidate.key }, completed_at: new Date().toISOString(), retryable: false }).eq("id", run.id);
+      }
+      const nextScenes = scenes.map((item) => item.id === sceneId ? { ...item, selected_candidate_key: candidate.key } : item);
+      const updated = await context.service.from("content_distribution_drafts").update({ reel_scenes: nextScenes, reel_provider_metadata: { ...metadata, imported_clips: { ...(metadata.imported_clips || {}), [sceneId]: imported } }, rendered_visual_hash: null, generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+      if (!updated.data) return actionError(context, "El reel cambió durante la importación. Recargá antes de continuar.", 409, variantId);
+      await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", provider_status: "ready", provider_metadata: { imported_clip: imported }, result_summary: { scene_id: sceneId, candidate_key: candidate.key }, completed_at: new Date().toISOString(), retryable: false }).eq("id", run.id);
+      await audit(context, { action: "select_reel_candidate", entityType: "distribution_draft", entityId: variantId, after: { scene_id: sceneId, candidate_key: candidate.key, pexels_video_id: candidate.pexels_video_id, run_id: run.id } });
+    } catch {
+      await context.service.from("social_generation_runs").update({ status: "failed", provider_status: "failed", error_code: "cloudinary_import_failed", error_message: "No se pudo importar el clip elegido.", retryable: true, completed_at: new Date().toISOString() }).eq("id", run.id).neq("status", "succeeded");
+      return actionError(context, "Cloudinary no pudo importar el clip elegido. La selección anterior sigue intacta.", 502, variantId);
+    }
+    throw redirect(detailUrl(campaignId, variantId, "reel-clip", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
+  if (intent === "render_reel") {
+    if (!contentReelsEnabled() || before.visual_kind !== "reel") return actionError(context, "El estudio de reels está deshabilitado.", 503, variantId);
+    const scenes = parseReelScenes(before.reel_scenes); const metadata = before.reel_provider_metadata || {};
+    const flags = reelQualityFlags(scenes, campaign.generation_context?.sources || [], metadata.candidates || {}, metadata.imported_clips || {});
+    const blocking = flags.find((flag) => flag.severity === "blocking"); if (blocking) return actionError(context, blocking.message, 422, variantId);
+    const hashResult = await context.service.rpc("social_variant_quality_hash", { target_variant_id: variantId });
+    if (hashResult.error || typeof hashResult.data !== "string") return actionError(context, "No se pudo calcular la versión visual.", 500, variantId);
+    const visualHash = hashResult.data; const key = `reel-render:${variantId}:${visualHash}`;
+    const begun = await context.service.rpc("begin_social_generation", { target_campaign_id: campaignId, target_draft_id: variantId, target_operation: "reel_render", target_stage: "rendering", target_section: null, target_idempotency_key: key, target_request_hash: visualHash, target_model: null, target_created_by: context.userId });
+    if (begun.error) return actionError(context, "No se pudo iniciar el render del reel.", 409, variantId);
+    const run = (Array.isArray(begun.data) ? begun.data[0] : begun.data) as Record<string, any>;
+    let provisionalCoverPath: string | null = null;
+    if (run.status !== "succeeded" && run.status !== "running") try {
+      await context.service.from("social_generation_runs").update({ status: "running", provider: "cloudinary", provider_status: "importing", started_at: new Date().toISOString() }).eq("id", run.id);
+      const cover = await renderReelCover(context.service, campaign, before, visualHash, run.id);
+      provisionalCoverPath = String(cover.output_path || "") || null;
+      const notificationUrl = new URL("/api/webhooks/cloudinary/reel-render", request.url).toString();
+      const started = await startReelRender({ campaignId, draftId: variantId, runId: run.id, visualHash, scenes, imported: metadata.imported_clips || {}, notificationUrl });
+      await context.service.from("content_distribution_drafts").update({ media_urls: { ...(before.media_urls || {}), cover }, reel_provider_metadata: { ...metadata, render: { run_id: run.id, output_public_id: started.publicId, transformation: started.transformation, status: started.providerStatus } }, generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId);
+      await context.service.from("social_generation_runs").update({ external_job_id: started.externalJobId, provider_status: started.providerStatus, provider_metadata: { output_public_id: started.publicId, transformation: started.transformation }, result_summary: { stage: "assembling" } }).eq("id", run.id);
+      await audit(context, { action: "render_reel", entityType: "distribution_draft", entityId: variantId, after: { run_id: run.id, visual_hash: visualHash, scene_count: 5 } });
+    } catch (error) {
+      if (provisionalCoverPath) await context.service.storage.from("generated-media").remove([provisionalCoverPath]);
+      const code = error instanceof Error ? error.message : "reel_render_failed";
+      await context.service.from("social_generation_runs").update({ status: "failed", provider_status: "failed", error_code: code, error_message: "No se pudo iniciar el render del reel.", retryable: true, completed_at: new Date().toISOString() }).eq("id", run.id);
+      return actionError(context, "No se pudo iniciar el render. El storyboard y los clips elegidos siguen guardados.", 502, variantId);
+    }
+    throw redirect(detailUrl(campaignId, variantId, "reel-render", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
+  if (intent === "check_reel_render") {
+    if (!contentReelsEnabled() || before.visual_kind !== "reel") return actionError(context, "El estudio de reels está deshabilitado.", 503, variantId);
+    const runId = String(before.reel_provider_metadata?.render?.run_id || ""); const publicId = String(before.reel_provider_metadata?.render?.output_public_id || "");
+    const transformation = String(before.reel_provider_metadata?.render?.transformation || "");
+    if (!isUuid(runId) || !publicId || !transformation) return actionError(context, "No hay un render pendiente para comprobar.", 409, variantId);
+    try {
+      const resource = await reelResource(publicId, transformation);
+      if (!resource?.public_id) return actionError(context, "Cloudinary todavía está ensamblando el reel.", 409, variantId);
+      const video = { public_id: String(resource.public_id), version: Number(resource.version || 0) || null, format: String(resource.format || "mp4"), width: Number(resource.width || 1080), height: Number(resource.height || 1920), duration: Number(resource.duration || 0), bytes: Number(resource.bytes || 0), hash: String((await context.service.from("social_generation_runs").select("request_hash").eq("id", runId).single()).data?.request_hash || "") };
+      await context.service.from("content_distribution_drafts").update({ media_urls: { ...(before.media_urls || {}), video }, rendered_visual_hash: video.hash, generation_metadata: { ...before.generation_metadata, media_stale: false, version_actor_id: context.userId } }).eq("id", variantId);
+      await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", provider_status: "ready", result_summary: { public_id: video.public_id, width: video.width, height: video.height, duration: video.duration, bytes: video.bytes }, completed_at: new Date().toISOString(), retryable: false }).eq("id", runId);
+    } catch { return actionError(context, "No se pudo comprobar el estado del render.", 502, variantId); }
+    throw redirect(detailUrl(campaignId, variantId, "reel-ready", returnTo), { headers: operationsHeaders(context.headers) });
+  }
+
   if (intent === "render_media") {
     if (!contentComposerEnabled()) return actionError(context, "La composición visual está deshabilitada.", 503, variantId);
     if (before.media_strategy === "text_only" || !before.brand_template_id || (before.visual_kind !== "carousel" && (!before.image_headline || !before.image_alt))) return actionError(context, "Completá el contenido visual, alt text y preset antes de componer.", 422, variantId);
@@ -483,6 +632,11 @@ const savedMessages: Record<string, string> = {
   regenerate: "Sección regenerada y revisada. La variante volvió a borrador.",
   render: "Pieza visual recompuesta con el título guardado.",
   carousel: "Carrusel guardado. Recomponé sus medios antes de aprobar.",
+  reel: "Storyboard guardado. El MP4 y la portada deben recomponerse.",
+  "reel-sources": "Hay tres clips nuevos para elegir en esta escena.",
+  "reel-clip": "Clip seleccionado e importado. Nada fue publicado.",
+  "reel-render": "El render está en proceso. Comprobá el estado en unos momentos.",
+  "reel-ready": "MP4 y portada listos para descargar y revisar.",
   schedule: "Variante programada. Esto no publica automáticamente.",
   reschedule: "Horario actualizado en hora de Buenos Aires.",
   unschedule: "Programación eliminada; la variante volvió a aprobada.",
@@ -513,7 +667,36 @@ function CarouselEditor({ variant, campaign, assets, urls, documentUrl, readOnly
   </section>;
 }
 
-export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; versions: VariantVersion[]; selectedId: string | null; mediaUrl: string | null; mediaDownloadUrl: string | null; slideUrls: string[]; documentUrl: string | null; assets: Array<{ id: string; title: string }>; composerEnabled: boolean; visualEnabled: boolean; calendarEnabled: boolean; qualityEnabled: boolean; returnTo: string; today: string; saved: string; versionA: string; versionB: string }; actionData?: ActionData }) {
+function reelEvidenceText(scene: SocialReelScene) { return scene.evidence_refs.map((ref) => `${ref.claim} | ${ref.source_key}`).join("\n"); }
+function ReelEditor({ variant, videoUrl, coverUrl, readOnly }: { key?: string; variant: SocialVariant; videoUrl: string | null; coverUrl: string | null; readOnly: boolean }) {
+  const initial = parseReelScenes(variant.reel_scenes || []); const [scenes, setScenes] = useState(initial); const [selectedIndex, setSelectedIndex] = useState(0);
+  const selected = scenes[selectedIndex]; const candidates = variant.reel_provider_metadata?.candidates?.[selected.id] || []; const imported = variant.reel_provider_metadata?.imported_clips?.[selected.id];
+  const update = (changes: Partial<SocialReelScene>) => setScenes((current) => current.map((scene, index) => index === selectedIndex ? { ...scene, ...changes } : scene));
+  const parseEvidence = (value: string) => value.split(/\r?\n/).flatMap((line) => { const split = line.lastIndexOf("|"); return split > 0 ? [{ claim: line.slice(0, split).trim(), source_key: line.slice(split + 1).trim() }].filter((ref) => ref.claim && ref.source_key) : []; });
+  const dirty = JSON.stringify(scenes) !== JSON.stringify(initial); const allReady = scenes.every((scene) => scene.selected_candidate_key && variant.reel_provider_metadata?.imported_clips?.[scene.id]?.candidate_key === scene.selected_candidate_key);
+  const importedCount = scenes.filter((scene) => variant.reel_provider_metadata?.imported_clips?.[scene.id]?.candidate_key === scene.selected_candidate_key).length;
+  const renderStarted = Boolean(variant.reel_provider_metadata?.render?.run_id);
+  const renderReady = Boolean(videoUrl && coverUrl && variant.rendered_visual_hash);
+  const progress = [
+    { label: `Importando clips · ${importedCount}/5`, done: allReady, active: !allReady },
+    { label: "Componiendo escenas", done: renderStarted, active: allReady && !renderStarted },
+    { label: "Ensamblando", done: renderReady, active: renderStarted && !renderReady },
+    { label: "Creando portada", done: Boolean(coverUrl), active: renderStarted && !coverUrl },
+    { label: "Listo", done: renderReady, active: false },
+  ];
+  const roleLabel = { hook: "Gancho", problem: "Problema", insight: "Idea", cta: "Cierre" } as const;
+  return <section className="ops-reel-editor" aria-labelledby="reel-editor-title"><header><div><p className="ops-eyebrow">Video vertical · publicación manual</p><h3 id="reel-editor-title"><Video size={19}/>Reel · 5 escenas · {reelDuration(scenes)} segundos</h3></div>{videoUrl && coverUrl && variant.rendered_visual_hash ? <StatusBadge value="active"/> : <StatusBadge value="warning"/>}</header>
+    <nav className="ops-slide-tabs" aria-label="Elegir escena">{scenes.map((scene, index) => <button type="button" className={index === selectedIndex ? "active" : ""} aria-current={index === selectedIndex ? "step" : undefined} onClick={() => setSelectedIndex(index)} key={scene.id}><span>{index + 1}</span>{roleLabel[scene.role]}<small>{scene.duration_seconds}s</small></button>)}</nav>
+    <div className="ops-reel-workspace"><div className="ops-reel-scene-preview"><span>{selected.eyebrow}</span><strong>{selected.headline}</strong><p>{selected.supporting_text}</p><small>Escena {selectedIndex + 1} de 5 · sin audio</small></div><div className="ops-reel-fields"><label className="ops-field"><span>Antetítulo</span><input value={selected.eyebrow} maxLength={40} onChange={(event) => update({ eyebrow: event.target.value })} readOnly={readOnly}/></label><label className="ops-field"><span>Título cinético</span><textarea value={selected.headline} maxLength={72} rows={2} onChange={(event) => update({ headline: event.target.value })} readOnly={readOnly}/><small>{selected.headline.length}/72</small></label><label className="ops-field"><span>Texto auxiliar</span><textarea value={selected.supporting_text} maxLength={140} rows={3} onChange={(event) => update({ supporting_text: event.target.value })} readOnly={readOnly}/><small>{selected.supporting_text.length}/140</small></label><label className="ops-field"><span>Duración</span><select value={selected.duration_seconds} onChange={(event) => update({ duration_seconds: Number(event.target.value) })} disabled={readOnly}>{[3,4,5,6].map((seconds) => <option value={seconds} key={seconds}>{seconds} segundos</option>)}</select></label><label className="ops-field"><span>Búsqueda visual</span><input value={selected.search_query} maxLength={100} onChange={(event) => update({ search_query: event.target.value })} readOnly={readOnly}/></label><label className="ops-field"><span>Evidencia: afirmación | clave</span><textarea value={reelEvidenceText(selected)} rows={3} onChange={(event) => update({ evidence_refs: parseEvidence(event.target.value) })} readOnly={readOnly}/></label><label className="ops-field"><span>Texto alternativo</span><textarea value={selected.alt_text} maxLength={500} rows={3} onChange={(event) => update({ alt_text: event.target.value })} readOnly={readOnly}/></label></div></div>
+    {!readOnly ? <div className="ops-reel-actions"><Form method="post"><input type="hidden" name="intent" value="save_reel_storyboard"/><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><input type="hidden" name="reel_scenes" value={JSON.stringify(scenes)}/><button className="ops-button" disabled={!dirty}><Save size={16}/>Guardar storyboard</button></Form><Form method="post"><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><input type="hidden" name="scene_id" value={selected.id}/><button className="ops-button ops-button-secondary" name="intent" value="refresh_reel_sources" disabled={dirty}><RefreshCw size={16}/>{candidates.length ? "Renovar tres clips" : "Buscar tres clips"}</button></Form></div> : null}
+    <div className="ops-reel-candidates" aria-label={`Clips para escena ${selectedIndex + 1}`}>{candidates.length ? candidates.map((candidate) => <article className={selected.selected_candidate_key === candidate.key ? "is-selected" : ""} key={candidate.key}><video src={candidate.preview_url} muted playsInline controls preload="metadata" aria-label={`Clip de ${candidate.creator_name}`}/><div><a href={candidate.page_url} target="_blank" rel="noreferrer"><ExternalLink size={14}/>{candidate.creator_name} en Pexels</a><small>{candidate.width}×{candidate.height} · {candidate.duration_seconds}s</small>{!readOnly ? <Form method="post"><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><input type="hidden" name="scene_id" value={selected.id}/><input type="hidden" name="candidate_key" value={candidate.key}/><button className="ops-inline-action" name="intent" value="select_reel_candidate" disabled={dirty || imported?.candidate_key === candidate.key}>{imported?.candidate_key === candidate.key ? <><Check size={15}/>Elegido</> : "Elegir e importar"}</button></Form> : null}</div></article>) : <Notice>Buscá tres clips para esta escena. La consulta se realiza desde el servidor y nunca acepta una URL enviada por el navegador.</Notice>}</div>
+    <section className="ops-reel-output"><div><h4>Salida manual</h4><p>{allReady ? "Los cinco clips están importados. Ya podés ensamblar el MP4 y crear la portada." : "Elegí e importá un clip por escena antes de renderizar."}</p><ol aria-label="Progreso del reel">{progress.map((step) => <li className={step.done ? "is-done" : step.active ? "is-active" : ""} aria-current={step.active ? "step" : undefined} key={step.label}>{step.done ? <Check size={13}/> : null}{step.label}</li>)}</ol></div>{!readOnly ? <div><Form method="post"><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><button className="ops-button" name="intent" value="render_reel" disabled={dirty || !allReady}><Video size={16}/>Renderizar reel</button></Form>{variant.reel_provider_metadata?.render?.run_id && !videoUrl ? <Form method="post"><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><button className="ops-button ops-button-secondary" name="intent" value="check_reel_render"><RefreshCw size={16}/>Comprobar estado</button></Form> : null}</div> : null}</section>
+    {videoUrl || coverUrl ? <div className="ops-reel-downloads">{videoUrl ? <><video src={videoUrl} muted playsInline controls preload="metadata"/><a className="ops-inline-action" href={videoUrl}><Download size={15}/>Descargar MP4 1080×1920</a></> : null}{coverUrl ? <><img src={coverUrl} alt={variant.image_alt || "Portada del reel"}/><a className="ops-inline-action" href={coverUrl}><Download size={15}/>Descargar portada JPEG</a></> : null}<button type="button" className="ops-inline-action" onClick={() => navigator.clipboard.writeText(variant.content)}><Copy size={15}/>Copiar caption</button></div> : null}
+    <details className="ops-reel-attribution"><summary>Atribuciones de clips</summary><ul>{scenes.flatMap((scene) => (variant.reel_provider_metadata?.candidates?.[scene.id] || []).filter((candidate) => candidate.key === scene.selected_candidate_key)).map((candidate) => <li key={candidate.key}><a href={candidate.page_url} target="_blank" rel="noreferrer">Video de {candidate.creator_name} en Pexels</a></li>)}</ul></details>
+  </section>;
+}
+
+export default function OpsSocialDetail({ loaderData, actionData }: { loaderData: { campaign: Campaign; variants: SocialVariant[]; versions: VariantVersion[]; selectedId: string | null; mediaUrl: string | null; mediaDownloadUrl: string | null; slideUrls: string[]; documentUrl: string | null; reelVideoUrl: string | null; reelCoverUrl: string | null; assets: Array<{ id: string; title: string }>; composerEnabled: boolean; visualEnabled: boolean; reelsEnabled: boolean; calendarEnabled: boolean; qualityEnabled: boolean; returnTo: string; today: string; saved: string; versionA: string; versionB: string }; actionData?: ActionData }) {
   const selected = loaderData.variants.find((variant) => variant.id === loaderData.selectedId) || null;
   const [sections, setSections] = useState(() => ({ hook: selected?.hook || "", body: selected?.body ?? selected?.content ?? "", cta: selected?.cta || "", hashtags: (selected?.hashtags || []).join(" "), image_headline: selected?.image_headline || "", image_alt: selected?.image_alt || "" }));
   const errorRef = useRef<HTMLDivElement>(null);
@@ -572,7 +755,8 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
           <div className="ops-editor-primary"><span>{selected.status === "approved" || selected.status === "rejected" ? "Editar devuelve esta variante a borrador." : "Los cambios se guardan antes de actualizar la pantalla."}</span><button className="ops-button" type="submit" name="intent" value="save_variant" disabled={!dirty || characterCount === 0 || characterCount > limit || selected.status === "published" || selected.status === "archived"}><Save aria-hidden="true" size={17}/>Guardar cambios</button></div>
         </Form>
         {loaderData.visualEnabled && selected.visual_kind === "carousel" ? <CarouselEditor key={`${selected.id}:${selected.updated_at}`} variant={selected} campaign={loaderData.campaign} assets={loaderData.assets} urls={loaderData.slideUrls} documentUrl={loaderData.documentUrl} readOnly={readOnly}/> : null}
-        {loaderData.composerEnabled && !readOnly ? <div className="ops-regenerate-row" aria-label="Acciones asistidas">{([['hook','gancho'],['body','cuerpo'],['cta','CTA']] as const).map(([field,label]) => <Form method="post" key={field}><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="section" value={field}/><input type="hidden" name="idempotency_key" value={`regen:${selected.id}:${selected.updated_at}:${field}`}/><button className="ops-inline-action" name="intent" value="regenerate_section" type="submit" disabled={dirty}><Sparkles size={15}/>Regenerar {label}</button></Form>)}{selected.media_strategy !== "text_only" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="idempotency_key" value={`render:${selected.id}:${selected.updated_at}:${selected.image_headline}:${selected.rendered_visual_hash || "pending"}`}/><button className="ops-inline-action" name="intent" value="render_media" type="submit" disabled={dirty}><ImageIcon size={15}/>{selected.visual_kind === "carousel" ? "Recomponer carrusel" : "Recomponer imagen"}</button></Form> : null}</div> : null}
+        {loaderData.reelsEnabled && selected.visual_kind === "reel" ? <ReelEditor key={`${selected.id}:${selected.updated_at}`} variant={selected} videoUrl={loaderData.reelVideoUrl} coverUrl={loaderData.reelCoverUrl} readOnly={readOnly}/> : null}
+        {loaderData.composerEnabled && !readOnly ? <div className="ops-regenerate-row" aria-label="Acciones asistidas">{([['hook','gancho'],['body','cuerpo'],['cta','CTA']] as const).map(([field,label]) => <Form method="post" key={field}><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="section" value={field}/><input type="hidden" name="idempotency_key" value={`regen:${selected.id}:${selected.updated_at}:${field}`}/><button className="ops-inline-action" name="intent" value="regenerate_section" type="submit" disabled={dirty}><Sparkles size={15}/>Regenerar {label}</button></Form>)}{selected.media_strategy !== "text_only" && selected.visual_kind !== "reel" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="idempotency_key" value={`render:${selected.id}:${selected.updated_at}:${selected.image_headline}:${selected.rendered_visual_hash || "pending"}`}/><button className="ops-inline-action" name="intent" value="render_media" type="submit" disabled={dirty}><ImageIcon size={15}/>{selected.visual_kind === "carousel" ? "Recomponer carrusel" : "Recomponer imagen"}</button></Form> : null}</div> : null}
 
         {loaderData.calendarEnabled && (selected.status === "approved" || selected.status === "scheduled") ? <section className="ops-schedule-block" aria-labelledby="social-schedule-title">
           <div><p className="ops-eyebrow">Planificación manual</p><h3 id="social-schedule-title">{selected.status === "scheduled" ? "Reprogramar variante" : "Programar variante"}</h3><p><Clock3 size={15}/>Hora de Buenos Aires · programar no publica.</p>{selected.scheduled_for ? <strong>Fecha actual: {formatCalendarDateTime(selected.scheduled_for)}</strong> : null}</div>
@@ -605,7 +789,7 @@ function QualityScorecardView({ scorecard, reviewedAt }: { scorecard: QualitySco
   return <section className="ops-quality-scorecard" aria-labelledby="quality-scorecard-title"><div><h3 id="quality-scorecard-title">Puntuación editorial</h3><small>{reviewedAt ? `Revisada ${formatDate(reviewedAt, true)}` : "Revisión pendiente"}</small></div><div>{(Object.entries(scorecard) as Array<[keyof QualityScorecard, QualityScorecard[keyof QualityScorecard]]>).map(([key, value]) => <article key={key}><span>{scoreLabels[key]}</span><strong>{value.score}</strong><meter min="0" max="100" low="60" optimum="90" value={value.score}>{value.score}/100</meter><p>{value.rationale}</p></article>)}</div></section>;
 }
 
-const snapshotFields = [["hook", "Gancho"], ["body", "Cuerpo"], ["cta", "CTA"], ["hashtags", "Hashtags"], ["image_headline", "Título visual"], ["image_alt", "Alt text"], ["evidence_refs", "Evidencia"], ["visual_kind", "Tipo visual"], ["carousel_slides", "Placas del carrusel"], ["rendered_visual_hash", "Versión del medio"], ["status", "Estado"]] as const;
+const snapshotFields = [["hook", "Gancho"], ["body", "Cuerpo"], ["cta", "CTA"], ["hashtags", "Hashtags"], ["image_headline", "Título visual"], ["image_alt", "Alt text"], ["evidence_refs", "Evidencia"], ["visual_kind", "Tipo visual"], ["carousel_slides", "Placas del carrusel"], ["reel_scenes", "Escenas del reel"], ["reel_selected_clips", "Clips seleccionados"], ["rendered_visual_hash", "Versión del medio"], ["status", "Estado"]] as const;
 function snapshotText(value: unknown) { return Array.isArray(value) ? value.map((item) => typeof item === "string" ? item : JSON.stringify(item)).join(" · ") : value == null || value === "" ? "—" : typeof value === "object" ? JSON.stringify(value) : String(value); }
 function VersionHistory({ versions, selected, campaignId, versionA, versionB, returnTo }: { versions: VariantVersion[]; selected: SocialVariant; campaignId: string; versionA: string; versionB: string; returnTo: string }) {
   const left = versions.find((version) => version.id === versionA) || versions[1] || versions[0]; const right = versions.find((version) => version.id === versionB) || versions[0];

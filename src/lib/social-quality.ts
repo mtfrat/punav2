@@ -45,9 +45,9 @@ function isHttps(value: string | null | undefined) {
   try { return new URL(value).protocol === "https:"; } catch { return false; }
 }
 
-export function qualityContentMaterial(variant: Pick<GeneratedSocialVariant, "hook" | "body" | "cta" | "hashtags" | "image_headline" | "image_alt"> & { channel: SocialChannel; locale: SocialLocale; visual_kind?: string; carousel_slides?: unknown }, mediaStrategy = "text_only", includeVisual = true) {
+export function qualityContentMaterial(variant: Pick<GeneratedSocialVariant, "hook" | "body" | "cta" | "hashtags" | "image_headline" | "image_alt"> & { channel: SocialChannel; locale: SocialLocale; visual_kind?: string; carousel_slides?: unknown; reel_scenes?: unknown }, mediaStrategy = "text_only", includeVisual = true) {
   const fields: unknown[] = [composeSocialContent(variant), variant.image_headline || "", variant.image_alt || "", mediaStrategy];
-  if (includeVisual) fields.push(variant.visual_kind || "single", JSON.stringify(variant.carousel_slides || []));
+  if (includeVisual) fields.push(variant.visual_kind || "single", JSON.stringify(variant.carousel_slides || []), JSON.stringify(variant.reel_scenes || []));
   return fields.join("\n--puna-quality--\n");
 }
 

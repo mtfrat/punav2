@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { isSocialChannel, isSocialLocale } from "./social-studio.ts";
 import type { EvidenceSource, GeneratedSocialVariant, QualityFlag, QualityReview, QualityScorecard } from "./social-quality.ts";
 import { parseCarouselSlides, type SocialCarouselSlide, type VisualPreset } from "./social-visual.ts";
+import { parseReelScenes, type SocialReelScene } from "./social-reels.ts";
 export type { EvidenceSource, GeneratedSocialVariant, QualityFlag } from "./social-quality.ts";
 export { blockingQualityMessage, deterministicQualityFlags } from "./social-quality.ts";
 
@@ -55,6 +56,12 @@ const carouselSlideSchema = { type: "object", additionalProperties: false, requi
 } };
 const carouselSchema = { type: "object", additionalProperties: false, required: ["slides"], properties: { slides: { type: "array", minItems: 3, maxItems: 7, items: carouselSlideSchema } } };
 const carouselSlideOutputSchema = { type: "object", additionalProperties: false, required: ["slide"], properties: { slide: carouselSlideSchema } };
+const reelSceneSchema = { type: "object", additionalProperties: false, required: ["id","role","duration_seconds","eyebrow","headline","supporting_text","emphasis","search_query","selected_candidate_key","evidence_refs","alt_text"], properties: {
+  id: { type: "string" }, role: { type: "string", enum: ["hook","problem","insight","cta"] }, duration_seconds: { type: "integer", minimum: 3, maximum: 6 },
+  eyebrow: { type: "string" }, headline: { type: "string" }, supporting_text: { type: "string" }, emphasis: { type: ["string","null"] }, search_query: { type: "string" },
+  selected_candidate_key: { type: ["string","null"] }, evidence_refs: variantItemSchema.properties.evidence_refs, alt_text: { type: "string" },
+} };
+const reelSchema = { type: "object", additionalProperties: false, required: ["scenes"], properties: { scenes: { type: "array", minItems: 5, maxItems: 5, items: reelSceneSchema } } };
 
 function extractResponseText(payload: any) {
   if (typeof payload?.output_text === "string") return payload.output_text;
@@ -87,7 +94,7 @@ async function structuredResponse<T>(name: string, schema: Record<string, unknow
   } finally { clearTimeout(timeout); }
 }
 
-export async function reviewSocialVariant(context: Record<string, unknown>, variant: GeneratedSocialVariant & { visual_kind?: string; carousel_slides?: unknown }) {
+export async function reviewSocialVariant(context: Record<string, unknown>, variant: GeneratedSocialVariant & { visual_kind?: string; carousel_slides?: unknown; reel_scenes?: unknown }) {
   const result = await structuredResponse<Omit<QualityReview, "content_hash">>("puna_social_quality_review", qualityReviewSchema,
     "Review this Puna Tech social post without rewriting it. Score clarity, specificity, credibility and channel fit from 0 to 100 with a concise rationale. Check every factual claim against only the supplied sources. Flag unsupported claims, confidentiality risk, probable locale errors, clichés and weak CTAs. Unsupported quantitative claims and confidentiality risks are blocking. Low scores are warnings, never blockers by themselves. Return no copy or prompt text.",
     { context, variant });
@@ -142,6 +149,14 @@ export async function regenerateSocialCarouselSlide(context: Record<string, unkn
   const candidate = { ...result.value.slide, id: current.id, role: current.role, asset_id: current.asset_id };
   const next = slides.map((slide, index) => index === slideIndex ? candidate : slide);
   return { ...result, slide: parseCarouselSlides(next)[slideIndex] };
+}
+
+export async function generateSocialReelStoryboard(context: Record<string, unknown>, locale: "es" | "en") {
+  const result = await structuredResponse<{ scenes: SocialReelScene[] }>("puna_social_reel", reelSchema,
+    `Create exactly five silent vertical reel scenes in ${locale === "es" ? "Spanish" : "English"}: hook, problem, insight, insight, cta. Each scene lasts an integer 3 to 6 seconds and the total lasts 15 to 30 seconds. Keep eyebrow <=40, headline 1-72, supporting_text <=140, alt_text <=500 and a concrete Pexels search_query <=100. Use only supplied evidence. Cite every quantitative claim. No hype, emojis, invented facts, voiceover, audio cues or repeated scenes. selected_candidate_key must be null.`,
+    { context, locale, scene_count: 5, muted: true, format: "vertical_9_16" });
+  const scenes = result.value.scenes.map((scene) => ({ ...scene, id: randomUUID(), selected_candidate_key: null }));
+  return { ...result, scenes: parseReelScenes(scenes) };
 }
 
 export async function regenerateSocialSection(context: Record<string, unknown>, variant: GeneratedSocialVariant, section: "hook" | "body" | "cta") {

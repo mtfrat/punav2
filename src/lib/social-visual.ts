@@ -1,6 +1,6 @@
 import type { EvidenceSource, QualityFlag } from "./social-quality";
 
-export type VisualKind = "text" | "single" | "carousel";
+export type VisualKind = "text" | "single" | "carousel" | "reel";
 export type VisualPreset = "editorial" | "evidence" | "system" | "image";
 export type CarouselSlideRole = "cover" | "content" | "cta";
 export type CarouselEvidenceRef = { claim: string; source_key: string };

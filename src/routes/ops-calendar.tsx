@@ -1,9 +1,9 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
-import { AlertTriangle, ArrowLeft, ArrowRight, CalendarClock, CalendarDays, Check, Clock3, ExternalLink, List, RotateCcw, Send } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, CalendarClock, CalendarDays, Check, Clock3, ExternalLink, List, RotateCcw, Send, Video } from "lucide-react";
 import { EmptyState, Notice, OpsPageHeader, Pager, StatusBadge } from "../components/ops";
 import { audit, assertTrustedMutation, operationsHeaders, opsData, pageFrom, requireAdmin, stringField } from "../lib/admin.server";
-import { contentCalendarEnabled } from "../lib/content-worker.server";
+import { contentCalendarEnabled, contentReelsEnabled } from "../lib/content-worker.server";
 import {
   CALENDAR_PAGE_SIZE,
   CONTENT_TIME_ZONE,
@@ -34,6 +34,7 @@ type CalendarItem = {
   content: string;
   image_alt: string | null;
   media_urls: { primary?: { output_path?: string } } | null;
+  visual_kind?: string;
   scheduled_for: string;
   published_at: string | null;
   updated_at: string;
@@ -82,10 +83,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const week = calendarWeekStart(url.searchParams.get("week"));
   const page = pageFrom(request);
   const now = new Date().toISOString();
+  const calendarColumns = `id,campaign_id,channel,locale,status,content,image_alt,media_urls,scheduled_for,published_at,updated_at${contentReelsEnabled() ? ",visual_kind" : ""},social_campaigns(title)`;
 
   let query = context.service
     .from("content_distribution_drafts")
-    .select("id,campaign_id,channel,locale,status,content,image_alt,media_urls,scheduled_for,published_at,updated_at,social_campaigns(title)", { count: "exact" })
+    .select(calendarColumns, { count: "exact" })
     .not("scheduled_for", "is", null);
   if (channel) query = query.eq("channel", channel);
   if (status) query = query.eq("status", status);
@@ -108,7 +110,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!selected && isUuid(requestedVariant)) {
     const selectedResult = await context.service
       .from("content_distribution_drafts")
-      .select("id,campaign_id,channel,locale,status,content,image_alt,media_urls,scheduled_for,published_at,updated_at,social_campaigns(title)")
+      .select(calendarColumns)
       .eq("id", requestedVariant)
       .not("scheduled_for", "is", null)
       .maybeSingle();
@@ -191,6 +193,7 @@ function CalendarCard({ item, href, collisions }: { item: CalendarItem; href: st
     <time dateTime={item.scheduled_for}>{formatCalendarTime(item.scheduled_for)}</time>
     <strong>{campaignTitle(item)}</strong>
     <span>{socialChannelLabel(item.channel)} · {socialLocaleLabel(item.locale)}</span>
+    {item.visual_kind === "reel" ? <small className="ops-calendar-media"><Video size={14}/>Reel · {item.media_urls && "video" in item.media_urls ? "MP4 listo" : "MP4 pendiente"}</small> : null}
     <StatusBadge value={item.status}/>
     {collisions ? <small className="ops-calendar-warning"><AlertTriangle size={14}/>{calendarCollisionMessage(collisions, item.channel as SocialChannel)}</small> : null}
   </Link>;

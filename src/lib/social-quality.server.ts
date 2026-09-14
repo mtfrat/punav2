@@ -15,10 +15,11 @@ import {
   type QualityScorecard,
 } from "./social-quality";
 import { carouselQualityFlags, parseCarouselSlides, type VisualPreset } from "./social-visual";
+import { parseReelCandidates, parseReelScenes, reelQualityFlags, type ReelClipCandidate, type ReelImportedClip } from "./social-reels";
 import { contentVisualStudioEnabled } from "./content-worker.server";
 
 type Campaign = { id: string; title: string; objective?: string; audience?: string; service_cluster?: string; problem_statement?: string; cta_type?: string | null; cta_url?: string | null; generation_context?: { sources?: EvidenceSource[]; visual?: { preset_key?: VisualPreset } } };
-type Draft = { id: string; campaign_id: string; channel: string; locale: string; content: string; hook?: string | null; body?: string | null; cta?: string | null; hashtags?: string[]; image_headline?: string | null; image_alt?: string | null; evidence_refs?: GeneratedSocialVariant["evidence_refs"]; media_strategy?: string; visual_kind?: string; carousel_slides?: unknown; rendered_visual_hash?: string | null; brand_template_id?: string | null; quality_flags?: QualityFlag[]; quality_scorecard?: QualityScorecard | Record<string, never>; quality_review_hash?: string | null; quality_review_run_id?: string | null; generation_metadata?: Record<string, unknown> };
+type Draft = { id: string; campaign_id: string; channel: string; locale: string; content: string; hook?: string | null; body?: string | null; cta?: string | null; hashtags?: string[]; image_headline?: string | null; image_alt?: string | null; evidence_refs?: GeneratedSocialVariant["evidence_refs"]; media_strategy?: string; visual_kind?: string; carousel_slides?: unknown; reel_scenes?: unknown; reel_provider_metadata?: Record<string, any>; media_urls?: Record<string, any>; rendered_visual_hash?: string | null; brand_template_id?: string | null; quality_flags?: QualityFlag[]; quality_scorecard?: QualityScorecard | Record<string, never>; quality_review_hash?: string | null; quality_review_run_id?: string | null; generation_metadata?: Record<string, unknown> };
 
 export type PreparedQualityReview = QualityReview & { runId: string | null; reviewedAt: string; duplicateMatches: DuplicateMatch[] };
 
@@ -94,11 +95,18 @@ export async function prepareQualityReview(service: SupabaseClient, userId: stri
   const startedAt = run.started_at || new Date().toISOString();
   await service.from("social_generation_runs").update({ status: "running", started_at: startedAt, error_code: null, error_message: null }).eq("id", run.id);
   try {
-    const variant = { ...toVariant(draft), visual_kind: draft.visual_kind, carousel_slides: draft.carousel_slides };
+    const variant = { ...toVariant(draft), visual_kind: draft.visual_kind, carousel_slides: draft.carousel_slides, reel_scenes: draft.reel_scenes };
     const generated = await reviewSocialVariant({ campaign: { title: campaign.title, objective: campaign.objective, audience: campaign.audience, service_cluster: campaign.service_cluster, problem_statement: campaign.problem_statement, cta_type: campaign.cta_type, cta_url: campaign.cta_url }, sources: campaign.generation_context?.sources || [] }, variant);
     const deterministic = deterministicQualityFlags(variant, campaign.generation_context?.sources || [], draft.media_strategy || "text_only", { ctaType: campaign.cta_type, ctaUrl: campaign.cta_url });
     let visualFlags: QualityFlag[] = [];
     if (draft.visual_kind === "carousel") try { visualFlags = carouselQualityFlags(parseCarouselSlides(draft.carousel_slides), campaign.generation_context?.sources || [], (campaign.generation_context?.visual?.preset_key || "editorial") as VisualPreset); } catch { visualFlags = [{ code: "invalid_carousel", severity: "blocking", message: "El carrusel no cumple su estructura editorial." }]; }
+    if (draft.visual_kind === "reel") try {
+      const scenes = parseReelScenes(draft.reel_scenes);
+      const rawCandidates = draft.reel_provider_metadata?.candidates || {};
+      const candidates = Object.fromEntries(scenes.map((scene) => [scene.id, parseReelCandidates(rawCandidates[scene.id], scene.id)])) as Record<string, ReelClipCandidate[]>;
+      visualFlags = reelQualityFlags(scenes, campaign.generation_context?.sources || [], candidates, (draft.reel_provider_metadata?.imported_clips || {}) as Record<string, ReelImportedClip>);
+      if (!draft.media_urls?.video || !draft.media_urls?.cover || draft.rendered_visual_hash !== hash) visualFlags.push({ code: "reel_media_stale", severity: "blocking", message: "El MP4 y la portada deben corresponder al storyboard actual." });
+    } catch { visualFlags = [{ code: "invalid_reel", severity: "blocking", message: "El reel no cumple la estructura profesional de cinco escenas." }]; }
     const mediaFlags: QualityFlag[] = draft.generation_metadata?.media_stale ? [{ code: "media_stale", severity: "blocking", message: "La imagen debe recomponerse después de cambiar el título visual." }] : [];
     const flags = mergeFlags(generated.value.flags || [], deterministic, visualFlags, duplicateQualityFlags(duplicates), mediaFlags, lowScoreFlags(generated.value.scores));
     const completedAt = new Date().toISOString();

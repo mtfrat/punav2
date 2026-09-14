@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
   SOCIAL_CHANNEL_LIMITS,
@@ -11,6 +12,8 @@ import {
 import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, duplicateQualityFlags, normalizeSocialCopy, socialCopySimilarity } from "../src/lib/social-quality.ts";
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
 import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
+import { parseReelCandidates, parseReelScenes, reelDuration, reelMaterial, reelQualityFlags } from "../src/lib/social-reels.ts";
+import { cloudinaryWebhookRunId, reelTransformation, signedCloudinaryDownload, verifyCloudinaryWebhook } from "../src/lib/social-reels.server.ts";
 import {
   addCalendarDays,
   calendarDateTimeInput,
@@ -90,6 +93,50 @@ assert.match(blockingQualityMessage(carouselQualityFlags(carousel.map((item, ind
 const supportedCarousel = carousel.map((item, index) => index === 1 ? { ...item, body: "El proceso mejora 30%.", evidence_refs: [{ claim: "El proceso mejora 30%.", source_key: "source-1" }] } : item);
 assert.equal(blockingQualityMessage(carouselQualityFlags(supportedCarousel, [{ key: "source-1", title: "Caso", excerpt: "El proceso mejora 30%." }], "system")), null);
 assert.equal(carouselMaterial(carousel, "system", "00000000-0000-4000-8000-000000000099").slides.length, 3);
+
+const reelScenes = ["hook", "problem", "insight", "insight", "cta"].map((role, index) => ({
+  id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`, role, duration_seconds: 4, eyebrow: "Sistema",
+  headline: ["Una apertura operativa", "El problema visible", "Una decisión concreta", "El siguiente criterio", "Una acción clara"][index], supporting_text: "Una idea breve y concreta.", emphasis: null, search_query: `business operations scene ${["hook","problem","process","decision","action"][index]}`,
+  selected_candidate_key: "a".repeat(63) + index, evidence_refs: [], alt_text: `Video vertical para escena ${index + 1}`,
+}));
+assert.equal(parseReelScenes(reelScenes).length, 5);
+assert.equal(reelDuration(reelScenes), 20);
+assert.throws(() => parseReelScenes(reelScenes.slice(0, 4)), /reel_scene_count/);
+assert.throws(() => parseReelScenes(reelScenes.map((item, index) => index === 1 ? { ...item, duration_seconds: 2 } : item)), /invalid_reel_duration/);
+assert.throws(() => parseReelScenes(reelScenes.map((item, index) => index === 4 ? { ...item, headline: "x".repeat(73) } : item)), /invalid_reel_text/);
+const reelCandidates = Object.fromEntries(reelScenes.map((scene, sceneIndex) => [scene.id, [0, 1, 2].map((candidateIndex) => ({
+  key: candidateIndex === 0 ? scene.selected_candidate_key : `${String(sceneIndex + 1)}${String(candidateIndex + 1)}`.padEnd(64, "a"), scene_id: scene.id, pexels_video_id: sceneIndex * 10 + candidateIndex + 1,
+  pexels_file_id: sceneIndex * 10 + candidateIndex + 101, page_url: "https://www.pexels.com/video/example", preview_url: "https://images.pexels.com/videos/example.jpeg",
+  creator_name: "Pexels creator", width: 1080, height: 1920, duration_seconds: 12,
+}))]));
+for (const scene of reelScenes) assert.equal(parseReelCandidates(reelCandidates[scene.id], scene.id).length, 3);
+assert.throws(() => parseReelCandidates(reelCandidates[reelScenes[0].id].map((candidate, index) => index === 0 ? { ...candidate, preview_url: "http://unsafe.test/video.mp4" } : candidate), reelScenes[0].id), /invalid_reel_candidate/);
+const importedClips = Object.fromEntries(reelScenes.map((scene) => [scene.id, { candidate_key: scene.selected_candidate_key, public_id: `puna/reels/${scene.id}`, version: 1, format: "mp4", width: 1080, height: 1920, duration_seconds: 12, bytes: 1000 }]));
+assert.equal(blockingQualityMessage(reelQualityFlags(reelScenes, [], reelCandidates, importedClips)), null);
+assert.match(blockingQualityMessage(reelQualityFlags(reelScenes.map((scene, index) => index === 2 ? { ...scene, headline: "Mejora 30%" } : scene), [], reelCandidates, importedClips)) || "", /30%/);
+assert.equal(reelMaterial(reelScenes, importedClips).muted, true);
+const transformation = reelTransformation(reelScenes, importedClips);
+assert.match(transformation, /e_volume:mute/);
+assert.match(transformation, /fl_splice/);
+assert.doesNotMatch(transformation, /audio_codec/);
+assert.match(transformation, /l_video:authenticated:/);
+process.env.PEXELS_API_KEY = "pexels-test";
+process.env.CLOUDINARY_CLOUD_NAME = "puna-test";
+process.env.CLOUDINARY_API_KEY = "cloudinary-test";
+process.env.CLOUDINARY_API_SECRET = "secret-test";
+const webhookBody = JSON.stringify({ run_id: "00000000-0000-4000-8000-000000000001" });
+const webhookTimestamp = 2_000_000_000;
+const webhookSignature = createHash("sha256").update(`${webhookBody}${webhookTimestamp}secret-test`).digest("hex");
+assert.equal(verifyCloudinaryWebhook(webhookBody, webhookSignature, String(webhookTimestamp), webhookTimestamp), true);
+assert.equal(verifyCloudinaryWebhook(`${webhookBody}x`, webhookSignature, String(webhookTimestamp), webhookTimestamp), false);
+assert.equal(verifyCloudinaryWebhook(webhookBody, webhookSignature, String(webhookTimestamp - 301), webhookTimestamp), false);
+assert.equal(cloudinaryWebhookRunId({ context: { custom: { run_id: "nested" } } }), "nested");
+assert.equal(cloudinaryWebhookRunId({ context: "run_id=flat|other=value" }), "flat");
+const downloadUrl = signedCloudinaryDownload("puna/reels/example", "mp4", "c_fill,w_1080,h_1920", 2_000_000_000);
+assert.match(downloadUrl, /video\/download\?/);
+assert.match(downloadUrl, /expires_at=2000000600/);
+assert.match(downloadUrl, /type=authenticated/);
+assert.doesNotMatch(downloadUrl, /secret-test/);
 
 process.env.CONTENT_MODEL_INPUT_USD_PER_MILLION = "2";
 process.env.CONTENT_MODEL_CACHED_INPUT_USD_PER_MILLION = "1";
@@ -172,5 +219,19 @@ for (const contract of [
   "grant execute on function public.valid_social_carousel(jsonb) to service_role",
 ]) assert.ok(phase6.includes(contract), `Missing Phase 6 migration contract: ${contract}`);
 assert.equal(/create policy[\s\S]+(brand_media_assets|content_distribution_drafts)/i.test(phase6), false, "Phase 6 must not expose visual data to browser roles");
+
+const phase7 = await readFile(new URL("../supabase/migrations/20260914120000_social_reels_phase7.sql", import.meta.url), "utf8");
+for (const contract of [
+  "add column if not exists reel_scenes",
+  "create or replace function public.valid_social_reel",
+  "'reel_storyboard','reel_sources','reel_render'",
+  "new.reel_scenes is distinct from old.reel_scenes",
+  "'reel_scenes',draft.reel_scenes",
+  "'reel_candidates',coalesce(draft.reel_provider_metadata->'candidates'",
+  "grant execute on function public.valid_social_reel(jsonb) to service_role",
+  "No cron, OAuth or automatic publication is created",
+]) assert.ok(phase7.includes(contract), `Missing Phase 7 migration contract: ${contract}`);
+assert.equal(/create policy/i.test(phase7), false, "Phase 7 must not expose reel data to browser roles");
+assert.equal(/cron\.|http_post|social_publications/i.test(phase7), false, "Phase 7 must not add automatic publishing infrastructure");
 
 console.log("Social Studio contracts passed.");

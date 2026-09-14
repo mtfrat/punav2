@@ -25,6 +25,7 @@ export default [
   route("llms.txt", "./routes/llms.ts"),
   route("api/lead", "./routes/api-lead.ts"),
   route("api/chat", "./routes/api-chat.ts"),
+  route("api/webhooks/cloudinary/reel-render", "./routes/api-cloudinary-reel-webhook.ts"),
   route("ops/login", "./routes/ops-login.tsx"),
   route("ops/auth/callback", "./routes/ops-auth-callback.ts"),
   route("ops", "./routes/ops-layout.tsx", [

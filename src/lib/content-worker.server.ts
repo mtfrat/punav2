@@ -26,7 +26,7 @@ export interface RenderOverlayRequest {
   layout: "editorial" | "image_overlay" | "metric" | "framework";
   composition_kind?: "single" | "carousel_slide";
   slide_role?: "cover" | "content" | "cta";
-  output_format: "instagram_portrait" | "linkedin_square" | "linkedin_horizontal" | "x_horizontal";
+  output_format: "instagram_portrait" | "instagram_reel_cover" | "linkedin_square" | "linkedin_horizontal" | "x_horizontal";
   source_url?: string;
   destination_upload_url: string;
   output_path: string;
@@ -134,6 +134,10 @@ export function contentQualityEnabled() {
 
 export function contentVisualStudioEnabled() {
   return contentComposerEnabled() && process.env.CONTENT_VISUAL_STUDIO_ENABLED?.trim().toLowerCase() === "true";
+}
+
+export function contentReelsEnabled() {
+  return contentVisualStudioEnabled() && process.env.CONTENT_REELS_ENABLED?.trim().toLowerCase() === "true";
 }
 
 export async function contentWorkerRequest<T>(
