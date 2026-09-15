@@ -93,6 +93,10 @@ export function deterministicQualityFlags(variant: GeneratedSocialVariant, sourc
   const contentError = validateSocialContent(variant.channel, content);
   if (contentError) flags.push({ code: "channel_limit", severity: "blocking", message: contentError });
   const lower = content.toLowerCase();
+  if (variant.locale === "es" && /\b(vosotros|vuestro|vuestra|vuestros|vuestras|os (?:recomendamos|invitamos|ayudamos|contamos))\b/i.test(content)) flags.push({ code: "locale_mismatch", severity: "warning", message: "Revisá los giros peninsulares: la voz en español debe ser argentina, natural y profesional." });
+  const headlineWords = variant.image_headline.trim().split(/\s+/).filter(Boolean).length;
+  if (headlineWords > 12) flags.push({ code: "visual_density", severity: "warning", message: "El título visual supera 12 palabras; apuntá a una apertura de 6–12 palabras." });
+  if (/coment[aá] qu[eé] pens[aá]s/i.test(variant.cta)) flags.push({ code: "generic_cta", severity: "blocking", message: "Reemplazá el CTA genérico por una acción concreta para este objetivo." });
   for (const phrase of BANNED_PHRASES) if (lower.includes(phrase)) flags.push({ code: "cliche", severity: "warning", message: `Revisá la frase “${phrase}”.` });
   if (mediaStrategy !== "text_only" && !variant.image_alt.trim()) flags.push({ code: "missing_alt", severity: "blocking", message: "La imagen necesita texto alternativo." });
   if (["audit", "service", "article"].includes(campaign?.ctaType || "") && !isHttps(campaign?.ctaUrl)) flags.push({ code: "missing_cta_url", severity: "blocking", message: "El CTA necesita un destino HTTPS válido." });

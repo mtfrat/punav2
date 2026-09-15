@@ -90,7 +90,7 @@ export async function renderReelCover(service: ServiceClient, campaign: Record<s
     layout: "editorial", composition_kind: "single", output_format: "instagram_reel_cover", destination_upload_url: upload.data.signedUrl,
     output_path: outputPath, output_mime: "image/jpeg", headline: String(draft.image_headline || campaign.title).slice(0, 72),
     eyebrow: "PUNA TECH · REEL", safe_zone: { x: 90, y: 360, width: 900, height: 1050 }, text_align: "left", vertical_align: "center",
-    overlay_color: "#3B2A1E", overlay_opacity: 0, text_color: "#181410", min_font_size: 52, max_font_size: 112, logo_enabled: true,
+    overlay_color: "#3B2A1E", overlay_opacity: 0, text_color: "#FFF7ED", min_font_size: 52, max_font_size: 112, logo_enabled: true,
   }, `reel-cover:${draft.id}:${visualHash}`, requestId);
   return cover;
 }

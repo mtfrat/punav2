@@ -8,7 +8,14 @@ import {
   deriveSocialCampaignStatus,
   validateRejectionReason,
   validateSocialContent,
+  composeSocialContent,
+  parseHashtags,
+  validateOperatorPerspective,
+  visibleOpening,
+  isAllowedManualPublicationUrl,
+  shouldInvalidateSocialMedia,
 } from "../src/lib/social-studio.ts";
+import { buildChatSystemPrompt } from "../src/lib/chat-prompt.ts";
 import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, duplicateQualityFlags, normalizeSocialCopy, socialCopySimilarity } from "../src/lib/social-quality.ts";
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
 import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
@@ -46,6 +53,25 @@ assert.match(validateSocialContent("x", "x".repeat(SOCIAL_CHANNEL_LIMITS.x + 1))
 assert.match(validateSocialContent("linkedin", "   ") || "", /vacío/);
 assert.equal(validateRejectionReason("Motivo suficientemente claro"), null);
 assert.match(validateRejectionReason("corto") || "", /10/);
+assert.deepEqual(parseHashtags("#IA, automatización #IA ventas! seguimiento comercial", "linkedin"), ["IA", "automatizacion", "ventas", "seguimiento", "comercial"]);
+assert.deepEqual(parseHashtags("#IA #ventas #extra", "x"), ["IA", "ventas"]);
+assert.equal(composeSocialContent({ hook: "Gancho", hashtags: ["IA", "#ventas"] }), "Gancho\n\n#IA #ventas");
+assert.match(validateOperatorPerspective("muy breve") || "", /20/);
+assert.equal(validateOperatorPerspective("Las excepciones necesitan una persona responsable."), null);
+assert.equal(visibleOpening("a".repeat(240)).length, 210);
+assert.equal(isAllowedManualPublicationUrl("https://www.linkedin.com/posts/example"), true);
+assert.equal(isAllowedManualPublicationUrl("https://evil.test/linkedin.com"), false);
+const renderedVariant = { media_strategy: "puna_editorial", media_urls: { primary: { output_path: "campaign/image.png" } }, hook: "Gancho", body: "Cuerpo", cta: "Leé más", hashtags: ["IA"], image_headline: "Título visual", image_alt: "Descripción" };
+assert.equal(shouldInvalidateSocialMedia(renderedVariant, { ...renderedVariant, hook: "Gancho editado" }), true);
+assert.equal(shouldInvalidateSocialMedia(renderedVariant, { ...renderedVariant }), false);
+assert.equal(shouldInvalidateSocialMedia({ ...renderedVariant, media_strategy: "text_only" }, { ...renderedVariant, media_strategy: "text_only", hook: "Gancho editado" }), false);
+for (const locale of ["es", "en"]) {
+  const prompt = buildChatSystemPrompt(locale);
+  assert.match(prompt, /initial|inicial/i);
+  assert.match(prompt, /software/i);
+  assert.match(prompt, /one useful question|una sola pregunta útil/i);
+  assert.match(prompt, /prices|precios/i);
+}
 
 assert.equal(calendarWeekStart("2027-01-01"), "2026-12-28");
 assert.deepEqual(calendarWeekDays("2026-12-28"), ["2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31", "2027-01-01", "2027-01-02", "2027-01-03"]);
@@ -75,6 +101,11 @@ assert.equal(exactMatches[0].exact, true);
 assert.equal(blockingQualityMessage(duplicateQualityFlags(exactMatches)), "El copy es idéntico a “Otra campaña” (instagram).");
 assert.equal(duplicateMatches("Texto completamente diferente", duplicateCandidates).length, 0);
 assert.match(blockingQualityMessage(deterministicQualityFlags(quantitativeVariant, [{ key: "source-1", title: "Caso", excerpt: "Se redujo 30% del trabajo manual." }], "puna_editorial", { ctaType: "article", ctaUrl: null })) || "", /HTTPS/);
+const localeFlags = deterministicQualityFlags({ ...identifierVariant, body: "Os recomendamos ordenar vuestro proceso." }, [], "text_only");
+assert.equal(localeFlags.some((flag) => flag.code === "locale_mismatch"), true);
+const densityFlags = deterministicQualityFlags({ ...identifierVariant, image_headline: "Uno dos tres cuatro cinco seis siete ocho nueve diez once doce trece" }, [], "puna_editorial");
+assert.equal(densityFlags.some((flag) => flag.code === "visual_density"), true);
+assert.match(blockingQualityMessage(deterministicQualityFlags({ ...identifierVariant, cta: "Comentá qué pensás" }, [], "text_only")) || "", /CTA genérico/);
 
 const slide = (id, role, headline) => ({ id, role, eyebrow: "Sistema", headline, body: "Una explicación breve y operativa.", bullets: [], emphasis: null, evidence_refs: [], asset_id: null, alt_text: `Placa: ${headline}` });
 const carousel = [
