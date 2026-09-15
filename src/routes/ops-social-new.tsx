@@ -49,7 +49,7 @@ import {
 } from "../lib/social-generation.server";
 import { carouselQualityFlags, type VisualPreset } from "../lib/social-visual";
 import { renderSocialVisual } from "../lib/social-visual-render.server";
-import { isSocialChannel, isSocialLocale, isUuid } from "../lib/social-studio";
+import { isSocialChannel, isSocialLocale, isUuid, validateOperatorPerspective } from "../lib/social-studio";
 import { buildRunTelemetry, isRetryableGenerationError } from "../lib/social-observability.server";
 
 const objectives = {
@@ -163,6 +163,7 @@ function campaignModelContext(campaign: Record<string, any>) {
     opening: campaign.selected_opening,
     sources: campaign.generation_context?.sources || [],
     tone_notes: campaign.generation_context?.tone_notes || "",
+    operator_perspective: campaign.generation_context?.operator_perspective || "",
     visual: campaign.generation_context?.visual || {},
     confidentiality: "Use only the supplied, non-confidential context.",
   };
@@ -323,6 +324,8 @@ export async function action({ request }: ActionFunctionArgs) {
       40,
     ) as keyof typeof services;
     const problem = stringField(form, "problem_statement", 1200);
+    const operatorPerspective = stringField(form, "operator_perspective", 600);
+    const perspectiveError = validateOperatorPerspective(operatorPerspective);
     const sourceType = stringField(
       form,
       "source_type",
@@ -340,13 +343,14 @@ export async function action({ request }: ActionFunctionArgs) {
       !sourceTypes[sourceType] ||
       !audience ||
       !problem ||
+      perspectiveError ||
       !locales.length ||
       !channels.length
     )
       return opsData(
         {
           error:
-            "Completá objetivo, audiencia, servicio, problema, idioma y al menos un canal.",
+            perspectiveError || "Completá objetivo, audiencia, servicio, problema, idioma y al menos un canal.",
         },
         context.headers,
         422,
@@ -470,6 +474,7 @@ export async function action({ request }: ActionFunctionArgs) {
       generation_context: {
         sources,
         tone_notes: stringField(form, "tone_notes", 500),
+        operator_perspective: operatorPerspective,
         confidentiality_confirmed:
           sourceType !== "internal_learning" ||
           form.get("confidentiality_confirmed") === "yes",
@@ -1248,6 +1253,14 @@ export default function OpsSocialNew({
             required
             rows={4}
           />
+          <TextAreaField
+            label="Qué pensamos nosotros"
+            name="operator_perspective"
+            value={campaign?.generation_context?.operator_perspective}
+            required
+            rows={4}
+            hint="Una observación, criterio o postura real de Puna (20–600 caracteres)."
+          />
           {loaderData.qualityEnabled ? <Field
             label="Destino del CTA"
             name="cta_url"
@@ -1579,12 +1592,8 @@ export default function OpsSocialNew({
             rows={3}
           />
           <div className="ops-crop-preview">
-            <div className="instagram">
-              <span>{visual.headline || campaign.selected_opening?.text}</span>
-            </div>
-            <div className="linkedin">
-              <span>{visual.headline || campaign.selected_opening?.text}</span>
-            </div>
+            <figure><div className="instagram"><span>{visual.headline || campaign.selected_opening?.text}</span></div><figcaption>Vista editorial · Instagram 4:5</figcaption></figure>
+            <figure><div className={visual.linkedin_format === "linkedin_horizontal" ? "linkedin-horizontal" : "linkedin"}><span>{visual.headline || campaign.selected_opening?.text}</span></div><figcaption>Vista editorial · LinkedIn {visual.linkedin_format === "linkedin_horizontal" ? "horizontal" : "1:1"}</figcaption></figure>
           </div>
           {loaderData.visualEnabled && visual.visual_kind === "carousel" ? <div className="ops-carousel-examples" aria-label="Ejemplos de estructura del carrusel"><article><small>01 · Portada</small><strong>Una tesis clara</strong></article><article><small>02 · Contenido</small><strong>Un paso por placa</strong></article><article><small>05 · Cierre</small><strong>Próxima acción</strong></article></div> : null}
           {loaderData.reelsEnabled && visual.visual_kind === "reel" ? <div className="ops-carousel-examples" aria-label="Estructura del reel"><article><small>01 · Gancho</small><strong>Detener el scroll</strong></article><article><small>02–04 · Desarrollo</small><strong>Problema y dos ideas</strong></article><article><small>05 · Cierre</small><strong>Una acción concreta</strong></article><p>Al guardar, el canal se limita a Instagram. Los clips se eligen después, en el detalle.</p></div> : null}

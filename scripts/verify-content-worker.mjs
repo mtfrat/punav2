@@ -5,7 +5,8 @@ import {
 
 const health = await getContentWorkerHealth();
 const capabilities = await getContentWorkerCapabilities();
-if (health.status !== "ok" || capabilities.mutations_enabled !== false) {
-  throw new Error("Content worker did not satisfy the Phase 0 contract.");
+const required = ["brand_overlay", "carousel_document"];
+if (health.status !== "ok" || capabilities.mutations_enabled !== true || !required.every((item) => capabilities.capabilities.includes(item))) {
+  throw new Error("Content worker does not satisfy the launch rendering contract.");
 }
 console.log(JSON.stringify({ health: health.status, version: health.version, mutations_enabled: capabilities.mutations_enabled, capabilities: capabilities.capabilities }, null, 2));

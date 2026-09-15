@@ -108,10 +108,59 @@ export function isUuid(value: string) {
 }
 
 export function composeSocialContent(input: { hook?: string | null; body?: string | null; cta?: string | null; hashtags?: string[] | null }) {
-  const tags = (input.hashtags || []).map((tag) => tag.trim().replace(/^#/, "")).filter(Boolean).map((tag) => `#${tag}`).join(" ");
+  const tags = normalizeHashtags(input.hashtags || []).map((tag) => `#${tag}`).join(" ");
   return [input.hook, input.body, input.cta, tags].map((part) => String(part || "").trim()).filter(Boolean).join("\n\n");
 }
 
-export function parseHashtags(value: string) {
-  return Array.from(new Set(value.split(/[\s,]+/).map((tag) => tag.trim().replace(/^#/, "")).filter(Boolean))).slice(0, 8);
+export function normalizeHashtags(values: string[], channel?: SocialChannel) {
+  const limit = channel === "x" ? 2 : channel ? 5 : 5;
+  return Array.from(new Set(values.flatMap((value) => value.split(/[\s,]+/)).map((tag) => tag.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/^#+/, "").replace(/[^\p{L}\p{N}_]/gu, "").trim()).filter(Boolean))).slice(0, limit);
+}
+
+export function parseHashtags(value: string, channel?: SocialChannel) {
+  return normalizeHashtags([value], channel);
+}
+
+export function validateOperatorPerspective(value: string) {
+  const length = countSocialCharacters(value.trim());
+  if (length < 20) return "Contá una observación o postura propia con al menos 20 caracteres.";
+  if (length > 600) return "La perspectiva propia no puede superar 600 caracteres.";
+  return null;
+}
+
+export function visibleOpening(value: string, limit = 210) {
+  const normalized = value.trim().replace(/\s+/g, " ");
+  return countSocialCharacters(normalized) <= limit ? normalized : `${Array.from(normalized).slice(0, limit - 1).join("").trimEnd()}…`;
+}
+
+export function isAllowedManualPublicationUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    return url.protocol === "https:" && ["linkedin.com", "instagram.com", "x.com", "twitter.com"].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch { return false; }
+}
+
+type SocialMediaVersionInput = {
+  media_strategy?: string | null;
+  media_urls?: Record<string, unknown> | null;
+  hook?: string | null;
+  body?: string | null;
+  cta?: string | null;
+  hashtags?: string[] | null;
+  image_headline?: string | null;
+  image_alt?: string | null;
+};
+
+export function shouldInvalidateSocialMedia(before: SocialMediaVersionInput, after: SocialMediaVersionInput) {
+  if (before.media_strategy === "text_only" || !Object.keys(before.media_urls || {}).length) return false;
+  const version = (input: SocialMediaVersionInput) => JSON.stringify([
+    input.hook || "",
+    input.body || "",
+    input.cta || "",
+    input.hashtags || [],
+    input.image_headline || "",
+    input.image_alt || "",
+  ]);
+  return version(before) !== version(after);
 }

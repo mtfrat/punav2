@@ -28,6 +28,9 @@ import {
   validateRejectionReason,
   composeSocialContent,
   parseHashtags,
+  visibleOpening,
+  isAllowedManualPublicationUrl,
+  shouldInvalidateSocialMedia,
   validateSocialContent,
 } from "../lib/social-studio";
 
@@ -84,7 +87,7 @@ type SocialVariant = {
 type ActionData = {
   error?: string;
   draftId?: string;
-  fieldErrors?: { content?: string; rejection_reason?: string; image_alt?: string };
+  fieldErrors?: { content?: string; rejection_reason?: string; image_alt?: string; publication_url?: string; metrics?: string };
   pendingSchedule?: { variantId: string; updatedAt: string; localScheduledFor: string; returnTo: string };
   conflicts?: ScheduleConflict[];
   pendingQuality?: { scope: "variant" | "campaign"; variantId?: string; updatedAt?: string; campaignUpdatedAt?: string; warnings: QualityFlag[] };
@@ -97,12 +100,28 @@ function structuredVariant(row: SocialVariant): GeneratedSocialVariant {
   return { channel: row.channel as GeneratedSocialVariant["channel"], locale: row.locale as GeneratedSocialVariant["locale"], hook: row.hook || "", body: row.body ?? row.content, cta: row.cta || "", hashtags: row.hashtags || [], image_headline: row.image_headline || "", image_alt: row.image_alt || "", evidence_refs: row.evidence_refs || [], quality_flags: [], generation_notes: [] };
 }
 
+const manualMetricFields = ["impressions", "reach", "reactions", "comments", "shares", "saves", "clicks"] as const;
+function manualMetricSnapshot(form: FormData) {
+  const snapshot: Record<string, string | number | null> = { recorded_at: new Date().toISOString() };
+  for (const field of manualMetricFields) {
+    const raw = String(form.get(field) || "").trim();
+    if (!raw) snapshot[field] = null;
+    else {
+      const value = Number(raw);
+      if (!Number.isInteger(value) || value < 0) throw new Error("invalid_manual_metric");
+      snapshot[field] = value;
+    }
+  }
+  return snapshot;
+}
+
 function qualityFor(row: SocialVariant, campaign: Campaign, enforceCampaign = false) {
   return deterministicQualityFlags(structuredVariant(row), campaign.generation_context?.sources || [], row.media_strategy, enforceCampaign ? { ctaType: campaign.cta_type, ctaUrl: campaign.cta_url } : undefined);
 }
 
 async function visualApprovalError(service: any, campaign: Campaign, row: SocialVariant) {
   if (!contentVisualStudioEnabled() || row.visual_kind === "text" || row.media_strategy === "text_only") return null;
+  if (row.generation_metadata?.media_stale) return "Recomponé la pieza visual antes de aprobar esta versión.";
   if (row.visual_kind === "reel") {
     try {
       const scenes = parseReelScenes(row.reel_scenes);
@@ -271,6 +290,21 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const before = beforeResult.data as SocialVariant;
   if (!expectedUpdatedAt || expectedUpdatedAt !== before.updated_at) return actionError(context, "Esta variante cambió en otra pestaña. Recargá para evitar sobrescribirla.", 409, variantId);
   if (!isSocialChannel(before.channel)) return actionError(context, "La variante tiene un canal inválido.", 422, variantId);
+
+  if (intent === "save_manual_metrics") {
+    if (before.status !== "published") return actionError(context, "Sólo podés registrar resultados de una publicación manual.", 409, variantId);
+    const period = stringField(form, "metric_period", 3);
+    if (!(["d7", "d30"] as const).includes(period as "d7" | "d30")) return actionError(context, "Elegí D7 o D30.", 422, variantId);
+    let snapshot;
+    try { snapshot = manualMetricSnapshot(form); }
+    catch { return actionError(context, "Las métricas deben ser números enteros desde cero o quedar vacías.", 422, variantId, { metrics: "Usá enteros desde cero; dejá vacío lo que no conozcas." }); }
+    const performance = (before.generation_metadata?.manual_performance || {}) as Record<string, any>;
+    const generationMetadata = { ...before.generation_metadata, manual_performance: { publication_url: performance.publication_url, snapshots: { ...(performance.snapshots || {}), [period]: snapshot } }, version_actor_id: context.userId };
+    const result = await context.service.from("content_distribution_drafts").update({ generation_metadata: generationMetadata }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+    if (!result.data) return actionError(context, "La variante cambió mientras cargabas las métricas. Recargá e intentá otra vez.", 409, variantId);
+    await audit(context, { action: "save_manual_metrics", entityType: "distribution_draft", entityId: variantId, after: { period, snapshot } });
+    throw redirect(detailUrl(campaignId, variantId, `metrics-${period}`, returnTo), { headers: operationsHeaders(context.headers) });
+  }
 
   if (intent === "restore_variant_version") {
     if (!contentQualityEnabled()) return actionError(context, "El historial de versiones está deshabilitado.", 503, variantId);
@@ -464,7 +498,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
       provisionalCoverPath = String(cover.output_path || "") || null;
       const notificationUrl = new URL("/api/webhooks/cloudinary/reel-render", request.url).toString();
       const started = await startReelRender({ campaignId, draftId: variantId, runId: run.id, visualHash, scenes, imported: metadata.imported_clips || {}, notificationUrl });
-      await context.service.from("content_distribution_drafts").update({ media_urls: { ...(before.media_urls || {}), cover }, reel_provider_metadata: { ...metadata, render: { run_id: run.id, output_public_id: started.publicId, transformation: started.transformation, status: started.providerStatus } }, generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId);
+      const stored = await context.service.from("content_distribution_drafts").update({ media_urls: { ...(before.media_urls || {}), cover }, reel_provider_metadata: { ...metadata, render: { run_id: run.id, output_public_id: started.publicId, transformation: started.transformation, status: started.providerStatus } }, generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
+      if (!stored.data) throw new Error("render_conflict");
+      const oldCoverPath = before.media_urls?.cover?.output_path;
+      if (oldCoverPath && oldCoverPath !== cover.output_path) await context.service.storage.from("generated-media").remove([oldCoverPath]);
       await context.service.from("social_generation_runs").update({ external_job_id: started.externalJobId, provider_status: started.providerStatus, provider_metadata: { output_public_id: started.publicId, transformation: started.transformation }, result_summary: { stage: "assembling" } }).eq("id", run.id);
       await audit(context, { action: "render_reel", entityType: "distribution_draft", entityId: variantId, after: { run_id: run.id, visual_hash: visualHash, scene_count: 5 } });
     } catch (error) {
@@ -540,7 +577,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         const generated = await regenerateSocialSection(modelContext, structuredVariant(before), validSection);
         const next = { ...structuredVariant(before), [validSection]: generated.value.text, evidence_refs: generated.value.evidence_refs || before.evidence_refs, quality_flags: generated.value.quality_flags || [] };
         const qualityFlags = deterministicQualityFlags(next, campaign.generation_context?.sources || [], before.media_strategy);
-        const changes = { [validSection]: generated.value.text, content: composeSocialContent(next), evidence_refs: next.evidence_refs, quality_flags: qualityFlags, status: "draft", rejection_reason: null, generation_metadata: { ...before.generation_metadata, last_regeneration_run_id: run.id, last_regenerated_section: validSection, version_actor_id: context.userId } };
+        const changes = { [validSection]: generated.value.text, content: composeSocialContent(next), evidence_refs: next.evidence_refs, quality_flags: qualityFlags, status: "draft", rejection_reason: null, generation_metadata: { ...before.generation_metadata, media_stale: Boolean(before.generation_metadata?.media_stale) || shouldInvalidateSocialMedia(before, next), last_regeneration_run_id: run.id, last_regenerated_section: validSection, version_actor_id: context.userId } };
         const update = await context.service.from("content_distribution_drafts").update(changes).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("*").maybeSingle();
         if (!update.data) throw new Error("generation_conflict");
         const completedAt = new Date().toISOString();
@@ -563,14 +600,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (intent === "save_variant") {
     if (before.status === "published") return actionError(context, "Deshacé el estado publicado antes de editar el contenido.", 409, variantId);
     if (before.status === "archived") return actionError(context, "Una variante archivada no se puede editar.", 409, variantId);
-    const hook = stringField(form, "hook", 4000); const body = stringField(form, "body", 10_000); const cta = stringField(form, "cta", 4000); const hashtags = parseHashtags(stringField(form, "hashtags", 1000)); const imageHeadline = stringField(form, "image_headline", 120); const imageAlt = stringField(form, "image_alt", 500);
+    const hook = stringField(form, "hook", 4000); const body = stringField(form, "body", 10_000); const cta = stringField(form, "cta", 4000); const hashtags = parseHashtags(stringField(form, "hashtags", 1000), before.channel); const imageHeadline = stringField(form, "image_headline", 120); const imageAlt = stringField(form, "image_alt", 500);
     const generated = { ...structuredVariant(before), hook, body, cta, hashtags, image_headline: imageHeadline, image_alt: imageAlt };
     const content = composeSocialContent(generated);
     const contentError = validateSocialContent(before.channel, content);
     if (contentError) return actionError(context, "Corregí el contenido antes de guardar.", 422, variantId, { content: contentError });
     if (before.media_strategy !== "text_only" && !imageAlt) return actionError(context, "Agregá texto alternativo para la pieza visual.", 422, variantId, { image_alt: "El texto alternativo es obligatorio cuando existe una imagen." });
     const qualityFlags = deterministicQualityFlags(generated, campaign.generation_context?.sources || [], before.media_strategy);
-    changes = { hook, body, cta, hashtags, image_headline: imageHeadline || null, image_alt: imageAlt || null, content, quality_flags: qualityFlags, content_type: "structured", generation_metadata: { ...before.generation_metadata, media_stale: before.media_strategy !== "text_only" && Boolean(before.media_urls?.primary?.output_path) && imageHeadline !== (before.image_headline || "") }, ...(before.status === "approved" || before.status === "rejected" ? { status: "draft", rejection_reason: null } : {}) };
+    changes = { hook, body, cta, hashtags, image_headline: imageHeadline || null, image_alt: imageAlt || null, content, quality_flags: qualityFlags, content_type: "structured", generation_metadata: { ...before.generation_metadata, media_stale: Boolean(before.generation_metadata?.media_stale) || shouldInvalidateSocialMedia(before, generated) }, ...(before.status === "approved" || before.status === "rejected" ? { status: "draft", rejection_reason: null } : {}) };
     auditAction = "save";
   } else if (intent === "approve_variant") {
     if (!['draft', 'rejected'].includes(before.status) || !canTransitionSocialDraft(before.status, "approved")) return actionError(context, "Sólo se pueden aprobar borradores o variantes rechazadas.", 409, variantId);
@@ -600,7 +637,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
     auditAction = "reject";
   } else if (intent === "mark_published") {
     if (!canTransitionSocialDraft(before.status, "published")) return actionError(context, "Sólo una variante aprobada o programada puede marcarse como publicada.", 409, variantId);
-    changes = { status: "published", published_at: new Date().toISOString(), rejection_reason: null };
+    const publicationUrl = stringField(form, "publication_url", 1000);
+    if (!isAllowedManualPublicationUrl(publicationUrl)) return actionError(context, "Ingresá la URL HTTPS de la publicación en LinkedIn, Instagram, X o Twitter.", 422, variantId, { publication_url: "La URL debe pertenecer a una plataforma admitida." });
+    changes = { status: "published", published_at: new Date().toISOString(), rejection_reason: null, generation_metadata: { ...before.generation_metadata, manual_performance: { publication_url: publicationUrl, snapshots: {} } } };
     auditAction = "mark_published";
   } else if (intent === "undo_published") {
     if (before.status !== "published" || !canTransitionSocialDraft(before.status, "approved")) return actionError(context, "La variante no está marcada como publicada.", 409, variantId);
@@ -668,6 +707,11 @@ function CarouselEditor({ variant, campaign, assets, urls, documentUrl, readOnly
 }
 
 function reelEvidenceText(scene: SocialReelScene) { return scene.evidence_refs.map((ref) => `${ref.claim} | ${ref.source_key}`).join("\n"); }
+function ManualMetricsPanel({ variant, error }: { variant: SocialVariant; error?: string }) {
+  const performance = (variant.generation_metadata?.manual_performance || {}) as { publication_url?: string; snapshots?: Record<string, Record<string, number | string | null>> };
+  return <section className="ops-manual-metrics" aria-labelledby="manual-metrics-title"><header><div><p className="ops-eyebrow">Resultados declarados</p><h3 id="manual-metrics-title">Performance manual</h3></div>{performance.publication_url ? <a href={performance.publication_url} target="_blank" rel="noreferrer"><ExternalLink size={15}/>Abrir publicación</a> : null}</header><p>Registrá sólo datos observados en la plataforma. Los valores desconocidos quedan vacíos y no se atribuye causalidad.</p>{error ? <small className="ops-field-error" role="alert">{error}</small> : null}<div className="ops-manual-metrics-grid">{(["d7", "d30"] as const).map((period) => { const snapshot = performance.snapshots?.[period] || {}; return <Form method="post" className="ops-form" key={period}><input type="hidden" name="intent" value="save_manual_metrics"/><input type="hidden" name="metric_period" value={period}/><input type="hidden" name="variant_id" value={variant.id}/><input type="hidden" name="updated_at" value={variant.updated_at}/><h4>{period.toUpperCase()}</h4><div className="ops-metric-fields">{manualMetricFields.map((field) => <label className="ops-field" key={field}><span>{field === "reach" ? "Alcance" : field === "impressions" ? "Impresiones" : field === "reactions" ? "Reacciones" : field === "comments" ? "Comentarios" : field === "shares" ? "Compartidos" : field === "saves" ? "Guardados" : "Clics"}</span><input type="number" name={field} min="0" step="1" defaultValue={snapshot[field] == null ? "" : String(snapshot[field])}/></label>)}</div><button className="ops-button ops-button-secondary">Guardar {period.toUpperCase()}</button></Form>; })}</div></section>;
+}
+
 function ReelEditor({ variant, videoUrl, coverUrl, readOnly }: { key?: string; variant: SocialVariant; videoUrl: string | null; coverUrl: string | null; readOnly: boolean }) {
   const initial = parseReelScenes(variant.reel_scenes || []); const [scenes, setScenes] = useState(initial); const [selectedIndex, setSelectedIndex] = useState(0);
   const selected = scenes[selectedIndex]; const candidates = variant.reel_provider_metadata?.candidates?.[selected.id] || []; const imported = variant.reel_provider_metadata?.imported_clips?.[selected.id];
@@ -702,7 +746,7 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
   const errorRef = useRef<HTMLDivElement>(null);
   useEffect(() => setSections({ hook: selected?.hook || "", body: selected?.body ?? selected?.content ?? "", cta: selected?.cta || "", hashtags: (selected?.hashtags || []).join(" "), image_headline: selected?.image_headline || "", image_alt: selected?.image_alt || "" }), [selected?.id, selected?.updated_at]);
   useEffect(() => { if (actionData?.error) errorRef.current?.focus(); }, [actionData?.error]);
-  const currentContent = selected ? composeSocialContent({ ...structuredVariant(selected), ...sections, hashtags: parseHashtags(sections.hashtags) }) : "";
+  const currentContent = selected ? composeSocialContent({ ...structuredVariant(selected), ...sections, hashtags: parseHashtags(sections.hashtags, selected.channel as GeneratedSocialVariant["channel"]) }) : "";
   const dirty = Boolean(selected && (sections.hook !== (selected.hook || "") || sections.body !== (selected.body ?? selected.content) || sections.cta !== (selected.cta || "") || sections.hashtags !== (selected.hashtags || []).join(" ") || sections.image_headline !== (selected.image_headline || "") || sections.image_alt !== (selected.image_alt || "")));
   useEffect(() => { const warn = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [dirty]);
   const characterCount = countSocialCharacters(currentContent);
@@ -712,7 +756,7 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
   const altError = selected && actionData?.draftId === selected.id ? actionData.fieldErrors?.image_alt : undefined;
   const canApproveCampaign = loaderData.variants.some((variant) => variant.status === "draft" || variant.status === "rejected");
   const readOnly = selected?.status === "published" || selected?.status === "archived";
-  const liveQualityFlags = selected ? qualityFor({ ...selected, hook: sections.hook, body: sections.body, cta: sections.cta, hashtags: parseHashtags(sections.hashtags), image_headline: sections.image_headline, image_alt: sections.image_alt, content: currentContent }, loaderData.campaign, loaderData.qualityEnabled) : [];
+  const liveQualityFlags = selected ? qualityFor({ ...selected, hook: sections.hook, body: sections.body, cta: sections.cta, hashtags: parseHashtags(sections.hashtags, selected.channel as GeneratedSocialVariant["channel"]), image_headline: sections.image_headline, image_alt: sections.image_alt, content: currentContent }, loaderData.campaign, loaderData.qualityEnabled) : [];
   const qualityFlags = [...(!dirty && selected?.quality_review_hash ? selected.quality_flags : []), ...liveQualityFlags].filter((flag, index, all) => all.findIndex((item) => item.code === flag.code && item.message === flag.message) === index);
   const updateSection = (field: keyof typeof sections, value: string) => setSections((current) => ({ ...current, [field]: value }));
 
@@ -747,7 +791,8 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
           {([['hook','Gancho',3],['body','Cuerpo',selected.channel === 'x' ? 5 : 10],['cta','CTA',3]] as const).map(([field,label,rows]) => <div className="ops-section-field" key={field}><label className="ops-field"><span>{label}</span><textarea name={field} rows={rows} value={sections[field]} onChange={(event) => updateSection(field, event.target.value)} readOnly={readOnly}/></label></div>)}
           <label className="ops-field"><span>Hashtags</span><input name="hashtags" value={sections.hashtags} onChange={(event) => updateSection("hashtags", event.target.value)} readOnly={readOnly} placeholder="#automatizacion #operaciones"/></label>
           {selected.visual_kind !== "carousel" ? <div className="ops-field-grid"><label className="ops-field"><span>Título visual</span><input name="image_headline" maxLength={120} value={sections.image_headline} onChange={(event) => updateSection("image_headline", event.target.value)} readOnly={readOnly}/><small>{sections.image_headline.length} / 120</small></label><label className="ops-field"><span>Texto alternativo</span><textarea name="image_alt" maxLength={500} rows={3} value={sections.image_alt} onChange={(event) => updateSection("image_alt", event.target.value)} readOnly={readOnly} aria-invalid={Boolean(altError)}/>{altError ? <small className="ops-field-error" role="alert">{altError}</small> : null}</label></div> : <><input type="hidden" name="image_headline" value={sections.image_headline}/><input type="hidden" name="image_alt" value={sections.image_alt}/></>}
-          {loaderData.mediaUrl && selected.visual_kind !== "carousel" ? <figure className="ops-generated-media"><img src={loaderData.mediaUrl} alt={selected.image_alt || "Vista previa de la pieza"}/><figcaption><ImageIcon size={15}/>Pieza generada{sections.image_headline !== (selected.image_headline || "") ? " · el título cambió; la imagen todavía no fue recompuesta" : ""}</figcaption>{loaderData.mediaDownloadUrl ? <a className="ops-inline-action" href={loaderData.mediaDownloadUrl}><Download size={15}/>Descargar {selected.channel === "instagram" ? "JPEG" : "PNG"}</a> : null}</figure> : null}
+          {loaderData.mediaUrl && selected.visual_kind !== "carousel" ? <figure className="ops-generated-media"><img src={loaderData.mediaUrl} alt={selected.image_alt || "Vista previa de la pieza"}/><figcaption><ImageIcon size={15}/>Render final{sections.image_headline !== (selected.image_headline || "") ? " · el título cambió; la imagen todavía no fue recompuesta" : ""}</figcaption>{loaderData.mediaDownloadUrl ? <a className="ops-inline-action" href={loaderData.mediaDownloadUrl}><Download size={15}/>Descargar {selected.channel === "instagram" ? "JPEG" : "PNG"}</a> : null}</figure> : null}
+          <div className="ops-visible-opening"><strong>Apertura visible · ~210 caracteres</strong><p>{visibleOpening(currentContent)}</p></div>
           <div className="ops-copy-preview"><strong>Vista previa del copy final</strong><pre>{currentContent}</pre><small id="social-counter" className={characterCount > limit ? "ops-counter is-over" : "ops-counter"} aria-live="polite">{characterCount} / {limit} caracteres{selected.channel === "x" ? " · conteo conservador" : ""}</small>{contentError ? <small id="social-content-error" className="ops-field-error" role="alert">{contentError}</small> : null}</div>
           {qualityFlags.length ? <div className="ops-quality-flags" aria-label="Controles de calidad"><strong>Controles de calidad</strong><ul>{qualityFlags.map((flag, index) => <li className={`is-${flag.severity}`} key={`${flag.code}-${index}`}><StatusBadge value={flag.severity}/>{flag.message}</li>)}</ul></div> : <Notice tone="success">Sin bloqueos automáticos de calidad.</Notice>}
           {loaderData.qualityEnabled && selected.quality_scorecard && "clarity" in selected.quality_scorecard ? <QualityScorecardView scorecard={selected.quality_scorecard as QualityScorecard} reviewedAt={selected.quality_reviewed_at}/> : loaderData.qualityEnabled ? <p className="ops-muted">La puntuación editorial se calculará al aprobar esta versión.</p> : null}
@@ -768,11 +813,13 @@ export default function OpsSocialDetail({ loaderData, actionData }: { loaderData
           {selected.status === "scheduled" ? <div className="ops-schedule-links"><Link to={`/ops/calendar?variant=${selected.id}`}><CalendarClock size={16}/>Ver en calendario</Link><Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-inline-action" type="submit" name="intent" value="unschedule_variant"><RotateCcw size={16}/>Desprogramar</button></Form></div> : null}
         </section> : null}
 
+        {selected.status === "published" ? <ManualMetricsPanel variant={selected} error={actionData?.fieldErrors?.metrics}/> : null}
+
         <div className="ops-review-actions">
           <div><h3>Decisión editorial</h3><p>Aprobá esta versión, rechazala con instrucciones o registrá una publicación ya realizada manualmente.</p></div>
           <div className="ops-review-buttons">
-            {(selected.status === "draft" || selected.status === "rejected") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="approve_variant" disabled={dirty}><Check aria-hidden="true" size={17}/>Aprobar variante</button></Form> : null}
-            {(selected.status === "approved" || selected.status === "scheduled") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="mark_published" disabled={dirty} onClick={(event) => { if (!window.confirm("Confirmá únicamente si ya publicaste esta variante manualmente en la red.")) event.preventDefault(); }}><Send aria-hidden="true" size={17}/>Marcar publicada</button></Form> : null}
+            {(selected.status === "draft" || selected.status === "rejected") ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="approve_variant" disabled={dirty || Boolean(selected.generation_metadata?.media_stale)}><Check aria-hidden="true" size={17}/>Aprobar variante</button></Form> : null}
+            {(selected.status === "approved" || selected.status === "scheduled") ? <Form method="post" className="ops-manual-publish"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><label className="ops-field"><span>URL de la publicación manual</span><input type="url" name="publication_url" required placeholder={`https://${selected.channel === "x" ? "x.com" : `${selected.channel}.com`}/…`} aria-invalid={Boolean(actionData?.fieldErrors?.publication_url)}/>{actionData?.fieldErrors?.publication_url ? <small className="ops-field-error" role="alert">{actionData.fieldErrors.publication_url}</small> : null}</label><button className="ops-button ops-button-secondary" type="submit" name="intent" value="mark_published" disabled={dirty} onClick={(event) => { if (!window.confirm("Confirmá únicamente si ya publicaste esta variante manualmente en la red.")) event.preventDefault(); }}><Send aria-hidden="true" size={17}/>Marcar publicada</button></Form> : null}
             {selected.status === "published" ? <Form method="post"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><button className="ops-button ops-button-secondary" type="submit" name="intent" value="undo_published" onClick={(event) => { if (!window.confirm("¿Deshacer el registro de publicación y volver a aprobado?")) event.preventDefault(); }}><RotateCcw aria-hidden="true" size={17}/>Deshacer publicación</button></Form> : null}
           </div>
           {(selected.status === "draft" || selected.status === "approved" || selected.status === "scheduled") ? <details className="ops-reject-form" open={Boolean(reasonError)}><summary><X aria-hidden="true" size={16}/>Rechazar con motivo</summary><Form method="post" className="ops-form"><input type="hidden" name="variant_id" value={selected.id}/><input type="hidden" name="updated_at" value={selected.updated_at}/><input type="hidden" name="return_to" value={loaderData.returnTo}/><label className="ops-field" htmlFor="rejection-reason"><span>Qué debe corregirse <b aria-hidden="true">*</b></span><textarea id="rejection-reason" name="rejection_reason" minLength={10} maxLength={1000} required rows={4} aria-invalid={Boolean(reasonError)} aria-describedby={reasonError ? "rejection-reason-error" : "rejection-reason-hint"}/>{reasonError ? <small id="rejection-reason-error" className="ops-field-error" role="alert">{reasonError}</small> : <small id="rejection-reason-hint">Entre 10 y 1000 caracteres. El motivo queda en la auditoría.</small>}</label><button className="ops-button ops-button-danger" type="submit" name="intent" value="reject_variant"><X aria-hidden="true" size={17}/>Confirmar rechazo</button></Form></details> : null}
