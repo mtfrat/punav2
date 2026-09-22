@@ -8,9 +8,9 @@ Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
 
-El núcleo funcional está implementado y probado. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna tiene un preview final READY; la biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación ya pasaron pruebas reales.
+El núcleo funcional está implementado y probado. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna tiene un preview READY; la biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación ya pasaron pruebas reales. El flujo de reels superó la búsqueda e importación de cinco clips reales; Cloudinary está ensamblando el MP4 final.
 
-Estado de salida: **release candidate profesional para el flujo manual principal; go-live retenido por una única migración de base de datos de reels y el smoke posterior**.
+Estado de salida: **release candidate profesional para el flujo manual principal; go-live retenido hasta validar el MP4 y completar el smoke productivo**.
 
 ## Principios del producto
 
@@ -263,7 +263,10 @@ Estado de salida: **release candidate profesional para el flujo manual principal
 - Bot público: dos prompts reales con diagnóstico enfocado y una sola pregunta útil.
 - Captación: formulario real creado y lead verificado en Operations.
 - Consola y render del preview: sin errores de React ni hidratación en el recorrido final.
-- Reel final: storyboard profesional de 5 escenas y 20 segundos generado; búsqueda de clips detenida por deriva de constraint antes de contactar Pexels.
+- Reel final: storyboard de 5 escenas y 20 segundos generado; Pexels devolvió tres candidatos verticales por escena y cinco clips distintos fueron seleccionados e importados en Cloudinary.
+- Portada JPEG de reel generada y revisada visualmente; el MP4 se encuentra en ensamblado asíncrono.
+- Dos ajustes de restricciones de `social_generation_runs` aplicados en Supabase para aceptar `reel_sources`, `reel_render`, la etapa `importing` y secciones `import:<scene_id>`.
+- La vista editorial del reel recibió un ajuste de contraste para su texto auxiliar; la suite frontend completa volvió a pasar.
 
 ### Worker productivo
 
@@ -298,20 +301,15 @@ Estado de salida: **release candidate profesional para el flujo manual principal
 
 ### P0 — necesarios para declarar go-live completo
 
-1. **Aplicar la migración correctiva de reels**
-   - Ejecutar `20260922190000_social_reels_operation_constraint_fix.sql` en el proyecto Supabase `zaerzzgqxvaumhhchijb`.
-   - La prueba real confirmó error PostgreSQL `23514`: el constraint remoto de `social_generation_runs.operation` no acepta `reel_sources` ni `reel_render`.
-   - La falla ocurre antes de contactar Pexels; no indica una API key inválida.
-
-2. **Repetir el Reel E2E**
-   - Buscar tres clips por escena, elegir cinco, importar y renderizar.
-   - Comprobar MP4 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura, portada JPEG y ausencia de audio.
+1. **Terminar el Reel E2E**
+   - Confirmar que el render asíncrono de Cloudinary termina correctamente.
+   - Comprobar MP4 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura y ausencia de audio.
    - Aprobar, programar, reprogramar y desprogramar sin marcar publicada.
 
-3. **Rollout de Puna**
+2. **Rollout de Puna**
    - Promover primero con `CONTENT_REELS_ENABLED=false`.
    - Ejecutar smoke de seguridad, imagen, carrusel, calidad y calendario.
-   - Aplicar la migración, activar reels y repetir el Reel E2E.
+   - Activar reels sólo después de la validación del MP4.
    - Ejecutar nuevamente el reconciliador de Storage.
 
 ### P1 — cierre editorial, no bloquea el motor
@@ -339,22 +337,20 @@ Estado de salida: **release candidate profesional para el flujo manual principal
 
 ### Lo que todavía impide llamar profesional al lanzamiento completo
 
-- El constraint remoto bloquea las operaciones `reel_sources` y `reel_render`.
-- Por esa deriva de esquema no se pudo certificar el MP4 real ni la integración Pexels/Cloudinary de punta a punta.
+- El MP4 asíncrono todavía debe terminar y verificarse con sus metadatos reales y una revisión visual.
 - El contenido QA aprobado conserva una advertencia de credibilidad por fuente insuficiente; esto demuestra que el guardrail funciona, pero esa pieza no debe publicarse.
 - Puna aún no atravesó el rollout y smoke productivo controlado.
 
 ## Decisión recomendada
 
-**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. Aplicar la migración correctiva, repetir el Reel E2E y después promover Puna con reels apagados para el primer smoke. Si el smoke principal pasa, se puede operar en producción; reels se habilita sólo después de su prueba completa.
+**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. Finalizar el MP4 y después promover Puna con reels apagados para el primer smoke. Si el smoke principal pasa, se puede operar en producción; reels se habilita sólo después de su prueba completa.
 
 ## Runbook de salida
 
-1. Aplicar `20260922190000_social_reels_operation_constraint_fix.sql` en Supabase.
-2. Ejecutar su verificación SQL y repetir búsqueda, selección y render del reel.
-3. Confirmar MP4 y portada descargables sin audio.
-4. Promover Puna a producción con reels apagados.
-5. Ejecutar smoke de acceso, bot, captación, imagen, carrusel, calidad y calendario sin publicar contenido.
-6. Activar reels y probar una pieza temporal.
-7. Desprogramar o archivar las piezas `QA final` y reconciliar Storage.
-8. Registrar la decisión final de go-live.
+1. Confirmar el MP4 final y revisar dimensiones, codecs, duración y legibilidad.
+2. Aprobar, programar y desprogramar el reel de prueba sin publicarlo.
+3. Promover Puna a producción con reels apagados.
+4. Ejecutar smoke de acceso, bot, captación, imagen, carrusel, calidad y calendario sin publicar contenido.
+5. Activar reels y repetir la pieza temporal en producción.
+6. Desprogramar o archivar las piezas `QA final` y reconciliar Storage.
+7. Registrar la decisión final de go-live.

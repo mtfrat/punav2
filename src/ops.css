@@ -458,7 +458,7 @@
 .ops-reel-scene-preview { position: sticky; top: 1rem; aspect-ratio: 9 / 16; min-height: 470px; padding: 2rem 1.3rem; display: flex; flex-direction: column; justify-content: center; gap: .8rem; overflow: hidden; color: #fffaf2; background: linear-gradient(160deg,#181410,#7d2935 70%,#bf5226); border: 1px solid var(--ink); }
 .ops-reel-scene-preview > span { color: #ffb184; font: 800 .7rem var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
 .ops-reel-scene-preview > strong { font-family: var(--font-serif); font-size: clamp(1.7rem,4vw,2.7rem); line-height: .95; }
-.ops-reel-scene-preview > p { font-size: .88rem; line-height: 1.45; }
+.ops-reel-scene-preview > p { color: #fffaf2; font-size: .88rem; line-height: 1.45; }
 .ops-reel-scene-preview > small { margin-top: auto; opacity: .8; }
 .ops-reel-fields { display: grid; gap: .75rem; }
 .ops-reel-actions { flex-wrap: wrap; margin-top: 1rem; }

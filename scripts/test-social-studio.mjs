@@ -277,4 +277,10 @@ for (const operation of ["'reel_sources'", "'reel_render'"]) {
 assert.ok(reelOperationFix.includes("drop constraint if exists social_generation_runs_operation_check"), "Reel operation constraint fix must replace the drifted constraint");
 assert.equal(/create policy|cron\.|http_post|social_publications/i.test(reelOperationFix), false, "Reel constraint fix must not expose data or add publishing infrastructure");
 
+const reelImportFix = await readFile(new URL("../supabase/migrations/20260922193000_social_reels_import_constraints_fix.sql", import.meta.url), "utf8");
+assert.ok(reelImportFix.includes("stage = 'importing'"), "Reel import constraint fix must allow importing stage");
+assert.ok(reelImportFix.includes("operation = 'reel_sources'"), "Reel import constraint fix must scope the exception to reel sources");
+assert.ok(reelImportFix.includes("section ~ '^import:"), "Reel import constraint fix must accept scene-scoped import sections");
+assert.equal(/create policy|cron\.|http_post|social_publications/i.test(reelImportFix), false, "Reel import constraint fix must not expose data or add publishing infrastructure");
+
 console.log("Social Studio contracts passed.");
