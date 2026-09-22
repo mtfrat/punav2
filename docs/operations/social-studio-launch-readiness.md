@@ -1,16 +1,16 @@
 # Social Studio — funcionalidades y preparación para producción
 
 Última revisión: 22 de septiembre de 2026
-Puna: `c253621` en `codex/social-studio-launch-hardening`
+Puna: `codex/social-studio-launch-hardening`
 Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
 ## Resumen ejecutivo
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
 
-El núcleo funcional está implementado y probado. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna tiene un preview READY; la biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación ya pasaron pruebas reales. El flujo de reels superó la búsqueda e importación de cinco clips reales; Cloudinary está ensamblando el MP4 final.
+El núcleo funcional está implementado y probado. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna fue desplegada a producción con reels, publicación y autopublicación desactivados; la biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación ya pasaron pruebas reales en preview. El flujo de reels superó la búsqueda e importación de cinco clips reales; falta comprobar el MP4 final.
 
-Estado de salida: **release candidate profesional para el flujo manual principal; go-live retenido hasta validar el MP4 y completar el smoke productivo**.
+Estado de salida: **núcleo manual desplegado en producción con las funciones no certificadas apagadas; go-live completo de reels retenido hasta validar el MP4 y completar el smoke autenticado productivo**.
 
 ## Principios del producto
 
@@ -277,13 +277,17 @@ Estado de salida: **release candidate profesional para el flujo manual principal
 - Deployment productivo: `dpl_u1R2tdgdrn7K7rgUe5q6LsKCqAkr`.
 - Alias productivo: `https://autopost-ochre-two.vercel.app`.
 
-### Preview final de Puna
+### Despliegue de Puna
 
 - URL: `https://punav2-mzplzpth1-mfrats-projects.vercel.app`.
 - Commit: `c253621`.
 - Estado: READY.
 - Runtime observado: sin errores de React ni hidratación en el recorrido final.
-- Producción de Puna no fue modificada.
+- Producción: `https://punav2.vercel.app`, deployment `dpl_BD6p17oDqri4Y13zt1nAkW4tcKmR`, commit `57e084a` (previo a la corrección del webhook), READY.
+- Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
+- Banderas productivas comprobadas: `CONTENT_REELS_ENABLED=false`, `CONTENT_PUBLISHING_ENABLED=false`, `CONTENT_AUTOPUBLISH_ENABLED=false`; compositor y calendario activos.
+- Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos, 2 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
+- El smoke autenticado productivo quedó pendiente porque la sesión de Ops disponible está en el dominio preview, no en el dominio productivo.
 
 ## Estado de datos al cierre
 
@@ -302,15 +306,15 @@ Estado de salida: **release candidate profesional para el flujo manual principal
 ### P0 — necesarios para declarar go-live completo
 
 1. **Terminar el Reel E2E**
-   - Confirmar que el render asíncrono de Cloudinary termina correctamente.
+   - Confirmar que el render asíncrono de Cloudinary termina correctamente. El primer intento quedó en `processing` sin MP4 derivado; apuntó al preview protegido y no pudo entregar allí el webhook. La corrección usa el dominio público y acepta SHA-1/SHA-256 para la firma, según la especificación de Cloudinary.
    - Comprobar MP4 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura y ausencia de audio.
    - Aprobar, programar, reprogramar y desprogramar sin marcar publicada.
 
 2. **Rollout de Puna**
-   - Promover primero con `CONTENT_REELS_ENABLED=false`.
-   - Ejecutar smoke de seguridad, imagen, carrusel, calidad y calendario.
+   - Producción desplegada con `CONTENT_REELS_ENABLED=false`.
+   - Ejecutar smoke autenticado productivo de seguridad, imagen, carrusel, calidad y calendario.
    - Activar reels sólo después de la validación del MP4.
-   - Ejecutar nuevamente el reconciliador de Storage.
+   - Reconciliador de Storage ejecutado: 0 referencias faltantes.
 
 ### P1 — cierre editorial, no bloquea el motor
 

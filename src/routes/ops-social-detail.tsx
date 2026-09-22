@@ -3,6 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, Link, redirect } from "react-router";
 import { Archive, ArrowDown, ArrowLeft, ArrowUp, CalendarClock, Check, Clock3, Copy, Download, ExternalLink, FileClock, Image as ImageIcon, Plus, RefreshCw, RotateCcw, Save, Send, ShieldCheck, Sparkles, Trash2, Video, X } from "lucide-react";
 import { Notice, OpsPageHeader, StatusBadge, formatDate } from "../components/ops";
+import { SITE_URL } from "../content/site";
 import { audit, assertTrustedMutation, operationsHeaders, opsData, requireAdmin, stringField } from "../lib/admin.server";
 import { contentCalendarEnabled, contentComposerEnabled, contentQualityEnabled, contentReelsEnabled, contentStudioEnabled, contentVisualStudioEnabled } from "../lib/content-worker.server";
 import { calendarCollisionMessage, calendarDateTimeInput, formatCalendarDateTime, isSafeCalendarReturnTo, todayCalendarKey } from "../lib/social-calendar";
@@ -496,7 +497,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       await context.service.from("social_generation_runs").update({ status: "running", provider: "cloudinary", provider_status: "importing", started_at: new Date().toISOString() }).eq("id", run.id);
       const cover = await renderReelCover(context.service, campaign, before, visualHash, run.id);
       provisionalCoverPath = String(cover.output_path || "") || null;
-      const notificationUrl = new URL("/api/webhooks/cloudinary/reel-render", request.url).toString();
+      const notificationUrl = `${SITE_URL}/api/webhooks/cloudinary/reel-render`;
       const started = await startReelRender({ campaignId, draftId: variantId, runId: run.id, visualHash, scenes, imported: metadata.imported_clips || {}, notificationUrl });
       const stored = await context.service.from("content_distribution_drafts").update({ media_urls: { ...(before.media_urls || {}), cover }, reel_provider_metadata: { ...metadata, render: { run_id: run.id, output_public_id: started.publicId, transformation: started.transformation, status: started.providerStatus } }, generation_metadata: { ...before.generation_metadata, media_stale: true, version_actor_id: context.userId } }).eq("id", variantId).eq("updated_at", expectedUpdatedAt).select("id").maybeSingle();
       if (!stored.data) throw new Error("render_conflict");

@@ -161,11 +161,17 @@ export function cloudinaryWebhookRunId(payload: Record<string, any>) {
   return String(payload?.run_id || "");
 }
 
+export function cloudinaryWebhookBatchId(payload: Record<string, any>) {
+  return String(payload?.batch_id || payload?.eager?.batch_id || "");
+}
+
 export function verifyCloudinaryWebhook(rawBody: string, signature: string | null, timestampValue: string | null, nowSeconds = Math.floor(Date.now() / 1000)) {
   const { cloudinarySecret } = configuration();
   const timestamp = Number(timestampValue);
   if (!signature || !Number.isInteger(timestamp) || Math.abs(nowSeconds - timestamp) > 300) return false;
-  const expected = createHash("sha256").update(`${rawBody}${timestamp}${cloudinarySecret}`).digest("hex");
+  const algorithm = signature.length === 40 ? "sha1" : signature.length === 64 ? "sha256" : null;
+  if (!algorithm || !/^[0-9a-f]+$/i.test(signature)) return false;
+  const expected = createHash(algorithm).update(`${rawBody}${timestamp}${cloudinarySecret}`).digest("hex");
   const left = Buffer.from(signature, "hex"); const right = Buffer.from(expected, "hex");
   return left.length === right.length && timingSafeEqual(left, right);
 }

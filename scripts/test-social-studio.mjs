@@ -20,7 +20,7 @@ import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, du
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
 import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
 import { parseReelCandidates, parseReelScenes, reelDuration, reelMaterial, reelQualityFlags } from "../src/lib/social-reels.ts";
-import { cloudinaryWebhookRunId, reelTransformation, signedCloudinaryDownload, verifyCloudinaryWebhook } from "../src/lib/social-reels.server.ts";
+import { cloudinaryWebhookBatchId, cloudinaryWebhookRunId, reelTransformation, signedCloudinaryDownload, verifyCloudinaryWebhook } from "../src/lib/social-reels.server.ts";
 import {
   addCalendarDays,
   calendarDateTimeInput,
@@ -164,10 +164,14 @@ const webhookBody = JSON.stringify({ run_id: "00000000-0000-4000-8000-0000000000
 const webhookTimestamp = 2_000_000_000;
 const webhookSignature = createHash("sha256").update(`${webhookBody}${webhookTimestamp}secret-test`).digest("hex");
 assert.equal(verifyCloudinaryWebhook(webhookBody, webhookSignature, String(webhookTimestamp), webhookTimestamp), true);
+const sha1WebhookSignature = createHash("sha1").update(`${webhookBody}${webhookTimestamp}secret-test`).digest("hex");
+assert.equal(verifyCloudinaryWebhook(webhookBody, sha1WebhookSignature, String(webhookTimestamp), webhookTimestamp), true);
 assert.equal(verifyCloudinaryWebhook(`${webhookBody}x`, webhookSignature, String(webhookTimestamp), webhookTimestamp), false);
+assert.equal(verifyCloudinaryWebhook(webhookBody, "xyz", String(webhookTimestamp), webhookTimestamp), false);
 assert.equal(verifyCloudinaryWebhook(webhookBody, webhookSignature, String(webhookTimestamp - 301), webhookTimestamp), false);
 assert.equal(cloudinaryWebhookRunId({ context: { custom: { run_id: "nested" } } }), "nested");
 assert.equal(cloudinaryWebhookRunId({ context: "run_id=flat|other=value" }), "flat");
+assert.equal(cloudinaryWebhookBatchId({ batch_id: "batch-123" }), "batch-123");
 const downloadUrl = signedCloudinaryDownload("puna/reels/example", "mp4", "c_fill,w_1080,h_1920", 2_000_000_000);
 assert.match(downloadUrl, /video\/download\?/);
 assert.match(downloadUrl, /expires_at=2000000600/);
