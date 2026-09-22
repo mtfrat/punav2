@@ -1,16 +1,16 @@
 # Social Studio — funcionalidades y preparación para producción
 
-Última revisión: 21 de septiembre de 2026  
-Puna: `7ec6196` en `codex/social-studio-launch-hardening`  
-Worker: `7df8e61` en `codex/content-worker-launch-polish`
+Última revisión: 22 de septiembre de 2026
+Puna: `c253621` en `codex/social-studio-launch-hardening`
+Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
 ## Resumen ejecutivo
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
 
-El núcleo funcional está implementado, automatizado y probado. El worker productivo está operativo y cerrado. Puna tiene un preview final READY, pero todavía no debe promoverse a producción: faltan assets reales de marca y la matriz manual completa de presets, carrusel, reel, calendario, accesibilidad y captación.
+El núcleo funcional está implementado y probado. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna tiene un preview final READY; la biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación ya pasaron pruebas reales.
 
-Estado de salida: **release candidate profesional, aún no go-live**.
+Estado de salida: **release candidate profesional para el flujo manual principal; go-live retenido por una única migración de base de datos de reels y el smoke posterior**.
 
 ## Principios del producto
 
@@ -235,6 +235,8 @@ Estado de salida: **release candidate profesional, aún no go-live**.
 - Bundle sin secretos del worker: aprobado.
 - SEO/GEO inicial de ocho rutas bilingües: aprobado.
 - Suite del worker y fixtures de layouts: aprobados durante el hardening.
+- Worker: 26/26 pruebas aprobadas.
+- Matriz del renderizador: 24 composiciones con dimensiones y MIME exactos.
 
 ### E2E y datos
 
@@ -251,6 +253,17 @@ Estado de salida: **release candidate profesional, aún no go-live**.
 - Reparación de 15 referencias rotas en seis borradores ejecutada.
 - Verificación actual: cero referencias rotas después de revisar dos referencias activas.
 - Blog público EN/ES muestra el estado vacío intencional.
+- Biblioteca de marca: 3 assets propios activos y 5 imports legacy inactivos.
+- Presets visuales: matriz de 24 composiciones aprobada, incluidos 4:5, 1:1 y horizontal.
+- Carrusel final real: 5 placas en Instagram y LinkedIn; JPEG 1080×1350 y PDF ordenado verificados.
+- Aprobación real con advertencias editoriales: aprobada sin publicar.
+- Calendario real: Instagram y LinkedIn programados para la misma hora sin colisión cruzada; ambos visibles en semana y hora de Buenos Aires.
+- Preview autenticado: 6 rutas de Operations en 375, 768 y 1440 px, 18 comprobaciones sin overflow horizontal.
+- Navegación por teclado: skip link, orden de foco y anillo de foco visible comprobados.
+- Bot público: dos prompts reales con diagnóstico enfocado y una sola pregunta útil.
+- Captación: formulario real creado y lead verificado en Operations.
+- Consola y render del preview: sin errores de React ni hidratación en el recorrido final.
+- Reel final: storyboard profesional de 5 escenas y 20 segundos generado; búsqueda de clips detenida por deriva de constraint antes de contactar Pexels.
 
 ### Worker productivo
 
@@ -258,70 +271,47 @@ Estado de salida: **release candidate profesional, aún no go-live**.
 - `GET /api/v1/capabilities` sin token: `401`.
 - `/docs`, `/redoc` y `/openapi.json`: `404`.
 - Scheduler productivo deshabilitado.
+- Deployment productivo: `dpl_u1R2tdgdrn7K7rgUe5q6LsKCqAkr`.
+- Alias productivo: `https://autopost-ochre-two.vercel.app`.
 
 ### Preview final de Puna
 
-- URL: `https://punav2-mfykck524-mfrats-projects.vercel.app`.
-- Deployment: `dpl_58yAJZe8S5D8cDwvCsaMSftzSpXY`.
-- Commit: `7ec6196`.
+- URL: `https://punav2-mzplzpth1-mfrats-projects.vercel.app`.
+- Commit: `c253621`.
 - Estado: READY.
-- Build: 25 segundos.
-- Runtime observado: cero warnings, cero errors y cero fatals.
+- Runtime observado: sin errores de React ni hidratación en el recorrido final.
 - Producción de Puna no fue modificada.
 
 ## Estado de datos al cierre
 
-- Assets de marca: 5 totales, 0 activos.
+- Assets de marca: 8 totales, 3 activos y 5 imports legacy inactivos.
 - Artículos: 20 filas, 16 grupos.
 - Artículos archivados: 12.
 - Artículos en borrador: 8 filas, equivalentes a 4 pares bilingües.
-- Campañas sociales: 6 totales; 4 archivadas y 2 en borrador.
-- Variantes sociales: 14 totales; 8 archivadas, 5 en borrador y 1 aprobada.
-- Variantes por formato: 8 individuales, 2 carruseles y 4 de texto.
+- Campañas sociales: 8 totales; incluye una campaña QA de carrusel programada y una campaña QA de reel en borrador.
+- Variantes sociales: 17 totales.
+- Carrusel QA: Instagram y LinkedIn programados para el 23 de septiembre de 2026 a las 10:00 ART; programar no publica.
+- Reel QA: Instagram, 5 escenas, 20 segundos, en borrador.
 - Referencias de medios inexistentes: 0.
 
 ## Bloqueantes antes de producción
 
-### P0 — necesarios para declarar go-live
+### P0 — necesarios para declarar go-live completo
 
-1. **Biblioteca real de marca**
-   - Subir y activar una captura anonimizada de un sistema real.
-   - Subir y activar un diagrama real de arquitectura o proceso.
-   - Subir y activar una imagen propia de trabajo, equipo o producto.
-   - Completar título, categoría, alt text y punto focal.
+1. **Aplicar la migración correctiva de reels**
+   - Ejecutar `20260922190000_social_reels_operation_constraint_fix.sql` en el proyecto Supabase `zaerzzgqxvaumhhchijb`.
+   - La prueba real confirmó error PostgreSQL `23514`: el constraint remoto de `social_generation_runs.operation` no acepta `reel_sources` ni `reel_render`.
+   - La falla ocurre antes de contactar Pexels; no indica una API key inválida.
 
-2. **Matriz visual manual**
-   - Comparar lado a lado Editorial, Evidencia, Sistema e Imagen.
-   - Verificar marca, dominio, contraste, recortes y ausencia de texto cortado.
-   - Probar 4:5, 1:1 y horizontal con titulares largos y normales.
+2. **Repetir el Reel E2E**
+   - Buscar tres clips por escena, elegir cinco, importar y renderizar.
+   - Comprobar MP4 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura, portada JPEG y ausencia de audio.
+   - Aprobar, programar, reprogramar y desprogramar sin marcar publicada.
 
-3. **Carrusel E2E final**
-   - Editar, mover, duplicar y eliminar placas.
-   - Verificar JPEG de Instagram y PDF de LinkedIn.
-   - Confirmar nuevamente el bloqueo por hash desactualizado.
-
-4. **Reel E2E final**
-   - Elegir cinco clips reales, renderizar y comprobar MP4 y portada.
-   - Verificar 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura y ausencia de audio.
-   - Probar aprobar, programar, reprogramar, desprogramar y archivar sin marcar publicada.
-
-5. **Calendario y accesibilidad**
-   - Confirmar colisión para el mismo canal y ausencia de colisión entre canales distintos.
-   - Completar recorrido por teclado y foco visible.
-   - Verificar hit targets efectivos de 44 px y `prefers-reduced-motion`.
-
-6. **Regresión pública final**
-   - Probar manualmente ambos prompts del bot.
-   - Revisar consola sin errores de React o hidratación.
-   - Enviar un formulario con prefijo `PRUEBA` y comprobar el lead en Operations.
-   - Revalidar el botón de aprobación deshabilitado en el preview final autenticado.
-
-7. **Rollout de Puna**
-   - Confirmar variables productivas y URL/token del worker productivo.
-   - Desplegar Puna con reels inicialmente apagados.
+3. **Rollout de Puna**
+   - Promover primero con `CONTENT_REELS_ENABLED=false`.
    - Ejecutar smoke de seguridad, imagen, carrusel, calidad y calendario.
-   - Activar reels y ejecutar un reel de prueba.
-   - No publicar ni marcar publicada durante el smoke.
+   - Aplicar la migración, activar reels y repetir el Reel E2E.
    - Ejecutar nuevamente el reconciliador de Storage.
 
 ### P1 — cierre editorial, no bloquea el motor
@@ -330,6 +320,7 @@ Estado de salida: **release candidate profesional, aún no go-live**.
 - Revisar y aprobar los pares antes de cualquier publicación.
 - Decidir si se conserva, actualiza o archiva el cuarto par bilingüe previo.
 - Mejorar fuentes de la campaña de demostración para elevar la credibilidad editorial por encima del score observado de 61/100.
+- Limpiar o archivar las campañas con prefijo `QA final` cuando termine la certificación.
 
 ## Evaluación de calidad profesional
 
@@ -348,25 +339,22 @@ Estado de salida: **release candidate profesional, aún no go-live**.
 
 ### Lo que todavía impide llamar profesional al lanzamiento completo
 
-- No hay assets reales activos; Puna Imagen no puede demostrar calidad de marca real.
-- Carrusel y reel no completaron la prueba manual final de principio a fin en el release candidate.
-- La accesibilidad se comprobó parcialmente, no con recorrido completo por teclado.
-- El contenido de prueba aprobado conserva una advertencia de credibilidad por fuente insuficiente.
+- El constraint remoto bloquea las operaciones `reel_sources` y `reel_render`.
+- Por esa deriva de esquema no se pudo certificar el MP4 real ni la integración Pexels/Cloudinary de punta a punta.
+- El contenido QA aprobado conserva una advertencia de credibilidad por fuente insuficiente; esto demuestra que el guardrail funciona, pero esa pieza no debe publicarse.
 - Puna aún no atravesó el rollout y smoke productivo controlado.
 
 ## Decisión recomendada
 
-**No promover todavía.** Completar los siete bloques P0 en Preview, registrar evidencia visual y recién entonces promover Puna siguiendo el rollout con reels apagados. Si esos bloques pasan sin defectos críticos, la versión puede declararse profesional y apta para una operación manual inicial de una campaña por semana.
+**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. Aplicar la migración correctiva, repetir el Reel E2E y después promover Puna con reels apagados para el primer smoke. Si el smoke principal pasa, se puede operar en producción; reels se habilita sólo después de su prueba completa.
 
 ## Runbook de salida
 
-1. Cargar y activar los tres assets reales.
-2. Ejecutar presets, carrusel, reel, calendario y accesibilidad.
-3. Ejecutar bot, consola y captación pública.
-4. Corregir cualquier P0 y repetir sólo la prueba afectada más el smoke básico.
-5. Confirmar variables productivas sin exponer secretos.
-6. Desplegar Puna a producción con reels apagados.
-7. Ejecutar smoke sin publicar contenido.
-8. Activar reels y probar una pieza temporal.
-9. Archivar la pieza temporal y reconciliar Storage.
-10. Registrar la decisión final de go-live.
+1. Aplicar `20260922190000_social_reels_operation_constraint_fix.sql` en Supabase.
+2. Ejecutar su verificación SQL y repetir búsqueda, selección y render del reel.
+3. Confirmar MP4 y portada descargables sin audio.
+4. Promover Puna a producción con reels apagados.
+5. Ejecutar smoke de acceso, bot, captación, imagen, carrusel, calidad y calendario sin publicar contenido.
+6. Activar reels y probar una pieza temporal.
+7. Desprogramar o archivar las piezas `QA final` y reconciliar Storage.
+8. Registrar la decisión final de go-live.

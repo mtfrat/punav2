@@ -270,4 +270,11 @@ for (const contract of [
 assert.equal(/create policy/i.test(phase7), false, "Phase 7 must not expose reel data to browser roles");
 assert.equal(/cron\.|http_post|social_publications/i.test(phase7), false, "Phase 7 must not add automatic publishing infrastructure");
 
+const reelOperationFix = await readFile(new URL("../supabase/migrations/20260922190000_social_reels_operation_constraint_fix.sql", import.meta.url), "utf8");
+for (const operation of ["'reel_sources'", "'reel_render'"]) {
+  assert.ok(reelOperationFix.includes(operation), `Reel operation constraint fix must allow ${operation}`);
+}
+assert.ok(reelOperationFix.includes("drop constraint if exists social_generation_runs_operation_check"), "Reel operation constraint fix must replace the drifted constraint");
+assert.equal(/create policy|cron\.|http_post|social_publications/i.test(reelOperationFix), false, "Reel constraint fix must not expose data or add publishing infrastructure");
+
 console.log("Social Studio contracts passed.");
