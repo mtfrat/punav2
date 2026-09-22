@@ -1,0 +1,97 @@
+{
+  "company": {
+    "id": "puna-tech",
+    "name": "Puna Tech",
+    "industry": "AI & Software Factory",
+    "tagline": "Software e inteligencia artificial que transforman operaciones de negocio",
+    "website": "https://puna-tech.com",
+    "locales": ["es", "en"],
+    "valueProposition": "Desarrollo de software a medida, portales operativos y agentes de IA para empresas tradicionales y agencias que necesitan eliminar el caos manual de planillas y WhatsApp.",
+    "targetAudience": [
+      "Gerentes de operaciones y dueños de empresas de logística, transporte y distribución",
+      "Directores de agencias de marketing y medios que necesitan un brazo técnico white-label",
+      "Desarrolladoras inmobiliarias y administradoras de propiedades (Real Estate)",
+      "Socios y administradores de estudios contables, jurídicos y financieros"
+    ],
+    "toneOfVoice": "Pragmático, directo, orientado al ahorro de horas y dinero, sin tecnicismos innecesarios ni promesas vacías."
+  },
+  "budget": {
+    "maxDailySpendUsd": 1.50,
+    "maxTokensPerAgent": 4000,
+    "llmProvider": "auto",
+    "preferredModel": "gemini-flash-latest",
+    "fallbackModel": "gpt-4o-mini"
+  },
+  "agents": {
+    "social": {
+      "enabled": true,
+      "channels": ["linkedin", "x", "instagram"],
+      "postsPerNight": 3,
+      "targetPlatformFormat": "autopost",
+      "pillars": [
+        "Cómo reemplazar hojas de cálculo y WhatsApp por portales operativos simples",
+        "Por qué las agencias digitales multiplican sus ingresos ofreciendo desarrollo white-label",
+        "Casos reales de ahorro de 15+ horas semanales con automatizaciones de n8n y Supabase"
+      ]
+    },
+    "scout": {
+      "enabled": true,
+      "targetMarkets": ["Argentina", "Chile", "Colombia", "México", "Uruguay", "Estados Unidos"],
+      "leadCriteria": {
+        "roles": [
+          "Director de Operaciones",
+          "Gerente General",
+          "Managing Partner",
+          "COO",
+          "Director / Dueño"
+        ],
+        "companySize": "15-200 empleados",
+        "verticals": [
+          "Logística, transporte de carga y distribución regional",
+          "Agencias de marketing, publicidad y creativas (White-Label)",
+          "Desarrolladoras inmobiliarias y gestión de Real Estate",
+          "Estudios profesionales contables, legales y financieros"
+        ]
+      },
+      "nicheKeywords": [
+        "portal seguimiento pedidos flota logística",
+        "desarrollo white label software agencias marketing",
+        "automatizar extracción datos facturas contratos pdf",
+        "sistema gestion cuotas y leads inmobiliaria"
+      ],
+      "affiliateFocus": [
+        "Software empresarial de gestión y CRMs (HubSpot, Notion, Supabase)",
+        "Hardware y dispositivos para depósitos y oficinas (Amazon Business)",
+        "Herramientas de productividad y automatización para equipos no-tech"
+      ]
+    },
+    "demoBuilder": {
+      "enabled": true,
+      "techStack": "React 19 + React Router Framework Mode + Tailwind CSS",
+      "outputDirectory": "src/pages/demos",
+      "demoTypes": [
+        "Calculadora de ahorro de horas hombre en planillas de cálculo",
+        "Simulador interactivo de portal de seguimiento de envíos/operaciones",
+        "Extractor de datos de comprobantes y facturas con IA"
+      ]
+    },
+    "techAudit": {
+      "enabled": true,
+      "runCommands": [
+        "node scripts/verify-build-seo.mjs",
+        "node scripts/validate-n8n-workflows.mjs",
+        "npm run lint"
+      ],
+      "checkDependencies": true,
+      "checkSeo": true
+    },
+    "morningBrief": {
+      "enabled": true,
+      "language": "es",
+      "outputFolder": "reports",
+      "deliveryWebhookUrl": null,
+      "telegramChatId": "1503439078",
+      "alertEmail": null
+    }
+  }
+}

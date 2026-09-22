@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Puna Tech · Interactive B2B Capabilities Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #14110e;
+      --surface: #1e1914;
+      --surface-border: rgba(255, 248, 238, 0.12);
+      --ink: #fff8ee;
+      --ink-muted: #d4c5b5;
+      --orange: #ff6b00;
+      --terracotta: #d85c32;
+      --accent-green: #38a169;
+      --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --font-serif: 'Newsreader', Georgia, serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Deck Header & Controls */
+    header.deck-header {
+      padding: 1.2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--surface-border);
+      background: rgba(20, 17, 14, 0.95);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .brand-symbol {
+      width: 32px;
+      height: 20px;
+    }
+
+    .brand-text {
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .brand-tag {
+      color: var(--orange);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      margin-left: 0.4rem;
+      padding: 0.15rem 0.4rem;
+      border: 1px solid rgba(255, 107, 0, 0.3);
+      border-radius: 4px;
+    }
+
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .nav-btn {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--ink);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--orange);
+      color: #000;
+      border-color: var(--orange);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    /* Presentation Canvas */
+    main.deck-canvas {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.98) translateY(12px);
+      transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s;
+      padding: 3.5rem 6rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      z-index: 10;
+    }
+
+    /* Slide Typography */
+    .eyebrow {
+      color: var(--orange);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--orange);
+    }
+
+    h1.slide-title {
+      font-family: var(--font-serif);
+      font-size: clamp(3rem, 4.5vw, 4.5rem);
+      font-weight: 400;
+      line-height: 1.12;
+      margin-bottom: 1.5rem;
+      max-width: 950px;
+    }
+
+    h2.slide-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2.4rem, 3.8vw, 3.6rem);
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+      max-width: 900px;
+    }
+
+    p.slide-lead {
+      font-size: 1.15rem;
+      line-height: 1.7;
+      color: var(--ink-muted);
+      max-width: 750px;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Grid Layouts */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--orange);
+      font-weight: 700;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .card-desc {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--ink-muted);
+    }
+
+    /* Before vs After Cards */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .compare-card {
+      padding: 2rem;
+      border-radius: 10px;
+      border: 1px solid var(--surface-border);
+    }
+
+    .compare-before {
+      background: rgba(169, 31, 45, 0.08);
+      border-left: 4px solid #a91f2d;
+    }
+
+    .compare-after {
+      background: rgba(56, 161, 105, 0.1);
+      border-left: 4px solid var(--accent-green);
+    }
+
+    .compare-badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.8rem;
+    }
+
+    .badge-before { color: #e53e3e; }
+    .badge-after { color: #48bb78; }
+
+    /* Stat Ribbons */
+    .stat-ribbon {
+      display: flex;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .stat-item {
+      padding: 1.2rem 1.8rem;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-left: 3px solid var(--orange);
+      border-radius: 8px;
+    }
+
+    .stat-val {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--orange);
+      line-height: 1;
+    }
+
+    .stat-lbl {
+      margin-top: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      letter-spacing: 0.08em;
+    }
+
+    /* Interactive Buttons */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 1.8rem;
+      background: var(--terracotta);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(216, 92, 50, 0.3);
+    }
+
+    .btn-action:hover {
+      background: #b84b25;
+      transform: translateY(-2px);
+    }
+
+    .btn-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 1.8rem;
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--surface-border);
+      font-weight: 700;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-demo:hover {
+      background: var(--surface);
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    /* Live Demo Tag */
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(56, 161, 105, 0.15);
+      border: 1px solid rgba(56, 161, 105, 0.4);
+      border-radius: 20px;
+      color: #48bb78;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #48bb78;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Footer / Progress Bar */
+    .progress-bar-container {
+      height: 4px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--terracotta), var(--orange));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .slide { padding: 2rem 1.5rem; }
+      .grid-3, .grid-2, .compare-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .stat-ribbon { flex-direction: column; gap: 0.8rem; }
+      h1.slide-title { font-size: 2.2rem; }
+      h2.slide-title { font-size: 1.8rem; }
+      .deck-header { padding: 1rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="deck-header">
+    <div class="brand">
+      <svg class="brand-symbol" viewBox="0 0 160 102" fill="none">
+        <path d="M0 102 48 26l37 76H0Z" fill="#ff6b00" />
+        <path d="M38 102 101 0l59 102H38Z" fill="#fff8ee" />
+        <path d="M108 102 136 52l24 50h-52Z" fill="#7d2935" />
+      </svg>
+      <span class="brand-text">Puna Tech</span>
+      <span class="brand-tag">Capabilities Deck</span>
+    </div>
+    <div class="deck-controls">
+      <span class="slide-counter" id="counter">01 / 11</span>
+      <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>← PREV</button>
+      <button class="nav-btn" id="nextBtn" onclick="nextSlide()">NEXT →</button>
+    </div>
+  </header>
+
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <main class="deck-canvas">
+
+    <!-- Slide 1: Cover -->
+    <section class="slide active" data-slide="1">
+      <p class="eyebrow">Software Factory · Executive Overview</p>
+      <h1 class="slide-title">Turn operational bottlenecks into software your team actually uses.</h1>
+      <p class="slide-lead">We design and build custom B2B software, controlled AI automation, and enterprise data integrations for operations that have outgrown off-the-shelf tools.</p>
+      <div class="btn-row">
+        <a href="https://cal.com/puna-tech-r7xi5x/15min" target="_blank" class="btn-action">Book 15-Min Bottleneck Audit →</a>
+        <a href="https://www.puna-tech.com/" target="_blank" class="btn-demo">Visit puna-tech.com</a>
+      </div>
+    </section>
+
+    <!-- Slide 2: The Bottleneck Problem -->
+    <section class="slide" data-slide="2">
+      <p class="eyebrow">The Operating Constraint</p>
+      <h2 class="slide-title">Why high-growth operations stall between tools.</h2>
+      <p class="slide-lead">Off-the-shelf software solves generic problems. As your business scales, the handoffs between teams break down.</p>
+      <div class="grid-3">
+        <div class="card">
+          <span class="card-num">01 / FRICTION</span>
+          <h3 class="card-title">Manual Data Handoffs</h3>
+          <p class="card-desc">SDRs, operations, and managers wasting 15+ hours weekly copying data between spreadsheets, email inboxes, and CRMs.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">02 / SILOS</span>
+          <h3 class="card-title">Fragile Integrations</h3>
+          <p class="card-desc">Point-to-point Zapier triggers that break silently without alerting anyone, causing dropped leads and corrupted records.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">03 / LIMITS</span>
+          <h3 class="card-title">Outgrown Spreadsheets</h3>
+          <p class="card-desc">Mission-critical business workflows running on fragile Excel sheets with zero role permissions or audit trails.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 3: Three Capabilities -->
+    <section class="slide" data-slide="3">
+      <p class="eyebrow">Our Core Engineering Capabilities</p>
+      <h2 class="slide-title">Three focused delivery practices.</h2>
+      <p class="slide-lead">We don't sell hours or vague advice. We ship production software your team owns completely.</p>
+      <div class="grid-3">
+        <div class="card">
+          <span class="card-num">CAPABILITY 01</span>
+          <h3 class="card-title">Custom B2B Software</h3>
+          <p class="card-desc">Multi-tenant platforms, client portals, and internal tools built on Next.js, React 19, Supabase, and scalable cloud infrastructure.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">CAPABILITY 02</span>
+          <h3 class="card-title">AI Workflow Automation</h3>
+          <p class="card-desc">Deterministic n8n & Python pipelines with structured outputs, pgvector RAG, and strict human-in-the-loop safety guards.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">CAPABILITY 03</span>
+          <h3 class="card-title">Data & CRM Integration</h3>
+          <p class="card-desc">Reliable HubSpot v4, Stripe, and PostgreSQL synchronization with error recovery, retry logic, and real-time team alerts.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 4: StarPress Showcase -->
+    <section class="slide" data-slide="4">
+      <div class="eyebrow">
+        <span>Production SaaS Product</span>
+        <span class="live-badge"><span class="live-dot"></span> Live in Production</span>
+      </div>
+      <h2 class="slide-title">StarPress · Google Reviews to Revenue</h2>
+      <p class="slide-lead">Automated Google Maps review scraping, GPT-4o sentiment classification, and dynamic social proof widgets.</p>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <div class="compare-badge badge-before">Before Puna</div>
+          <p>85% of happy customers never left a review. Unhappy clients vented on public Google listings with 1-star ratings before staff could intervene.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <div class="compare-badge badge-after">With StarPress</div>
+          <p>Instant QR feedback: 5-star ratings route to Google Maps in 1-click; dissatisfied clients get private VIP resolution before going public.</p>
+        </div>
+      </div>
+      <div class="stat-ribbon">
+        <div class="stat-item"><div class="stat-val">+34%</div><div class="stat-lbl">Review Conversion Boost</div></div>
+        <div class="stat-item"><div class="stat-val">&lt; 8 sec</div><div class="stat-lbl">Scrape to Sentiment Analysis</div></div>
+        <div class="stat-item"><div class="stat-val">50+</div><div class="stat-lbl">Storefronts Deployed</div></div>
+      </div>
+      <div class="btn-row">
+        <a href="https://starpress.puna-tech.com/" target="_blank" class="btn-action">Launch StarPress Demo ↗</a>
+      </div>
+    </section>
+
+    <!-- Slide 5: Viralyt Showcase -->
+    <section class="slide" data-slide="5">
+      <div class="eyebrow">
+        <span>Production SaaS Product</span>
+        <span class="live-badge"><span class="live-dot"></span> Live in Production</span>
+      </div>
+      <h2 class="slide-title">Viralyt · YouTube Outlier Intelligence</h2>
+      <p class="slide-lead">Finding high-velocity breakout formats before the competition by tracking Views-Per-Hour velocity deltas.</p>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <div class="compare-badge badge-before">Before Puna</div>
+          <p>Video teams spent 15+ hours weekly browsing competitor channels and calculating view ratios by hand to guess what might work.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <div class="compare-badge badge-after">With Viralyt</div>
+          <p>Real-time outlier detection surfacing statistical anomalies gaining 5x-50x baseline velocity, deconstructing winning packaging formulas instantly.</p>
+        </div>
+      </div>
+      <div class="stat-ribbon">
+        <div class="stat-item"><div class="stat-val">10x</div><div class="stat-lbl">Discovery Speedup</div></div>
+        <div class="stat-item"><div class="stat-val">Real-time</div><div class="stat-lbl">VPH Velocity Delta</div></div>
+        <div class="stat-item"><div class="stat-val">12+ hrs</div><div class="stat-lbl">Weekly Hours Saved</div></div>
+      </div>
+      <div class="btn-row">
+        <a href="https://viralyt-pink.vercel.app/" target="_blank" class="btn-action">Launch Viralyt Demo ↗</a>
+      </div>
+    </section>
+
+    <!-- Slide 6: videome Showcase -->
+    <section class="slide" data-slide="6">
+      <div class="eyebrow">
+        <span>Production SaaS Product</span>
+        <span class="live-badge"><span class="live-dot"></span> Live in Production</span>
+      </div>
+      <h2 class="slide-title">videome · Studio-Quality AI Video Recipes</h2>
+      <p class="slide-lead">Democratizing cinematic AI motion using pre-tuned style recipes, serverless GPU inference, and an atomic credit ledger.</p>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <div class="compare-badge badge-before">Before Puna</div>
+          <p>Marketers struggled with confusing prompt engineering, deformed limbs, and discarded 8 out of 10 failed video generations.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <div class="compare-badge badge-after">With videome</div>
+          <p>1-click curated video recipes with optimized lighting and camera parameters, backed by an atomic Supabase credit balance ledger.</p>
+        </div>
+      </div>
+      <div class="stat-ribbon">
+        <div class="stat-item"><div class="stat-val">&lt; 45 sec</div><div class="stat-lbl">Turnaround per Clip</div></div>
+        <div class="stat-item"><div class="stat-val">$0.12</div><div class="stat-lbl">Avg Production Cost</div></div>
+        <div class="stat-item"><div class="stat-val">96.4%</div><div class="stat-lbl">Recipe Success Rate</div></div>
+      </div>
+      <div class="btn-row">
+        <a href="https://video-dy9egdm6l-mfrats-projects.vercel.app/" target="_blank" class="btn-action">Launch videome Demo ↗</a>
+      </div>
+    </section>
+
+    <!-- Slide 7: Autopost Studio -->
+    <section class="slide" data-slide="7">
+      <div class="eyebrow">
+        <span>Puna Tech Lab · SaaS Studio</span>
+      </div>
+      <h2 class="slide-title">Autopost Studio · Omnichannel B2B Content</h2>
+      <p class="slide-lead">Transforming raw executive ideas into brand-compliant LinkedIn, X, and Instagram assets with human review.</p>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <div class="compare-badge badge-before">Manual Bottleneck</div>
+          <p>Founders spent weekends manually formatting posts, resizing images in Canva, and scheduling each network individually (15h/week).</p>
+        </div>
+        <div class="compare-card compare-after">
+          <div class="compare-badge badge-after">Autopost Studio</div>
+          <p>One voice note generates platform-tailored posts with automated brand typography and an interactive 1-click review Kanban board.</p>
+        </div>
+      </div>
+      <div class="stat-ribbon">
+        <div class="stat-item"><div class="stat-val">15h → 45m</div><div class="stat-lbl">Weekly Production Time</div></div>
+        <div class="stat-item"><div class="stat-val">4 Networks</div><div class="stat-lbl">Simultaneous Dispatch</div></div>
+        <div class="stat-item"><div class="stat-val">0%</div><div class="stat-lbl">Unapproved Posts in Prod</div></div>
+      </div>
+    </section>
+
+    <!-- Slide 8: Enterprise Inbound Lead Router -->
+    <section class="slide" data-slide="8">
+      <div class="eyebrow">
+        <span>Enterprise Automation System</span>
+        <span class="live-badge">82 Nodes · 0 Dropped Leads</span>
+      </div>
+      <h2 class="slide-title">82-Node Inbound Revenue Switch</h2>
+      <p class="slide-lead">Zero-drop CRM synchronization and sub-3-second mobile rep alerts across 12 disparate form sources.</p>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <div class="compare-badge badge-before">Before Pipeline</div>
+          <p>Inbound leads from 12 landing pages sat in an email inbox for 4 to 24 hours before manual entry into HubSpot CRM.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <div class="compare-badge badge-after">With 82-Node Switch</div>
+          <p>Sub-3-second autonomous pipeline: validates corporate domains, associates HubSpot v4 accounts, and pings Telegram with instant context.</p>
+        </div>
+      </div>
+      <div class="stat-ribbon">
+        <div class="stat-item"><div class="stat-val">2.4 sec</div><div class="stat-lbl">Lead Routing Latency</div></div>
+        <div class="stat-item"><div class="stat-val">99.9%</div><div class="stat-lbl">Company Match Rate</div></div>
+        <div class="stat-item"><div class="stat-val">50,000+</div><div class="stat-lbl">Monthly Events Processed</div></div>
+      </div>
+    </section>
+
+    <!-- Slide 9: AI LinkedIn Copilot -->
+    <section class="slide" data-slide="9">
+      <div class="eyebrow">
+        <span>Enterprise Automation System</span>
+        <span class="live-badge">Human-in-the-Loop Guard</span>
+      </div>
+      <h2 class="slide-title">AI LinkedIn Copilot with Human Handoff</h2>
+      <p class="slide-lead">Speeding up outbound replies with pgvector RAG playbooks while strictly locking out automated bots if a human steps in.</p>
+      <div class="compare-grid">
+        <div class="compare-card compare-before">
+          <div class="compare-badge badge-before">The Danger</div>
+          <p>Automated tools send robotic follow-ups after a prospect has already asked a technical question or scheduled a call, ruining the deal.</p>
+        </div>
+        <div class="compare-card compare-after">
+          <div class="compare-badge badge-after">The Copilot Guard</div>
+          <p>Instant human takeover detection: bots are permanently excluded from active conversations, and Claude drafts verified playbook replies.</p>
+        </div>
+      </div>
+      <div class="stat-ribbon">
+        <div class="stat-item"><div class="stat-val">100%</div><div class="stat-lbl">Human Overlap Protection</div></div>
+        <div class="stat-item"><div class="stat-val">&lt; 1.2 sec</div><div class="stat-lbl">RAG Knowledge Retrieval</div></div>
+        <div class="stat-item"><div class="stat-val">+42%</div><div class="stat-lbl">Booking Rate Lift</div></div>
+      </div>
+    </section>
+
+    <!-- Slide 10: How We Work -->
+    <section class="slide" data-slide="10">
+      <p class="eyebrow">The Delivery Philosophy</p>
+      <h2 class="slide-title">A short path from ambiguity to working software.</h2>
+      <p class="slide-lead">We deliver in transparent, reviewable increments. You own the code, repositories, and cloud infrastructure from day one.</p>
+      <div class="grid-3">
+        <div class="card">
+          <span class="card-num">PHASE 01</span>
+          <h3 class="card-title">15-Min Bottleneck Audit</h3>
+          <p class="card-desc">We extract the exact friction point, calculate cost of inaction, and separate process from software architecture.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">PHASE 02</span>
+          <h3 class="card-title">Scope & Blueprint</h3>
+          <p class="card-desc">A concise 2-page architectural plan with fixed milestone pricing and a 3-to-4 week production delivery target.</p>
+        </div>
+        <div class="card">
+          <span class="card-num">PHASE 03</span>
+          <h3 class="card-title">Launch & Handoff</h3>
+          <p class="card-desc">Deployment to your accounts, comprehensive testing, team runbooks, and zero vendor lock-in.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slide 11: Call to Action -->
+    <section class="slide" data-slide="11">
+      <p class="eyebrow">Next Step</p>
+      <h1 class="slide-title">Bring us the bottleneck your team works around every day.</h1>
+      <p class="slide-lead">In 15 focused minutes, we will map the constraint and tell you whether custom software, automation, or no build at all is the right next step.</p>
+      <div class="btn-row">
+        <a href="https://cal.com/puna-tech-r7xi5x/15min" target="_blank" class="btn-action">Schedule Free 15-Minute Audit →</a>
+        <a href="mailto:punatechba@gmail.com" class="btn-demo">Email punatechba@gmail.com</a>
+      </div>
+      <div class="stat-ribbon" style="margin-top: 3.5rem;">
+        <div class="stat-item"><div class="stat-val">15 min</div><div class="stat-lbl">Focused Diagnostic Call</div></div>
+        <div class="stat-item"><div class="stat-val">0</div><div class="stat-lbl">Sales Slides or Fluff</div></div>
+        <div class="stat-item"><div class="stat-val">1</div><div class="stat-lbl">Clear Technical Next Step</div></div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 1;
+
+    const counter = document.getElementById('counter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressBar = document.getElementById('progressBar');
+
+    function updateDeck() {
+      slides.forEach((slide, idx) => {
+        if (idx + 1 === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      counter.textContent = `${String(currentSlide).padStart(2, '0')} / ${String(totalSlides).padStart(2, '0')}`;
+      prevBtn.disabled = currentSlide === 1;
+      nextBtn.disabled = currentSlide === totalSlides;
+      progressBar.style.width = `${((currentSlide - 1) / (totalSlides - 1)) * 100}%`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateDeck();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateDeck();
+      }
+    }
+
+    // Keyboard navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevSlide();
+      }
+    });
+
+    updateDeck();
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+{
+  "$schema": "./nightshift-schema.json",
+  "company": {
+    "id": "acme-corp",
+    "name": "ACME Solutions",
+    "industry": "B2B SaaS / Servicios Digitales",
+    "tagline": "Automatización e inteligencia operativa para empresas modernas",
+    "website": "https://example.com",
+    "locales": ["es", "en"],
+    "valueProposition": "Aceleramos el crecimiento reduciendo un 40% del trabajo manual repetitivo con soluciones a medida.",
+    "targetAudience": [
+      "Directores de operaciones (COOs)",
+      "Agencias digitales y de marketing",
+      "Fundadores de startups y scaleups"
+    ],
+    "toneOfVoice": "Profesional, conciso, orientado a resultados, empático y con datos respaldados."
+  },
+  "budget": {
+    "maxDailySpendUsd": 1.50,
+    "maxTokensPerAgent": 4000,
+    "llmProvider": "auto",
+    "preferredModel": "gemini-flash-latest",
+    "fallbackModel": "gpt-4o-mini"
+  },
+  "agents": {
+    "social": {
+      "enabled": true,
+      "channels": ["linkedin", "x", "instagram"],
+      "postsPerNight": 3,
+      "targetPlatformFormat": "autopost",
+      "pillars": [
+        "Casos de éxito y lecciones de arquitectura técnica",
+        "Tendencias y comparativas objetivas de herramientas de IA",
+        "Tips prácticos de optimización operativa para fundadores"
+      ]
+    },
+    "scout": {
+      "enabled": true,
+      "targetMarkets": ["LATAM", "España", "US Hispanic"],
+      "leadCriteria": {
+        "roles": ["Founder", "CEO", "Head of Digital", "Managing Director"],
+        "companySize": "10-200 empleados",
+        "verticals": ["Agencias de marketing", "Consultoría tech", "Fintech"]
+      },
+      "nicheKeywords": [
+        "automatización de flujos de trabajo n8n",
+        "calculadora roi desarrollo de software",
+        "migración supabase react 19"
+      ],
+      "affiliateFocus": [
+        "Herramientas SaaS para agencias",
+        "Hosting y cloud infrastructure",
+        "Hardware y periféricos de productividad (Amazon)"
+      ]
+    },
+    "demoBuilder": {
+      "enabled": true,
+      "techStack": "React 19 + Tailwind CSS + TypeScript",
+      "outputDirectory": "src/pages/demos",
+      "demoTypes": [
+        "Interactive ROI Calculator",
+        "AI Feature Comparison Widget",
+        "Interactive Onboarding Flow"
+      ]
+    },
+    "techAudit": {
+      "enabled": true,
+      "runCommands": [
+        "npm run test:seo",
+        "npm run lint"
+      ],
+      "checkDependencies": true,
+      "checkSeo": true
+    },
+    "morningBrief": {
+      "enabled": true,
+      "language": "es",
+      "outputFolder": "reports",
+      "deliveryWebhookUrl": null,
+      "alertEmail": null
+    }
+  }
+}

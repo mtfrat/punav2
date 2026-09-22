@@ -1,7 +1,8 @@
 import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = new URL("../build/client/", import.meta.url).pathname;
+const root = fileURLToPath(new URL("../build/client/", import.meta.url));
 const routes = [
   ["/", "en", "https://www.puna-tech.com/", "https://www.puna-tech.com/og-en.png"],
   ["/es", "es", "https://www.puna-tech.com/es", "https://www.puna-tech.com/og-es.png"],
@@ -9,8 +10,8 @@ const routes = [
   ["/es/servicios/automatizacion-ia", "es", "https://www.puna-tech.com/es/servicios/automatizacion-ia", "https://www.puna-tech.com/og-es.png"],
   ["/services/custom-software", "en", "https://www.puna-tech.com/services/custom-software", "https://www.puna-tech.com/og-en.png"],
   ["/es/servicios/software-a-medida", "es", "https://www.puna-tech.com/es/servicios/software-a-medida", "https://www.puna-tech.com/og-es.png"],
-  ["/case-studies/autopost-content-infrastructure", "en", "https://www.puna-tech.com/case-studies/autopost-content-infrastructure", "https://www.puna-tech.com/og-en.png"],
-  ["/es/casos/autopost-infraestructura-contenido", "es", "https://www.puna-tech.com/es/casos/autopost-infraestructura-contenido", "https://www.puna-tech.com/og-es.png"],
+  ["/case-studies/autopost-b2b-content-studio", "en", "https://www.puna-tech.com/case-studies/autopost-b2b-content-studio", "https://www.puna-tech.com/og-en.png"],
+  ["/es/casos/autopost-estudio-contenido-b2b", "es", "https://www.puna-tech.com/es/casos/autopost-estudio-contenido-b2b", "https://www.puna-tech.com/og-es.png"],
 ];
 
 const failures = [];

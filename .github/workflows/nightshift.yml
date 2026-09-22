@@ -1,0 +1,48 @@
+name: Nightshift AI Autonomous Fleet
+
+on:
+  schedule:
+    # Runs every day at 07:00 UTC (04:00 AM Argentina ART / UTC-3)
+    - cron: '0 7 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub web UI with 1 click
+
+permissions:
+  contents: write
+
+jobs:
+  nightshift:
+    name: Run Nightshift Fleet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Nightshift Fleet
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node nightshift/runner.mjs --company puna-tech
+
+      - name: Publish Morning Brief to GitHub Summary
+        run: |
+          LATEST_REPORT=$(ls -t reports/morning-brief-*.md | head -n 1)
+          if [ -f "$LATEST_REPORT" ]; then
+            cat "$LATEST_REPORT" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Commit & Push Morning Reports
+        run: |
+          git config --global user.name "Nightshift AI Bot"
+          git config --global user.email "bot@puna-tech.com"
+          git add reports/
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(nightshift): daily executive morning brief [skip ci]" && git push)

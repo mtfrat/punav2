@@ -25,5 +25,6 @@
     "noEmit": true,
     "types": ["@react-router/node", "vite/client"]
   },
-  "include": ["src/**/*", ".react-router/types/**/*", "react-router.config.ts", "vite.config.ts"]
+  "include": ["src/**/*", ".react-router/types/**/*", "react-router.config.ts", "vite.config.ts"],
+  "exclude": ["src/pages/**/*"]
 }
