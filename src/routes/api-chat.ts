@@ -1,5 +1,5 @@
 import { data, type ActionFunctionArgs } from "react-router";
-import { buildChatSystemPrompt } from "../lib/chat-prompt";
+import { buildChatRepairPrompt, buildChatSystemPrompt, chatReplyNeedsRepair } from "../lib/chat-prompt";
 
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
@@ -34,10 +34,16 @@ export async function action({ request }: ActionFunctionArgs) {
   }) : [];
   if (!messages.length) return data({ error: "Invalid messages." }, { status: 400 });
   const system = buildChatSystemPrompt(locale);
-  const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.2, max_tokens: 180, messages: [{ role: "system", content: system }, ...messages] }) });
-  if (!response.ok) return data({ error: "Assistant unavailable." }, { status: 502 });
-  const payload = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
-  const message = payload.choices?.[0]?.message?.content?.trim();
+  const complete = async (prompt: string, conversation: Array<{ role: string; content: string }>) => {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", temperature: 0.1, max_tokens: 180, messages: [{ role: "system", content: prompt }, ...conversation] }) });
+    if (!response.ok) return null;
+    const payload = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
+    return payload.choices?.[0]?.message?.content?.trim() || null;
+  };
+  let message = await complete(system, messages);
+  if (message && chatReplyNeedsRepair(message, locale)) {
+    message = await complete(`${system}\n\n${buildChatRepairPrompt(locale)}`, [...messages, { role: "assistant", content: message }, { role: "user", content: buildChatRepairPrompt(locale) }]);
+  }
   if (!message) return data({ error: "Assistant unavailable." }, { status: 502 });
   return data({ message });
 }

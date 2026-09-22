@@ -15,7 +15,7 @@ import {
   isAllowedManualPublicationUrl,
   shouldInvalidateSocialMedia,
 } from "../src/lib/social-studio.ts";
-import { buildChatSystemPrompt } from "../src/lib/chat-prompt.ts";
+import { buildChatRepairPrompt, buildChatSystemPrompt, chatReplyNeedsRepair } from "../src/lib/chat-prompt.ts";
 import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, duplicateQualityFlags, normalizeSocialCopy, socialCopySimilarity } from "../src/lib/social-quality.ts";
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
 import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
@@ -71,7 +71,12 @@ for (const locale of ["es", "en"]) {
   assert.match(prompt, /software/i);
   assert.match(prompt, /one useful question|una sola pregunta útil/i);
   assert.match(prompt, /prices|precios/i);
+  assert.match(buildChatRepairPrompt(locale), /Rewrite|Reescrib/i);
 }
+assert.equal(chatReplyNeedsRepair("El problema parece estar en el traspaso manual. Una integración es el enfoque probable porque mantiene una sola fuente de verdad. ¿Qué CRM usás hoy?", "es"), false);
+assert.equal(chatReplyNeedsRepair("El problema parece estar en el traspaso manual. Una integración es el enfoque probable porque mantiene una sola fuente de verdad. ¿Qué CRM utilizas y qué formularios tienes?", "es"), true);
+assert.equal(chatReplyNeedsRepair("The handoff appears to be the bottleneck. Integration is the likely approach because it can keep one source of truth. Which CRM is in use today?", "en"), false);
+assert.equal(chatReplyNeedsRepair("Which CRM is in use?", "en"), true);
 
 assert.equal(calendarWeekStart("2027-01-01"), "2026-12-28");
 assert.deepEqual(calendarWeekDays("2026-12-28"), ["2026-12-28", "2026-12-29", "2026-12-30", "2026-12-31", "2027-01-01", "2027-01-02", "2027-01-03"]);
