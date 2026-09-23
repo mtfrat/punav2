@@ -1,6 +1,6 @@
 # Social Studio — funcionalidades y preparación para producción
 
-Última revisión: 22 de septiembre de 2026
+Última revisión: 23 de septiembre de 2026
 Puna: `codex/social-studio-launch-hardening`
 Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
@@ -8,9 +8,9 @@ Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
 
-El núcleo funcional está implementado y probado en la rama de lanzamiento. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Un despliegue directo de Puna con reels, publicación y autopublicación desactivados pasó el smoke público, pero luego `master` desplegó una versión distinta y reemplazó ese deployment productivo. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels superó la búsqueda e importación de cinco clips reales; falta comprobar el MP4 final.
+El núcleo funcional está implementado y probado en la rama de lanzamiento. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna se redesplegó directamente a producción con reels, publicación y autopublicación desactivados; este despliegue debe integrarse a `master` para no ser reemplazado por el próximo deploy automático. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels superó la búsqueda e importación de cinco clips reales, pero Cloudinary aún no produjo el MP4 final.
 
-Estado de salida: **rama de lanzamiento validada; producción actual necesita integrar esta rama con `master`, hacer smoke autenticado y mantener reels apagados hasta validar el MP4**.
+Estado de salida: **núcleo de Social Studio validado; no declarar go-live completo ni habilitar reels hasta obtener y revisar un MP4 real. Integrar la rama a `master` para estabilizar el despliegue productivo**.
 
 ## Principios del producto
 
@@ -264,7 +264,7 @@ Estado de salida: **rama de lanzamiento validada; producción actual necesita in
 - Captación: formulario real creado y lead verificado en Operations.
 - Consola y render del preview: sin errores de React ni hidratación en el recorrido final.
 - Reel final: storyboard de 5 escenas y 20 segundos generado; Pexels devolvió tres candidatos verticales por escena y cinco clips distintos fueron seleccionados e importados en Cloudinary.
-- Portada JPEG de reel generada y revisada visualmente; el MP4 se encuentra en ensamblado asíncrono.
+- Portada JPEG de reel generada y revisada visualmente. Dos intentos de MP4 superaron 30 minutos sin producir derivado alguno en Cloudinary (`derived_count=0`, `mp4_count=0`); la comprobación manual los marcó como vencidos y conservó storyboard y clips. Tercer intento iniciado tras corregir el endpoint público del webhook, pendiente de respuesta del proveedor.
 - Dos ajustes de restricciones de `social_generation_runs` aplicados en Supabase para aceptar `reel_sources`, `reel_render`, la etapa `importing` y secciones `import:<scene_id>`.
 - La vista editorial del reel recibió un ajuste de contraste para su texto auxiliar; la suite frontend completa volvió a pasar.
 
@@ -284,13 +284,13 @@ Estado de salida: **rama de lanzamiento validada; producción actual necesita in
 - Estado: READY.
 - Runtime observado: sin errores de React ni hidratación en el recorrido final.
 - Deployment productivo directo de esta rama: `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY en su momento.
-- Producción actual al 23 de septiembre: `https://punav2.vercel.app`, deployment `dpl_8WXH3xfqXQvFuprgiBwAD1L6XKco`, desde `master`, reemplazó el anterior. La rama de lanzamiento todavía no está integrada en `master`.
+- Producción actual al 23 de septiembre: deployment directo de la rama integrada `dpl_Ds9xGmePqMD6DfAVds6QfDAeoaea`, en `https://www.puna-tech.com` y `https://punav2.vercel.app`. POST sin firma al webhook devuelve 401. La rama todavía no está integrada en `master`; un futuro despliegue automático desde `master` podría reemplazarla.
 - Preview de la corrección: `https://punav2-5tf2ckr3c-mfrats-projects.vercel.app`, deployment `dpl_zD4YS15DSwfTK7Da1eKarXD355UV`, READY.
 - Preview integrado con `master` al 23 de septiembre: `https://punav2-gsutlbf2g-mfrats-projects.vercel.app`, deployment `dpl_BcoQYaHQhcfMbsM7rfzgJevo6Brp`, READY; suite completa local pasó tras la integración. Smoke sin sesión: portada 200, Ops 302 al login, webhook POST sin firma 401.
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
 - Banderas productivas comprobadas: `CONTENT_REELS_ENABLED=false`, `CONTENT_PUBLISHING_ENABLED=false`, `CONTENT_AUTOPUBLISH_ENABLED=false`; compositor y calendario activos.
 - Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos. Las dos variantes QA de carrusel fueron desprogramadas y volvieron a aprobadas, sin publicación; 0 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
-- El smoke autenticado productivo y el nuevo Reel E2E quedaron pendientes porque no hay sesión de Ops en los nuevos dominios de producción/preview. La integración a `master` requiere una PR; la sesión GitHub del navegador no está iniciada.
+- Hay sesión autenticada de Operations en el alias de preview de la rama. Allí se comprobó el timeout recuperable del reel y se lanzó un tercer intento. El smoke autenticado **productivo** sigue pendiente; no se publica ni se habilita reels para suplirlo.
 
 ## Estado de datos al cierre
 
@@ -309,7 +309,7 @@ Estado de salida: **rama de lanzamiento validada; producción actual necesita in
 ### P0 — necesarios para declarar go-live completo
 
 1. **Terminar el Reel E2E**
-   - Confirmar que el render asíncrono de Cloudinary termina correctamente. El primer intento seguía en `processing` más de 12 horas después, sin MP4 registrado; apuntó al preview protegido y no pudo entregar allí el webhook. La corrección usa el dominio público, acepta SHA-1/SHA-256 para la firma y permite reintentar tras 30 minutos sin perder storyboard ni clips. Falta ejecutar una nueva prueba autenticada en el preview actualizado.
+   - Confirmar que el render asíncrono de Cloudinary termina correctamente. El primer intento quedó en `processing` más de 12 horas. El segundo no entregó MP4 después de más de 30 minutos: la API de Cloudinary informó cero derivados; además su callback llegó a una versión productiva antigua y recibió 405. Se redesplegó la rama integrada a producción: ahora el webhook rechaza solicitudes sin firma con 401. El tercer intento fue lanzado con ese endpoint disponible; todavía no constituye una prueba de MP4 completado.
    - Comprobar MP4 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura y ausencia de audio.
    - Aprobar, programar, reprogramar y desprogramar sin marcar publicada.
 
@@ -346,11 +346,11 @@ Estado de salida: **rama de lanzamiento validada; producción actual necesita in
 
 - El MP4 asíncrono todavía debe terminar y verificarse con sus metadatos reales y una revisión visual.
 - El contenido QA aprobado conserva una advertencia de credibilidad por fuente insuficiente; esto demuestra que el guardrail funciona, pero esa pieza no debe publicarse.
-- Puna aún no atravesó el rollout y smoke productivo controlado.
+- El despliegue productivo directo pasó el smoke público y del webhook, pero falta el smoke autenticado y la integración de la rama a `master`.
 
 ## Decisión recomendada
 
-**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. Finalizar el MP4 y después promover Puna con reels apagados para el primer smoke. Si el smoke principal pasa, se puede operar en producción; reels se habilita sólo después de su prueba completa.
+**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. Puna está desplegada con reels apagados, pero faltan el smoke autenticado productivo y la integración duradera a `master`. Reels permanece apagado hasta completar y revisar el MP4.
 
 ## Runbook de salida
 
