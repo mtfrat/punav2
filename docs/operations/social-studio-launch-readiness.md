@@ -283,10 +283,11 @@ Estado de salida: **núcleo manual desplegado en producción con las funciones n
 - Commit: `c253621`.
 - Estado: READY.
 - Runtime observado: sin errores de React ni hidratación en el recorrido final.
-- Producción: `https://punav2.vercel.app`, deployment `dpl_BD6p17oDqri4Y13zt1nAkW4tcKmR`, commit `57e084a` (previo a la corrección del webhook), READY.
+- Producción: `https://punav2.vercel.app`, deployment `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY.
+- Preview de la corrección: `https://punav2-5tf2ckr3c-mfrats-projects.vercel.app`, deployment `dpl_zD4YS15DSwfTK7Da1eKarXD355UV`, READY.
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
 - Banderas productivas comprobadas: `CONTENT_REELS_ENABLED=false`, `CONTENT_PUBLISHING_ENABLED=false`, `CONTENT_AUTOPUBLISH_ENABLED=false`; compositor y calendario activos.
-- Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos, 2 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
+- Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos. Las dos variantes QA de carrusel fueron desprogramadas y volvieron a aprobadas, sin publicación; 0 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
 - El smoke autenticado productivo quedó pendiente porque la sesión de Ops disponible está en el dominio preview, no en el dominio productivo.
 
 ## Estado de datos al cierre
@@ -297,7 +298,7 @@ Estado de salida: **núcleo manual desplegado en producción con las funciones n
 - Artículos en borrador: 8 filas, equivalentes a 4 pares bilingües.
 - Campañas sociales: 8 totales; incluye una campaña QA de carrusel programada y una campaña QA de reel en borrador.
 - Variantes sociales: 17 totales.
-- Carrusel QA: Instagram y LinkedIn programados para el 23 de septiembre de 2026 a las 10:00 ART; programar no publica.
+- Carrusel QA: Instagram y LinkedIn desprogramados el 22 de septiembre; quedaron aprobados, sin fecha ni publicación. La crítica editorial mostró credibilidad 48/100 por falta de fuentes; no deben publicarse tal como están.
 - Reel QA: Instagram, 5 escenas, 20 segundos, en borrador.
 - Referencias de medios inexistentes: 0.
 
@@ -306,7 +307,7 @@ Estado de salida: **núcleo manual desplegado en producción con las funciones n
 ### P0 — necesarios para declarar go-live completo
 
 1. **Terminar el Reel E2E**
-   - Confirmar que el render asíncrono de Cloudinary termina correctamente. El primer intento quedó en `processing` sin MP4 derivado; apuntó al preview protegido y no pudo entregar allí el webhook. La corrección usa el dominio público y acepta SHA-1/SHA-256 para la firma, según la especificación de Cloudinary.
+   - Confirmar que el render asíncrono de Cloudinary termina correctamente. El primer intento seguía en `processing` más de 12 horas después, sin MP4 registrado; apuntó al preview protegido y no pudo entregar allí el webhook. La corrección usa el dominio público, acepta SHA-1/SHA-256 para la firma y permite reintentar tras 30 minutos sin perder storyboard ni clips. Falta ejecutar una nueva prueba autenticada en el preview actualizado.
    - Comprobar MP4 1080×1920, H.264, 15–30 segundos, cinco escenas, zona segura y ausencia de audio.
    - Aprobar, programar, reprogramar y desprogramar sin marcar publicada.
 

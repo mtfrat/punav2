@@ -521,7 +521,17 @@ export async function action({ request, params }: ActionFunctionArgs) {
     if (!isUuid(runId) || !publicId || !transformation) return actionError(context, "No hay un render pendiente para comprobar.", 409, variantId);
     try {
       const resource = await reelResource(publicId, transformation);
-      if (!resource?.public_id) return actionError(context, "Cloudinary todavía está ensamblando el reel.", 409, variantId);
+      if (!resource?.public_id) {
+        const currentRun = await context.service.from("social_generation_runs").select("status,started_at").eq("id", runId).single();
+        if (currentRun.error) return actionError(context, "No se pudo comprobar el estado del render.", 502, variantId);
+        if (currentRun.data.status === "failed") return actionError(context, "El último render falló. Podés volver a renderizar sin perder el storyboard ni los clips.", 409, variantId);
+        if (currentRun.data?.status === "running" && currentRun.data.started_at && Date.now() - new Date(currentRun.data.started_at).valueOf() > 30 * 60_000) {
+          await context.service.from("social_generation_runs").update({ status: "failed", provider_status: "timeout", error_code: "cloudinary_render_timeout", error_message: "Cloudinary no entregó el MP4 dentro de 30 minutos.", retryable: true, completed_at: new Date().toISOString() }).eq("id", runId).eq("status", "running");
+          await context.service.from("content_distribution_drafts").update({ reel_provider_metadata: { ...before.reel_provider_metadata, render: { ...before.reel_provider_metadata?.render, status: "failed" } } }).eq("id", variantId);
+          return actionError(context, "El render tardó demasiado. Podés volver a renderizar sin perder el storyboard ni los clips.", 409, variantId);
+        }
+        return actionError(context, "Cloudinary todavía está ensamblando el reel.", 409, variantId);
+      }
       const video = { public_id: String(resource.public_id), version: Number(resource.version || 0) || null, format: String(resource.format || "mp4"), width: Number(resource.width || 1080), height: Number(resource.height || 1920), duration: Number(resource.duration || 0), bytes: Number(resource.bytes || 0), hash: String((await context.service.from("social_generation_runs").select("request_hash").eq("id", runId).single()).data?.request_hash || "") };
       await context.service.from("content_distribution_drafts").update({ media_urls: { ...(before.media_urls || {}), video }, rendered_visual_hash: video.hash, generation_metadata: { ...before.generation_metadata, media_stale: false, version_actor_id: context.userId } }).eq("id", variantId);
       await context.service.from("social_generation_runs").update({ status: "succeeded", stage: "complete", provider_status: "ready", result_summary: { public_id: video.public_id, width: video.width, height: video.height, duration: video.duration, bytes: video.bytes }, completed_at: new Date().toISOString(), retryable: false }).eq("id", runId);

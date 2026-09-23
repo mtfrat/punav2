@@ -20,11 +20,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const batchId = cloudinaryWebhookBatchId(payload);
   if (!/^[0-9a-f-]{36}$/i.test(runId) && !batchId) return response(400, { error: "missing_run_id" });
   const service = createOperationsServiceClient();
-  const existing = await service.from("social_generation_runs").select("id,draft_id,status,request_hash,provider_metadata,content_distribution_drafts(media_urls,generation_metadata,reel_provider_metadata)").eq(/^[0-9a-f-]{36}$/i.test(runId) ? "id" : "external_job_id", /^[0-9a-f-]{36}$/i.test(runId) ? runId : batchId).eq("operation", "reel_render").maybeSingle();
+  const existing = await service.from("social_generation_runs").select("id,draft_id,status,request_hash,external_job_id,provider_metadata,content_distribution_drafts(media_urls,generation_metadata,reel_provider_metadata)").eq(/^[0-9a-f-]{36}$/i.test(runId) ? "id" : "external_job_id", /^[0-9a-f-]{36}$/i.test(runId) ? runId : batchId).eq("operation", "reel_render").maybeSingle();
   if (!existing.data) return response(404, { error: "run_not_found" });
   if (existing.data.status === "succeeded") return response(200, { ok: true, duplicate: true });
+  if (batchId && existing.data.external_job_id !== batchId) return response(200, { ok: true, stale: true });
   const joined = Array.isArray(existing.data.content_distribution_drafts) ? existing.data.content_distribution_drafts[0] : existing.data.content_distribution_drafts;
-  if (joined?.reel_provider_metadata?.render?.run_id !== existing.data.id) return response(409, { error: "stale_render" });
+  if (joined?.reel_provider_metadata?.render?.run_id !== existing.data.id) return response(200, { ok: true, stale: true });
   const eager = Array.isArray(payload.eager) ? payload.eager[0] : payload;
   const expectedTransformation = String(existing.data.provider_metadata?.transformation || "");
   const receivedTransformation = String(eager?.transformation || "");
