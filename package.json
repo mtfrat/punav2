@@ -18,6 +18,9 @@
     "verify:social-studio": "node --env-file=.env.local --experimental-strip-types scripts/verify-social-studio.mjs",
     "reconcile:generated-media": "node --env-file=.env.local scripts/reconcile-generated-media.mjs",
     "import:legacy-brand-assets": "node --env-file=.env.local scripts/import-autopost-brand-assets.mjs",
+    "nightshift": "node nightshift/runner.mjs",
+    "nightshift:dry-run": "node nightshift/runner.mjs --dry-run",
+    "test:nightshift": "node nightshift/tests/test-nightshift.mjs",
     "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run build && npm run test:worker-bundle && npm run test:seo"
   },
   "dependencies": {

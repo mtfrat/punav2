@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const workflowDirectory = new URL("../n8n/", import.meta.url);
 const files = (await readdir(workflowDirectory)).filter((file) => file.endsWith(".json")).sort();
@@ -10,7 +11,7 @@ function assert(condition, message) {
 }
 
 for (const file of files) {
-  const path = join(workflowDirectory.pathname, file);
+  const path = fileURLToPath(new URL(file, workflowDirectory));
   let workflow;
   try {
     workflow = JSON.parse(await readFile(path, "utf8"));

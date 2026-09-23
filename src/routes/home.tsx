@@ -6,6 +6,7 @@ import {
   Check,
   ChevronRight,
   Compass,
+  ExternalLink,
   Layers3,
   Link2,
   ScanSearch,
@@ -137,14 +138,40 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                 <article className={`work-piece work-piece-${index + 1}`} key={study.slug}>
                   <div className="work-copy">
                     <div className="work-number">{String(index + 1).padStart(2, "0")}</div>
-                    <div className="case-meta"><span>{study.type}</span><span>{study.sector}</span></div>
+                    <div className="case-meta">
+                      <span>{study.type}</span>
+                      <span>{study.sector}</span>
+                      {study.liveDemoUrl && (
+                        <span className="demo-pill demo-pill-live">
+                          <span className="demo-pill-dot" />
+                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
+                        </span>
+                      )}
+                    </div>
                     <p className="work-name">{study.displayName}</p>
                     <h3>{study.title}</h3>
                     <p>{study.summary}</p>
                     <ul className="work-outcomes">
                       {study.impact.slice(0, 2).map((item) => <li key={item}><Check aria-hidden="true" size={16} />{item}</li>)}
                     </ul>
-                    <Link className="text-link" to={casePath(locale, study.slug)}>{locale === "en" ? "Open the case" : "Abrir el caso"}<ArrowRight aria-hidden="true" size={18} /></Link>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", alignItems: "center" }}>
+                      <Link className="text-link" to={casePath(locale, study.slug)}>
+                        {locale === "en" ? "Open the case" : "Abrir el caso"}
+                        <ArrowRight aria-hidden="true" size={18} />
+                      </Link>
+                      {study.liveDemoUrl && (
+                        <a
+                          href={study.liveDemoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-link"
+                          style={{ color: "var(--orange)" }}
+                        >
+                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
+                          <ExternalLink aria-hidden="true" size={15} />
+                        </a>
+                      )}
+                    </div>
                   </div>
                   <SystemMap study={study} />
                 </article>

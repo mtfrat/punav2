@@ -319,6 +319,43 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .flow-arrow { position: absolute; z-index: 2; right: 0.75rem; bottom: -0.88rem; width: 16px; color: var(--orange); transform: rotate(90deg); }
 .case-flow-large { max-width: 760px; margin-top: 3rem; }
 
+/* Live Demo Actions & Case Badges */
+.case-hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-top: 1.8rem; }
+.button-demo { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 0.6rem; padding: 0.75rem 1.2rem; border: 1px solid rgba(255, 255, 255, 0.45); background: rgba(255, 255, 255, 0.08); color: #fff8ee; font-weight: 700; text-decoration: none; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; }
+.button-demo:hover { background: #fff8ee; color: var(--ink); border-color: #fff8ee; transform: translateY(-2px); }
+.button-demo svg { transition: transform 180ms ease; }
+.button-demo:hover svg { transform: translate(2px, -2px); }
+
+.demo-pill { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.6rem; border: 1px solid var(--orange); background: rgba(255, 107, 0, 0.08); color: var(--orange); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; }
+.demo-pill-live { border-color: #54936d; background: rgba(84, 147, 109, 0.12); color: var(--success); }
+.demo-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse-live 2s infinite ease-in-out; }
+@keyframes pulse-live { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Case Study Metrics Grid */
+.case-metrics-ribbon { padding: 3rem 0; border-bottom: 1px solid var(--line); background: var(--surface); }
+.case-metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+.case-metric-card { padding: 1.5rem 1.8rem; border-left: 2px solid var(--terracotta); background: var(--paper); }
+.metric-value { font-family: var(--font-editorial); font-size: clamp(2rem, 3.5vw, 3.2rem); font-weight: 700; color: var(--terracotta); line-height: 1; }
+.metric-label { margin-top: 0.5rem; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); }
+
+/* Before vs After Transformation Section */
+.before-after-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3rem); margin-top: 2rem; }
+.before-card, .after-card { padding: 2.2rem; border: 1px solid var(--line); display: grid; align-content: start; gap: 1rem; }
+.before-card { background: var(--paper); border-left: 4px solid #a91f2d; }
+.after-card { background: var(--surface); border-left: 4px solid #23633d; box-shadow: var(--shadow-soft); }
+.transformation-badge { justify-self: start; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.65rem; }
+.before-badge { color: #a91f2d; background: rgba(169, 31, 45, 0.08); }
+.after-badge { color: #23633d; background: rgba(35, 99, 61, 0.1); }
+.before-card p, .after-card p { margin: 0; font-size: 0.95rem; line-height: 1.7; color: var(--ink-soft); }
+.after-card p { color: var(--ink); font-weight: 520; }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .before-after-grid { grid-template-columns: 1fr; }
+  .case-hero-actions { flex-direction: column; align-items: stretch; }
+  .case-hero-actions > * { width: 100%; text-align: center; }
+}
+
 /* Blog and editorial */
 .blog-hero h1 { position: relative; z-index: 1; max-width: 900px; }
 .blog-hero p:last-child { position: relative; z-index: 1; max-width: 690px; margin-top: 1.5rem; font-size: 1.05rem; }

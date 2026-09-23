@@ -21,6 +21,8 @@ export const links: LinksFunction = () => [
   { rel: "shortcut icon", href: "/favicon-32x32.png?v=20260827", type: "image/png" },
   { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=20260827", sizes: "180x180" },
   { rel: "manifest", href: "/site.webmanifest?v=20260827" },
+  { rel: "author", type: "text/markdown", title: "LLMs Text Protocol", href: "/llms.txt" },
+  { rel: "alternate", type: "text/markdown", title: "Full LLMs Technical Specification", href: "/llms-full.txt" },
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -39,6 +41,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="theme-color" content="#FBF7F0" />
         <Meta />
         <Links />
+        {!data?.isOperations && (
+          <>
+            <script async src="https://www.googletagmanager.com/gtag/js?id=G-JVV1Y4Y85Y"></script>
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', 'G-JVV1Y4Y85Y');
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body>
         {children}
