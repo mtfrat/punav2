@@ -145,19 +145,30 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
     if (line.includes("### 🎯 Prospección B2B")) inProspects = true;
     else if (line.startsWith("### ")) inProspects = false;
     else if (inProspects && line.startsWith("- **") && line.includes("Target:")) {
-      if (currentProspect?.name) prospects.push(currentProspect as any);
-      const nameMatch = line.match(/- \*\*([^*]+)\*\* \(([^)]+)\)(?: \[([^\]]+)\])? — \*?Target:\*? (.+)/);
-      if (nameMatch) {
-        currentProspect = {
-          name: nameMatch[1].trim(),
-          market: nameMatch[2].trim(),
-          vertical: nameMatch[3]?.trim() || "B2B",
-          role: nameMatch[4].trim(),
-          friction: "",
-          strategy: "",
-          subject: "",
-        };
+      if (currentProspect?.name) {
+        prospects.push({ ...currentProspect } as any);
       }
+      const nameMatch = line.match(/- \*\*([^*]+)\*\*/);
+      const name = nameMatch ? nameMatch[1].trim() : "Empresa B2B";
+      const roleMatch = line.match(/Target:\*?\s*(.+)$/);
+      const role = roleMatch ? roleMatch[1].replace(/^[\*\s]+|[\*\s]+$/g, "") : "Contacto B2B";
+      const vertMatch = line.match(/\[([^\]]+)\]/);
+      const vertical = vertMatch ? vertMatch[1].trim() : "B2B";
+
+      const beforeTarget = line.split("—")[0] || line;
+      const afterName = beforeTarget.replace(/- \*\*[^*]+\*\*\s*/, "").trim();
+      const beforeBrackets = afterName.split("[")[0].trim();
+      const market = beforeBrackets.replace(/^\(|\)$/g, "").trim() || "LatAm";
+
+      currentProspect = {
+        name,
+        market,
+        vertical,
+        role,
+        friction: "",
+        strategy: "",
+        subject: "",
+      };
     } else if (currentProspect && line.includes("*Cuello de botella:*")) {
       currentProspect.friction = line.replace(/.*\*Cuello de botella:\*/, "").trim();
     } else if (currentProspect && line.includes("*Estrategia:*")) {
@@ -166,7 +177,7 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
       currentProspect.subject = line.replace(/.*\*Asunto sugerido:\*/, "").replace(/["']/g, "").trim();
     }
   }
-  if (currentProspect?.name) prospects.push(currentProspect as any);
+  if (currentProspect?.name) prospects.push({ ...currentProspect } as any);
 
   // Parse Niche & Demo
   let nicheOpportunity: ParsedReport["nicheOpportunity"];
