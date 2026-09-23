@@ -218,31 +218,52 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const context = await requireAdmin(request);
   const url = new URL(request.url);
 
-  // Read available reports from reports/ directory
+  // Embedded reports from Vite bundle (guaranteed to be present in Vercel serverless)
+  const embeddedReports = import.meta.glob("../../reports/morning-brief-*-puna-tech.md", {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }) as Record<string, string>;
+
+  // Extract dates from embedded bundle
+  let availableDates = Object.keys(embeddedReports)
+    .map((k) => {
+      const match = k.match(/morning-brief-([\d-]+)-puna-tech\.md/);
+      return match ? match[1] : "";
+    })
+    .filter(Boolean)
+    .sort()
+    .reverse();
+
+  // If filesystem reports exist, merge them
   const reportsDir = resolve(process.cwd(), "reports");
-  let availableDates: string[] = [];
   try {
     const files = await readdir(reportsDir);
-    availableDates = files
+    const fsDates = files
       .filter((f) => f.startsWith("morning-brief-") && f.endsWith("-puna-tech.md"))
-      .map((f) => f.replace("morning-brief-", "").replace("-puna-tech.md", ""))
-      .sort()
-      .reverse();
-  } catch {
-    availableDates = [];
-  }
+      .map((f) => f.replace("morning-brief-", "").replace("-puna-tech.md", ""));
+    availableDates = Array.from(new Set([...availableDates, ...fsDates])).sort().reverse();
+  } catch {}
 
   const selectedDate = url.searchParams.get("date") || availableDates[0] || new Date().toISOString().split("T")[0];
   const savedStates = await loadDecisionsState();
 
   let parsedReport: ParsedReport | null = null;
   if (selectedDate) {
-    try {
-      const filePath = join(reportsDir, `morning-brief-${selectedDate}-puna-tech.md`);
-      const content = await readFile(filePath, "utf-8");
+    // 1. Try from embedded bundle first
+    const embeddedKey = `../../reports/morning-brief-${selectedDate}-puna-tech.md`;
+    let content = embeddedReports[embeddedKey];
+
+    // 2. Fallback to filesystem
+    if (!content) {
+      try {
+        const filePath = join(reportsDir, `morning-brief-${selectedDate}-puna-tech.md`);
+        content = await readFile(filePath, "utf-8");
+      } catch {}
+    }
+
+    if (content) {
       parsedReport = parseMarkdownReport(content, selectedDate, savedStates);
-    } catch {
-      parsedReport = null;
     }
   }
 
