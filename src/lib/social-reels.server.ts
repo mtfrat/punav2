@@ -146,7 +146,8 @@ export async function startReelRender(input: { campaignId: string; draftId: stri
   const eager = `t_${name}`;
   const payload = await cloudinaryForm("video/explicit", { public_id: first.public_id, type: "authenticated", eager, eager_async: "true", eager_notification_url: input.notificationUrl, context: `run_id=${input.runId}` }, 30_000);
   const batchId = String(payload.batch_id || "");
-  console.info("reel_render_requested", { has_batch_id: Boolean(batchId), eager_count: Array.isArray(payload.eager) ? payload.eager.length : 0, status: String(payload.status || "") });
+  const eagerItems = Array.isArray(payload.eager) ? payload.eager : [];
+  console.info("reel_render_requested", { has_batch_id: Boolean(batchId), eager_count: eagerItems.length, status: String(payload.status || ""), eager: eagerItems.map((item: Record<string, any>) => ({ status: String(item.status || ""), format: String(item.format || ""), bytes: Number(item.bytes || 0), width: Number(item.width || 0), height: Number(item.height || 0), has_url: Boolean(item.secure_url || item.url), error_code: String(item.error?.code || ""), error_message: String(item.error?.message || "").slice(0, 300) })) });
   if (!batchId) throw new Error("cloudinary_invalid_response");
   return { externalJobId: batchId, providerStatus: String(payload.status || "processing"), publicId: first.public_id, transformation: eager };
 }
