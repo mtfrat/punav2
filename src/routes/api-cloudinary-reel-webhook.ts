@@ -16,7 +16,7 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!verifyCloudinaryWebhook(rawBody, signature, timestamp)) return response(401, { error: "invalid_signature" });
   let payload: Record<string, any>;
   try { payload = JSON.parse(rawBody); } catch { return response(400, { error: "invalid_payload" }); }
-  const runId = cloudinaryWebhookRunId(payload);
+  const runId = cloudinaryWebhookRunId(payload, new URL(request.url).searchParams.get("run_id") || "");
   const batchId = cloudinaryWebhookBatchId(payload);
   if (!/^[0-9a-f-]{36}$/i.test(runId) && !batchId) return response(400, { error: "missing_run_id" });
   const service = createOperationsServiceClient();

@@ -171,14 +171,14 @@ export async function reelResource(publicId: string, transformation: string) {
   } finally { timer.done(); }
 }
 
-export function cloudinaryWebhookRunId(payload: Record<string, any>) {
+export function cloudinaryWebhookRunId(payload: Record<string, any>, fallback = "") {
   if (payload?.context?.custom?.run_id) return String(payload.context.custom.run_id);
   if (typeof payload?.context === "string") {
     const params = new URLSearchParams(payload.context.replace(/\|/g, "&"));
     const value = params.get("run_id");
     if (value) return value;
   }
-  return String(payload?.run_id || "");
+  return String(payload?.run_id || fallback);
 }
 
 export function cloudinaryWebhookBatchId(payload: Record<string, any>) {
