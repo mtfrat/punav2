@@ -202,6 +202,24 @@ export class MorningBriefAgent {
           `📄 _Reporte completo guardado en: reports/morning-brief-${dateStr}-${company.id}.md_`
         ].join("\n");
 
+        const inlineKeyboard = [
+          [
+            { text: `✅ Aprobar TODO (${decisions.length})`, callback_data: `approve_all:${dateStr}` },
+          ],
+          [
+            { text: "📱 #1 Redes", callback_data: `approve_dec:1:${dateStr}` },
+            { text: "🎯 #2 Leads", callback_data: `approve_dec:2:${dateStr}` },
+          ],
+          [
+            { text: "💡 #3 Nicho", callback_data: `approve_dec:3:${dateStr}` },
+            { text: "🛠️ #4 Demo", callback_data: `approve_dec:4:${dateStr}` },
+            { text: "⚡ #5 Refactor", callback_data: `approve_dec:5:${dateStr}` },
+          ],
+          [
+            { text: "🌐 Ver en /ops/nightshift", url: "https://www.puna-tech.com/ops/nightshift" },
+          ],
+        ];
+
         const tgUrl = `https://api.telegram.org/bot${tgToken}/sendMessage`;
         const tgRes = await fetch(tgUrl, {
           method: "POST",
@@ -210,6 +228,9 @@ export class MorningBriefAgent {
             chat_id: tgChatId,
             text: tgMessage,
             parse_mode: "Markdown",
+            reply_markup: {
+              inline_keyboard: inlineKeyboard,
+            },
           }),
         });
         const tgJson = await tgRes.json();
