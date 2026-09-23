@@ -205,9 +205,9 @@ export function verifyCloudinaryWebhook(rawBody: string, signature: string | nul
   return left.length === right.length && timingSafeEqual(left, right);
 }
 
-export function signedCloudinaryDownload(publicId: string, format = "mp4", transformation = "", nowSeconds = Math.floor(Date.now() / 1000)) {
+export function signedCloudinaryDownload(publicId: string, format = "mp4", transformation = "", nowSeconds = Math.floor(Date.now() / 1000), attachment = false) {
   const config = configuration();
-  const signed: Record<string, string | number> = { public_id: publicId, format, type: "authenticated", timestamp: nowSeconds, expires_at: nowSeconds + 600, attachment: "false" };
+  const signed: Record<string, string | number> = { public_id: publicId, format, type: "authenticated", timestamp: nowSeconds, expires_at: nowSeconds + 600, attachment: String(attachment) };
   if (transformation) signed.transformation = transformation;
   const query = new URLSearchParams(Object.entries({ ...signed, api_key: config.cloudinaryKey, signature: cloudinarySignature(signed, config.cloudinarySecret) }).map(([key, value]) => [key, String(value)]));
   return `https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/video/download?${query}`;

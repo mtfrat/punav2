@@ -212,7 +212,11 @@ const downloadUrl = signedCloudinaryDownload("puna/reels/example", "mp4", "c_fil
 assert.match(downloadUrl, /video\/download\?/);
 assert.match(downloadUrl, /expires_at=2000000600/);
 assert.match(downloadUrl, /type=authenticated/);
+assert.match(downloadUrl, /attachment=false/);
 assert.doesNotMatch(downloadUrl, /secret-test/);
+const attachmentUrl = signedCloudinaryDownload("puna/reels/example", "mp4", "c_fill,w_1080,h_1920", 2_000_000_000, true);
+assert.match(attachmentUrl, /attachment=true/);
+assert.notEqual(new URL(attachmentUrl).searchParams.get("signature"), new URL(downloadUrl).searchParams.get("signature"));
 
 process.env.CONTENT_MODEL_INPUT_USD_PER_MILLION = "2";
 process.env.CONTENT_MODEL_CACHED_INPUT_USD_PER_MILLION = "1";

@@ -476,6 +476,7 @@
 .ops-reel-output li.is-done { display: inline-flex; align-items: center; gap: .25rem; color: #315a43; background: #e6f0e7; }
 .ops-reel-downloads { flex-wrap: wrap; margin-top: 1rem; align-items: end; }
 .ops-reel-downloads video, .ops-reel-downloads img { width: min(210px,100%); aspect-ratio: 9 / 16; object-fit: cover; border: 1px solid var(--ink); background: #181410; }
+.ops-reel-downloads > small { flex-basis: 100%; }
 .ops-reel-attribution { margin-top: 1rem; }
 .ops-calendar-media { display: inline-flex; align-items: center; gap: .3rem; color: var(--brand); font-weight: 750; }
 .ops-visible-opening { padding: 1rem; border-left: 4px solid var(--accent); background: var(--paper-deep); }
