@@ -148,8 +148,11 @@ export async function startReelRender(input: { campaignId: string; draftId: stri
   const batchId = String(payload.batch_id || "");
   const eagerItems = Array.isArray(payload.eager) ? payload.eager : [];
   console.info("reel_render_requested", { has_batch_id: Boolean(batchId), eager_count: eagerItems.length, status: String(payload.status || ""), eager: eagerItems.map((item: Record<string, any>) => ({ status: String(item.status || ""), format: String(item.format || ""), bytes: Number(item.bytes || 0), width: Number(item.width || 0), height: Number(item.height || 0), has_url: Boolean(item.secure_url || item.url), error_code: String(item.error?.code || ""), error_message: String(item.error?.message || "").slice(0, 300) })) });
-  if (!batchId) throw new Error("cloudinary_invalid_response");
-  return { externalJobId: batchId, providerStatus: String(payload.status || "processing"), publicId: first.public_id, transformation: eager };
+  const eagerItem = eagerItems[0];
+  const eagerStatus = String(eagerItem?.status || "").toLowerCase();
+  if (eagerItem?.error || eagerStatus === "failed") throw new Error("cloudinary_render_failed");
+  if (!batchId && !(eagerStatus === "processing" && (eagerItem.secure_url || eagerItem.url))) throw new Error("cloudinary_invalid_response");
+  return { externalJobId: batchId || null, providerStatus: String(payload.status || eagerStatus || "processing"), publicId: first.public_id, transformation: eager };
 }
 
 export async function reelResource(publicId: string, transformation: string) {

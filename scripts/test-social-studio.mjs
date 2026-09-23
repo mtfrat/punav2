@@ -181,6 +181,10 @@ try {
   assert.equal(renderRequests[1].options.body.get("eager_async"), "true");
   assert.equal(renderRequests[1].options.body.get("type"), "authenticated");
   assert.equal(renderRequests[1].options.body.get("context"), "run_id=00000000-0000-4000-8000-000000000001");
+  globalThis.fetch = async (url) => String(url).includes("/transformations/") ? Response.json({ message: "created" }) : Response.json({ eager: [{ status: "processing", secure_url: "https://res.cloudinary.com/puna-test/video/authenticated/reel.mp4" }] });
+  const processingReel = await startReelRender({ campaignId: "campaign", draftId: "draft", runId: "00000000-0000-4000-8000-000000000001", visualHash: "visual", scenes: reelScenes, imported: importedClips, notificationUrl: "https://puna-tech.com/api/webhooks/cloudinary/reel-render?run_id=00000000-0000-4000-8000-000000000001" });
+  assert.equal(processingReel.externalJobId, null);
+  assert.equal(processingReel.providerStatus, "processing");
   globalThis.fetch = async (url) => String(url).includes("/transformations/") ? Response.json({ message: "created" }) : Response.json({ asset_id: "not-a-batch" });
   await assert.rejects(() => startReelRender({ campaignId: "campaign", draftId: "draft", runId: "00000000-0000-4000-8000-000000000001", visualHash: "visual", scenes: reelScenes, imported: importedClips, notificationUrl: "https://puna-tech.com/api/webhooks/cloudinary/reel-render" }), /cloudinary_invalid_response/);
 } finally { globalThis.fetch = originalFetch; }
