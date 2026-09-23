@@ -8,9 +8,9 @@ Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
 
-El núcleo funcional está implementado y probado en la rama de lanzamiento. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna se redesplegó directamente a producción con reels, publicación y autopublicación desactivados; este despliegue debe integrarse a `master` para no ser reemplazado por el próximo deploy automático. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels ya produjo un MP4 real con cinco clips; la pieza QA fue aprobada con advertencias, programada y desprogramada sin publicarse.
+El núcleo funcional está implementado, probado e integrado a `master`. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna se desplegó desde `master` a producción con reels, publicación y autopublicación desactivados. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels ya produjo un MP4 real con cinco clips; la pieza QA fue aprobada con advertencias, programada y desprogramada sin publicarse.
 
-Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview; no declarar go-live completo hasta integrar la rama a `master`, hacer el smoke autenticado productivo y revisar editorialmente el contenido que se vaya a publicar. Reels sigue desactivado en producción**.
+Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e integrados a `master`; no declarar go-live completo hasta hacer el smoke autenticado productivo, terminar la certificación audiovisual y revisar editorialmente el contenido que se vaya a publicar. Reels sigue desactivado en producción**.
 
 ## Principios del producto
 
@@ -286,7 +286,7 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview; no
 - Estado: READY.
 - Runtime observado: sin errores de React ni hidratación en el recorrido final.
 - Deployment productivo directo de esta rama: `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY en su momento.
-- Producción actual al 23 de septiembre: deployment directo de la rama integrada `dpl_GXHpjXedUh8DyTcwEepMUpPJy5Hd`, en `https://www.puna-tech.com` y `https://punav2.vercel.app`. POST sin firma al webhook devuelve 401. La rama todavía no está integrada en `master`; un futuro despliegue automático desde `master` podría reemplazarla.
+- Producción actual al 23 de septiembre: `master` contiene el Social Studio certificado (`b18cfd2`) y el deployment automático `dpl_DFBhN8wxKDjvGwMDj3NqDAchpap3` está READY en `https://www.puna-tech.com` y `https://punav2.vercel.app`. El smoke sin sesión dio `/` 200, `/es` 200, `/ops/social` 302 al login y webhook sin firma 401.
 - Preview de la corrección: `https://punav2-5tf2ckr3c-mfrats-projects.vercel.app`, deployment `dpl_zD4YS15DSwfTK7Da1eKarXD355UV`, READY.
 - Preview integrado con `master` al 23 de septiembre: `https://punav2-gsutlbf2g-mfrats-projects.vercel.app`, deployment `dpl_BcoQYaHQhcfMbsM7rfzgJevo6Brp`, READY; suite completa local pasó tras la integración. Smoke sin sesión: portada 200, Ops 302 al login, webhook POST sin firma 401.
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
@@ -300,10 +300,10 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview; no
 - Artículos: 20 filas, 16 grupos.
 - Artículos archivados: 12.
 - Artículos en borrador: 8 filas, equivalentes a 4 pares bilingües.
-- Campañas sociales: 8 totales; incluye una campaña QA de carrusel programada y una campaña QA de reel en borrador.
+- Campañas sociales: 8 totales en la verificación previa; las piezas QA quedaron sin programación.
 - Variantes sociales: 17 totales.
 - Carrusel QA: Instagram y LinkedIn desprogramados el 22 de septiembre; quedaron aprobados, sin fecha ni publicación. La crítica editorial mostró credibilidad 48/100 por falta de fuentes; no deben publicarse tal como están.
-- Reel QA: Instagram, 5 escenas, 20 segundos, en borrador.
+- Reel QA: Instagram, 5 escenas, 19,96 segundos reales; variante aprobada con advertencias, sin horario y sin publicar.
 - Referencias de medios inexistentes: 0.
 
 ## Bloqueantes antes de producción
@@ -315,7 +315,7 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview; no
    - Aprobación, programación y desprogramación comprobadas sin marcar publicada. La reprogramación específica del reel no se repitió; el calendario ya había pasado esta prueba con otras variantes.
 
 2. **Rollout de Puna**
-   - Integrar esta rama a `master` y desplegar con `CONTENT_REELS_ENABLED=false`.
+   - Integración a `master` y despliegue con reels apagados completados el 23 de septiembre.
    - Ejecutar smoke autenticado productivo de seguridad, imagen, carrusel, calidad y calendario.
    - Activar reels sólo después de la validación del MP4.
    - Reconciliador de Storage ejecutado: 0 referencias faltantes.
@@ -347,11 +347,11 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview; no
 
 - El MP4 asíncrono terminó y se verificaron dimensiones, duración y primer fotograma; faltan codec, pista de audio y revisión visual de las otras cuatro escenas.
 - El contenido QA aprobado conserva una advertencia de credibilidad por fuente insuficiente; esto demuestra que el guardrail funciona, pero esa pieza no debe publicarse.
-- El despliegue productivo directo pasó el smoke público y del webhook, pero falta el smoke autenticado y la integración de la rama a `master`.
+- El despliegue productivo desde `master` pasó el smoke público y del webhook; falta el smoke autenticado.
 
 ## Decisión recomendada
 
-**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. El reel completó el E2E funcional en preview, pero falta su certificación audiovisual completa. Puna está desplegada con reels apagados; faltan el smoke autenticado productivo y la integración duradera a `master`.
+**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. El reel completó el E2E funcional en preview, pero falta su certificación audiovisual completa. Puna está desplegada desde `master` con reels apagados; falta el smoke autenticado productivo.
 
 ## Runbook de salida
 
