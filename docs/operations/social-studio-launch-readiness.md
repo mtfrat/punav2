@@ -8,9 +8,9 @@ Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
 
-El núcleo funcional está implementado y probado. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna fue desplegada a producción con reels, publicación y autopublicación desactivados; la biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación ya pasaron pruebas reales en preview. El flujo de reels superó la búsqueda e importación de cinco clips reales; falta comprobar el MP4 final.
+El núcleo funcional está implementado y probado en la rama de lanzamiento. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Un despliegue directo de Puna con reels, publicación y autopublicación desactivados pasó el smoke público, pero luego `master` desplegó una versión distinta y reemplazó ese deployment productivo. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels superó la búsqueda e importación de cinco clips reales; falta comprobar el MP4 final.
 
-Estado de salida: **núcleo manual desplegado en producción con las funciones no certificadas apagadas; go-live completo de reels retenido hasta validar el MP4 y completar el smoke autenticado productivo**.
+Estado de salida: **rama de lanzamiento validada; producción actual necesita integrar esta rama con `master`, hacer smoke autenticado y mantener reels apagados hasta validar el MP4**.
 
 ## Principios del producto
 
@@ -283,12 +283,13 @@ Estado de salida: **núcleo manual desplegado en producción con las funciones n
 - Commit: `c253621`.
 - Estado: READY.
 - Runtime observado: sin errores de React ni hidratación en el recorrido final.
-- Producción: `https://punav2.vercel.app`, deployment `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY.
+- Deployment productivo directo de esta rama: `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY en su momento.
+- Producción actual al 23 de septiembre: `https://punav2.vercel.app`, deployment `dpl_8WXH3xfqXQvFuprgiBwAD1L6XKco`, desde `master`, reemplazó el anterior. La rama de lanzamiento todavía no está integrada en `master`.
 - Preview de la corrección: `https://punav2-5tf2ckr3c-mfrats-projects.vercel.app`, deployment `dpl_zD4YS15DSwfTK7Da1eKarXD355UV`, READY.
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
 - Banderas productivas comprobadas: `CONTENT_REELS_ENABLED=false`, `CONTENT_PUBLISHING_ENABLED=false`, `CONTENT_AUTOPUBLISH_ENABLED=false`; compositor y calendario activos.
 - Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos. Las dos variantes QA de carrusel fueron desprogramadas y volvieron a aprobadas, sin publicación; 0 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
-- El smoke autenticado productivo quedó pendiente porque la sesión de Ops disponible está en el dominio preview, no en el dominio productivo.
+- El smoke autenticado productivo quedó pendiente porque no hay sesión de Ops en el dominio productivo.
 
 ## Estado de datos al cierre
 
@@ -312,7 +313,7 @@ Estado de salida: **núcleo manual desplegado en producción con las funciones n
    - Aprobar, programar, reprogramar y desprogramar sin marcar publicada.
 
 2. **Rollout de Puna**
-   - Producción desplegada con `CONTENT_REELS_ENABLED=false`.
+   - Integrar esta rama a `master` y desplegar con `CONTENT_REELS_ENABLED=false`.
    - Ejecutar smoke autenticado productivo de seguridad, imagen, carrusel, calidad y calendario.
    - Activar reels sólo después de la validación del MP4.
    - Reconciliador de Storage ejecutado: 0 referencias faltantes.
