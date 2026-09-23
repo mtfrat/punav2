@@ -90,7 +90,7 @@
       "language": "es",
       "outputFolder": "reports",
       "deliveryWebhookUrl": null,
-      "telegramBotToken": "8961141570:AAFjBNdcWQtcBHhL9NAmNULjr7vLD5f4JvA",
+      "telegramBotToken": null,
       "telegramChatId": "1503439078",
       "alertEmail": null
     }

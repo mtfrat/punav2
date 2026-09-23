@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { EmptyState, formatDate, OpsPageHeader, StatusBadge } from "../components/ops";
 import { assertTrustedMutation, opsData, requireAdmin } from "../lib/admin.server";
+import { executeNightshiftDecision, loadDecisionsState, saveDecisionsState } from "../lib/nightshift-executor.server";
 
 interface DecisionItem {
   id: string;
@@ -39,21 +40,6 @@ interface ParsedReport {
   nicheOpportunity?: { concept: string; model: string; nextStep: string };
   demo?: { title: string; branch: string; path: string; purpose: string };
   audit?: { verdict: string; passed: number; observations: number; findings: string[] };
-}
-
-async function loadDecisionsState(): Promise<Record<string, { status: "pending" | "approved" | "rejected"; updated_at: string; notes?: string }>> {
-  try {
-    const raw = await readFile(resolve(process.cwd(), "reports", "decisions-state.json"), "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
-}
-
-async function saveDecisionsState(state: Record<string, any>) {
-  const dir = resolve(process.cwd(), "reports");
-  await mkdir(dir, { recursive: true });
-  await writeFile(join(dir, "decisions-state.json"), JSON.stringify(state, null, 2), "utf-8");
 }
 
 function parseMarkdownReport(content: string, reportDate: string, savedStates: Record<string, any>): ParsedReport {
@@ -302,28 +288,57 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const intent = formData.get("intent");
 
+  if (intent === "approve_all") {
+    const dateStr = String(formData.get("date_str") || new Date().toISOString().split("T")[0]);
+    const res = await executeNightshiftDecision({
+      decisionNumOrAll: "all",
+      dateStr,
+      actor: {
+        userId: context.userId,
+        email: context.email,
+        source: "web",
+      },
+    });
+    return opsData({ ok: true, message: res.message }, context.headers);
+  }
+
   if (intent === "set_decision_status") {
     const decisionId = String(formData.get("decision_id"));
     const status = String(formData.get("status")) as "approved" | "rejected" | "pending";
+    const decisionNum = Number(formData.get("decision_num"));
+    const dateStr = String(formData.get("date_str") || decisionId.split("-dec-")[0]);
     const notes = String(formData.get("notes") || "");
 
-    const states = await loadDecisionsState();
-    states[decisionId] = {
-      status,
-      updated_at: new Date().toISOString(),
-      notes,
-    };
-    await saveDecisionsState(states);
+    if (status === "approved" && decisionNum) {
+      await executeNightshiftDecision({
+        decisionNumOrAll: decisionNum,
+        dateStr,
+        actor: {
+          userId: context.userId,
+          email: context.email,
+          source: "web",
+        },
+        notes,
+      });
+    } else {
+      const states = await loadDecisionsState();
+      states[decisionId] = {
+        status,
+        updated_at: new Date().toISOString(),
+        notes,
+      };
+      await saveDecisionsState(states);
 
-    // Record in admin audit log
-    await context.service.from("admin_audit_log").insert({
-      actor_user_id: context.userId || "00000000-0000-0000-0000-000000000000",
-      actor_email: context.email,
-      action: `nightshift_decision_${status}`,
-      entity_type: "nightshift_decision",
-      entity_id: decisionId,
-      after_state: { decisionId, status, notes },
-    });
+      // Record in admin audit log
+      await context.service.from("admin_audit_log").insert({
+        actor_user_id: context.userId || "00000000-0000-0000-0000-000000000000",
+        actor_email: context.email,
+        action: `nightshift_decision_${status}`,
+        entity_type: "nightshift_decision",
+        entity_id: decisionId,
+        after_state: { decisionId, status, notes },
+      });
+    }
 
     return opsData({ ok: true, decisionId, status }, context.headers);
   }
@@ -424,14 +439,39 @@ export default function OpsNightshift({ loaderData }: { loaderData: any }) {
 
       {/* Decision Board (Checklist de Aprobación) */}
       <section className="ops-section">
-        <div className="ops-section-heading">
+        <div className="ops-section-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1rem" }}>
           <div>
             <p className="ops-eyebrow">Acción Inmediata</p>
             <h2>Decisiones a Tomar Hoy</h2>
             <p className="ops-muted">
-              Aprueba o descarta las propuestas con 1 clic. Cada decisión aprobada activa el siguiente paso de los agentes.
+              Aprueba individualmente o en bloque. Cada decisión aprobada genera el contenido o prospectos en Supabase.
             </p>
           </div>
+          {pendingCount > 0 && (
+            <Form method="post">
+              <input type="hidden" name="intent" value="approve_all" />
+              <input type="hidden" name="date_str" value={selectedDate} />
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="ops-button"
+                style={{
+                  background: "var(--success, #16a34a)",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.5rem 1rem",
+                  fontWeight: 650,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                }}
+              >
+                <CheckCircle2 size={18} />
+                Aprobar Todas ({pendingCount} pendientes)
+              </button>
+            </Form>
+          )}
         </div>
 
         {report?.decisions?.length ? (
@@ -479,12 +519,24 @@ export default function OpsNightshift({ loaderData }: { loaderData: any }) {
                     <p style={{ margin: "0.3rem 0 0", fontSize: "0.82rem", color: "var(--ink-soft)" }}>
                       <strong>Acción recomendada:</strong> {d.action}
                     </p>
+                    {isApproved && (
+                      <div style={{ marginTop: "0.45rem", fontSize: "0.78rem", color: "var(--success, #16a34a)", fontWeight: 600, display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                        <CheckCircle2 size={14} />
+                        {d.num === 1 && "Borradores generados en Autopost Studio (/ops/social)."}
+                        {d.num === 2 && "Prospectos B2B importados a la base de datos (/ops/prospects)."}
+                        {d.num === 3 && "Oportunidad priorizada para el siguiente turno nocturno."}
+                        {d.num === 4 && "Demo interactivo agendado para integración."}
+                        {d.num === 5 && "Refactor técnico registrado en auditoría."}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                     <Form method="post" style={{ display: "flex", gap: "0.5rem" }}>
                       <input type="hidden" name="intent" value="set_decision_status" />
                       <input type="hidden" name="decision_id" value={d.id} />
+                      <input type="hidden" name="decision_num" value={d.num} />
+                      <input type="hidden" name="date_str" value={selectedDate} />
 
                       {isApproved ? (
                         <button
