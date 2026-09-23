@@ -196,7 +196,12 @@ const sha1WebhookSignature = createHash("sha1").update(`${webhookBody}${webhookT
 assert.equal(verifyCloudinaryWebhook(webhookBody, sha1WebhookSignature, String(webhookTimestamp), webhookTimestamp), true);
 assert.equal(verifyCloudinaryWebhook(`${webhookBody}x`, webhookSignature, String(webhookTimestamp), webhookTimestamp), false);
 assert.equal(verifyCloudinaryWebhook(webhookBody, "xyz", String(webhookTimestamp), webhookTimestamp), false);
-assert.equal(verifyCloudinaryWebhook(webhookBody, webhookSignature, String(webhookTimestamp - 301), webhookTimestamp), false);
+const retriedTimestamp = webhookTimestamp - 9 * 60;
+const retriedSignature = createHash("sha256").update(`${webhookBody}${retriedTimestamp}secret-test`).digest("hex");
+assert.equal(verifyCloudinaryWebhook(webhookBody, retriedSignature, String(retriedTimestamp), webhookTimestamp), true);
+const expiredTimestamp = webhookTimestamp - 2 * 60 * 60 - 1;
+const expiredSignature = createHash("sha256").update(`${webhookBody}${expiredTimestamp}secret-test`).digest("hex");
+assert.equal(verifyCloudinaryWebhook(webhookBody, expiredSignature, String(expiredTimestamp), webhookTimestamp), false);
 assert.equal(cloudinaryWebhookRunId({ context: { custom: { run_id: "nested" } } }), "nested");
 assert.equal(cloudinaryWebhookRunId({ context: "run_id=flat|other=value" }), "flat");
 assert.equal(cloudinaryWebhookRunId({}, "00000000-0000-4000-8000-000000000001"), "00000000-0000-4000-8000-000000000001");
