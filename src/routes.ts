@@ -43,6 +43,7 @@ export default [
     route("prospects", "./routes/ops-prospects.tsx"),
     route("prospects/:id", "./routes/ops-prospect-detail.tsx"),
     route("leads", "./routes/ops-leads.tsx"),
+    route("nightshift", "./routes/ops-nightshift.tsx"),
     route("runs", "./routes/ops-runs.tsx"),
   ]),
   route("*", "./routes/not-found.tsx"),

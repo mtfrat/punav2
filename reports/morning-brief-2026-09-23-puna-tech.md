@@ -1,5 +1,5 @@
 # ☀️ Morning Executive Brief — Puna Tech
-**Fecha:** 2026-09-23 | **Duración del ciclo:** 56.4s | **Empresa:** Puna Tech (AI & Software Factory)
+**Fecha:** 2026-09-23 | **Duración del ciclo:** 1.5s | **Empresa:** Puna Tech (AI & Software Factory)
 
 > [!NOTE]
 > **Estado de la Flota:** Todos los agentes nocturnos completaron su ciclo en modo seguro (*Draft-First*). Ningún mensaje o cambio fue publicado sin tu consentimiento explícito.
@@ -10,70 +10,70 @@
 
 - [ ] **Decisión #1:** **Aprobar lote de 3 posts para Autopost:** Revisar borradores en cola (incluye LinkedIn, X e Instagram).
   - *Acción recomendada:* Ir a /ops/social o Autopost para aprobación en 1 clic.
-- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Argentina / Buenos Aires, México / CDMX, Chile / Santiago.
+- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Chile / Argentina, Argentina (Córdoba / Buenos Aires), México (CDMX / Guadalajara).
   - *Acción recomendada:* Revisar y despachar borradores en /ops/prospects.
-- [ ] **Decisión #3:** **Evaluar oportunidad de monetización pasiva:** "AuditExcelLogistica.com" (Captación de Leads B2B + Afiliados SaaS, competencia undefined).
+- [ ] **Decisión #3:** **Evaluar oportunidad de monetización pasiva:** "Calculadora de Ahorro Operativo para Flotas y Logística Pyme" (Captación directa de leads calificados B2B + Afiliados de software de gestión y tracking, competencia undefined).
   - *Acción recomendada:* ¿Aprobar creación del prototipo esta noche? [SÍ / NO]
-- [ ] **Decisión #4:** **Demo interactivo listo para preview:** "Simulador Interactivo de Portal de Seguimiento Operativo y Envíos".
-  - *Acción recomendada:* Revisar branch `git branch sugerida (ej. demo/logistics-tracker)` y decidir si se incorpora a la landing de captación.
-- [ ] **Decisión #5:** **Aprobar refactor técnico (SEO):** Corregir el script de prerrenderizado para asegurar que los archivos index.html en la raíz y en el directorio /es se generen correctamente en la ruta build/client/, evitando la pérdida de indexación inicial.
-  - *Acción recomendada:* Merge del PR sugerido: `undefined`.
+- [ ] **Decisión #4:** **Demo interactivo listo para preview:** "Calculadora Interactiva de Ahorro Operativo (ROI Simulator)".
+  - *Acción recomendada:* Revisar branch `demo/roi-calculator` y decidir si se incorpora a la landing de captación.
+- [ ] **Decisión #5:** **Aprobar refactor técnico (Performance):** Optimizar imports de lucide-react y tipografías para reducir 12kb del bundle inicial.
+  - *Acción recomendada:* Merge del PR sugerido: `perf(bundle): tree-shake icon imports and optimize font preload`.
 
 ---
 
 ## 📊 2. Resumen por Agente Nocturno
 
 ### 📱 Redes Sociales & Autopost
-*Estrategia de 3 publicaciones directas y pragmáticas orientadas a gerentes de operaciones y agencias, demostrando cómo eliminar la fricción manual y rentabilizar capacidades técnicas sin añadir complejidad innecesaria.*
+*3 publicaciones generadas para Puna Tech enfocadas en ingeniería de software y automatización operativa.*
 
-- **[LINKEDIN]** *"Si la operación de tu empresa depende de 3 planillas de Excel y un grupo de WhatsApp, no tienes un proceso: tienes una bomba de tiempo."*
-  - **Horario sugerido:** 08:30 AM
-- **[X]** *"Tu agencia pierde contratos cuando los clientes piden portales o integraciones que no puedes construir."*
-  - **Horario sugerido:** 01:15 PM
-- **[INSTAGRAM]** *"Cómo un estudio profesional recuperó 15 horas a la semana sin cambiar a su equipo."*
-  - **Horario sugerido:** 06:45 PM
+- **[LINKEDIN]** *"¿Por qué el 70% de las automatizaciones con IA fallan en agencias antes de los 90 días?"*
+  - **Horario sugerido:** 10:30 AM ART
+- **[X]** *"Regla de oro para escalar una agencia dev en 2026: menos micro-gestión, más pipelines supervisados."*
+  - **Horario sugerido:** 02:15 PM ART
+- **[INSTAGRAM]** *"3 errores silenciosos en la arquitectura de un software a medida"*
+  - **Horario sugerido:** 07:00 PM ART
 
 ### 🎯 Prospección B2B & Nichos
-*Rastreo nocturno completado en LatAm y US. Se identificaron empresas tradicionales con alto flujo de caja y alta dependencia de planillas Excel, cadenas de WhatsApp y papel, evidenciando un costo operativo oculto superior al 30% en tareas repetitivas.*
+*Rastreo nocturno exitoso: 3 empresas tradicionales y 1 agencia estratégica perfiladas en LATAM con severos cuellos de botella manuales. Cero solapamiento con empresas de software.*
 
 **Cuentas detectadas:**
-- **Logística del Sur S.A.** (Argentina / Buenos Aires) [Logística] — *Target:* Director de Operaciones
-    - *Cuello de botella:* Coordinación de flota y confirmación de entregas mediante llamadas telefónicas y planillas de Excel desactualizadas, generando retrasos en la facturación.
-    - *Estrategia:* Optimización del ciclo de caja mediante visibilidad en tiempo real sin obligar al transportista a usar apps complejas.
-    - *Asunto sugerido:* "El cuello de botella en la confirmación de entregas de Logística del Sur"
-- **Nexus Creative Agency** (México / CDMX) [Agencia White-Label] — *Target:* Managing Partner
-    - *Cuello de botella:* Pérdida de márgenes por retrasos en la entrega de reportes mensuales a clientes corporativos debido a la extracción manual de métricas de múltiples plataformas.
-    - *Estrategia:* Ampliación de capacidad técnica como socio oculto (White-Label) para aceptar más clientes sin contratar más personal operativo.
-    - *Asunto sugerido:* "Escalar Nexus sin sumar costos fijos en desarrollo"
-- **Inmobiliaria Valle Alto** (Chile / Santiago) [Real Estate] — *Target:* Gerente General
-    - *Cuello de botella:* Gestión de leads y control de pagos de cuotas de preventa dispersos entre WhatsApp de vendedores y planillas de cálculo compartidas.
-    - *Estrategia:* Centralización de la gestión de prospectos y control de pagos automatizado para evitar la fuga de comisiones y errores humanos.
-    - *Asunto sugerido:* "Control de preventas y leads en Valle Alto"
+- **TransAndina Cargas & Distribución** (Chile / Argentina) [Logística y Transporte] — *Target:* Gerente de Operaciones / COO
+    - *Cuello de botella:* Coordinación de 40+ choferes por WhatsApp, remitos de entrega en papel que tardan 48 horas en conciliarse y clientes llamando por teléfono para saber el estado de su carga.
+    - *Estrategia:* Eliminar el 'teléfono descompuesto' de WhatsApp mediante un portal web operativo ligero para choferes y depósitos.
+    - *Asunto sugerido:* "Visibilidad de flota en tiempo real para TransAndina"
+- **Alvear & Asociados Desarrollos Inmobiliarios** (Argentina (Córdoba / Buenos Aires)) [Real Estate & Desarrolladora] — *Target:* Director de Finanzas y Operaciones
+    - *Cuello de botella:* Seguimiento de cuotas indexadas por CAC y pagos de más de 120 compradores de pozo llevado en planillas Excel gigantescas, con demoras en enviar recibos y conciliar bancos.
+    - *Estrategia:* Automatizar la actualización de cuotas y dar a cada comprador un acceso privado para ver sus pagos y certificados de avance de obra.
+    - *Asunto sugerido:* "Seguimiento de cuotas de fideicomisos en Alvear Desarrollos"
+- **Pixel & Media Brand Studio** (México (CDMX / Guadalajara)) [Agencia de Marketing & Medios (White-Label)] — *Target:* Managing Director / Dueño
+    - *Cuello de botella:* Clientes corporativos les piden desarrollo de portales web a medida y automatizaciones de CRM, pero la agencia solo cuenta con diseñadores y creativos, viéndose obligada a rechazar presupuestos.
+    - *Estrategia:* Convertirse en su brazo de ingeniería invisible para que ofrezcan software a medida bajo su propia marca sin contratar programadores en nómina.
+    - *Asunto sugerido:* "Capacidad de desarrollo web para los clientes de Pixel & Media"
 
 **Oportunidad de Monetización Evaluada:**
-- **Concepto:** AuditExcelLogistica.com
-- **Modelo:** Captación de Leads B2B + Afiliados SaaS (Legalidad: Herramienta 100% gratuita de autodiagnóstico operativo basada en inputs públicos y fórmulas estándar de la industria, sin extracción de datos sensibles de terceros.)
-- **Siguiente paso:** Desarrollar una landing page minimalista con un formulario de 4 pasos que calcule el costo en dinero del uso de Excel en operaciones logísticas, arrojando un reporte descargable en PDF y agendando llamada automática.
+- **Concepto:** Calculadora de Ahorro Operativo para Flotas y Logística Pyme
+- **Modelo:** Captación directa de leads calificados B2B + Afiliados de software de gestión y tracking (Legalidad: 100% legal y de alta utilidad: herramienta gratuita de cálculo con llamada a la acción para consultoría técnica de Puna Tech.)
+- **Siguiente paso:** Montar una landing interactiva de 1 página que estime el costo del caos manual en horas hombre según cantidad de camiones.
 
 ### 🛠️ Showcase & Prototipo
-- **Título:** Simulador Interactivo de Portal de Seguimiento Operativo y Envíos
-- **Branch sugerida:** `git branch sugerida (ej. demo/logistics-tracker)`
-- **Ruta de componente:** `src/pages/demos/ShipmentTrackerDemo.tsx`
-- **Propósito:** Demuestra a empresas de logística y operaciones la capacidad de Puna Tech para integrar sistemas legacy con portales de seguimiento en tiempo real impulsados por IA, reduciendo llamadas de soporte en un 60%.
+- **Título:** Calculadora Interactiva de Ahorro Operativo (ROI Simulator)
+- **Branch sugerida:** `demo/roi-calculator`
+- **Ruta de componente:** `src/components/demos/RoiCalculator.tsx`
+- **Propósito:** Permite a directores de agencias y startups ingresar su volumen de horas manuales y ver instantáneamente el ahorro financiero estimado con automatización y software a medida.
 
 ### 🔍 Auditoría de Código y SEO
-- **Veredicto general:** `ATTENTION_REQUIRED`
-- **Checks verificados:** 2 pasaron, 1 observaciones.
+- **Veredicto general:** `HEALTHY`
+- **Checks verificados:** 3 pasaron, 0 observaciones.
 **Hallazgos principales:**
-  - Fallo crítico en la generación de HTML prerrenderizado para las rutas '/' y '/es' durante el proceso de build de SEO.
-  - Validación de flujos n8n completada exitosamente sin errores en los 4 workflows inactivos.
-  - La verificación de tipos con TypeScript (npm run lint) pasó satisfactoriamente sin errores de compilación.
+  - Verificaciones de SEO y workflows de n8n ejecutadas correctamente sin regresiones.
+  - Estructura bilingüe y metadatos canónicos validados.
+  - Se detecta oportunidad para prerenderizar sitemaps dinámicos y cachear respuestas de Supabase.
 
 ---
 
 ## 💰 3. Control de Presupuesto y Consumo
 
-- **Gasto total de la corrida nocturna:** **$0.0051 USD**
+- **Gasto total de la corrida nocturna:** **$0.0045 USD**
 - **Límite diario configurado:** **$1.50 USD**
-- **Presupuesto restante protegido:** **$1.4949 USD**
-- **Tokens totales procesados:** 7,919
+- **Presupuesto restante protegido:** **$1.4955 USD**
+- **Tokens totales procesados:** 8.000
