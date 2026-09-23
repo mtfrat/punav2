@@ -2,7 +2,7 @@ import { data, type ActionFunctionArgs } from "react-router";
 import { executeNightshiftDecision, loadDecisionsState } from "../lib/nightshift-executor.server";
 
 const AUTHORIZED_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "1503439078";
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8961141570:AAFjBNdcWQtcBHhL9NAmNULjr7vLD5f4JvA";
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 async function sendTelegramMessage(chatId: string | number, text: string, replyMarkup?: any) {
   if (!BOT_TOKEN) return;
