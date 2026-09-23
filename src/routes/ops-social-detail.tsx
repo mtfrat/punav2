@@ -17,7 +17,7 @@ import { carouselQualityFlags, parseCarouselSlides, type SocialCarouselSlide, ty
 import { renderSocialVisual, socialVisualHash } from "../lib/social-visual-render.server";
 import { renderReelCover } from "../lib/social-visual-render.server";
 import { parseReelCandidates, parseReelScenes, reelDuration, reelMaterial, reelQualityFlags, type ReelClipCandidate, type ReelImportedClip, type SocialReelScene } from "../lib/social-reels";
-import { importReelClip, reelResource, searchReelClips, signedCloudinaryDownload, startReelRender } from "../lib/social-reels.server";
+import { importReelClip, reelNamedTransformation, reelResource, searchReelClips, signedCloudinaryDownload, startReelRender } from "../lib/social-reels.server";
 import {
   SOCIAL_CHANNEL_LIMITS,
   canTransitionSocialDraft,
@@ -520,6 +520,14 @@ export async function action({ request, params }: ActionFunctionArgs) {
     const transformation = String(before.reel_provider_metadata?.render?.transformation || "");
     if (!isUuid(runId) || !publicId || !transformation) return actionError(context, "No hay un render pendiente para comprobar.", 409, variantId);
     try {
+      const expectedTransformation = reelNamedTransformation(parseReelScenes(before.reel_scenes), before.reel_provider_metadata?.imported_clips || {}).eager;
+      if (transformation !== expectedTransformation) {
+        const failed = await context.service.from("social_generation_runs").update({ status: "failed", provider_status: "failed", error_code: "cloudinary_transform_outdated", error_message: "La transformación del reel fue corregida después de iniciar este render.", retryable: true, completed_at: new Date().toISOString() }).eq("id", runId).eq("status", "running").select("id").maybeSingle();
+        if (failed.data) {
+          await context.service.from("content_distribution_drafts").update({ reel_provider_metadata: { ...before.reel_provider_metadata, render: { ...before.reel_provider_metadata?.render, status: "failed" } } }).eq("id", variantId);
+          return actionError(context, "El render anterior usa una transformación obsoleta. Podés volver a renderizar sin perder el storyboard ni los clips.", 409, variantId);
+        }
+      }
       if (transformation.length > 1024) {
         const failed = await context.service.from("social_generation_runs").update({ status: "failed", provider_status: "failed", error_code: "cloudinary_transform_too_long", error_message: "La transformación del reel supera el límite de Cloudinary.", retryable: true, completed_at: new Date().toISOString() }).eq("id", runId).eq("status", "running").select("id").maybeSingle();
         if (failed.data) {

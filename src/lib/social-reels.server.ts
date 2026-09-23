@@ -127,11 +127,16 @@ export function reelTransformation(scenes: SocialReelScene[], imported: Record<s
   return `${clipChain}/${timedText}/l_text:Arial_26_bold:PUNA%20TECH,co_rgb:FF6B00/fl_layer_apply,g_south_east,x_70,y_70/e_volume:mute`;
 }
 
+export function reelNamedTransformation(scenes: SocialReelScene[], imported: Record<string, ReelImportedClip>) {
+  const full = `${reelTransformation(scenes, imported)}/f_mp4,vc_h264,ac_none`;
+  const name = `puna_reel_${createHash("sha256").update(full).digest("hex").slice(0, 32)}`;
+  return { full, eager: `t_${name}`, name };
+}
+
 export async function startReelRender(input: { campaignId: string; draftId: string; runId: string; visualHash: string; scenes: SocialReelScene[]; imported: Record<string, ReelImportedClip>; notificationUrl: string }) {
   const first = input.imported[input.scenes[0]?.id];
   if (!first) throw new Error("reel_clip_not_ready");
-  const fullTransformation = `${reelTransformation(input.scenes, input.imported)}/f_mp4,vc_h264,ac_none`;
-  const name = `puna_reel_${createHash("sha256").update(fullTransformation).digest("hex").slice(0, 32)}`;
+  const { full: fullTransformation, eager, name } = reelNamedTransformation(input.scenes, input.imported);
   const config = configuration();
   const timer = withTimeout(15_000);
   try {
@@ -144,7 +149,6 @@ export async function startReelRender(input: { campaignId: string; draftId: stri
       throw new Error("cloudinary_unavailable");
     }
   } finally { timer.done(); }
-  const eager = `t_${name}`;
   const payload = await cloudinaryForm("video/explicit", { public_id: first.public_id, type: "authenticated", eager, eager_async: "true", eager_notification_url: input.notificationUrl, context: `run_id=${input.runId}` }, 30_000);
   const batchId = String(payload.batch_id || "");
   const eagerItems = Array.isArray(payload.eager) ? payload.eager : [];
