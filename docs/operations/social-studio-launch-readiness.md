@@ -286,10 +286,11 @@ Estado de salida: **rama de lanzamiento validada; producción actual necesita in
 - Deployment productivo directo de esta rama: `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY en su momento.
 - Producción actual al 23 de septiembre: `https://punav2.vercel.app`, deployment `dpl_8WXH3xfqXQvFuprgiBwAD1L6XKco`, desde `master`, reemplazó el anterior. La rama de lanzamiento todavía no está integrada en `master`.
 - Preview de la corrección: `https://punav2-5tf2ckr3c-mfrats-projects.vercel.app`, deployment `dpl_zD4YS15DSwfTK7Da1eKarXD355UV`, READY.
+- Preview integrado con `master` al 23 de septiembre: `https://punav2-gsutlbf2g-mfrats-projects.vercel.app`, deployment `dpl_BcoQYaHQhcfMbsM7rfzgJevo6Brp`, READY; suite completa local pasó tras la integración. Smoke sin sesión: portada 200, Ops 302 al login, webhook POST sin firma 401.
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
 - Banderas productivas comprobadas: `CONTENT_REELS_ENABLED=false`, `CONTENT_PUBLISHING_ENABLED=false`, `CONTENT_AUTOPUBLISH_ENABLED=false`; compositor y calendario activos.
 - Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos. Las dos variantes QA de carrusel fueron desprogramadas y volvieron a aprobadas, sin publicación; 0 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
-- El smoke autenticado productivo quedó pendiente porque no hay sesión de Ops en el dominio productivo.
+- El smoke autenticado productivo y el nuevo Reel E2E quedaron pendientes porque no hay sesión de Ops en los nuevos dominios de producción/preview. La integración a `master` requiere una PR; la sesión GitHub del navegador no está iniciada.
 
 ## Estado de datos al cierre
 
