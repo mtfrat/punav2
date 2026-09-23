@@ -10,7 +10,7 @@ Social Studio es un sistema privado de operaciones de contenido para preparar ca
 
 El núcleo funcional está implementado, probado e integrado a `master`. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna se desplegó desde `master` a producción con reels, publicación y autopublicación desactivados. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels ya produjo un MP4 real con cinco clips; la pieza QA fue aprobada con advertencias, programada y desprogramada sin publicarse.
 
-Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e integrados a `master`; no declarar go-live completo hasta hacer el smoke autenticado productivo, terminar la certificación audiovisual y revisar editorialmente el contenido que se vaya a publicar. Reels sigue desactivado en producción**.
+Estado de salida: **núcleo de Social Studio validado en producción con sesión administrativa; Reel E2E validado funcionalmente en preview y H.264/sin audio confirmados. No declarar go-live completo de reels hasta revisar visualmente las cinco escenas y el contenido editorial que se vaya a publicar. Reels sigue desactivado en producción**.
 
 ## Principios del producto
 
@@ -265,7 +265,7 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e i
 - Consola y render del preview: sin errores de React ni hidratación en el recorrido final.
 - Reel final: storyboard de 5 escenas y 20 segundos generado; Pexels devolvió tres candidatos verticales por escena y cinco clips distintos fueron seleccionados e importados en Cloudinary.
 - Portada JPEG de reel generada y revisada visualmente. Los primeros intentos de MP4 fallaron; el webhook firmado de Cloudinary informó `Currently can only use g_auto once in a video transformation`. Se sustituyó el encuadre automático repetido por `g_center`, se mantuvo la transformación con nombre para respetar el límite de URL y se añadió recuperación de renders iniciados con una transformación obsoleta.
-- E2E de reel en preview el 23 de septiembre: Cloudinary aceptó el render corregido, Operations mostró el MP4 listo y la reproducción en navegador informó 1080×1920 y 19,96 segundos. Primer fotograma revisado visualmente: título y textos legibles dentro del cuadro. La transformación solicita H.264 y sin audio; codec y pistas no se verificaron de forma independiente con `ffprobe`.
+- E2E de reel en preview el 23 de septiembre: Cloudinary aceptó el render corregido, Operations mostró el MP4 listo y la reproducción en navegador informó 1080×1920 y 19,96 segundos. Primer fotograma revisado visualmente: título y textos legibles dentro del cuadro. `ffprobe` confirmó un único stream H.264 1080×1920 de 19,96 s y ninguna pista de audio. El intento de decodificar todo el archivo por red no terminó en tiempo razonable y se detuvo; esto no equivale a detectar corrupción.
 - La variante QA pasó por revisión editorial, aprobación explícita con cuatro advertencias (credibilidad 48/100 por falta de fuentes), programación para el 24 de septiembre a las 15:00 de Buenos Aires y desprogramación. Quedó aprobada, sin horario y sin publicar. No utilizar este copy QA para publicación.
 - Dos ajustes de restricciones de `social_generation_runs` aplicados en Supabase para aceptar `reel_sources`, `reel_render`, la etapa `importing` y secciones `import:<scene_id>`.
 - La vista editorial del reel recibió un ajuste de contraste para su texto auxiliar; la suite frontend completa volvió a pasar.
@@ -292,7 +292,7 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e i
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
 - Banderas productivas comprobadas: `CONTENT_REELS_ENABLED=false`, `CONTENT_PUBLISHING_ENABLED=false`, `CONTENT_AUTOPUBLISH_ENABLED=false`; compositor y calendario activos.
 - Verificación de datos posterior al deploy: 8 campañas, 17 variantes, 0 huérfanos. Las dos variantes QA de carrusel fueron desprogramadas y volvieron a aprobadas, sin publicación; 0 variantes programadas. Reconciliador: 0 referencias faltantes de 14 inspeccionadas.
-- Hay sesión autenticada de Operations en el alias de preview de la rama. Allí se completó el reel E2E, incluido el render MP4 y la programación manual reversible. El smoke autenticado **productivo** sigue pendiente; no se publica ni se habilita reels para suplirlo.
+- El smoke autenticado productivo se completó el 23 de septiembre: dashboard con colas y auditoría real; Social Studio con campañas; calendario; biblioteca con tres assets activos; insights; carrusel Instagram con cinco enlaces de placa e imagen 1080×1350 cargada; carrusel LinkedIn con cinco placas, imagen 1200×627 y enlace PDF; scorecard editorial del reel QA. La consola del navegador no mostró errores. La ruta productiva del reel QA conserva la variante aprobada sin programación y no ofrece el compositor de reels con la bandera apagada. No se modificó ni publicó contenido durante este smoke.
 
 ## Estado de datos al cierre
 
@@ -311,18 +311,18 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e i
 ### P0 — necesarios para declarar go-live completo
 
 1. **Cerrar certificación del Reel E2E**
-   - MP4 real, 1080×1920 y 19,96 segundos comprobados en navegador; cinco escenas se concatenan en la transformación y el primer cuadro pasó revisión visual. Falta comprobar de forma independiente H.264, ausencia de pista de audio y una muestra de las otras cuatro escenas. La pestaña de video del navegador de pruebas se cerró por un fallo del navegador al intentar buscar un fotograma intermedio; no se atribuye ese fallo al archivo.
+   - MP4 real, 1080×1920, 19,96 segundos, H.264 y sin audio comprobados; cinco escenas se concatenan en la transformación y el primer cuadro pasó revisión visual. Falta revisar visualmente las otras cuatro escenas. El navegador de pruebas se cerró dos veces al buscar un fotograma intermedio; no se atribuye ese fallo al archivo.
    - Aprobación, programación y desprogramación comprobadas sin marcar publicada. La reprogramación específica del reel no se repitió; el calendario ya había pasado esta prueba con otras variantes.
 
 2. **Rollout de Puna**
    - Integración a `master` y despliegue con reels apagados completados el 23 de septiembre.
-   - Ejecutar smoke autenticado productivo de seguridad, imagen, carrusel, calidad y calendario.
+   - Smoke autenticado productivo de acceso, imagen, carrusel, calidad y calendario completado el 23 de septiembre, sin publicaciones.
    - Activar reels sólo después de la validación del MP4.
    - Reconciliador de Storage ejecutado: 0 referencias faltantes.
 
 ### P1 — cierre editorial, no bloquea el motor
 
-- Asignar reviewer humano a los tres pares evergreen.
+- Asignar reviewer humano a los tres pares evergreen: en producción se confirmaron vacíos los campos EN y ES de los tres. No inventar una identidad ni aprobarlos hasta que una persona los revise.
 - Revisar y aprobar los pares antes de cualquier publicación.
 - Decidir si se conserva, actualiza o archiva el cuarto par bilingüe previo.
 - Mejorar fuentes de la campaña de demostración para elevar la credibilidad editorial por encima del score observado de 61/100.
@@ -345,13 +345,13 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e i
 
 ### Lo que todavía impide llamar profesional al lanzamiento completo
 
-- El MP4 asíncrono terminó y se verificaron dimensiones, duración y primer fotograma; faltan codec, pista de audio y revisión visual de las otras cuatro escenas.
+- El MP4 asíncrono terminó; dimensiones, duración, H.264, ausencia de audio y primer fotograma están verificados. Falta revisión visual de las otras cuatro escenas.
 - El contenido QA aprobado conserva una advertencia de credibilidad por fuente insuficiente; esto demuestra que el guardrail funciona, pero esa pieza no debe publicarse.
-- El despliegue productivo desde `master` pasó el smoke público y del webhook; falta el smoke autenticado.
+- El despliegue productivo desde `master` pasó el smoke público, del webhook y autenticado. Reels permanece desactivado por decisión de rollout.
 
 ## Decisión recomendada
 
-**No declarar todavía el go-live completo.** El flujo principal —copy, evidencia, imágenes, carrusel, aprobación, calendario y publicación manual— ya alcanza nivel profesional. El reel completó el E2E funcional en preview, pero falta su certificación audiovisual completa. Puna está desplegada desde `master` con reels apagados; falta el smoke autenticado productivo.
+**El núcleo de Social Studio está técnicamente listo para la operación manual en producción.** El reel completó el E2E funcional y la validación técnica del archivo en preview, pero faltan la revisión visual de las otras cuatro escenas y una decisión editorial sobre el contenido publicable. No habilitar reels todavía. Los borradores evergreen requieren revisor humano antes de aprobar o publicar.
 
 ## Runbook de salida
 
