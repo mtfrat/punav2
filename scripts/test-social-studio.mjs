@@ -154,6 +154,8 @@ assert.equal(reelMaterial(reelScenes, importedClips).muted, true);
 const transformation = reelTransformation(reelScenes, importedClips);
 assert.match(transformation, /e_volume:mute/);
 assert.match(transformation, /fl_splice/);
+assert.doesNotMatch(transformation, /g_auto/);
+assert.equal((transformation.match(/c_fill,g_center/g) || []).length, reelScenes.length);
 assert.match(transformation, /fl_splice,l_video:authenticated:[^/]+\/[^/]+\/fl_layer_apply/);
 assert.doesNotMatch(transformation, /fl_layer_apply,fl_splice/);
 assert.ok(transformation.length > 1024, "Five-scene transformation must be shortened before requesting a Cloudinary derivative");

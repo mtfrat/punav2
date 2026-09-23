@@ -107,7 +107,8 @@ export function reelTransformation(scenes: SocialReelScene[], imported: Record<s
   const clipChain = valid.map((scene, index) => {
     const clip = imported[scene.id];
     if (!clip) throw new Error("reel_clip_not_ready");
-    const base = `c_fill,g_auto,h_1920,w_1080,du_${scene.duration_seconds},e_volume:mute`;
+    // Cloudinary rejects multiple g_auto operations in one spliced video transformation.
+    const base = `c_fill,g_center,h_1920,w_1080,du_${scene.duration_seconds},e_volume:mute`;
     if (index === 0) return base;
     return `fl_splice,l_video:authenticated:${clip.public_id.replace(/\//g, ":")}/${base}/fl_layer_apply`;
   }).join("/");
