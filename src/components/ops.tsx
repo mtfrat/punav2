@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Moon,
   Send,
   Shapes,
   UsersRound,
@@ -31,7 +32,10 @@ const nav = (contentStudioEnabled: boolean, contentComposerEnabled: boolean, con
     { to: "/ops/prospects", label: "Prospectos", icon: UsersRound },
     { to: "/ops/leads", label: "Leads", icon: Inbox },
   ] },
-  { label: "Sistema", items: [{ to: "/ops/runs", label: "Ejecuciones", icon: Activity }] },
+  { label: "Sistema", items: [
+    { to: "/ops/nightshift", label: "Agentes Nocturnos", icon: Moon },
+    { to: "/ops/runs", label: "Ejecuciones", icon: Activity },
+  ] },
 ];
 
 function OpsBrand() {
