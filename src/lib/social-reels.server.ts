@@ -109,7 +109,7 @@ export function reelTransformation(scenes: SocialReelScene[], imported: Record<s
     if (!clip) throw new Error("reel_clip_not_ready");
     const base = `c_fill,g_auto,h_1920,w_1080,du_${scene.duration_seconds},e_volume:mute`;
     if (index === 0) return base;
-    return `l_video:authenticated:${clip.public_id.replace(/\//g, ":")}/${base}/fl_layer_apply,fl_splice`;
+    return `fl_splice,l_video:authenticated:${clip.public_id.replace(/\//g, ":")}/${base}/fl_layer_apply`;
   }).join("/");
   let start = 0;
   const timedText = valid.flatMap((scene) => {
@@ -129,9 +129,26 @@ export function reelTransformation(scenes: SocialReelScene[], imported: Record<s
 export async function startReelRender(input: { campaignId: string; draftId: string; runId: string; visualHash: string; scenes: SocialReelScene[]; imported: Record<string, ReelImportedClip>; notificationUrl: string }) {
   const first = input.imported[input.scenes[0]?.id];
   if (!first) throw new Error("reel_clip_not_ready");
-  const eager = `${reelTransformation(input.scenes, input.imported)}/f_mp4,vc_h264,ac_none,w_1080,h_1920`;
+  const fullTransformation = `${reelTransformation(input.scenes, input.imported)}/f_mp4,vc_h264,ac_none`;
+  const name = `puna_reel_${createHash("sha256").update(fullTransformation).digest("hex").slice(0, 32)}`;
+  const config = configuration();
+  const timer = withTimeout(15_000);
+  try {
+    const body = new URLSearchParams({ transformation: fullTransformation });
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(config.cloudName)}/transformations/${name}`, {
+      method: "POST", headers: { Authorization: `Basic ${Buffer.from(`${config.cloudinaryKey}:${config.cloudinarySecret}`).toString("base64")}`, "Content-Type": "application/x-www-form-urlencoded" }, body, signal: timer.signal,
+    });
+    if (!response.ok && response.status !== 409) {
+      console.error("reel_named_transformation_failed", { status: response.status, length: fullTransformation.length });
+      throw new Error("cloudinary_unavailable");
+    }
+  } finally { timer.done(); }
+  const eager = `t_${name}`;
   const payload = await cloudinaryForm("video/explicit", { public_id: first.public_id, type: "authenticated", eager, eager_async: "true", eager_notification_url: input.notificationUrl, context: `run_id=${input.runId}` }, 30_000);
-  return { externalJobId: String(payload.batch_id || payload.asset_id || `${input.draftId}:${input.visualHash}`), providerStatus: String(payload.status || "processing"), publicId: first.public_id, transformation: eager };
+  const batchId = String(payload.batch_id || "");
+  console.info("reel_render_requested", { has_batch_id: Boolean(batchId), eager_count: Array.isArray(payload.eager) ? payload.eager.length : 0, status: String(payload.status || "") });
+  if (!batchId) throw new Error("cloudinary_invalid_response");
+  return { externalJobId: batchId, providerStatus: String(payload.status || "processing"), publicId: first.public_id, transformation: eager };
 }
 
 export async function reelResource(publicId: string, transformation: string) {

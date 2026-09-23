@@ -20,7 +20,7 @@ import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, du
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
 import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
 import { parseReelCandidates, parseReelScenes, reelDuration, reelMaterial, reelQualityFlags } from "../src/lib/social-reels.ts";
-import { cloudinaryWebhookBatchId, cloudinaryWebhookRunId, reelTransformation, signedCloudinaryDownload, verifyCloudinaryWebhook } from "../src/lib/social-reels.server.ts";
+import { cloudinaryWebhookBatchId, cloudinaryWebhookRunId, reelTransformation, signedCloudinaryDownload, startReelRender, verifyCloudinaryWebhook } from "../src/lib/social-reels.server.ts";
 import {
   addCalendarDays,
   calendarDateTimeInput,
@@ -154,12 +154,36 @@ assert.equal(reelMaterial(reelScenes, importedClips).muted, true);
 const transformation = reelTransformation(reelScenes, importedClips);
 assert.match(transformation, /e_volume:mute/);
 assert.match(transformation, /fl_splice/);
+assert.match(transformation, /fl_splice,l_video:authenticated:[^/]+\/[^/]+\/fl_layer_apply/);
+assert.doesNotMatch(transformation, /fl_layer_apply,fl_splice/);
+assert.ok(transformation.length > 1024, "Five-scene transformation must be shortened before requesting a Cloudinary derivative");
 assert.doesNotMatch(transformation, /audio_codec/);
 assert.match(transformation, /l_video:authenticated:/);
 process.env.PEXELS_API_KEY = "pexels-test";
 process.env.CLOUDINARY_CLOUD_NAME = "puna-test";
 process.env.CLOUDINARY_API_KEY = "cloudinary-test";
 process.env.CLOUDINARY_API_SECRET = "secret-test";
+const originalFetch = globalThis.fetch;
+const renderRequests = [];
+globalThis.fetch = async (url, options) => {
+  renderRequests.push({ url: String(url), options });
+  if (String(url).includes("/transformations/")) return new Response(JSON.stringify({ error: { message: "Already exists" } }), { status: 409 });
+  return Response.json({ batch_id: "reel-batch-1", status: "processing" });
+};
+try {
+  const startedReel = await startReelRender({ campaignId: "campaign", draftId: "draft", runId: "00000000-0000-4000-8000-000000000001", visualHash: "visual", scenes: reelScenes, imported: importedClips, notificationUrl: "https://puna-tech.com/api/webhooks/cloudinary/reel-render" });
+  assert.equal(startedReel.externalJobId, "reel-batch-1");
+  assert.match(startedReel.transformation, /^t_puna_reel_[0-9a-f]{32}$/);
+  assert.equal(renderRequests.length, 2);
+  assert.equal(renderRequests[0].options.method, "POST");
+  assert.match(String(renderRequests[0].options.body), /transformation=/);
+  assert.equal(renderRequests[1].options.body.get("eager"), startedReel.transformation);
+  assert.equal(renderRequests[1].options.body.get("eager_async"), "true");
+  assert.equal(renderRequests[1].options.body.get("type"), "authenticated");
+  assert.equal(renderRequests[1].options.body.get("context"), "run_id=00000000-0000-4000-8000-000000000001");
+  globalThis.fetch = async (url) => String(url).includes("/transformations/") ? Response.json({ message: "created" }) : Response.json({ asset_id: "not-a-batch" });
+  await assert.rejects(() => startReelRender({ campaignId: "campaign", draftId: "draft", runId: "00000000-0000-4000-8000-000000000001", visualHash: "visual", scenes: reelScenes, imported: importedClips, notificationUrl: "https://puna-tech.com/api/webhooks/cloudinary/reel-render" }), /cloudinary_invalid_response/);
+} finally { globalThis.fetch = originalFetch; }
 const webhookBody = JSON.stringify({ run_id: "00000000-0000-4000-8000-000000000001" });
 const webhookTimestamp = 2_000_000_000;
 const webhookSignature = createHash("sha256").update(`${webhookBody}${webhookTimestamp}secret-test`).digest("hex");
