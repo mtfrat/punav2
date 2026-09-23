@@ -70,6 +70,7 @@ function extractResponseText(payload: any) {
 }
 
 async function structuredResponse<T>(name: string, schema: Record<string, unknown>, instructions: string, input: unknown): Promise<{ value: T; requestId: string; usage: Record<string, unknown>; durationMs: number }> {
+  if (!socialPaidAiAllowed()) throw new Error("paid_ai_disabled_in_development");
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("openai_not_configured");
   const model = process.env.CONTENT_TEXT_MODEL || "gpt-5.6-terra";
@@ -92,6 +93,11 @@ async function structuredResponse<T>(name: string, schema: Record<string, unknow
     if (error instanceof Error && providerRequestId && !("requestId" in error)) Object.assign(error, { requestId: providerRequestId });
     throw error;
   } finally { clearTimeout(timeout); }
+}
+
+export function socialPaidAiAllowed(env: NodeJS.ProcessEnv = process.env): boolean {
+  const isProduction = env.VERCEL_ENV === "production" || (!env.VERCEL_ENV && env.NODE_ENV === "production");
+  return isProduction || env.CONTENT_PAID_AI_ENABLED === "true";
 }
 
 export async function reviewSocialVariant(context: Record<string, unknown>, variant: GeneratedSocialVariant & { visual_kind?: string; carousel_slides?: unknown; reel_scenes?: unknown }) {

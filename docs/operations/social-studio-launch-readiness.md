@@ -10,7 +10,13 @@ Social Studio es un sistema privado de operaciones de contenido para preparar ca
 
 El núcleo funcional está implementado, probado e integrado a `master`. El worker productivo está operativo, cerrado y corregido para titulares largos y carruseles estructurados. Puna se desplegó desde `master` a producción con reels, publicación y autopublicación desactivados. La biblioteca real, la matriz visual, el carrusel, el calendario, la accesibilidad, el bot y la captación pasaron pruebas reales en preview. El flujo de reels ya produjo un MP4 real con cinco clips; la pieza QA fue aprobada con advertencias, programada y desprogramada sin publicarse.
 
-Estado de salida: **núcleo de Social Studio validado en producción con sesión administrativa; Reel E2E validado funcionalmente en preview y H.264/sin audio confirmados. No declarar go-live completo de reels hasta revisar visualmente las cinco escenas y el contenido editorial que se vaya a publicar. Reels sigue desactivado en producción**.
+Estado de salida: **núcleo de Social Studio validado en producción con sesión administrativa; Reel E2E validado funcionalmente en preview y H.264/sin audio confirmados. El storyboard de las cinco escenas pasó revisión en el editor; falta revisar visualmente los tramos correspondientes del MP4 final y el contenido editorial que se vaya a publicar. Reels sigue desactivado en producción**.
+
+### Consumo de IA durante desarrollo
+
+- Social Studio usa OpenAI para generar y revisar texto. No hay llamadas a la API de Anthropic en esta aplicación; el consumo reportado de Anthropic debe localizarse en la herramienta o servicio que usa esa clave.
+- Las llamadas pagas de Social Studio quedan desactivadas por defecto en desarrollo y en deployments preview. Para una prueba de generación deliberada, configurar `CONTENT_PAID_AI_ENABLED=true` sólo en ese entorno y retirarlo después. Producción conserva su comportamiento actual.
+- Las pruebas automatizadas del repositorio usan respuestas simuladas; no necesitan una clave de IA ni consumen tokens. Para Nightshift, usar `npm run nightshift:dry-run` durante desarrollo; `npm run nightshift` sí puede llamar a Gemini u OpenAI.
 
 ## Principios del producto
 
@@ -311,7 +317,7 @@ Estado de salida: **núcleo de Social Studio validado en producción con sesión
 ### P0 — necesarios para declarar go-live completo
 
 1. **Cerrar certificación del Reel E2E**
-   - MP4 real, 1080×1920, 19,96 segundos, H.264 y sin audio comprobados; cinco escenas se concatenan en la transformación y el primer cuadro pasó revisión visual. Falta revisar visualmente las otras cuatro escenas. El navegador de pruebas se cerró dos veces al buscar un fotograma intermedio; no se atribuye ese fallo al archivo.
+   - MP4 real, 1080×1920, 19,96 segundos, H.264 y sin audio comprobados; cinco escenas se concatenan en la transformación. Las vistas del editor de las escenas 1–5 tienen contenido distinto y el MP4 llegó a la segunda escena durante la reproducción. Falta revisar visualmente los tramos 3–5 del MP4 final; la vista del editor no sustituye esa comprobación. El navegador de pruebas se cerró dos veces al buscar un fotograma intermedio; no se atribuye ese fallo al archivo.
    - Aprobación, programación y desprogramación comprobadas sin marcar publicada. La reprogramación específica del reel no se repitió; el calendario ya había pasado esta prueba con otras variantes.
 
 2. **Rollout de Puna**

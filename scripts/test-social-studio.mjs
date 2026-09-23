@@ -18,6 +18,7 @@ import {
 import { buildChatRepairPrompt, buildChatSystemPrompt, chatReplyNeedsRepair } from "../src/lib/chat-prompt.ts";
 import { blockingQualityMessage, deterministicQualityFlags, duplicateMatches, duplicateQualityFlags, normalizeSocialCopy, socialCopySimilarity } from "../src/lib/social-quality.ts";
 import { buildRunTelemetry } from "../src/lib/social-observability.server.ts";
+import { socialPaidAiAllowed } from "../src/lib/social-generation.server.ts";
 import { carouselMaterial, carouselQualityFlags, parseCarouselSlides } from "../src/lib/social-visual.ts";
 import { parseReelCandidates, parseReelScenes, reelDuration, reelMaterial, reelQualityFlags } from "../src/lib/social-reels.ts";
 import { cloudinaryWebhookBatchId, cloudinaryWebhookRunId, reelTransformation, signedCloudinaryDownload, startReelRender, verifyCloudinaryWebhook } from "../src/lib/social-reels.server.ts";
@@ -32,6 +33,10 @@ import {
 } from "../src/lib/social-calendar.ts";
 
 assert.equal(deriveSocialCampaignStatus(["draft", "approved"]), "draft");
+assert.equal(socialPaidAiAllowed({ NODE_ENV: "development" }), false);
+assert.equal(socialPaidAiAllowed({ NODE_ENV: "production", VERCEL_ENV: "preview" }), false);
+assert.equal(socialPaidAiAllowed({ NODE_ENV: "production", VERCEL_ENV: "preview", CONTENT_PAID_AI_ENABLED: "true" }), true);
+assert.equal(socialPaidAiAllowed({ NODE_ENV: "production", VERCEL_ENV: "production" }), true);
 assert.equal(deriveSocialCampaignStatus(["rejected", "draft"]), "rejected");
 assert.equal(deriveSocialCampaignStatus(["approved", "published"]), "approved");
 assert.equal(deriveSocialCampaignStatus(["scheduled", "published"]), "scheduled");
