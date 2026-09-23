@@ -146,7 +146,10 @@ export async function reelResource(publicId: string, transformation: string) {
     const derived = Array.isArray(payload.derived)
       ? payload.derived.find((item: Record<string, unknown>) => item.transformation === transformation && String(item.format || "") === "mp4")
       : null;
-    if (!derived) return null;
+    if (!derived) {
+      console.info("reel_derived_not_ready", { derived_count: Array.isArray(payload.derived) ? payload.derived.length : 0, mp4_count: Array.isArray(payload.derived) ? payload.derived.filter((item: Record<string, unknown>) => item.format === "mp4").length : 0 });
+      return null;
+    }
     return { ...derived, public_id: publicId, format: "mp4" } as Record<string, any>;
   } finally { timer.done(); }
 }
