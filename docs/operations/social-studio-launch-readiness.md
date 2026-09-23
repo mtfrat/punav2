@@ -286,7 +286,7 @@ Estado de salida: **núcleo de Social Studio y Reel E2E validados en preview e i
 - Estado: READY.
 - Runtime observado: sin errores de React ni hidratación en el recorrido final.
 - Deployment productivo directo de esta rama: `dpl_8WrtbmEKVXLnSXQkpyXMGS7J8iWW`, commit `9bb843b`, READY en su momento.
-- Producción actual al 23 de septiembre: `master` contiene el Social Studio certificado (`b18cfd2`) y el deployment automático `dpl_DFBhN8wxKDjvGwMDj3NqDAchpap3` está READY en `https://www.puna-tech.com` y `https://punav2.vercel.app`. El smoke sin sesión dio `/` 200, `/es` 200, `/ops/social` 302 al login y webhook sin firma 401.
+- Primer despliegue integrado desde `master` el 23 de septiembre: commit `b18cfd2`, deployment automático `dpl_DFBhN8wxKDjvGwMDj3NqDAchpap3`, READY en `https://www.puna-tech.com` y `https://punav2.vercel.app`. El smoke sin sesión dio `/` 200, `/es` 200, `/ops/social` 302 al login y webhook sin firma 401. Los commits posteriores de documentación generan despliegues nuevos sin cambiar este resultado funcional.
 - Preview de la corrección: `https://punav2-5tf2ckr3c-mfrats-projects.vercel.app`, deployment `dpl_zD4YS15DSwfTK7Da1eKarXD355UV`, READY.
 - Preview integrado con `master` al 23 de septiembre: `https://punav2-gsutlbf2g-mfrats-projects.vercel.app`, deployment `dpl_BcoQYaHQhcfMbsM7rfzgJevo6Brp`, READY; suite completa local pasó tras la integración. Smoke sin sesión: portada 200, Ops 302 al login, webhook POST sin firma 401.
 - Smoke público productivo: `/` y `/es` respondieron 200; `/ops/social` sin sesión redirigió a login; POST sin firma al webhook devolvió 401.
