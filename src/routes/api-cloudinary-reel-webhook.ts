@@ -18,10 +18,11 @@ export async function action({ request }: ActionFunctionArgs) {
   try { payload = JSON.parse(rawBody); } catch { return response(400, { error: "invalid_payload" }); }
   const runId = cloudinaryWebhookRunId(payload, new URL(request.url).searchParams.get("run_id") || "");
   const batchId = cloudinaryWebhookBatchId(payload);
+  console.info("reel_webhook_received", { has_query_run_id: Boolean(new URL(request.url).searchParams.get("run_id")), run_id: runId, has_batch_id: Boolean(batchId), notification_type: String(payload.notification_type || ""), status: String(payload.status || ""), eager_status: String(Array.isArray(payload.eager) ? payload.eager[0]?.status || "" : ""), has_error: Boolean(payload.error || (Array.isArray(payload.eager) && payload.eager[0]?.error)) });
   if (!/^[0-9a-f-]{36}$/i.test(runId) && !batchId) return response(400, { error: "missing_run_id" });
   const service = createOperationsServiceClient();
   const existing = await service.from("social_generation_runs").select("id,draft_id,status,request_hash,external_job_id,provider_metadata,content_distribution_drafts(media_urls,generation_metadata,reel_provider_metadata)").eq(/^[0-9a-f-]{36}$/i.test(runId) ? "id" : "external_job_id", /^[0-9a-f-]{36}$/i.test(runId) ? runId : batchId).eq("operation", "reel_render").maybeSingle();
-  if (!existing.data) return response(404, { error: "run_not_found" });
+  if (!existing.data) { console.warn("reel_webhook_run_not_found", { run_id: runId, has_batch_id: Boolean(batchId), lookup_error: Boolean(existing.error) }); return response(404, { error: "run_not_found" }); }
   if (existing.data.status === "succeeded") return response(200, { ok: true, duplicate: true });
   if (batchId && existing.data.external_job_id && existing.data.external_job_id !== batchId) return response(200, { ok: true, stale: true });
   const joined = Array.isArray(existing.data.content_distribution_drafts) ? existing.data.content_distribution_drafts[0] : existing.data.content_distribution_drafts;
