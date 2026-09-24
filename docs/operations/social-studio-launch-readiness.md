@@ -4,6 +4,14 @@
 Puna: `codex/social-studio-launch-hardening`
 Worker: `f8afd31` en `codex/content-worker-launch-polish`
 
+## Cierre de alcance y congelamiento funcional
+
+**Decisión del 23 de septiembre de 2026:** se cierra el desarrollo de funcionalidades de Social Studio en esta etapa. La rama `codex/social-studio-launch-hardening` queda como referencia del alcance entregado. Desde este corte se admiten correcciones de seguridad, datos o defectos reproducibles, pero no nuevas funciones, formatos, integraciones ni automatización de publicación sin un brief y una decisión de alcance nuevos.
+
+El congelamiento **no equivale a autorizar publicaciones ni a declarar Reels habilitado en producción**. El núcleo manual sigue operativo en producción; Reels permanece detrás de `CONTENT_REELS_ENABLED=false` mientras se completa la revisión visual y la decisión de rollout indicadas más abajo. La pieza `QA final` y los artículos evergreen sin revisor humano no son material publicable. El MP4 del preview es una prueba del flujo, no una aprobación editorial de campaña.
+
+El siguiente espacio de trabajo propuesto es [Art Studio](art-studio-plan.md): dirección creativa y producción de campañas con material propio, usando Social Studio como etapa posterior de copy, control, aprobación y salida manual. No se implementa Art Studio como parte de este cierre.
+
 ## Resumen ejecutivo
 
 Social Studio es un sistema privado de operaciones de contenido para preparar campañas bilingües, producir piezas visuales, revisar evidencia, aprobar, calendarizar y registrar publicaciones realizadas manualmente. No publica en redes, no usa OAuth social, no ejecuta cron social y no almacena credenciales de LinkedIn, Instagram o X.
