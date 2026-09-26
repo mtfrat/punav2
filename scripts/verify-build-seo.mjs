@@ -45,6 +45,16 @@ for (const image of ["og-en.png", "og-es.png"]) {
   try { await access(join(root, image)); } catch { failures.push(`/${image}: generated asset is missing from build`); }
 }
 
+const englishHome = await readFile(join(root, "index.html"), "utf8");
+const spanishHome = await readFile(join(root, "es", "index.html"), "utf8");
+if (!englishHome.includes("Custom Software &amp; AI Automation | Puna Tech") && !englishHome.includes("Custom Software & AI Automation | Puna Tech")) failures.push("English homepage title did not render");
+if (!spanishHome.includes("Software a Medida y Automatización con IA | Puna Tech")) failures.push("Spanish homepage title did not render");
+for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["es", spanishHome, "/es/casos/"]]) {
+  if (html.indexOf('id="services"') > html.indexOf('id="work"')) failures.push(`${locale}: services should appear before work`);
+  const caseLinks = new Set([...html.matchAll(new RegExp(`href="(${prefix}[^"#?]+)"`, "g"))].map((match) => match[1]));
+  if (caseLinks.size !== 8) failures.push(`${locale}: expected links to all 8 case studies, found ${caseLinks.size}`);
+}
+
 for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
   const source = await readFile(new URL(`../src/routes/${routeFile}`, import.meta.url), "utf8");
   if (!source.includes('timeZone: "America/Argentina/Buenos_Aires"')) {

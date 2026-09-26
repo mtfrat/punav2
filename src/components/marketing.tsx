@@ -234,6 +234,7 @@ export function ProjectBrief({ locale }: { locale: Locale }) {
   const started = useRef(false);
   const busy = fetcher.state !== "idle";
   const success = fetcher.data?.ok;
+  const fieldErrors = fetcher.data?.fieldErrors || {};
 
   useEffect(() => {
     if (success) trackEvent("project_brief_submit", { locale, placement: "final_cta" });
@@ -255,13 +256,14 @@ export function ProjectBrief({ locale }: { locale: Locale }) {
       <input type="hidden" name="locale" value={locale} />
       <div className="honeypot" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <div className="field-grid">
-        <label><span>{locale === "en" ? "Name" : "Nombre"}</span><input name="name" autoComplete="name" required maxLength={80} /></label>
-        <label><span>{locale === "en" ? "Work email" : "Email laboral"}</span><input name="email" type="email" inputMode="email" autoComplete="email" required maxLength={160} /></label>
+        <label><span>{locale === "en" ? "Name" : "Nombre"}</span><input name="name" autoComplete="name" required maxLength={80} aria-invalid={!!fieldErrors.name} aria-describedby={fieldErrors.name ? "brief-name-error" : undefined} />{fieldErrors.name && <small id="brief-name-error" className="field-error">{fieldErrors.name}</small>}</label>
+        <label><span>{locale === "en" ? "Work email" : "Email laboral"}</span><input name="email" type="email" inputMode="email" autoComplete="email" required maxLength={160} aria-invalid={!!fieldErrors.email} aria-describedby={fieldErrors.email ? "brief-email-error" : undefined} />{fieldErrors.email && <small id="brief-email-error" className="field-error">{fieldErrors.email}</small>}</label>
       </div>
-      <label><span>{locale === "en" ? "Company" : "Empresa"}</span><input name="company" autoComplete="organization" required maxLength={120} /></label>
-      <label><span>{locale === "en" ? "What is slowing the operation down?" : "¿Qué está frenando la operación?"}</span><textarea name="problem" required minLength={20} maxLength={1600} rows={5} /></label>
-      <label><span>{locale === "en" ? "Approximate budget" : "Presupuesto aproximado"}</span><select name="budget" required defaultValue=""><option value="" disabled>{locale === "en" ? "Select a range" : "Seleccioná un rango"}</option><option value="usd_3_10">US$3–10k</option><option value="usd_10_25">US$10–25k</option><option value="usd_25_50">US$25–50k</option><option value="usd_50_plus">US$50k+</option><option value="not_sure">{locale === "en" ? "Not sure yet" : "Todavía no lo sé"}</option></select></label>
-      <label className="consent-field"><input name="consent" type="checkbox" value="yes" required /><span>{locale === "en" ? "I agree that Puna Tech may use these details to respond to my request." : "Acepto que Puna Tech use estos datos para responder mi solicitud."}</span></label>
+      <label><span>{locale === "en" ? "Company" : "Empresa"}</span><input name="company" autoComplete="organization" required maxLength={120} aria-invalid={!!fieldErrors.company} aria-describedby={fieldErrors.company ? "brief-company-error" : undefined} />{fieldErrors.company && <small id="brief-company-error" className="field-error">{fieldErrors.company}</small>}</label>
+      <label><span>{locale === "en" ? "What is slowing the operation down?" : "¿Qué está frenando la operación?"}</span><textarea name="problem" required minLength={20} maxLength={1600} rows={5} aria-invalid={!!fieldErrors.problem} aria-describedby={fieldErrors.problem ? "brief-problem-error" : undefined} />{fieldErrors.problem && <small id="brief-problem-error" className="field-error">{fieldErrors.problem}</small>}</label>
+      <label><span>{locale === "en" ? "Approximate budget" : "Presupuesto aproximado"}</span><select name="budget" required defaultValue="" aria-invalid={!!fieldErrors.budget} aria-describedby={fieldErrors.budget ? "brief-budget-error" : undefined}><option value="" disabled>{locale === "en" ? "Select a range" : "Seleccioná un rango"}</option><option value="usd_3_10">US$3–10k</option><option value="usd_10_25">US$10–25k</option><option value="usd_25_50">US$25–50k</option><option value="usd_50_plus">US$50k+</option><option value="not_sure">{locale === "en" ? "Not sure yet" : "Todavía no lo sé"}</option></select>{fieldErrors.budget && <small id="brief-budget-error" className="field-error">{fieldErrors.budget}</small>}</label>
+      <label className="consent-field"><input name="consent" type="checkbox" value="yes" required aria-invalid={!!fieldErrors.consent} aria-describedby={fieldErrors.consent ? "brief-consent-error" : undefined} /><span>{locale === "en" ? "I agree that Puna Tech may use these details to respond to my request." : "Acepto que Puna Tech use estos datos para responder mi solicitud."}</span></label>
+      {fieldErrors.consent && <small id="brief-consent-error" className="field-error">{fieldErrors.consent}</small>}
       <Link className="privacy-inline" to={locale === "en" ? "/privacy" : "/es/privacidad"}>{locale === "en" ? "Read the privacy policy" : "Leer la política de privacidad"}</Link>
       {fetcher.data?.error ? <p className="form-error" role="alert">{fetcher.data.error}</p> : null}
       <button className="button-secondary button-submit" type="submit" disabled={busy}>{busy ? (locale === "en" ? "Sending…" : "Enviando…") : copy[locale].nav.brief}<Send aria-hidden="true" size={17} /></button>
