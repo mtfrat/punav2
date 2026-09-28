@@ -1,5 +1,5 @@
 # ☀️ Morning Executive Brief — Puna Tech
-**Fecha:** 2026-09-28 | **Duración del ciclo:** 1.9s | **Empresa:** Puna Tech (AI & Software Factory)
+**Fecha:** 2026-09-28 | **Duración del ciclo:** 1.5s | **Empresa:** Puna Tech (AI & Software Factory)
 
 > [!NOTE]
 > **Estado de la Flota:** Todos los agentes nocturnos completaron su ciclo en modo seguro (*Draft-First*). Ningún mensaje o cambio fue publicado sin tu consentimiento explícito.
@@ -10,7 +10,7 @@
 
 - [ ] **Decisión #1:** **Aprobar lote de 3 posts para Autopost:** Revisar borradores en cola (incluye LinkedIn, X e Instagram).
   - *Acción recomendada:* Ir a /ops/social o Autopost para aprobación en 1 clic.
-- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Chile / Argentina, Argentina (Córdoba / Buenos Aires), México (CDMX / Guadalajara).
+- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Argentina (Buenos Aires), Argentina (Córdoba), Argentina (Buenos Aires).
   - *Acción recomendada:* Revisar y despachar borradores en /ops/prospects.
 - [ ] **Decisión #3:** **Evaluar oportunidad de monetización pasiva:** "Calculadora de Ahorro Operativo para Flotas y Logística Pyme" (Captación directa de leads calificados B2B + Afiliados de software de gestión y tracking, competencia undefined).
   - *Acción recomendada:* ¿Aprobar creación del prototipo esta noche? [SÍ / NO]
@@ -34,21 +34,21 @@
   - **Horario sugerido:** 07:00 PM ART
 
 ### 🎯 Prospección B2B & Nichos
-*Rastreo nocturno exitoso: 3 empresas tradicionales y 1 agencia estratégica perfiladas en LATAM con severos cuellos de botella manuales. Cero solapamiento con empresas de software.*
+*Rastreo nocturno web exitoso: 3 empresas reales verificadas en LATAM con sitios web oficiales y severos cuellos de botella manuales identificados.*
 
 **Cuentas detectadas:**
-- **TransAndina Cargas & Distribución** (Chile / Argentina) [Logística y Transporte] — *Target:* Gerente de Operaciones / COO
-    - *Cuello de botella:* Coordinación de 40+ choferes por WhatsApp, remitos de entrega en papel que tardan 48 horas en conciliarse y clientes llamando por teléfono para saber el estado de su carga.
-    - *Estrategia:* Eliminar el 'teléfono descompuesto' de WhatsApp mediante un portal web operativo ligero para choferes y depósitos.
-    - *Asunto sugerido:* "Visibilidad de flota en tiempo real para TransAndina"
-- **Alvear & Asociados Desarrollos Inmobiliarios** (Argentina (Córdoba / Buenos Aires)) [Real Estate & Desarrolladora] — *Target:* Director de Finanzas y Operaciones
-    - *Cuello de botella:* Seguimiento de cuotas indexadas por CAC y pagos de más de 120 compradores de pozo llevado en planillas Excel gigantescas, con demoras en enviar recibos y conciliar bancos.
+- **Buenos Aires Transporte SRL** (Argentina (Buenos Aires)) [Logística y Transporte] — 🌐 [Sitio Web](https://buenosairestransportes.com.ar) — *Target:* Gerente de Operaciones / COO
+    - *Cuello de botella:* Coordinación de flota y choferes por WhatsApp, remitos de entrega en papel y demoras en conciliar los viajes con los clientes.
+    - *Estrategia:* Eliminar el caos de WhatsApp mediante un portal web operativo ligero para choferes y depósitos.
+    - *Asunto sugerido:* "Visibilidad de flota en tiempo real para Buenos Aires Transporte"
+- **Grupo Proaco** (Argentina (Córdoba)) [Real Estate & Desarrolladora] — 🌐 [Sitio Web](https://grupoproaco.com) — *Target:* Director de Finanzas y Operaciones
+    - *Cuello de botella:* Seguimiento de cuotas indexadas por CAC y pagos de compradores de pozo llevado en planillas y sistemas descentralizados, con demoras en enviar recibos y conciliar bancos.
     - *Estrategia:* Automatizar la actualización de cuotas y dar a cada comprador un acceso privado para ver sus pagos y certificados de avance de obra.
-    - *Asunto sugerido:* "Seguimiento de cuotas de fideicomisos en Alvear Desarrollos"
-- **Pixel & Media Brand Studio** (México (CDMX / Guadalajara)) [Agencia de Marketing & Medios (White-Label)] — *Target:* Managing Director / Dueño
-    - *Cuello de botella:* Clientes corporativos les piden desarrollo de portales web a medida y automatizaciones de CRM, pero la agencia solo cuenta con diseñadores y creativos, viéndose obligada a rechazar presupuestos.
-    - *Estrategia:* Convertirse en su brazo de ingeniería invisible para que ofrezcan software a medida bajo su propia marca sin contratar programadores en nómina.
-    - *Asunto sugerido:* "Capacidad de desarrollo web para los clientes de Pixel & Media"
+    - *Asunto sugerido:* "Portal de autogestión de cuotas para inversores de Grupo Proaco"
+- **Estudio Lisicki Litvin & Asociados** (Argentina (Buenos Aires)) [Servicios Profesionales (Contable / Legal)] — 🌐 [Sitio Web](https://www.llyasoc.com) — *Target:* Socio Administrador / Managing Partner
+    - *Cuello de botella:* Recolección manual de comprobantes, extractos y documentación impositiva de clientes corporativos por email disperso, requiriendo persecución constante de los contadores a los clientes.
+    - *Estrategia:* Portal de cliente exclusivo con checklist automático de vencimientos fiscales y subida directa de comprobantes.
+    - *Asunto sugerido:* "Bóveda digital de comprobantes fiscales para clientes del Estudio"
 
 **Oportunidad de Monetización Evaluada:**
 - **Concepto:** Calculadora de Ahorro Operativo para Flotas y Logística Pyme
@@ -62,8 +62,8 @@
 - **Propósito:** Permite a directores de agencias y startups ingresar su volumen de horas manuales y ver instantáneamente el ahorro financiero estimado con automatización y software a medida.
 
 ### 🔍 Auditoría de Código y SEO
-- **Veredicto general:** `ATTENTION_REQUIRED`
-- **Checks verificados:** 2 pasaron, 1 observaciones.
+- **Veredicto general:** `HEALTHY`
+- **Checks verificados:** 3 pasaron, 0 observaciones.
 **Hallazgos principales:**
   - Verificaciones de SEO y workflows de n8n ejecutadas correctamente sin regresiones.
   - Estructura bilingüe y metadatos canónicos validados.

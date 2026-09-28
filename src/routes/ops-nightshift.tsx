@@ -36,7 +36,16 @@ interface ParsedReport {
   spentUsd: string;
   decisions: DecisionItem[];
   socialPosts: Array<{ channel: string; hook: string; time: string }>;
-  prospects: Array<{ name: string; market: string; vertical: string; role: string; friction: string; strategy: string; subject: string }>;
+  prospects: Array<{
+    name: string;
+    market: string;
+    vertical: string;
+    role: string;
+    website?: string;
+    friction: string;
+    strategy: string;
+    subject: string;
+  }>;
   nicheOpportunity?: { concept: string; model: string; nextStep: string };
   demo?: { title: string; branch: string; path: string; purpose: string };
   audit?: { verdict: string; passed: number; observations: number; findings: string[] };
@@ -138,19 +147,19 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
       const name = nameMatch ? nameMatch[1].trim() : "Empresa B2B";
       const roleMatch = line.match(/Target:\*?\s*(.+)$/);
       const role = roleMatch ? roleMatch[1].replace(/^[\*\s]+|[\*\s]+$/g, "") : "Contacto B2B";
-      const vertMatch = line.match(/\[([^\]]+)\]/);
-      const vertical = vertMatch ? vertMatch[1].trim() : "B2B";
-
-      const beforeTarget = line.split("—")[0] || line;
-      const afterName = beforeTarget.replace(/- \*\*[^*]+\*\*\s*/, "").trim();
-      const beforeBrackets = afterName.split("[")[0].trim();
-      const market = beforeBrackets.replace(/^\(|\)$/g, "").trim() || "LatAm";
+      const webMatch = line.match(/\[(?:Sitio Web|Web)\]\((https?:\/\/[^\)]+)\)/i);
+      const website = webMatch ? webMatch[1].trim() : undefined;
+      const marketMatch = line.match(/\(([^)]+)\)/);
+      const market = marketMatch ? marketMatch[1].trim() : "LatAm";
+      const vertMatches = Array.from(line.matchAll(/\[([^\]]+)\](?!\()/g));
+      const vertical = vertMatches.find((m) => !m[1].toLowerCase().includes("web"))?.[1] || "B2B";
 
       currentProspect = {
         name,
         market,
         vertical,
         role,
+        website,
         friction: "",
         strategy: "",
         subject: "",
@@ -246,6 +255,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const savedStates = await loadDecisionsState();
 
   let parsedReport: ParsedReport | null = null;
+  let rawContent = "";
   if (selectedDate) {
     // 1. Try from embedded bundle first
     const embeddedKey = `../../reports/morning-brief-${selectedDate}-puna-tech.md`;
@@ -260,6 +270,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     if (content) {
+      rawContent = content;
       parsedReport = parseMarkdownReport(content, selectedDate, savedStates);
     }
   }
@@ -277,6 +288,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       selectedDate,
       report: parsedReport,
       config: companyConfig,
+      rawMarkdown: rawContent,
     },
     context.headers
   );
@@ -347,7 +359,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function OpsNightshift({ loaderData }: { loaderData: any }) {
-  const { availableDates, selectedDate, report, config } = loaderData;
+  const { availableDates, selectedDate, report, config, rawMarkdown } = loaderData;
   const navigation = useNavigation();
   const isSubmitting = navigation.state !== "idle";
 
@@ -645,22 +657,52 @@ export default function OpsNightshift({ loaderData }: { loaderData: any }) {
               </p>
               <div style={{ display: "grid", gap: "0.8rem" }}>
                 {report.prospects.map((pr: any, idx: number) => (
-                  <div key={idx} style={{ padding: "0.8rem", border: "1px solid var(--line)", background: "#fff" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                      <strong style={{ fontSize: "0.9rem", color: "var(--ink)" }}>{pr.name}</strong>
-                      <span style={{ fontSize: "0.65rem", padding: "0.1rem 0.4rem", background: "var(--paper-deep)", border: "1px solid var(--line)" }}>
+                  <div key={idx} style={{ padding: "0.9rem", border: "1px solid var(--line)", background: "#fff" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "0.4rem" }}>
+                      <strong style={{ fontSize: "0.92rem", color: "var(--ink)" }}>{pr.name}</strong>
+                      <span style={{ fontSize: "0.65rem", padding: "0.1rem 0.4rem", background: "var(--paper-deep)", border: "1px solid var(--line)", fontWeight: 600 }}>
                         {pr.vertical}
                       </span>
                     </div>
-                    <small style={{ color: "var(--ink-soft)", display: "block", marginTop: "0.1rem" }}>
-                      {pr.market} · Target: {pr.role}
-                    </small>
-                    <p style={{ margin: "0.4rem 0 0.2rem", fontSize: "0.78rem", color: "var(--ink)" }}>
-                      <strong>Dolor:</strong> {pr.friction}
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap", marginTop: "0.2rem" }}>
+                      <small style={{ color: "var(--ink-soft)" }}>
+                        {pr.market} · Target: <strong>{pr.role}</strong>
+                      </small>
+                      {pr.website && (
+                        <a
+                          href={pr.website}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.2rem",
+                            fontSize: "0.72rem",
+                            color: "var(--terracotta)",
+                            textDecoration: "underline",
+                            fontWeight: 600,
+                          }}
+                        >
+                          🌐 Visitar sitio web oficial
+                          <ExternalLink size={10} />
+                        </a>
+                      )}
+                    </div>
+
+                    <p style={{ margin: "0.45rem 0 0.2rem", fontSize: "0.78rem", color: "var(--ink)" }}>
+                      <strong>Cuello de botella (Dolor):</strong> {pr.friction}
                     </p>
+
+                    {pr.strategy && (
+                      <p style={{ margin: "0.25rem 0 0.2rem", fontSize: "0.76rem", color: "var(--ink-soft)" }}>
+                        <strong>Estrategia ABM:</strong> {pr.strategy}
+                      </p>
+                    )}
+
                     {pr.subject && (
-                      <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem", color: "var(--terracotta)", fontWeight: 600 }}>
-                        Asunto: "{pr.subject}"
+                      <p style={{ margin: "0.25rem 0 0", fontSize: "0.75rem", color: "var(--terracotta)", fontWeight: 600 }}>
+                        ✉️ Asunto de outreach: "{pr.subject}"
                       </p>
                     )}
                   </div>
@@ -710,6 +752,41 @@ export default function OpsNightshift({ loaderData }: { loaderData: any }) {
               )}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Visor de Reporte y Acciones Detalladas en Markdown */}
+      {rawMarkdown && (
+        <section className="ops-section" style={{ marginTop: "1.5rem" }}>
+          <details
+            style={{
+              padding: "1rem 1.25rem",
+              border: "1px solid var(--ink)",
+              background: "var(--surface)",
+            }}
+          >
+            <summary style={{ cursor: "pointer", fontWeight: 650, fontSize: "0.95rem", color: "var(--ink)" }}>
+              📄 Ver Reporte Completo y Logs Detallados del Turno Nocturno (Markdown)
+            </summary>
+            <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", margin: "0.5rem 0 1rem" }}>
+              Auditoría completa del turno: revisa cada decisión, hook generado, cuenta descubierta y desglose de costos.
+            </p>
+            <pre
+              style={{
+                background: "#18181b",
+                color: "#e4e4e7",
+                padding: "1.2rem",
+                borderRadius: "4px",
+                fontSize: "0.8rem",
+                lineHeight: "1.5",
+                overflowX: "auto",
+                whiteSpace: "pre-wrap",
+                fontFamily: "var(--font-mono, monospace)",
+              }}
+            >
+              {rawMarkdown}
+            </pre>
+          </details>
         </section>
       )}
     </>

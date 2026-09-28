@@ -109,10 +109,11 @@ export class MorningBriefAgent {
         markdownLines.push("**Cuentas detectadas:**");
         for (const pr of scoutResult.prospects) {
           const verticalBadge = pr.vertical ? ` [${pr.vertical}]` : "";
+          const webBadge = pr.website_url ? ` — 🌐 [Sitio Web](${pr.website_url})` : "";
           const friction = pr.manual_friction_detected || pr.pain_point || "Procesos manuales repetitivos";
           const angle = pr.acquisition_strategy?.entry_angle ? `\n    - *Estrategia:* ${pr.acquisition_strategy.entry_angle}` : "";
           const subject = pr.acquisition_strategy?.outreach_message?.subject ? `\n    - *Asunto sugerido:* "${pr.acquisition_strategy.outreach_message.subject}"` : "";
-          markdownLines.push(`- **${pr.company_name}** (${pr.market})${verticalBadge} — *Target:* ${pr.target_role}\n    - *Cuello de botella:* ${friction}${angle}${subject}`);
+          markdownLines.push(`- **${pr.company_name}** (${pr.market})${verticalBadge}${webBadge} — *Target:* ${pr.target_role}\n    - *Cuello de botella:* ${friction}${angle}${subject}`);
         }
         markdownLines.push("");
       }

@@ -92,6 +92,7 @@ interface ParsedProspect {
   market: string;
   vertical: string;
   role: string;
+  website?: string;
   friction: string;
   strategy: string;
   subject: string;
@@ -149,19 +150,19 @@ function parseReportData(markdown: string) {
       const name = nameMatch ? nameMatch[1].trim() : "Empresa B2B";
       const roleMatch = line.match(/Target:\*?\s*(.+)$/);
       const role = roleMatch ? roleMatch[1].replace(/^[\*\s]+|[\*\s]+$/g, "") : "Contacto Clave";
-      const vertMatch = line.match(/\[([^\]]+)\]/);
-      const vertical = vertMatch ? vertMatch[1].trim() : "Operaciones B2B";
-
-      const beforeTarget = line.split("—")[0] || line;
-      const afterName = beforeTarget.replace(/- \*\*[^*]+\*\*\s*/, "").trim();
-      const beforeBrackets = afterName.split("[")[0].trim();
-      const market = beforeBrackets.replace(/^\(|\)$/g, "").trim() || "LatAm";
+      const webMatch = line.match(/\[(?:Sitio Web|Web)\]\((https?:\/\/[^\)]+)\)/i);
+      const website = webMatch ? webMatch[1].trim() : undefined;
+      const marketMatch = line.match(/\(([^)]+)\)/);
+      const market = marketMatch ? marketMatch[1].trim() : "LatAm";
+      const vertMatches = Array.from(line.matchAll(/\[([^\]]+)\](?!\()/g));
+      const vertical = vertMatches.find((m) => !m[1].toLowerCase().includes("web"))?.[1] || "Operaciones B2B";
 
       currentProspect = {
         name,
         market,
         vertical,
         role,
+        website,
         friction: "",
         strategy: "",
         subject: "",
@@ -319,6 +320,16 @@ export async function executeNightshiftDecision(options: {
                   vertical: mapVertical(pr.vertical),
                   country_code: mapCountryCode(pr.market),
                   city: pr.market,
+                  website: pr.website || null,
+                  normalized_domain: pr.website
+                    ? (() => {
+                        try {
+                          return new URL(pr.website).hostname.replace(/^www\./, "");
+                        } catch {
+                          return null;
+                        }
+                      })()
+                    : null,
                   score: 85,
                   status: "new",
                   signals: {
