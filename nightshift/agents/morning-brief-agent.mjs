@@ -197,9 +197,9 @@ export class MorningBriefAgent {
           `📱 *Redes:* ${socialResult?.posts?.length || 0} posts en borrador para Autopost.`,
           `🎯 *Leads:* ${scoutResult?.prospects?.length || 0} cuentas B2B (Logística, Inmobiliarias, White-Label).`,
           `🛠️ *Showcase:* ${demoResult?.demo_title || "N/A"}`,
-          `🔍 *Auditoría:* ${auditResult?.audit_verdict || "OK"}`,
+          `🔍 *Auditoría:* \`${auditResult?.audit_verdict || "OK"}\``,
           "",
-          `📄 _Reporte completo guardado en: reports/morning-brief-${dateStr}-${company.id}.md_`
+          `📄 *Reporte completo:* \`reports/morning-brief-${dateStr}-${company.id}.md\``
         ].join("\n");
 
         const inlineKeyboard = [
@@ -233,7 +233,25 @@ export class MorningBriefAgent {
             },
           }),
         });
-        const tgJson = await tgRes.json();
+        let tgJson = await tgRes.json();
+
+        // Safe fallback if Telegram rejected markdown syntax
+        if (!tgJson.ok && tgJson.description?.includes("can't parse entities")) {
+          console.warn(`[MorningBrief] Telegram parse error (${tgJson.description}). Retrying in safe text mode...`);
+          const fallbackRes = await fetch(tgUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: tgChatId,
+              text: tgMessage.replace(/[_*`]/g, ""),
+              reply_markup: {
+                inline_keyboard: inlineKeyboard,
+              },
+            }),
+          });
+          tgJson = await fallbackRes.json();
+        }
+
         if (tgJson.ok) {
           console.log(`[MorningBrief] ✔ Notificación enviada a Telegram exitosamente (chat: ${tgChatId}).`);
         } else {
@@ -242,6 +260,8 @@ export class MorningBriefAgent {
       } catch (tgErr) {
         console.warn(`[MorningBrief] Telegram notification failed: ${tgErr.message}`);
       }
+    } else {
+      console.warn(`[MorningBrief] ⚠️ No se envió a Telegram: TELEGRAM_BOT_TOKEN o TELEGRAM_CHAT_ID no configurados.`);
     }
 
     return {
