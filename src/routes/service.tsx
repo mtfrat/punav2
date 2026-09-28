@@ -20,7 +20,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const { locale, service } = data;
   const path = servicePath(locale, service.slug);
   const alternatePath = servicePath(locale === "en" ? "es" : "en", service.alternateSlug);
-  const title = `${service.eyebrow} | Puna Tech`;
+  const title = service.key === "custom-software"
+    ? (locale === "en" ? "Custom Software Development | Puna Tech" : "Desarrollo de Software a Medida | Puna Tech")
+    : `${service.eyebrow} | Puna Tech`;
   const description = service.description;
   return createMeta({
     locale, title, description, path, alternatePath,

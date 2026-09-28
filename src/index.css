@@ -168,6 +168,17 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .work-outcomes svg { margin-top: 0.18rem; color: var(--terracotta); }
 .work-piece > .editorial-map { box-shadow: var(--shadow-soft); transform: rotate(0.7deg); }
 .work-piece:nth-child(even) > .editorial-map { transform: rotate(-0.7deg); }
+.more-work { padding-top: 3rem; }
+.more-work h3 { margin-bottom: 1.2rem; font-size: clamp(1.5rem, 2.5vw, 2rem); }
+.more-work-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line); }
+.more-work-links a { display: flex; min-height: 112px; gap: 1rem; align-items: center; justify-content: space-between; padding: 1.25rem 1rem 1.25rem 0; border-bottom: 1px solid var(--line); }
+.more-work-links a:nth-child(odd) { margin-right: 1.5rem; }
+.more-work-links a > span { display: grid; gap: 0.3rem; }
+.more-work-links small { color: var(--terracotta); font-size: 0.67rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0.05em; }
+.more-work-links strong { font-size: 1rem; }
+.more-work-links a > span > span { color: var(--ink-soft); font-size: 0.8rem; line-height: 1.4; }
+.more-work-links svg { flex: 0 0 auto; color: var(--terracotta); transition: transform 180ms ease; }
+.more-work-links a:hover svg { transform: translateX(4px); }
 
 /* Service selector */
 .slowdown-section { background: var(--paper-deep); }
@@ -278,6 +289,8 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .privacy-inline { display: inline-flex; min-height: 44px; align-items: center; margin-top: -0.55rem; color: var(--terracotta); font-size: 0.74rem; font-weight: 720; text-decoration: underline; text-underline-offset: 3px; }
 .button-submit { justify-self: start; }
 .form-error { margin: 0; color: var(--error) !important; font-size: 0.8rem; font-weight: 720; }
+.brief-form [aria-invalid="true"] { border-color: var(--error) !important; }
+.field-error { color: var(--error); font-size: 0.78rem; font-weight: 700; line-height: 1.4; }
 .form-success { display: flex; gap: 1rem; padding: 1rem; border: 1px solid #54936d; background: #eff8f2; color: var(--success); }
 .form-success svg { flex: 0 0 auto; }
 .form-success strong { color: var(--success); }
@@ -464,6 +477,8 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 }
 
 @media (max-width: 767px) {
+  .more-work-links { grid-template-columns: 1fr; }
+  .more-work-links a:nth-child(odd) { margin-right: 0; }
   .shell, .article-shell { width: min(100% - 1.25rem, 1220px); }
   .site-nav { min-height: 68px; }
   .brand-mark { width: 38px; }

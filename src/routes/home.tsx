@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Accordion, CalButton, PageShell, ProjectBrief } from "../components/marketing";
 import {
-  blogPath,
   casePath,
   caseStudies,
   copy,
@@ -35,7 +34,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const alternatePath = locale === "en" ? "/es" : "/";
   return createMeta({
     locale,
-    title: locale === "en" ? "Software Factory | Puna Tech" : "Software Factory | Puna Tech",
+    title: locale === "en" ? "Custom Software & AI Automation | Puna Tech" : "Software a Medida y Automatización con IA | Puna Tech",
     description: locale === "en"
       ? "Bilingual software factory building custom software, AI automation, and systems integrations for complex operational workflows."
       : "Software factory bilingüe que construye software a medida, automatización con IA e integraciones para flujos operativos complejos.",
@@ -113,7 +112,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               <p className="hero-body">{t.heroBody}</p>
               <div className="hero-actions">
                 <CalButton locale={locale} placement="hero_audit" />
-                <a className="button-text" href="#work">{t.seeWork}<ArrowRight aria-hidden="true" size={18} /></a>
+                <a className="button-text" href="#services">{t.seeWork}<ArrowRight aria-hidden="true" size={18} /></a>
               </div>
               <p className="hero-microcopy"><Check aria-hidden="true" size={16} />{t.heroMicrocopy}</p>
             </div>
@@ -124,59 +123,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
         <section className="proof-strip" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>
           <div className="shell proof-grid">
             {t.proof.map((item, index) => <div key={item}><span>0{index + 1}</span><p>{item}</p></div>)}
-          </div>
-        </section>
-
-        <section id="work" className="section work-section">
-          <div className="shell">
-            <header className="section-heading work-heading">
-              <div><p className="eyebrow">{t.casesEyebrow}</p><h2>{t.casesTitle}</h2></div>
-              <p>{t.casesBody}</p>
-            </header>
-            <div className="featured-work">
-              {localizedCases.map((study, index) => (
-                <article className={`work-piece work-piece-${index + 1}`} key={study.slug}>
-                  <div className="work-copy">
-                    <div className="work-number">{String(index + 1).padStart(2, "0")}</div>
-                    <div className="case-meta">
-                      <span>{study.type}</span>
-                      <span>{study.sector}</span>
-                      {study.liveDemoUrl && (
-                        <span className="demo-pill demo-pill-live">
-                          <span className="demo-pill-dot" />
-                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
-                        </span>
-                      )}
-                    </div>
-                    <p className="work-name">{study.displayName}</p>
-                    <h3>{study.title}</h3>
-                    <p>{study.summary}</p>
-                    <ul className="work-outcomes">
-                      {study.impact.slice(0, 2).map((item) => <li key={item}><Check aria-hidden="true" size={16} />{item}</li>)}
-                    </ul>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", alignItems: "center" }}>
-                      <Link className="text-link" to={casePath(locale, study.slug)}>
-                        {locale === "en" ? "Open the case" : "Abrir el caso"}
-                        <ArrowRight aria-hidden="true" size={18} />
-                      </Link>
-                      {study.liveDemoUrl && (
-                        <a
-                          href={study.liveDemoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-link"
-                          style={{ color: "var(--orange)" }}
-                        >
-                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
-                          <ExternalLink aria-hidden="true" size={15} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  <SystemMap study={study} />
-                </article>
-              ))}
-            </div>
           </div>
         </section>
 
@@ -216,6 +162,70 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
+        <section id="work" className="section work-section">
+          <div className="shell">
+            <header className="section-heading work-heading">
+              <div><p className="eyebrow">{t.casesEyebrow}</p><h2>{t.casesTitle}</h2></div>
+              <p>{t.casesBody}</p>
+            </header>
+            <div className="featured-work">
+              {localizedCases.slice(0, 3).map((study, index) => (
+                <article className={`work-piece work-piece-${index + 1}`} key={study.slug}>
+                  <div className="work-copy">
+                    <div className="work-number">{String(index + 1).padStart(2, "0")}</div>
+                    <div className="case-meta">
+                      <span>{study.type}</span>
+                      <span>{study.sector}</span>
+                      {study.liveDemoUrl && (
+                        <span className="demo-pill demo-pill-live">
+                          <span className="demo-pill-dot" />
+                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
+                        </span>
+                      )}
+                    </div>
+                    <p className="work-name">{study.displayName}</p>
+                    <h3>{study.title}</h3>
+                    <p>{study.summary}</p>
+                    <ul className="work-outcomes">
+                      {study.impact.slice(0, 2).map((item) => <li key={item}><Check aria-hidden="true" size={16} />{item}</li>)}
+                    </ul>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", alignItems: "center" }}>
+                      <Link className="text-link" to={casePath(locale, study.slug)} aria-label={locale === "en" ? `Open ${study.displayName} case study` : `Abrir caso de ${study.displayName}`}>
+                        {locale === "en" ? "Open the case" : "Abrir el caso"}
+                        <ArrowRight aria-hidden="true" size={18} />
+                      </Link>
+                      {study.liveDemoUrl && (
+                        <a
+                          href={study.liveDemoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-link"
+                          aria-label={locale === "en" ? `Open ${study.displayName} live demo` : `Abrir demo en vivo de ${study.displayName}`}
+                        >
+                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
+                          <ExternalLink aria-hidden="true" size={15} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <SystemMap study={study} />
+                </article>
+              ))}
+            </div>
+            <div className="more-work">
+              <h3>{locale === "en" ? "More systems we built" : "Más sistemas que construimos"}</h3>
+              <div className="more-work-links">
+                {localizedCases.slice(3).map((study) => (
+                  <Link key={study.slug} to={casePath(locale, study.slug)}>
+                    <span><small>{study.type}</small><strong>{study.displayName}</strong><span>{study.title}</span></span>
+                    <ArrowRight aria-hidden="true" size={18} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="process" className="section audit-section">
           <div className="shell">
             <div className="audit-intro">
@@ -228,25 +238,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             <div className="delivery-ribbon" aria-label={t.processTitle}>
               <p>{t.processTitle}</p>
               <ol>{t.process.map(([title, description], index) => <li key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{title}</strong><small>{description}</small></div></li>)}</ol>
-            </div>
-          </div>
-        </section>
-
-        <section id="insights" className="section insights-section">
-          <div className="shell">
-            <header className="compact-heading"><div><p className="eyebrow">{t.nav.insights}</p><h2>{t.blogTitle}</h2></div><Link className="button-outline" to={blogPath(locale)}>{locale === "en" ? "All field notes" : "Todas las notas"}<ArrowRight aria-hidden="true" /></Link></header>
-            <div className="editorial-links">
-              {(locale === "en" ? [
-                ["Decision guide", "Where AI automation belongs—and where deterministic software is safer."],
-                ["Implementation", "How to define a first workflow without building an unmaintainable prototype."],
-                ["Systems lesson", "What unified data ownership changes in a multi-tool operation."],
-              ] : [
-                ["Guía de decisión", "Dónde conviene automatizar con IA y dónde el software determinístico es más seguro."],
-                ["Implementación", "Cómo definir un primer flujo sin crear un prototipo imposible de mantener."],
-                ["Lección de sistemas", "Qué cambia cuando una operación con múltiples herramientas comparte una capa de datos."],
-              ]).map(([label, title], index) => (
-                <Link to={blogPath(locale)} key={title}><span>0{index + 1}</span><small>{label}</small><h3>{title}</h3><ArrowRight aria-hidden="true" /></Link>
-              ))}
             </div>
           </div>
         </section>
