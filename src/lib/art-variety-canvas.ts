@@ -660,23 +660,50 @@ export function drawArtComposition(
     ctx.fillStyle = C.cream;
     ctx.fillRect(0, 0, 1080, 1350);
 
-    // Masthead: Circle with orange mark + "Puna Tech."
+    // Masthead: Official Puna Tech 3-mountain geometric brand mark + "Puna Tech."
     ctx.save();
-    ctx.fillStyle = C.ink;
+    const markX = 72;
+    const markY = 60;
+    const scale = 32 / 48;
+    ctx.translate(markX, markY);
+    ctx.scale(scale, scale);
+
+    // Left mountain: Orange #FF6B00
+    ctx.fillStyle = "#FF6B00";
     ctx.beginPath();
-    ctx.arc(104, 76, 26, 0, Math.PI * 2);
+    ctx.moveTo(0, 48);
+    ctx.lineTo(23, 12);
+    ctx.lineTo(41, 48);
+    ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle = "#FF6B00";
-    ctx.fillRect(94, 66, 20, 20);
+    // Center mountain: Ink #181410
+    ctx.fillStyle = C.ink;
+    ctx.beginPath();
+    ctx.moveTo(18, 48);
+    ctx.lineTo(48, 0);
+    ctx.lineTo(76, 48);
+    ctx.closePath();
+    ctx.fill();
 
+    // Right mountain: Burgundy #7D2935
+    ctx.fillStyle = "#7D2935";
+    ctx.beginPath();
+    ctx.moveTo(51, 48);
+    ctx.lineTo(64, 25);
+    ctx.lineTo(76, 48);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
     ctx.fillStyle = C.ink;
     ctx.font = `800 28px ${sans}`;
     ctx.textAlign = "left";
-    ctx.fillText("Puna Tech", 146, 86);
+    ctx.fillText("Puna Tech", 136, 85);
 
     ctx.fillStyle = C.orange;
-    ctx.fillText(".", 288, 86);
+    ctx.fillText(".", 278, 85);
     ctx.restore();
 
     const accent = C.orange; // Terracota #BF5226
