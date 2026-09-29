@@ -1,4 +1,4 @@
-export type ArtFamily = "Editorial" | "Anotación" | "Afiche" | "Collage" | "Tech";
+export type ArtFamily = "Editorial" | "Anotación" | "Afiche" | "Collage" | "Tech" | "Cuaderno";
 export type ArtCopy = { headline: string; support: string; closing: string };
 
 export const CURATED_ART_ASSETS = [
@@ -16,6 +16,7 @@ export const ART_COMPOSITIONS = [
   { id: "marker-note", name: "Marcador y anotación", family: "Anotación", photo: true, description: "Fotografía central, palabra clave destacada con marcador a mano y flecha con nota.", headline: "Es momento de construir tu sistema.", support: "Ideas, personas y criterio.", closing: "Hagamos que el trabajo fluya con intención." },
   { id: "bolder-poster", name: "Afiche Bolder", family: "Afiche", photo: true, description: "Alto contraste en fondo tinta, tipografía de impacto, píldora y remate editorial.", headline: "EQUIPOS CREATIVOS PARA PROCESOS SÓLIDOS", support: "Automatización con criterio humano.", closing: "PUNA TECH // 2026" },
   { id: "polaroid-collage", name: "Collage Polaroid", family: "Collage", photo: true, description: "Fotografía en marco polaroid con cinta adhesiva y retícula editorial cuidada.", headline: "Espacio real para las grandes ideas.", support: "Diseñamos procesos que eliminan la fricción cotidiana.", closing: "El método detrás del resultado." },
+  { id: "notebook-carousel", name: "Cuaderno troquelado (Carrusel)", family: "Cuaderno", photo: true, description: "Carrusel editorial: hoja de cuaderno con espiral perforado, stickers vectoriales y pestañas troqueladas.", headline: "Pensamientos de lunes sobre tu negocio", support: "Tratando de ordenar los procesos de una vez", closing: "Lo repetitivo, al sistema." },
 ] as const satisfies readonly ({ id: string; name: string; family: ArtFamily; photo: boolean; description: string } & ArtCopy)[];
 export type ArtComposition = typeof ART_COMPOSITIONS[number];
 export type ArtCompositionId = ArtComposition["id"];

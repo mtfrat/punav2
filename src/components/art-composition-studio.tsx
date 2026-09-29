@@ -39,9 +39,10 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   const [rightsSource, setRightsSource] = useState("");
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [attachError, setAttachError] = useState("");
+  const [slideIndex, setSlideIndex] = useState(0);
   const composition = ART_COMPOSITIONS.find(c => c.id === selected) || ART_COMPOSITIONS[0];
   const copy = drafts[selected] || campaign?.seed || defaults(selected);
-  const renderKey = JSON.stringify([selected, copy, photoSrc]);
+  const renderKey = JSON.stringify([selected, copy, photoSrc, slideIndex]);
   const ready = render.key === renderKey && Boolean(render.url);
   const supportLines = null;
 
@@ -66,7 +67,7 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
         document.fonts.add(jakarta); document.fonts.add(newsreader);
         // Draw off-screen so an error never exposes a half-painted downloadable image.
         const stage = document.createElement("canvas");
-        drawArtComposition(stage, selected, { ...copy, support: supportLines ? copy.support.split("\n").filter(s => s.trim()).join("\n") : copy.support }, photo);
+        drawArtComposition(stage, selected, { ...copy, support: supportLines ? copy.support.split("\n").filter(s => s.trim()).join("\n") : copy.support }, photo, slideIndex);
         canvas.current.width = 1080; canvas.current.height = 1350;
         canvas.current.getContext("2d")!.drawImage(stage, 0, 0);
         stage.toBlob(blob => {
@@ -127,19 +128,37 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   }
   const seen = new Set(history);
   return <div className="art-variety">
-    <div className="art-variety-intro"><h3>La misma marca. Otro punto de vista.</h3><p>5 composiciones editoriales pro · una publicación por vez. Cambia la estructura, no sólo el color.</p></div>
+    <div className="art-variety-intro"><h3>La misma marca. Otro punto de vista.</h3><p>6 composiciones editoriales pro · una publicación por vez. Cambia la estructura, no sólo el color.</p></div>
     <div className="art-study-layout">
       <figure className="art-study-stage">
         <canvas ref={canvas} width={1080} height={1350} role="img" aria-label={`${composition.name}: ${copy.headline}. ${copy.support}. ${copy.closing}`} style={{ visibility: ready ? "visible" : "hidden" }}/>
         {!ready && <div className="art-preview-message" role="status">{render.key === renderKey ? render.message : "Preparando tu publicación…"}</div>}
-        <figcaption>{composition.name}<span>1080 × 1350</span></figcaption>
+        <figcaption>{composition.name}{selected === "notebook-carousel" ? ` · Lámina 0${slideIndex}` : ""}<span>1080 × 1350</span></figcaption>
       </figure>
       <div className="art-variety-controls">
         <label htmlFor={`${uid}-layout`}>Composición</label>
-        <select id={`${uid}-layout`} value={selected} onChange={e => choose(e.target.value as ArtCompositionId)}>{ART_COMPOSITIONS.map(c => <option key={c.id} value={c.id}>{c.name} · {c.family}</option>)}</select>
+        <select id={`${uid}-layout`} value={selected} onChange={e => { choose(e.target.value as ArtCompositionId); setSlideIndex(0); }}>{ART_COMPOSITIONS.map(c => <option key={c.id} value={c.id}>{c.name} · {c.family}</option>)}</select>
         <p>{composition.description}</p>
-        <button type="button" className="ops-button ops-button-secondary" onClick={() => choose(nextArtComposition(selected, [...history, ...explored, selected]))}><Shuffle size={16}/>Proponer otra estructura</button>
-        <p className="art-history" role="status">{seen.size} de 5 moldes descargados en este navegador. La sugerencia recorre el catálogo antes de repetir, considera descargas y exploración de esta sesión y prioriza otra familia. La selección manual sigue libre.</p>
+        {selected === "notebook-carousel" && <div style={{ display: "flex", gap: "6px", margin: "8px 0", flexWrap: "wrap" }}>
+          {[
+            { label: "00 · Portada", idx: 0 },
+            { label: "01 · Duda", idx: 1 },
+            { label: "02 · Criterio", idx: 2 },
+            { label: "03 · Cierre", idx: 3 },
+          ].map(tab => (
+            <button
+              key={tab.idx}
+              type="button"
+              className={`ops-button ${slideIndex === tab.idx ? "" : "ops-button-secondary"}`}
+              style={{ padding: "4px 8px", fontSize: "11px", minHeight: "28px" }}
+              onClick={() => setSlideIndex(tab.idx)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>}
+        <button type="button" className="ops-button ops-button-secondary" onClick={() => { choose(nextArtComposition(selected, [...history, ...explored, selected])); setSlideIndex(0); }}><Shuffle size={16}/>Proponer otra estructura</button>
+        <p className="art-history" role="status">{seen.size} de 6 moldes descargados en este navegador. La sugerencia recorre el catálogo antes de repetir, considera descargas y exploración de esta sesión y prioriza otra familia. La selección manual sigue libre.</p>
         {storageNotice && <p role="status">{storageNotice}</p>}
         <label htmlFor={`${uid}-headline`}>Titular</label><textarea id={`${uid}-headline`} value={copy.headline} maxLength={100} rows={3} onChange={e => edit("headline", e.target.value)}/>
         <label htmlFor={`${uid}-support`}>Apoyo{supportLines ? ` · ${supportLines} líneas` : ""}</label><textarea id={`${uid}-support`} value={copy.support} maxLength={240} rows={4} onChange={e => edit("support", e.target.value)}/>
@@ -166,7 +185,7 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
           {uploadError && <p role="alert">{uploadError}</p>}
           {!CURATED_ART_ASSETS.some(a => a.url === photoSrc) && <button type="button" className="ops-button ops-button-secondary" onClick={() => { setPhotoSrc(selected === "dark-tech" ? "/art-direction/3d-laptop-slate.jpg" : EDITORIAL_PHOTO); setUploadError(""); }}>Volver a la imagen predeterminada</button>}
         </div>}
-        {ready ? <a className="ops-button" href={render.url} download={`puna-${selected}.png`} onClick={recordDownload}><Download size={17}/>Descargar publicación</a> : <button type="button" className="ops-button" disabled>PNG no disponible</button>}
+        {ready ? <a className="ops-button" href={render.url} download={`puna-${selected}${selected === "notebook-carousel" ? `-lamina-0${slideIndex}` : ""}.png`} onClick={recordDownload}><Download size={17}/>Descargar publicación</a> : <button type="button" className="ops-button" disabled>PNG no disponible</button>}
         <p role="status">{render.key === renderKey ? render.message : "Preparando imagen y tipografías…"}</p>
         {campaign && <saver.Form method="post" action={campaign.action}>
           <input type="hidden" name="intent" value="save_editorial_draft"/>

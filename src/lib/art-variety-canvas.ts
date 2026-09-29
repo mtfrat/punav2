@@ -222,7 +222,8 @@ export function drawArtComposition(
   canvas: HTMLCanvasElement,
   id: ArtCompositionId,
   copy: ArtCopy,
-  photo: HTMLImageElement | null
+  photo: HTMLImageElement | null,
+  slideIndex = 0
 ) {
   canvas.width = 1080;
   canvas.height = 1350;
@@ -236,6 +237,421 @@ export function drawArtComposition(
       return;
     }
     throw new Error("Esta composición necesita una fotografía.");
+  }
+
+  // 2. NOTEBOOK-CAROUSEL (Perforated spiral notebook paper, vector handles, pure Brandsheet tokens)
+  if (id === "notebook-carousel") {
+    // Slide 0: Portada
+    if (slideIndex === 0) {
+      ctx.fillStyle = C.orange; // Terracota #BF5226
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      ctx.save();
+      ctx.translate(540, 675);
+      ctx.rotate(-0.038); // ~ -2.2°
+
+      const w = 840;
+      const h = 1140;
+      const hw = w / 2;
+      const hh = h / 2;
+
+      ctx.shadowColor = "rgba(24, 20, 16, 0.28)";
+      ctx.shadowBlur = 42;
+      ctx.shadowOffsetY = 22;
+
+      ctx.fillStyle = "#FAF6EF";
+      ctx.beginPath();
+      ctx.moveTo(-hw, hh);
+      ctx.lineTo(-hw, -hh);
+
+      // Scalloped top perforations
+      const notches = 12;
+      const notchW = w / notches;
+      const r = notchW * 0.36;
+      for (let i = 0; i < notches; i++) {
+        const startX = -w / 2 + i * notchW;
+        const midX = startX + notchW / 2;
+        const endX = startX + notchW;
+        ctx.lineTo(startX + (notchW - r * 2) / 2, -hh);
+        ctx.arc(midX, -hh, r, Math.PI, 0, true);
+        ctx.lineTo(endX, -hh);
+      }
+
+      ctx.lineTo(hw, hh);
+      ctx.lineTo(-hw, hh);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.shadowColor = "transparent";
+
+      // Top pill sticker: @puna.tech
+      const pillW = 200;
+      const pillH = 46;
+      ctx.fillStyle = "#EAE2D5";
+      ctx.beginPath();
+      ctx.roundRect(-pillW / 2, -hh + 105, pillW, pillH, pillH / 2);
+      ctx.fill();
+      ctx.fillStyle = C.ink;
+      ctx.font = `700 19px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("@puna.tech", 0, -hh + 135);
+
+      // Rayos dibujados a mano a la izquierda \ | /
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-hw + 85, -hh + 205);
+      ctx.lineTo(-hw + 65, -hh + 230);
+      ctx.moveTo(-hw + 110, -hh + 190);
+      ctx.lineTo(-hw + 110, -hh + 220);
+      ctx.moveTo(-hw + 135, -hh + 205);
+      ctx.lineTo(-hw + 155, -hh + 230);
+      ctx.stroke();
+
+      // Titular central de portada
+      const titleFit = fitLines(ctx, copy.headline, 720, 3, 94, 68, s => `800 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      ctx.textAlign = "center";
+      const startY = -hh + 340;
+      titleFit.lines.forEach((line, i) => {
+        ctx.font = `800 ${titleFit.size}px ${sans}`;
+        ctx.fillText(line, 0, startY + i * (titleFit.size * 1.18));
+      });
+
+      // Subtítulo entre paréntesis en Newsreader Italic en Borgoña editorial
+      const subText = copy.support.startsWith("(") ? copy.support : `(${copy.support})`;
+      const subFit = fitLines(ctx, subText, 740, 2, 44, 30, s => `italic 500 ${s}px ${serif}`);
+      ctx.fillStyle = C.wine;
+      subFit.lines.forEach((line, i) => {
+        ctx.font = `italic 500 ${subFit.size}px ${serif}`;
+        ctx.fillText(line, 0, -hh + 760 + i * (subFit.size * 1.25));
+      });
+
+      // Flecha swipe -> en Tinta
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(-45, -hh + 870);
+      ctx.lineTo(45, -hh + 870);
+      ctx.moveTo(25, -hh + 850);
+      ctx.lineTo(45, -hh + 870);
+      ctx.lineTo(25, -hh + 890);
+      ctx.stroke();
+
+      ctx.restore();
+
+      // Stickers editoriales alrededor de la hoja (100% Puna Tokens)
+      // 1. Arriba a la derecha: Badge Tinta con acento Naranja
+      ctx.save();
+      ctx.translate(920, 210);
+      ctx.rotate(0.08);
+      ctx.fillStyle = C.ink;
+      ctx.beginPath();
+      ctx.roundRect(-75, -50, 150, 100, [50, 50, 8, 8]);
+      ctx.fill();
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 15px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("PUNA TECH", 0, -10);
+      ctx.fillStyle = "#FF6B00";
+      ctx.font = `700 12px ${sans}`;
+      ctx.fillText("CON CRITERIO", 0, 15);
+      ctx.restore();
+
+      // 2. Derecha medio: Etiqueta con caja vectorial sobria (sin colisionar)
+      ctx.save();
+      ctx.translate(960, 390);
+      ctx.rotate(-0.06);
+      ctx.fillStyle = "#FAF6EF";
+      ctx.fillRect(-75, -24, 150, 48);
+      ctx.strokeStyle = C.wine;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-75, -24, 150, 48);
+      const handles = [[-75, -24], [75, -24], [-75, 24], [75, 24], [0, -24], [0, 24], [-75, 0], [75, 0]];
+      ctx.fillStyle = C.ink;
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 1.5;
+      handles.forEach(([hx, hy]) => {
+        ctx.fillRect(hx - 4.5, hy - 4.5, 9, 9);
+        ctx.strokeRect(hx - 4.5, hy - 4.5, 9, 9);
+      });
+      ctx.fillStyle = C.wine;
+      ctx.font = `800 18px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText(copy.closing || "SISTEMAS", 0, 6);
+      ctx.restore();
+
+      // 3. Abajo izquierda: Sello Borgoña "LO REPETITIVO AL SISTEMA"
+      ctx.save();
+      ctx.translate(130, 990);
+      ctx.rotate(-0.1);
+      ctx.fillStyle = C.wine;
+      ctx.shadowColor = "rgba(24, 20, 16, 0.25)";
+      ctx.shadowBlur = 14;
+      ctx.shadowOffsetY = 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, 68, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 13px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("LO REPETITIVO,", 0, -8);
+      ctx.fillStyle = "#FF6B00";
+      ctx.font = `800 14px ${sans}`;
+      ctx.fillText("AL SISTEMA", 0, 14);
+      ctx.restore();
+
+      // 4. Abajo izquierda pill: "Tiempo propio ↗"
+      ctx.save();
+      ctx.translate(110, 1160);
+      ctx.rotate(0.05);
+      ctx.fillStyle = "#EAE2D5";
+      ctx.shadowColor = "rgba(24, 20, 16, 0.15)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 4;
+      ctx.beginPath();
+      ctx.roundRect(-80, -25, 160, 50, 25);
+      ctx.fill();
+      ctx.fillStyle = C.ink;
+      ctx.font = `italic 600 18px ${serif}`;
+      ctx.textAlign = "center";
+      ctx.fillText("Tiempo propio ↗", 0, 7);
+      ctx.restore();
+      return;
+    }
+
+    // Slide 1: Primera Duda
+    if (slideIndex === 1) {
+      ctx.fillStyle = "#FAF6EF";
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      // Header bar
+      ctx.fillStyle = C.ink;
+      ctx.font = `700 21px ${sans}`;
+      ctx.textAlign = "left";
+      ctx.fillText("DIARIO DE SISTEMAS", 80, 72);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(24, 20, 16, 0.75)";
+      ctx.fillText("@puna.tech", 1000, 72);
+      ctx.textAlign = "left";
+
+      ctx.strokeStyle = "rgba(24, 20, 16, 0.12)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(80, 104);
+      ctx.lineTo(1000, 104);
+      ctx.stroke();
+
+      // Vector badge
+      ctx.save();
+      ctx.translate(540, 280);
+      ctx.rotate(-0.015);
+      ctx.fillStyle = "#EAE2D5";
+      ctx.fillRect(-110, -27, 220, 54);
+      ctx.strokeStyle = C.wine;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-110, -27, 220, 54);
+      const handles1 = [[-110, -27], [110, -27], [-110, 27], [110, 27], [0, -27], [0, 27], [-110, 0], [110, 0]];
+      ctx.fillStyle = C.ink;
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 1.5;
+      handles1.forEach(([hx, hy]) => {
+        ctx.fillRect(hx - 4.5, hy - 4.5, 9, 9);
+        ctx.strokeRect(hx - 4.5, hy - 4.5, 9, 9);
+      });
+      ctx.fillStyle = C.wine;
+      ctx.font = `800 18px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("PRIMERA DUDA", 0, 6);
+      ctx.restore();
+
+      const titleFit = fitLines(ctx, copy.headline, 880, 4, 90, 64, s => `800 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      ctx.textAlign = "center";
+      titleFit.lines.forEach((l, i) => {
+        ctx.font = `800 ${titleFit.size}px ${sans}`;
+        ctx.fillText(l, 540, 520 + i * (titleFit.size * 1.22));
+      });
+
+      // Notebook tab 01
+      ctx.save();
+      ctx.translate(920, 1220);
+      ctx.rotate(-0.06);
+      ctx.shadowColor = "rgba(24, 20, 16, 0.22)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 8;
+      ctx.fillStyle = C.orange;
+      ctx.beginPath();
+      ctx.moveTo(-75, 87.5);
+      ctx.lineTo(-75, -87.5);
+      for (let i = 0; i < 5; i++) {
+        const sx = -75 + i * 30;
+        ctx.lineTo(sx + 9.5, -87.5);
+        ctx.arc(sx + 15, -87.5, 11, Math.PI, 0, true);
+        ctx.lineTo(sx + 30, -87.5);
+      }
+      ctx.lineTo(75, 87.5);
+      ctx.lineTo(-75, 87.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 78px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("01", 0, 36);
+      ctx.restore();
+      return;
+    }
+
+    // Slide 2: Criterio Clave (Pizarra cálida #EDE5D8)
+    if (slideIndex === 2) {
+      ctx.fillStyle = "#EDE5D8";
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      ctx.fillStyle = C.ink;
+      ctx.font = `700 21px ${sans}`;
+      ctx.textAlign = "left";
+      ctx.fillText("CRITERIO DE TRABAJO", 80, 72);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(24, 20, 16, 0.75)";
+      ctx.fillText("@puna.tech", 1000, 72);
+      ctx.textAlign = "left";
+
+      ctx.strokeStyle = "rgba(24, 20, 16, 0.12)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(80, 104);
+      ctx.lineTo(1000, 104);
+      ctx.stroke();
+
+      // Pill badge
+      ctx.save();
+      ctx.translate(540, 280);
+      ctx.fillStyle = C.orange;
+      ctx.beginPath();
+      ctx.roundRect(-120, -28, 240, 56, 28);
+      ctx.fill();
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 18px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("REGLA CLAVE", 0, 6);
+      ctx.restore();
+
+      const titleFit = fitLines(ctx, copy.support, 880, 4, 86, 60, s => `800 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      ctx.textAlign = "center";
+      titleFit.lines.forEach((l, i) => {
+        ctx.font = `800 ${titleFit.size}px ${sans}`;
+        ctx.fillText(l, 540, 500 + i * (titleFit.size * 1.22));
+      });
+
+      // Notebook tab 02 in Borgoña
+      ctx.save();
+      ctx.translate(920, 1220);
+      ctx.rotate(-0.06);
+      ctx.shadowColor = "rgba(24, 20, 16, 0.22)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 8;
+      ctx.fillStyle = C.wine;
+      ctx.beginPath();
+      ctx.moveTo(-75, 87.5);
+      ctx.lineTo(-75, -87.5);
+      for (let i = 0; i < 5; i++) {
+        const sx = -75 + i * 30;
+        ctx.lineTo(sx + 9.5, -87.5);
+        ctx.arc(sx + 15, -87.5, 11, Math.PI, 0, true);
+        ctx.lineTo(sx + 30, -87.5);
+      }
+      ctx.lineTo(75, 87.5);
+      ctx.lineTo(-75, 87.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 78px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("02", 0, 36);
+      ctx.restore();
+      return;
+    }
+
+    // Slide 3: Cierre
+    if (slideIndex === 3) {
+      ctx.fillStyle = "#FAF6EF";
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      ctx.fillStyle = C.ink;
+      ctx.font = `700 21px ${sans}`;
+      ctx.textAlign = "left";
+      ctx.fillText("PUNA TECH // SOLUCIONES", 80, 72);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(24, 20, 16, 0.75)";
+      ctx.fillText("@puna.tech", 1000, 72);
+      ctx.textAlign = "left";
+
+      ctx.strokeStyle = "rgba(24, 20, 16, 0.12)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(80, 104);
+      ctx.lineTo(1000, 104);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(540, 270);
+      ctx.fillStyle = C.wine;
+      ctx.beginPath();
+      ctx.arc(0, 0, 52, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 13px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("OBJETIVO", 0, -4);
+      ctx.fillStyle = "#FF6B00";
+      ctx.fillText("PUNA", 0, 14);
+      ctx.restore();
+
+      const titleFit = fitLines(ctx, copy.headline, 880, 4, 86, 60, s => `800 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      ctx.textAlign = "center";
+      titleFit.lines.forEach((l, i) => {
+        ctx.font = `800 ${titleFit.size}px ${sans}`;
+        ctx.fillText(l, 540, 480 + i * (titleFit.size * 1.22));
+      });
+
+      ctx.font = `italic 500 40px ${serif}`;
+      ctx.fillStyle = C.wine;
+      ctx.fillText(`(${copy.closing})`, 540, 960);
+
+      // Notebook tab 03
+      ctx.save();
+      ctx.translate(920, 1220);
+      ctx.rotate(-0.06);
+      ctx.shadowColor = "rgba(24, 20, 16, 0.22)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 8;
+      ctx.fillStyle = C.orange;
+      ctx.beginPath();
+      ctx.moveTo(-75, 87.5);
+      ctx.lineTo(-75, -87.5);
+      for (let i = 0; i < 5; i++) {
+        const sx = -75 + i * 30;
+        ctx.lineTo(sx + 9.5, -87.5);
+        ctx.arc(sx + 15, -87.5, 11, Math.PI, 0, true);
+        ctx.lineTo(sx + 30, -87.5);
+      }
+      ctx.lineTo(75, 87.5);
+      ctx.lineTo(-75, 87.5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowColor = "transparent";
+      ctx.fillStyle = C.cream;
+      ctx.font = `800 78px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("03", 0, 36);
+      ctx.restore();
+      return;
+    }
   }
 
   // Common photo guard: all 4 pro templates require photo
