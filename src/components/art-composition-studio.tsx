@@ -4,7 +4,7 @@ import type { CampaignArtDraft } from "../lib/art-campaign-drafts";
 import { Download, Shuffle, ExternalLink } from "lucide-react";
 import jakartaUrl from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
 import newsreaderUrl from "@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2";
-import { ART_COMPOSITIONS, nextArtComposition, parseArtHistory, trendResearchUrl, type ArtCompositionId, type ArtCopy } from "../lib/art-compositions";
+import { ART_COMPOSITIONS, CURATED_ART_ASSETS, nextArtComposition, parseArtHistory, trendResearchUrl, type ArtCompositionId, type ArtCopy } from "../lib/art-compositions";
 import { drawArtComposition } from "../lib/art-variety-canvas";
 import { EDITORIAL_PHOTO } from "../lib/art-editorial-canvas";
 import "../art-concept.css";
@@ -20,7 +20,10 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   const pieceSaver = useFetcher<{ error?: string; attached?: string }>();
   const uid = useId();
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [selected, setSelected] = useState<ArtCompositionId>(campaign?.saved[0]?.composition || (campaign ? "manifesto" : "paper-photo"));
+  const [selected, setSelected] = useState<ArtCompositionId>(() => {
+    const savedMatch = campaign?.saved?.find(s => ART_COMPOSITIONS.some(c => c.id === s.composition))?.composition;
+    return savedMatch || "paper-photo";
+  });
   const [drafts, setDrafts] = useState<Partial<Record<ArtCompositionId, ArtCopy>>>(() => Object.fromEntries(campaign?.saved.map(d => [d.composition, d]) || []));
   const [history, setHistory] = useState<ArtCompositionId[]>([]);
   const [explored, setExplored] = useState<ArtCompositionId[]>([]);
@@ -36,11 +39,11 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   const [rightsSource, setRightsSource] = useState("");
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const [attachError, setAttachError] = useState("");
-  const composition = ART_COMPOSITIONS.find(c => c.id === selected)!;
+  const composition = ART_COMPOSITIONS.find(c => c.id === selected) || ART_COMPOSITIONS[0];
   const copy = drafts[selected] || campaign?.seed || defaults(selected);
-  const renderKey = JSON.stringify([selected, copy, composition.photo ? photoSrc : ""]);
+  const renderKey = JSON.stringify([selected, copy, photoSrc]);
   const ready = render.key === renderKey && Boolean(render.url);
-  const supportLines = selected === "contrast" || selected === "myth" ? 2 : selected === "steps" || selected === "checklist" ? 3 : null;
+  const supportLines = null;
 
   useEffect(() => {
     try { setHistory(parseArtHistory(localStorage.getItem(HISTORY_KEY))); }
@@ -56,10 +59,9 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
       try {
         if (!copy.headline.trim() || !copy.support.trim() || !copy.closing.trim()) throw new Error("Completá el titular, el apoyo y el cierre para preparar el PNG.");
         if (copy.headline.length > 100 || copy.support.length > 240 || copy.closing.length > 75) throw new Error("Adaptá el brief a esta pieza: titular hasta 100 caracteres, apoyo hasta 240 y cierre hasta 75.");
-        if (supportLines && copy.support.split("\n").filter(s => s.trim()).length !== supportLines) throw new Error(`Este molde necesita ${supportLines} líneas de apoyo, una por idea.`);
-        const photo = composition.photo ? new Image() : null;
-        if (photo) photo.src = photoSrc;
-        await Promise.all([jakarta.load(), newsreader.load(), photo?.decode()]);
+        const photo = new Image();
+        photo.src = photoSrc;
+        await Promise.all([jakarta.load(), newsreader.load(), photo.decode()]);
         if (cancelled || !canvas.current) return;
         document.fonts.add(jakarta); document.fonts.add(newsreader);
         // Draw off-screen so an error never exposes a half-painted downloadable image.
@@ -82,7 +84,15 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   }, [renderKey, selected, copy.headline, copy.support, copy.closing, composition.photo, photoSrc, supportLines]);
 
   function edit(field: keyof ArtCopy, value: string) { setDrafts(d => ({ ...d, [selected]: { ...(d[selected] || campaign?.seed || defaults(selected)), [field]: value } })); }
-  function choose(id: ArtCompositionId) { setExplored(items => [...items, selected].slice(-120)); setSelected(id); }
+  function choose(id: ArtCompositionId) {
+    setExplored(items => [...items, selected].slice(-120));
+    setSelected(id);
+    if (id === "dark-tech" && photoSrc === EDITORIAL_PHOTO) {
+      setPhotoSrc("/art-direction/3d-laptop-slate.jpg");
+    } else if (id === "paper-photo" && photoSrc === "/art-direction/3d-laptop-slate.jpg") {
+      setPhotoSrc(EDITORIAL_PHOTO);
+    }
+  }
   function recordDownload() {
     const updated = [...history, selected].slice(-120);
     setHistory(updated);
@@ -117,7 +127,7 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   }
   const seen = new Set(history);
   return <div className="art-variety">
-    <div className="art-variety-intro"><h3>La misma marca. Otro punto de vista.</h3><p>12 composiciones · 6 familias · una publicación por vez. Cambia la estructura, no sólo el color.</p></div>
+    <div className="art-variety-intro"><h3>La misma marca. Otro punto de vista.</h3><p>5 composiciones editoriales pro · una publicación por vez. Cambia la estructura, no sólo el color.</p></div>
     <div className="art-study-layout">
       <figure className="art-study-stage">
         <canvas ref={canvas} width={1080} height={1350} role="img" aria-label={`${composition.name}: ${copy.headline}. ${copy.support}. ${copy.closing}`} style={{ visibility: ready ? "visible" : "hidden" }}/>
@@ -129,17 +139,33 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
         <select id={`${uid}-layout`} value={selected} onChange={e => choose(e.target.value as ArtCompositionId)}>{ART_COMPOSITIONS.map(c => <option key={c.id} value={c.id}>{c.name} · {c.family}</option>)}</select>
         <p>{composition.description}</p>
         <button type="button" className="ops-button ops-button-secondary" onClick={() => choose(nextArtComposition(selected, [...history, ...explored, selected]))}><Shuffle size={16}/>Proponer otra estructura</button>
-        <p className="art-history" role="status">{seen.size} de 12 moldes descargados en este navegador. La sugerencia recorre el catálogo antes de repetir, considera descargas y exploración de esta sesión y prioriza otra familia. La selección manual sigue libre.</p>
+        <p className="art-history" role="status">{seen.size} de 5 moldes descargados en este navegador. La sugerencia recorre el catálogo antes de repetir, considera descargas y exploración de esta sesión y prioriza otra familia. La selección manual sigue libre.</p>
         {storageNotice && <p role="status">{storageNotice}</p>}
         <label htmlFor={`${uid}-headline`}>Titular</label><textarea id={`${uid}-headline`} value={copy.headline} maxLength={100} rows={3} onChange={e => edit("headline", e.target.value)}/>
         <label htmlFor={`${uid}-support`}>Apoyo{supportLines ? ` · ${supportLines} líneas` : ""}</label><textarea id={`${uid}-support`} value={copy.support} maxLength={240} rows={4} onChange={e => edit("support", e.target.value)}/>
         <label htmlFor={`${uid}-closing`}>Cierre</label><input id={`${uid}-closing`} value={copy.closing} maxLength={75} onChange={e => edit("closing", e.target.value)}/>
-        {composition.photo && <div className="art-photo-input"><label htmlFor={`${uid}-photo`}>Tu fotografía · JPG, PNG o WebP, hasta 12 MB</label><input id={`${uid}-photo`} type="file" accept="image/jpeg,image/png,image/webp" onChange={e => {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 12 * 1024 * 1024) { setUploadError("Elegí un JPG, PNG o WebP de hasta 12 MB."); return; }
-          setUploadError(""); setPhotoSrc(URL.createObjectURL(file));
-        }}/><p>Usá material propio o autorizado. {campaign ? "La foto queda en este navegador hasta que guardes el PNG final como pieza revisable." : "La foto queda en este navegador; no se sube ni guarda en una campaña."}</p>{uploadError && <p role="alert">{uploadError}</p>}{photoSrc !== EDITORIAL_PHOTO && <button type="button" className="ops-button ops-button-secondary" onClick={() => { setPhotoSrc(EDITORIAL_PHOTO); setUploadError(""); }}>Volver a la foto de ejemplo</button>}</div>}
+        {composition.photo && <div className="art-photo-input">
+          <label htmlFor={`${uid}-curated`}>Imagen o render 3D · Colección Puna Tech</label>
+          <select id={`${uid}-curated`} value={CURATED_ART_ASSETS.some(a => a.url === photoSrc) ? photoSrc : "custom"} onChange={e => {
+            if (e.target.value !== "custom") {
+              setPhotoSrc(e.target.value);
+              setUploadError("");
+            }
+          }}>
+            {CURATED_ART_ASSETS.map(asset => <option key={asset.id} value={asset.url}>{asset.name}</option>)}
+            {!CURATED_ART_ASSETS.some(a => a.url === photoSrc) && <option value="custom">Imagen personalizada cargada</option>}
+          </select>
+          <label htmlFor={`${uid}-photo`}>O subí tu propio render / foto · JPG, PNG o WebP, hasta 12 MB</label>
+          <input id={`${uid}-photo`} type="file" accept="image/jpeg,image/png,image/webp" onChange={e => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 12 * 1024 * 1024) { setUploadError("Elegí un JPG, PNG o WebP de hasta 12 MB."); return; }
+            setUploadError(""); setPhotoSrc(URL.createObjectURL(file));
+          }}/>
+          <p>Usá material propio o autorizado. {campaign ? "La foto queda en este navegador hasta que guardes el PNG final como pieza revisable." : "La foto queda en este navegador; no se sube ni guarda en una campaña."}</p>
+          {uploadError && <p role="alert">{uploadError}</p>}
+          {!CURATED_ART_ASSETS.some(a => a.url === photoSrc) && <button type="button" className="ops-button ops-button-secondary" onClick={() => { setPhotoSrc(selected === "dark-tech" ? "/art-direction/3d-laptop-slate.jpg" : EDITORIAL_PHOTO); setUploadError(""); }}>Volver a la imagen predeterminada</button>}
+        </div>}
         {ready ? <a className="ops-button" href={render.url} download={`puna-${selected}.png`} onClick={recordDownload}><Download size={17}/>Descargar publicación</a> : <button type="button" className="ops-button" disabled>PNG no disponible</button>}
         <p role="status">{render.key === renderKey ? render.message : "Preparando imagen y tipografías…"}</p>
         {campaign && <saver.Form method="post" action={campaign.action}>

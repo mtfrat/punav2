@@ -91,7 +91,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function ArtConcept({ loaderData }: { loaderData: any }) {
   return <div className="art-study">
     <Link className="ops-back" to={`/ops/art/${loaderData.campaignId}#pieces`}><ArrowLeft size={16}/>Volver a la campaña</Link>
-    <header className="art-study-heading"><div><h1>{loaderData.title}</h1><p>Tu brief, tus mensajes y doce maneras de diseñarlos.</p></div><span className="art-study-draft">Borradores · sin publicar</span></header>
+    <header className="art-study-heading"><div><h1>{loaderData.title}</h1><p>Tu brief, tus mensajes y cuatro composiciones editoriales pro para diseñarlos.</p></div><span className="art-study-draft">Borradores · sin publicar</span></header>
     <details><summary>Ver el brief de esta campaña</summary><p><strong>Audiencia:</strong> {loaderData.audience}</p><p><strong>Objetivo:</strong> {loaderData.objective}</p><p><strong>Mensaje:</strong> {loaderData.seed.headline}</p><p><strong>Restricciones:</strong> {loaderData.restrictions || "No indicadas"}</p></details>
     <p>El editor parte de tu brief, sin inventar mensajes. Acortá los textos para la pieza y ajustá las líneas según el molde. Cada composición conserva su borrador guardado; no es generación automática con IA.</p>
     <div key={loaderData.campaignId}><ArtCompositionStudio campaign={{ action: `/ops/art/${loaderData.campaignId}/concept`, detailUrl: `/ops/art/${loaderData.campaignId}#pieces`, version: loaderData.campaignVersion, revision: loaderData.revision, saved: loaderData.saved, seed: loaderData.seed }}/></div>

@@ -22,22 +22,21 @@ Catálogo descargable, no integración automática con el compositor remoto. His
 
 ## Referencia de implementación
 
-El catálogo de `src/lib/art-compositions.ts` contiene doce composiciones, dos por familia:
+El catálogo de `src/lib/art-compositions.ts` contiene cinco composiciones pro de alto impacto y una colección de assets 3D curados:
 
-| Familia | Composiciones |
-| --- | --- |
-| Fotografía | Fotografía + nota; Escena + epígrafe |
-| Tipografía | Manifiesto; Afiche de palabras |
-| Editorial | Carta abierta; Margen editorial |
-| Comparativa | Dos maneras; Idea / mirada |
-| Método | Ruta de trabajo; Lista de criterio |
-| Conversación | Una buena pregunta; Invitación |
+| Familia | Composición | Descripción visual |
+| --- | --- | --- |
+| Editorial | Papel rasgado + nota | Franja terracota rasgada, fotografía cálida, acento cursivo con sombra suave y nota con cinta |
+| Tech | Tech B2B / Dark Glow | Estilo Nexora/Agyweb: fondo obsidiana profundo, titular con acento neon orange, render 3D central y botón pill |
+| Anotación | Marcador y anotación | Fotografía central, óvalo de marcador orgánico a mano alzada en palabra clave, flecha manuscrita y nota |
+| Afiche | Afiche Bolder | Fondo tinta de alto contraste, tipografía condensada de impacto, píldora terracota, estrella y foto integrada |
+| Collage | Collage Polaroid | Marco polaroid inclinado con sombra proyectada, cinta adhesiva washi translúcida y retícula editorial |
 
-`src/lib/art-variety-canvas.ts` implementa las estructuras y delega Fotografía + nota al estudio original de `src/lib/art-editorial-canvas.ts`. Los lienzos reproducen los valores de la brandsheet (`src/brandsheet.css`): crema `#F7EFE2`, terracota `#BF5226`, borgoña `#702B38` y tinta `#181410`. Plus Jakarta Sans y Newsreader cursiva conservan sus roles; el componente carga las fuentes locales con los alias de canvas Art Jakarta y Art Newsreader. Son valores heredados, no un nuevo sistema de tokens. `src/art-concept.css` mantiene el arte separado de los controles y apila el estudio en una columna hasta 1100 px.
+`src/lib/art-variety-canvas.ts` implementa las estructuras y delega Papel rasgado + nota al estudio original de `src/lib/art-editorial-canvas.ts`. Los lienzos reproducen los valores de la brandsheet (`src/brandsheet.css`): crema `#F7EFE2`, terracota `#BF5226`, borgoña `#702B38` y tinta `#181410`, más acentos neon orange `#FF6B00` para piezas tech de alto contraste. Plus Jakarta Sans y Newsreader cursiva conservan sus roles. Todas las composiciones integran fotografía y cuentan con un selector rápido de imágenes y renders 3D (laptop en roca, ajedrez de estrategia, robot asistente de IA y fotografía de mesa de trabajo).
 
-`src/components/art-composition-studio.tsx` conserva hasta 120 identificadores de descargas en `localStorage`, bajo `puna:art:download-history:v1`. El registro se actualiza al activar el enlace de descarga; no confirma que el archivo se haya guardado ni que se haya publicado. La sugerencia combina ese registro con la exploración en memoria, recorre las estructuras del ciclo y prioriza otra familia; la selección manual permanece libre. Si el almacenamiento falla, el historial sigue disponible sólo mientras la página permanece abierta.
+`src/components/art-composition-studio.tsx` conserva hasta 120 identificadores de descargas en `localStorage`, bajo `puna:art:download-history:v1`. El registro se actualiza al activar el enlace de descarga; no confirma que el archivo se haya guardado ni que se haya publicado. La sugerencia combina ese registro con la exploración en memoria, recorre las 5 estructuras del ciclo y prioriza otra familia; la selección manual permanece libre. Si el almacenamiento falla, el historial sigue disponible sólo mientras la página permanece abierta.
 
-Las ediciones se mantienen por composición mientras el componente está montado. La fotografía elegida se comparte entre los tres moldes fotográficos; acepta JPG, PNG o WebP de hasta 12 MB mediante una URL local temporal. Los textos, la exploración y la fotografía cargada no se guardan entre recargas ni se envían al servidor. El PNG se prepara a 1080 × 1350 px y sólo se ofrece cuando el texto, las fuentes y la imagen permiten completar el render; descargarlo no crea ni modifica campañas.
+Las ediciones se mantienen por composición mientras el componente está montado. La fotografía elegida se comparte entre los moldes; acepta JPG, PNG o WebP de hasta 12 MB mediante una URL local temporal o selección directa de los renders 3D de Puna. Los textos, la exploración y la fotografía cargada no se guardan entre recargas ni se envían al servidor. El PNG se prepara a 1080 × 1350 px y sólo se ofrece cuando el texto, las fuentes y la imagen permiten completar el render; descargarlo no crea ni modifica campañas.
 
 La investigación abre enlaces externos: Google Trends compara el tema en los últimos siete días y ofrece búsquedas en auge para el mercado elegido; TikTok Creative Center abre su página de palabras de anuncios sin aplicar esos filtros. Argentina es el valor inicial, con Uruguay, Chile, México y España disponibles. No hay ingesta automática, ranking calculado por el estudio ni almacenamiento de evidencia de tendencias.
 
