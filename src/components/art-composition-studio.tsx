@@ -139,7 +139,7 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
           if (!file) return;
           if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 12 * 1024 * 1024) { setUploadError("Elegí un JPG, PNG o WebP de hasta 12 MB."); return; }
           setUploadError(""); setPhotoSrc(URL.createObjectURL(file));
-        }}/><p>Usá material propio o autorizado. La foto queda en este navegador hasta que guardes el PNG final como pieza revisable.</p>{uploadError && <p role="alert">{uploadError}</p>}{photoSrc !== EDITORIAL_PHOTO && <button type="button" className="ops-button ops-button-secondary" onClick={() => { setPhotoSrc(EDITORIAL_PHOTO); setUploadError(""); }}>Volver a la foto de ejemplo</button>}</div>}
+        }}/><p>Usá material propio o autorizado. {campaign ? "La foto queda en este navegador hasta que guardes el PNG final como pieza revisable." : "La foto queda en este navegador; no se sube ni guarda en una campaña."}</p>{uploadError && <p role="alert">{uploadError}</p>}{photoSrc !== EDITORIAL_PHOTO && <button type="button" className="ops-button ops-button-secondary" onClick={() => { setPhotoSrc(EDITORIAL_PHOTO); setUploadError(""); }}>Volver a la foto de ejemplo</button>}</div>}
         {ready ? <a className="ops-button" href={render.url} download={`puna-${selected}.png`} onClick={recordDownload}><Download size={17}/>Descargar publicación</a> : <button type="button" className="ops-button" disabled>PNG no disponible</button>}
         <p role="status">{render.key === renderKey ? render.message : "Preparando imagen y tipografías…"}</p>
         {campaign && <saver.Form method="post" action={campaign.action}>

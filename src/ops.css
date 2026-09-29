@@ -623,6 +623,14 @@
 .ops-art-piece[data-format="linkedin_horizontal"] .ops-art-piece-preview { aspect-ratio:1200/627; }
 .ops-art-piece[data-format="x_horizontal"] .ops-art-piece-preview { aspect-ratio:16/9; }
 .ops-art-piece-preview img { width:100%; height:100%; object-fit:contain; }
+.ops-art-editorial-meta { grid-column:2; grid-row:2; display:flex; flex-direction:column; gap:1.1rem; padding:clamp(1.25rem,3vw,2.5rem); min-width:0; }
+.ops-art-editorial-meta small, .ops-art-editorial-meta > div > span { color:var(--terracotta); font-family:var(--font-mono); font-size:.65rem; font-weight:700; letter-spacing:.1em; }
+.ops-art-editorial-meta h4 { margin:0; font-family:var(--font-editorial); font-size:clamp(2rem,3vw,3rem); font-weight:520; line-height:1; }
+.ops-art-editorial-meta p { margin:0; line-height:1.55; }
+.ops-art-editorial-meta > div { padding-top:1rem; border-top:1px solid var(--line); }
+.ops-art-editorial-meta > div p { margin-top:.5rem; }
+.ops-art-editorial-meta .ops-art-editorial-note { color:#786a5e; font-size:.8rem; }
+.ops-art-editorial-meta .ops-button { align-self:start; margin-top:auto; }
 .ops-art-piece-preview > div { display:grid; justify-items:center; gap:.6rem; color:#796a5e; font-size:.7rem; }
 .ops-art-carousel-strip { display:grid; grid-column:1; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.5rem; padding:.75rem; border-right:1px solid var(--line); }
 .ops-art-carousel-strip figure { position:relative; min-width:0; margin:0; overflow:hidden; border:1px solid var(--line); background:var(--paper-deep); }
@@ -662,7 +670,7 @@
   .ops-art-section-heading .ops-button { width:100%; }
   .ops-art-piece, .ops-art-grid-review > div, .ops-art-metrics { grid-template-columns:1fr; }
   .ops-art-piece-preview { grid-column:1; grid-row:auto; border-right:0; }
-  .ops-art-piece > .ops-form, .ops-art-render-form, .ops-art-carousel-strip { grid-column:1; grid-row:auto; }
+  .ops-art-piece > .ops-form, .ops-art-render-form, .ops-art-carousel-strip, .ops-art-editorial-meta { grid-column:1; grid-row:auto; }
   .ops-art-carousel-strip { border-right:0; border-bottom:1px solid var(--line); }
   .ops-art-handoff { grid-template-columns:1fr; }
   .ops-art-handoff .ops-button { width:100%; }
