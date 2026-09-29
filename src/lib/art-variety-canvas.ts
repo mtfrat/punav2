@@ -729,13 +729,15 @@ export function drawArtComposition(
       // Badge [ PERO VOS SÍ ]
       drawBadge(680, 480, copy.closing || "PERO VOS SÍ");
 
-      // Cutout photo at bottom
+      // Cutout photo at bottom (full sticker with die-cut border & shadow)
       if (photo) {
         ctx.save();
         const sw = photo.naturalWidth;
-        const sh = photo.naturalHeight * 0.56;
-        const sy = photo.naturalHeight * 0.44;
-        ctx.drawImage(photo, 0, sy, sw, sh, 0, 600, 1080, 750);
+        const sh = photo.naturalHeight;
+        const targetW = 1080;
+        const targetH = Math.round(sh * (targetW / sw));
+        const targetY = 1350 - targetH;
+        ctx.drawImage(photo, 0, 0, sw, sh, 0, targetY, targetW, targetH);
         ctx.restore();
       }
 
@@ -779,9 +781,11 @@ export function drawArtComposition(
       if (photo) {
         ctx.save();
         const sw = photo.naturalWidth;
-        const sh = photo.naturalHeight * 0.45;
-        const sy = photo.naturalHeight * 0.55;
-        ctx.drawImage(photo, 0, sy, sw, sh, 0, 750, 1080, 600);
+        const sh = photo.naturalHeight;
+        const targetW = 1080;
+        const targetH = Math.round(sh * (targetW / sw));
+        const targetY = 1350 - targetH;
+        ctx.drawImage(photo, 0, 0, sw, sh, 0, targetY, targetW, targetH);
         ctx.restore();
       }
 
@@ -829,9 +833,11 @@ export function drawArtComposition(
       if (photo) {
         ctx.save();
         const sw = photo.naturalWidth;
-        const sh = photo.naturalHeight * 0.54;
-        const sy = photo.naturalHeight * 0.46;
-        ctx.drawImage(photo, 0, sy, sw, sh, 0, 620, 1080, 730);
+        const sh = photo.naturalHeight;
+        const targetW = 1080;
+        const targetH = Math.round(sh * (targetW / sw));
+        const targetY = 1350 - targetH;
+        ctx.drawImage(photo, 0, 0, sw, sh, 0, targetY, targetW, targetH);
         ctx.restore();
       }
 
@@ -859,9 +865,11 @@ export function drawArtComposition(
       if (photo) {
         ctx.save();
         const sw = photo.naturalWidth;
-        const sh = photo.naturalHeight * 0.50;
-        const sy = photo.naturalHeight * 0.50;
-        ctx.drawImage(photo, 0, sy, sw, sh, 0, 680, 1080, 670);
+        const sh = photo.naturalHeight;
+        const targetW = 1080;
+        const targetH = Math.round(sh * (targetW / sw));
+        const targetY = 1350 - targetH;
+        ctx.drawImage(photo, 0, 0, sw, sh, 0, targetY, targetW, targetH);
         ctx.restore();
       }
       return;
@@ -892,9 +900,11 @@ export function drawArtComposition(
       if (photo) {
         ctx.save();
         const sw = photo.naturalWidth;
-        const sh = photo.naturalHeight * 0.50;
-        const sy = photo.naturalHeight * 0.50;
-        ctx.drawImage(photo, 0, sy, sw, sh, 0, 670, 1080, 680);
+        const sh = photo.naturalHeight;
+        const targetW = 1080;
+        const targetH = Math.round(sh * (targetW / sw));
+        const targetY = 1350 - targetH;
+        ctx.drawImage(photo, 0, 0, sw, sh, 0, targetY, targetW, targetH);
         ctx.restore();
       }
       return;
