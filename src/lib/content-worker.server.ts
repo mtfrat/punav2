@@ -132,6 +132,10 @@ export function contentQualityEnabled() {
   return contentStudioEnabled() && process.env.CONTENT_QUALITY_ENABLED?.trim().toLowerCase() === "true";
 }
 
+export function artStudioEnabled() {
+  return contentComposerEnabled() && process.env.ART_STUDIO_ENABLED?.trim().toLowerCase() === "true";
+}
+
 export function contentVisualStudioEnabled() {
   return contentComposerEnabled() && process.env.CONTENT_VISUAL_STUDIO_ENABLED?.trim().toLowerCase() === "true";
 }

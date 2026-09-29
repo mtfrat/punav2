@@ -13,6 +13,7 @@
     "test:safety": "node --experimental-strip-types scripts/verify-content-safety.mjs",
     "test:content-worker": "node --experimental-strip-types scripts/test-content-worker-client.mjs",
     "test:social-studio": "node --experimental-strip-types scripts/test-social-studio.mjs",
+    "test:art-variety": "node --experimental-strip-types scripts/test-art-variety.mjs",
     "test:worker-bundle": "node scripts/verify-content-worker-bundle.mjs",
     "verify:content-worker": "node --env-file=.env.local --experimental-strip-types scripts/verify-content-worker.mjs",
     "verify:social-studio": "node --env-file=.env.local --experimental-strip-types scripts/verify-social-studio.mjs",
@@ -21,7 +22,7 @@
     "nightshift": "node nightshift/runner.mjs",
     "nightshift:dry-run": "node nightshift/runner.mjs --dry-run",
     "test:nightshift": "node nightshift/tests/test-nightshift.mjs",
-    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run build && npm run test:worker-bundle && npm run test:seo"
+    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run test:art-variety && npm run build && npm run test:worker-bundle && npm run test:seo"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

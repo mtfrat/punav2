@@ -410,6 +410,9 @@ export async function action({ request }: ActionFunctionArgs) {
       ];
     } else if (sourceType === "manual") {
       sources = manualSources(stringField(form, "manual_sources", 20_000));
+      if (!sources.length && campaign?.generation_context?.art_studio) {
+        sources = Array.isArray(campaign.generation_context.sources) ? campaign.generation_context.sources : [];
+      }
       sourceId =
         campaign?.source_type === "manual"
           ? campaign.source_id
@@ -472,6 +475,7 @@ export async function action({ request }: ActionFunctionArgs) {
       ),
       locale_strategy: { locales, channels },
       generation_context: {
+        ...(campaign?.generation_context || {}),
         sources,
         tone_notes: stringField(form, "tone_notes", 500),
         operator_perspective: operatorPerspective,
@@ -1316,6 +1320,7 @@ export default function OpsSocialNew({
           <TextAreaField
             label="Fuentes manuales"
             name="manual_sources"
+            value={Array.isArray(campaign?.generation_context?.sources) ? campaign.generation_context.sources.map((source: EvidenceSource) => `${source.title || "Fuente"} | ${source.url || ""} | ${source.excerpt || ""}`).join("\n") : ""}
             rows={4}
             hint="Una por línea: Título | https://fuente.com | extracto exacto que respalda el dato"
           />

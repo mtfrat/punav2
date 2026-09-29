@@ -8,6 +8,31 @@ import { audit, assertTrustedMutation, compactSnapshot, operationsHeaders, opsDa
 import { contentComposerEnabled, contentVisualStudioEnabled } from "../lib/content-worker.server";
 
 const categories = ["general", "systems", "automation", "software", "data", "people", "workspace"];
+const rightsStatuses = {
+  unverified: "Sin verificar",
+  owned: "Propio",
+  licensed: "Licenciado",
+  permission: "Permiso explícito",
+  expired: "Vencido",
+} as const;
+
+function assetRights(form: FormData) {
+  const rightsStatus = stringField(form, "rights_status", 30) as keyof typeof rightsStatuses;
+  const sourceUrl = stringField(form, "source_url", 1000) || null;
+  if (!rightsStatuses[rightsStatus]) return null;
+  if (sourceUrl) {
+    try { if (new URL(sourceUrl).protocol !== "https:") return null; }
+    catch { return null; }
+  }
+  return { rights_status: rightsStatus, source_url: sourceUrl, rights_notes: stringField(form, "rights_notes", 1000) || null,
+    rights_expires_at: stringField(form, "rights_expires_at", 10) || null, people_consent: form.get("people_consent") === "yes" };
+}
+
+function mayActivateAsset(asset: Record<string, any>) {
+  return ["owned", "licensed", "permission"].includes(asset.rights_status)
+    && (asset.category !== "people" || asset.people_consent)
+    && (!asset.rights_expires_at || asset.rights_expires_at >= new Date().toISOString().slice(0, 10));
+}
 const formats = {
   instagram_portrait: { label: "Instagram 4:5", width: 1080, height: 1350, channels: ["instagram"] },
   linkedin_square: { label: "LinkedIn cuadrado", width: 1080, height: 1080, channels: ["linkedin"] },
@@ -58,6 +83,8 @@ export async function action({ request }: ActionFunctionArgs) {
     const category = stringField(form, "category", 40);
     const width = Number(form.get("width"));
     const height = Number(form.get("height"));
+    const rights = assetRights(form);
+    if (!rights) return opsData({ error: "Revisá los derechos y la URL HTTPS de la imagen." }, context.headers, 422);
     if (!(file instanceof File) || !title || !altText || !categories.includes(category)) return opsData({ error: "Completá imagen, título, categoría y texto alternativo." }, context.headers, 422);
     if (file.size < 1 || file.size > 3_670_016 || !Number.isInteger(width) || !Number.isInteger(height) || width < 320 || height < 320 || width > 8000 || height > 8000) return opsData({ error: "La imagen normalizada debe pesar hasta 3,5 MB y medir entre 320 y 8000 px." }, context.headers, 422);
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -68,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const path = `uploads/${id}.${extension}`;
     const upload = await context.service.storage.from("brand-assets").upload(path, bytes, { contentType: mime, upsert: false });
     if (upload.error) return opsData({ error: "No se pudo guardar la imagen." }, context.headers, 400);
-    const result = await context.service.from("brand_media_assets").insert({ id, title, alt_text: altText, category, storage_path: path, mime_type: mime, width, height, source: "upload", is_active: false, created_by: context.userId }).select("*").single();
+    const result = await context.service.from("brand_media_assets").insert({ id, title, alt_text: altText, category, storage_path: path, mime_type: mime, width, height, source: "upload", is_active: false, ...rights, created_by: context.userId }).select("*").single();
     if (result.error) { await context.service.storage.from("brand-assets").remove([path]); return opsData({ error: "No se pudo catalogar la imagen." }, context.headers, 400); }
     await audit(context, { action: "create", entityType: "brand_media_asset", entityId: id, after: compactSnapshot(result.data) });
     throw redirect("/ops/brand?saved=asset-created", { headers: operationsHeaders(context.headers) });
@@ -120,12 +147,15 @@ export async function action({ request }: ActionFunctionArgs) {
   if (!before.data) return opsData({ error: "Imagen no encontrada." }, context.headers, 404);
   if (intent === "save_asset") {
     const title = stringField(form, "title", 160); const altText = stringField(form, "alt_text", 500); const category = stringField(form, "category", 40); const focalX = Number(form.get("focal_x")); const focalY = Number(form.get("focal_y"));
+    const rights = assetRights(form);
     if (!title || !altText || !categories.includes(category)) return opsData({ error: "Completá título, categoría y texto alternativo." }, context.headers, 422);
+    if (!rights) return opsData({ error: "Revisá los derechos y la URL HTTPS de la imagen." }, context.headers, 422);
     if (visualEnabled && (!Number.isFinite(focalX) || !Number.isFinite(focalY) || focalX < 0 || focalX > 1 || focalY < 0 || focalY > 1)) return opsData({ error: "El punto focal no es válido." }, context.headers, 422);
-    const result = await context.service.from("brand_media_assets").update({ title, alt_text: altText, category, ...(visualEnabled ? { focal_x: focalX, focal_y: focalY } : {}) }).eq("id", id).select("*").single();
+    const result = await context.service.from("brand_media_assets").update({ title, alt_text: altText, category, ...rights, ...(visualEnabled ? { focal_x: focalX, focal_y: focalY } : {}) }).eq("id", id).select("*").single();
     if (result.error) return opsData({ error: "No se pudo guardar la imagen." }, context.headers, 400);
     await audit(context, { action: "save", entityType: "brand_media_asset", entityId: id, before: compactSnapshot(before.data), after: compactSnapshot(result.data) });
   } else if (intent === "toggle_asset") {
+    if (!before.data.is_active && !mayActivateAsset(before.data)) return opsData({ error: "Confirmá derechos vigentes y consentimiento antes de activar la imagen." }, context.headers, 422);
     const result = await context.service.from("brand_media_assets").update({ is_active: !before.data.is_active }).eq("id", id).select("*").single();
     if (result.error) return opsData({ error: "No se pudo cambiar la disponibilidad." }, context.headers, 400);
     await audit(context, { action: result.data.is_active ? "activate" : "deactivate", entityType: "brand_media_asset", entityId: id, before: compactSnapshot(before.data), after: compactSnapshot(result.data) });
@@ -150,19 +180,29 @@ function NormalizedImageInput() {
   }}/><small>{message}</small></>;
 }
 
+function RightsFields({ asset }: { asset?: Record<string, any> }) {
+  return <>
+    <Field label="Derechos" name="rights_status" required><select name="rights_status" defaultValue={asset?.rights_status || "unverified"}>{Object.entries(rightsStatuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></Field>
+    <Field label="Fuente" name="source_url" type="url" value={asset?.source_url} hint="URL HTTPS de origen o permiso"/>
+    <TextAreaField label="Notas de permiso" name="rights_notes" value={asset?.rights_notes} rows={2}/>
+    <Field label="Vencimiento" name="rights_expires_at" type="date" value={asset?.rights_expires_at}/>
+    <label className="ops-check"><input type="checkbox" name="people_consent" value="yes" defaultChecked={asset?.people_consent}/><span>Hay consentimiento para las personas identificables.</span></label>
+  </>;
+}
+
 function VisualAssetCard({ asset }: { key?: string; asset: Record<string, any> }) {
   const [focal, setFocal] = useState(() => ({ x: Number(asset.focal_x ?? .5), y: Number(asset.focal_y ?? .5) }));
   const position = `${focal.x * 100}% ${focal.y * 100}%`;
-  return <article className="ops-media-card"><div className="ops-asset-crops" style={{ "--asset-position": position } as CSSProperties}>{["4:5","1:1","1.91:1"].map((ratio) => asset.signed_url ? <img key={ratio} src={asset.signed_url} alt="" style={{ aspectRatio: ratio, objectPosition: position }}/> : <div key={ratio} className="ops-media-placeholder"/>)}</div><header><div><strong>{asset.title}</strong><small>{asset.width}×{asset.height} · {asset.category}</small></div><StatusBadge value={asset.is_active ? "active" : "inactive"}/></header><Form method="post" className="ops-form"><input type="hidden" name="id" value={asset.id}/><Field label="Título" name="title" value={asset.title} required/><Field label="Categoría" name="category"><select name="category" defaultValue={asset.category}>{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><TextAreaField label="Texto alternativo" name="alt_text" value={asset.alt_text} required rows={3}/><fieldset className="ops-focal-controls"><legend>Punto focal del recorte</legend><label><span>Horizontal</span><input type="range" name="focal_x" min="0" max="1" step="0.01" value={focal.x} onChange={(event) => setFocal((current) => ({ ...current, x: Number(event.target.value) }))}/></label><label><span>Vertical</span><input type="range" name="focal_y" min="0" max="1" step="0.01" value={focal.y} onChange={(event) => setFocal((current) => ({ ...current, y: Number(event.target.value) }))}/></label><small>Las tres vistas cambian en vivo y muestran el recorte final.</small></fieldset><div className="ops-action-row"><SubmitButton intent="save_asset"><Save aria-hidden="true" size={17}/>Guardar</SubmitButton><SubmitButton intent="toggle_asset">{asset.is_active ? "Desactivar" : "Activar"}</SubmitButton></div></Form></article>;
+  return <article className="ops-media-card"><div className="ops-asset-crops" style={{ "--asset-position": position } as CSSProperties}>{["4:5","1:1","1.91:1"].map((ratio) => asset.signed_url ? <img key={ratio} src={asset.signed_url} alt="" style={{ aspectRatio: ratio, objectPosition: position }}/> : <div key={ratio} className="ops-media-placeholder"/>)}</div><header><div><strong>{asset.title}</strong><small>{asset.width}×{asset.height} · {asset.category}</small></div><StatusBadge value={asset.is_active ? "active" : "inactive"}/></header><Form method="post" className="ops-form"><input type="hidden" name="id" value={asset.id}/><Field label="Título" name="title" value={asset.title} required/><Field label="Categoría" name="category"><select name="category" defaultValue={asset.category}>{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><TextAreaField label="Texto alternativo" name="alt_text" value={asset.alt_text} required rows={3}/><RightsFields asset={asset}/><fieldset className="ops-focal-controls"><legend>Punto focal del recorte</legend><label><span>Horizontal</span><input type="range" name="focal_x" min="0" max="1" step="0.01" value={focal.x} onChange={(event) => setFocal((current) => ({ ...current, x: Number(event.target.value) }))}/></label><label><span>Vertical</span><input type="range" name="focal_y" min="0" max="1" step="0.01" value={focal.y} onChange={(event) => setFocal((current) => ({ ...current, y: Number(event.target.value) }))}/></label><small>Las tres vistas cambian en vivo y muestran el recorte final.</small></fieldset><div className="ops-action-row"><SubmitButton intent="save_asset"><Save aria-hidden="true" size={17}/>Guardar</SubmitButton><SubmitButton intent="toggle_asset">{asset.is_active ? "Desactivar" : "Activar"}</SubmitButton></div></Form></article>;
 }
 
 function LegacyBrand({ loaderData, actionData }: { loaderData: { assets: Array<Record<string, any>>; templates: Array<Record<string, any>>; saved: string }; actionData?: { error?: string } }) {
-  const activeAssets = loaderData.assets.filter((asset) => asset.is_active);
+  const activeAssets = loaderData.assets.filter((asset) => asset.is_active && mayActivateAsset(asset));
   return <><OpsPageHeader eyebrow="Editorial" title="Marca y plantillas" description="Administrá imágenes aprobadas y layouts determinísticos. Activar una imagen la vuelve elegible en el compositor."/>
     {loaderData.saved ? <Notice tone="success">Cambios guardados.</Notice> : null}{actionData?.error ? <Notice tone="error">{actionData.error}</Notice> : null}
-    <div className="ops-brand-grid"><section className="ops-panel"><h2><ImagePlus aria-hidden="true"/>Agregar imagen</h2><Form method="post" encType="multipart/form-data" className="ops-form"><Field label="Título" name="title" required/><Field label="Categoría" name="category" required><select name="category" defaultValue="general">{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><label className="ops-field"><span>Archivo *</span><NormalizedImageInput/></label><TextAreaField label="Texto alternativo" name="alt_text" required rows={3}/><SubmitButton intent="create_asset"><ImagePlus aria-hidden="true" size={17}/>Guardar para revisión</SubmitButton></Form></section>
+    <div className="ops-brand-grid"><section className="ops-panel"><h2><ImagePlus aria-hidden="true"/>Agregar imagen</h2><Form method="post" encType="multipart/form-data" className="ops-form"><Field label="Título" name="title" required/><Field label="Categoría" name="category" required><select name="category" defaultValue="general">{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><label className="ops-field"><span>Archivo *</span><NormalizedImageInput/></label><TextAreaField label="Texto alternativo" name="alt_text" required rows={3}/><RightsFields/><SubmitButton intent="create_asset"><ImagePlus aria-hidden="true" size={17}/>Guardar para revisión</SubmitButton></Form></section>
       <section className="ops-panel"><h2><Shapes aria-hidden="true"/>Nueva plantilla</h2><Form method="post" className="ops-form"><Field label="Nombre" name="name" required/><Field label="Layout" name="layout" required><select name="layout" defaultValue="image_overlay"><option value="editorial">Editorial Puna</option><option value="image_overlay">Imagen aprobada + título</option></select></Field><Field label="Formato" name="output_format" required><select name="output_format" defaultValue="instagram_portrait">{Object.entries(formats).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}</select></Field><Field label="Imagen base" name="base_asset_id"><select name="base_asset_id" defaultValue=""><option value="">Sin imagen base</option>{activeAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select></Field><div className="ops-field-grid"><Field label="Posición" name="position"><select name="position" defaultValue="center"><option value="top">Arriba</option><option value="center">Centro</option><option value="bottom">Abajo</option></select></Field><Field label="Alineación" name="text_align"><select name="text_align" defaultValue="left"><option value="left">Izquierda</option><option value="center">Centro</option></select></Field></div><Field label="Contraste" name="overlay_strength"><select name="overlay_strength" defaultValue="medium"><option value="light">Suave</option><option value="medium">Medio</option><option value="strong">Fuerte</option></select></Field><div className="ops-template-safe-preview" aria-label="Vista previa conceptual de la zona segura"><span>El título permanece dentro de esta zona segura</span></div><SubmitButton intent="create_template"><Shapes aria-hidden="true" size={17}/>Crear plantilla</SubmitButton></Form></section></div>
-    <section className="ops-section"><div className="ops-section-heading"><div><p className="ops-eyebrow">Biblioteca</p><h2>Imágenes de marca</h2></div><span>{activeAssets.length} activas</span></div><div className="ops-media-grid">{loaderData.assets.map((asset) => <article className="ops-media-card" key={asset.id}>{asset.signed_url ? <img src={asset.signed_url} alt={asset.alt_text}/> : <div className="ops-media-placeholder"/>}<header><div><strong>{asset.title}</strong><small>{asset.width}×{asset.height} · {asset.category}</small></div><StatusBadge value={asset.is_active ? "active" : "inactive"}/></header><Form method="post" className="ops-form"><input type="hidden" name="id" value={asset.id}/><Field label="Título" name="title" value={asset.title} required/><Field label="Categoría" name="category"><select name="category" defaultValue={asset.category}>{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><TextAreaField label="Texto alternativo" name="alt_text" value={asset.alt_text} required rows={3}/><div className="ops-action-row"><SubmitButton intent="save_asset"><Save aria-hidden="true" size={17}/>Guardar</SubmitButton><SubmitButton intent="toggle_asset">{asset.is_active ? "Desactivar" : "Activar"}</SubmitButton></div></Form></article>)}</div></section>
+    <section className="ops-section"><div className="ops-section-heading"><div><p className="ops-eyebrow">Biblioteca</p><h2>Imágenes de marca</h2></div><span>{activeAssets.length} activas</span></div><div className="ops-media-grid">{loaderData.assets.map((asset) => <article className="ops-media-card" key={asset.id}>{asset.signed_url ? <img src={asset.signed_url} alt={asset.alt_text}/> : <div className="ops-media-placeholder"/>}<header><div><strong>{asset.title}</strong><small>{asset.width}×{asset.height} · {asset.category} · {rightsStatuses[asset.rights_status as keyof typeof rightsStatuses] || "Sin verificar"}</small></div><StatusBadge value={asset.is_active ? "active" : "inactive"}/></header><Form method="post" className="ops-form"><input type="hidden" name="id" value={asset.id}/><Field label="Título" name="title" value={asset.title} required/><Field label="Categoría" name="category"><select name="category" defaultValue={asset.category}>{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><TextAreaField label="Texto alternativo" name="alt_text" value={asset.alt_text} required rows={3}/><RightsFields asset={asset}/><div className="ops-action-row"><SubmitButton intent="save_asset"><Save aria-hidden="true" size={17}/>Guardar</SubmitButton><SubmitButton intent="toggle_asset">{asset.is_active ? "Desactivar" : "Activar"}</SubmitButton></div></Form></article>)}</div></section>
     <section className="ops-section"><div className="ops-section-heading"><div><p className="ops-eyebrow">Layouts</p><h2>Plantillas disponibles</h2></div></div><div className="ops-stack">{loaderData.templates.map((template) => <article className="ops-template-row" key={template.id}><div><strong>{template.name}</strong><small>{formats[template.output_format as keyof typeof formats]?.label || template.output_format} · {template.layout === "editorial" ? "fondo Puna" : "imagen aprobada"}</small></div><StatusBadge value={template.is_active ? "active" : "inactive"}/></article>)}</div></section>
   </>;
 }
@@ -173,9 +213,9 @@ export default function OpsBrand({ loaderData, actionData }: { loaderData: { ass
     <OpsPageHeader eyebrow="Editorial" title="Biblioteca y presets" description="Aprobá imágenes, definí su recorte y elegí qué estilos Puna puede usar el compositor."/>
     {loaderData.saved ? <Notice tone="success">Cambios guardados.</Notice> : null}{actionData?.error ? <Notice tone="error">{actionData.error}</Notice> : null}
     <nav className="ops-brand-tabs" aria-label="Secciones de marca"><a href="#biblioteca">Biblioteca</a><a href="#presets">Presets</a></nav>
-    <section className="ops-panel" id="biblioteca"><div className="ops-section-heading"><div><p className="ops-eyebrow">Biblioteca</p><h2>Imágenes aprobadas</h2></div><span>{loaderData.assets.filter((asset) => asset.is_active).length} activas en esta vista</span></div>
+    <section className="ops-panel" id="biblioteca"><div className="ops-section-heading"><div><p className="ops-eyebrow">Biblioteca</p><h2>Imágenes aprobadas</h2></div><span>{loaderData.assets.filter((asset) => asset.is_active && mayActivateAsset(asset)).length} activas en esta vista</span></div>
       <Form method="get" className="ops-brand-filters"><label><span>Buscar</span><input name="q" defaultValue={loaderData.filters.query} placeholder="Título o descripción"/></label><label><span>Categoría</span><select name="category" defaultValue={loaderData.filters.category}><option value="all">Todas</option>{categories.map((item) => <option key={item}>{item}</option>)}</select></label><label><span>Estado</span><select name="availability" defaultValue={loaderData.filters.availability}><option value="all">Todos</option><option value="active">Activas</option><option value="inactive">En revisión</option></select></label><button className="ops-button ops-button-secondary">Filtrar</button></Form>
-      <details className="ops-brand-upload"><summary><ImagePlus size={17}/>Agregar imagen</summary><Form method="post" encType="multipart/form-data" className="ops-form"><Field label="Título" name="title" required/><Field label="Categoría" name="category" required><select name="category" defaultValue="general">{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><label className="ops-field"><span>Archivo *</span><NormalizedImageInput/></label><TextAreaField label="Texto alternativo" name="alt_text" required rows={3}/><SubmitButton intent="create_asset"><ImagePlus aria-hidden="true" size={17}/>Guardar para revisión</SubmitButton></Form></details>
+      <details className="ops-brand-upload"><summary><ImagePlus size={17}/>Agregar imagen</summary><Form method="post" encType="multipart/form-data" className="ops-form"><Field label="Título" name="title" required/><Field label="Categoría" name="category" required><select name="category" defaultValue="general">{categories.map((item) => <option key={item}>{item}</option>)}</select></Field><label className="ops-field"><span>Archivo *</span><NormalizedImageInput/></label><TextAreaField label="Texto alternativo" name="alt_text" required rows={3}/><RightsFields/><SubmitButton intent="create_asset"><ImagePlus aria-hidden="true" size={17}/>Guardar para revisión</SubmitButton></Form></details>
     </section>
     <div className="ops-media-grid">{loaderData.assets.map((asset) => <VisualAssetCard asset={asset} key={asset.id}/>)}</div>
     {!loaderData.assets.length ? <section className="ops-empty"><h2>No hay imágenes con estos filtros</h2><p>Limpiá los filtros o cargá una imagen nueva para revisión.</p></section> : null}
