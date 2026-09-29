@@ -594,6 +594,11 @@
   .ops-navigation a, .ops-button, .ops-campaign-row, .ops-variant-list > a { transition: none; }
 }
 .ops-art-list { display:grid; gap:.75rem; }
+.ops-art-header-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.65rem; }
+@media (max-width:700px) {
+  .ops-art-header-actions { display:grid; grid-template-columns:1fr; }
+  .ops-art-header-actions > .ops-button { width:100%; }
+}
 .ops-art-row { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:1rem; align-items:center; min-height:112px; padding:1rem; border:1px solid var(--ink); background:var(--surface); }
 .ops-art-row-icon { display:grid; width:54px; height:54px; place-items:center; border:1px solid var(--terracotta); color:var(--terracotta); }
 .ops-art-row h2 { margin:.15rem 0; font-family:var(--font-editorial); font-size:1.5rem; font-weight:520; }
