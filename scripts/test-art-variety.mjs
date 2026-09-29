@@ -9,9 +9,9 @@ assert.equal(validateCampaignArtDraft({ ...draft, composition: "unknown" }), nul
 assert.deepEqual(campaignArtDrafts(null), []);
 assert.equal(campaignArtDrafts({ editorial_drafts: [draft, draft, {}] }).length, 1);
 
-assert.equal(ART_COMPOSITIONS.length, 6);
-assert.equal(new Set(ART_COMPOSITIONS.map(c => c.id)).size, 6);
-assert.equal(new Set(ART_COMPOSITIONS.map(c => c.family)).size, 6);
+assert.equal(ART_COMPOSITIONS.length, 7);
+assert.equal(new Set(ART_COMPOSITIONS.map(c => c.id)).size, 7);
+assert.equal(new Set(ART_COMPOSITIONS.map(c => c.family)).size, 7);
 assert.ok(ART_COMPOSITIONS.every(c => c.photo === true));
 assert.deepEqual(parseArtHistory("not-json"), []);
 assert.deepEqual(parseArtHistory('{"id":"paper-photo"}'), []);
@@ -23,7 +23,7 @@ let history = [];
 let current = ART_COMPOSITIONS[0].id;
 for (let cycle = 0; cycle < 4; cycle++) {
   const seen = new Set();
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     assert.ok(!seen.has(current), `Repeated ${current} within cycle ${cycle}`);
     seen.add(current);
     history.push(current);
@@ -31,7 +31,7 @@ for (let cycle = 0; cycle < 4; cycle++) {
     assert.notEqual(next, current);
     current = next;
   }
-  assert.equal(seen.size, 6);
+  assert.equal(seen.size, 7);
 }
 const lastId = ART_COMPOSITIONS[ART_COMPOSITIONS.length - 1].id;
 const allButLast = ART_COMPOSITIONS.slice(0, -1).map(c => c.id);
@@ -42,4 +42,4 @@ const url = new URL(trendResearchUrl("IA & equipos", "AR"));
 assert.equal(url.searchParams.get("q"), "IA & equipos");
 assert.equal(url.searchParams.get("date"), "now 7-d");
 assert.equal(new URL(trendResearchUrl("", "bad")).searchParams.get("geo"), "AR");
-console.log("Art variety: 6 pro compositions, 6 families, four non-repeating cycles, history validation and research links passed.");
+console.log("Art variety: 7 pro compositions, 7 families, four non-repeating cycles, history validation and research links passed.");

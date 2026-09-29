@@ -90,7 +90,9 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
     setSelected(id);
     if (id === "dark-tech" && photoSrc === EDITORIAL_PHOTO) {
       setPhotoSrc("/art-direction/3d-laptop-slate.jpg");
-    } else if (id === "paper-photo" && photoSrc === "/art-direction/3d-laptop-slate.jpg") {
+    } else if (id === "pop-collage") {
+      setPhotoSrc("/art-direction/pop-cutout-couple.png");
+    } else if (id === "paper-photo" && (photoSrc === "/art-direction/3d-laptop-slate.jpg" || photoSrc.startsWith("/art-direction/pop-cutout-"))) {
       setPhotoSrc(EDITORIAL_PHOTO);
     }
   }
@@ -128,12 +130,12 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
   }
   const seen = new Set(history);
   return <div className="art-variety">
-    <div className="art-variety-intro"><h3>La misma marca. Otro punto de vista.</h3><p>6 composiciones editoriales pro · una publicación por vez. Cambia la estructura, no sólo el color.</p></div>
+    <div className="art-variety-intro"><h3>La misma marca. Otro punto de vista.</h3><p>7 composiciones editoriales pro · una publicación por vez. Cambia la estructura, no sólo el color.</p></div>
     <div className="art-study-layout">
       <figure className="art-study-stage">
         <canvas ref={canvas} width={1080} height={1350} role="img" aria-label={`${composition.name}: ${copy.headline}. ${copy.support}. ${copy.closing}`} style={{ visibility: ready ? "visible" : "hidden" }}/>
         {!ready && <div className="art-preview-message" role="status">{render.key === renderKey ? render.message : "Preparando tu publicación…"}</div>}
-        <figcaption>{composition.name}{selected === "notebook-carousel" ? ` · Lámina 0${slideIndex}` : ""}<span>1080 × 1350</span></figcaption>
+        <figcaption>{composition.name}{["notebook-carousel", "pop-collage"].includes(selected) ? ` · Lámina 0${slideIndex}` : ""}<span>1080 × 1350</span></figcaption>
       </figure>
       <div className="art-variety-controls">
         <label htmlFor={`${uid}-layout`}>Composición</label>
@@ -157,8 +159,32 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
             </button>
           ))}
         </div>}
+        {selected === "pop-collage" && <div style={{ display: "flex", gap: "6px", margin: "8px 0", flexWrap: "wrap" }}>
+          {[
+            { label: "00 · Portada", idx: 0, photo: "/art-direction/pop-cutout-couple.png" },
+            { label: "01 · Criterio", idx: 1, photo: "/art-direction/pop-cutout-megaphone.png" },
+            { label: "02 · Historia", idx: 2, photo: "/art-direction/pop-cutout-notebook.png" },
+            { label: "03 · Emoción", idx: 3, photo: "/art-direction/pop-cutout-shocked.png" },
+            { label: "04 · Confianza", idx: 4, photo: "/art-direction/pop-cutout-cheering.png" },
+          ].map(tab => (
+            <button
+              key={tab.idx}
+              type="button"
+              className={`ops-button ${slideIndex === tab.idx ? "" : "ops-button-secondary"}`}
+              style={{ padding: "4px 8px", fontSize: "11px", minHeight: "28px" }}
+              onClick={() => {
+                setSlideIndex(tab.idx);
+                if (photoSrc.startsWith("/art-direction/pop-cutout-")) {
+                  setPhotoSrc(tab.photo);
+                }
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>}
         <button type="button" className="ops-button ops-button-secondary" onClick={() => { choose(nextArtComposition(selected, [...history, ...explored, selected])); setSlideIndex(0); }}><Shuffle size={16}/>Proponer otra estructura</button>
-        <p className="art-history" role="status">{seen.size} de 6 moldes descargados en este navegador. La sugerencia recorre el catálogo antes de repetir, considera descargas y exploración de esta sesión y prioriza otra familia. La selección manual sigue libre.</p>
+        <p className="art-history" role="status">{seen.size} de 7 moldes descargados en este navegador. La sugerencia recorre el catálogo antes de repetir, considera descargas y exploración de esta sesión y prioriza otra familia. La selección manual sigue libre.</p>
         {storageNotice && <p role="status">{storageNotice}</p>}
         <label htmlFor={`${uid}-headline`}>Titular</label><textarea id={`${uid}-headline`} value={copy.headline} maxLength={100} rows={3} onChange={e => edit("headline", e.target.value)}/>
         <label htmlFor={`${uid}-support`}>Apoyo{supportLines ? ` · ${supportLines} líneas` : ""}</label><textarea id={`${uid}-support`} value={copy.support} maxLength={240} rows={4} onChange={e => edit("support", e.target.value)}/>
@@ -185,7 +211,7 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
           {uploadError && <p role="alert">{uploadError}</p>}
           {!CURATED_ART_ASSETS.some(a => a.url === photoSrc) && <button type="button" className="ops-button ops-button-secondary" onClick={() => { setPhotoSrc(selected === "dark-tech" ? "/art-direction/3d-laptop-slate.jpg" : EDITORIAL_PHOTO); setUploadError(""); }}>Volver a la imagen predeterminada</button>}
         </div>}
-        {ready ? <a className="ops-button" href={render.url} download={`puna-${selected}${selected === "notebook-carousel" ? `-lamina-0${slideIndex}` : ""}.png`} onClick={recordDownload}><Download size={17}/>Descargar publicación</a> : <button type="button" className="ops-button" disabled>PNG no disponible</button>}
+        {ready ? <a className="ops-button" href={render.url} download={`puna-${selected}${["notebook-carousel", "pop-collage"].includes(selected) ? `-lamina-0${slideIndex}` : ""}.png`} onClick={recordDownload}><Download size={17}/>Descargar publicación</a> : <button type="button" className="ops-button" disabled>PNG no disponible</button>}
         <p role="status">{render.key === renderKey ? render.message : "Preparando imagen y tipografías…"}</p>
         {campaign && <saver.Form method="post" action={campaign.action}>
           <input type="hidden" name="intent" value="save_editorial_draft"/>

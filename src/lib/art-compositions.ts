@@ -1,10 +1,15 @@
-export type ArtFamily = "Editorial" | "Anotación" | "Afiche" | "Collage" | "Tech" | "Cuaderno";
+export type ArtFamily = "Editorial" | "Anotación" | "Afiche" | "Collage" | "Tech" | "Cuaderno" | "Pop-Collage";
 export type ArtCopy = { headline: string; support: string; closing: string };
 
 export const CURATED_ART_ASSETS = [
   { id: "puna-workspace", name: "Espacio de trabajo · Luz matinal y taza terracota", url: "/art-direction/puna-workspace.jpg" },
   { id: "puna-portrait", name: "Retrato profesional · Criterio y tecnología", url: "/art-direction/puna-portrait.jpg" },
   { id: "puna-process", name: "Método y procesos · Mapeo en papel y sistema", url: "/art-direction/puna-process.jpg" },
+  { id: "pop-couple", name: "Recorte Sticker · Pareja asombrada con laptop", url: "/art-direction/pop-cutout-couple.png" },
+  { id: "pop-megaphone", name: "Recorte Sticker · Mujer con megáfono", url: "/art-direction/pop-cutout-megaphone.png" },
+  { id: "pop-notebook", name: "Recorte Sticker · Mujer con libreta de notas", url: "/art-direction/pop-cutout-notebook.png" },
+  { id: "pop-shocked", name: "Recorte Sticker · Mujer con gesto dramático", url: "/art-direction/pop-cutout-shocked.png" },
+  { id: "pop-cheering", name: "Recorte Sticker · Mujer celebrando", url: "/art-direction/pop-cutout-cheering.png" },
   { id: "cup-of-couple", name: "Escena cotidiana · Cuaderno y laptop (Pexels)", url: "/art-direction/workspace-cup-of-couple.jpg" },
   { id: "3d-laptop", name: "Render Tech · Laptop en roca oscura", url: "/art-direction/3d-laptop-slate.jpg" },
   { id: "3d-chess", name: "Render Tech · Estrategia de ajedrez", url: "/art-direction/3d-chess-strategy.jpg" },
@@ -17,6 +22,7 @@ export const ART_COMPOSITIONS = [
   { id: "bolder-poster", name: "Afiche Bolder", family: "Afiche", photo: true, description: "Alto contraste en fondo tinta, tipografía de impacto, píldora y remate editorial.", headline: "EQUIPOS CREATIVOS PARA PROCESOS SÓLIDOS", support: "Automatización con criterio humano.", closing: "PUNA TECH // 2026" },
   { id: "polaroid-collage", name: "Collage Polaroid", family: "Collage", photo: true, description: "Fotografía en marco polaroid con cinta adhesiva y retícula editorial cuidada.", headline: "Espacio real para las grandes ideas.", support: "Diseñamos procesos que eliminan la fricción cotidiana.", closing: "El método detrás del resultado." },
   { id: "notebook-carousel", name: "Cuaderno troquelado (Carrusel)", family: "Cuaderno", photo: true, description: "Carrusel editorial: hoja de cuaderno con espiral perforado, stickers vectoriales y pestañas troqueladas.", headline: "Pensamientos de lunes sobre tu negocio", support: "Tratando de ordenar los procesos de una vez", closing: "Lo repetitivo, al sistema." },
+  { id: "pop-collage", name: "Pop-Collage Sticker (Carrusel)", family: "Pop-Collage", photo: true, description: "Carrusel pop: personajes B&W con contorno sticker die-cut, titular de impacto y caja de contraste.", headline: "4 cosas que la IA no hace por vos", support: "El criterio, la empatía y la responsabilidad siguen siendo de tu equipo.", closing: "Pero vos sí." },
 ] as const satisfies readonly ({ id: string; name: string; family: ArtFamily; photo: boolean; description: string } & ArtCopy)[];
 export type ArtComposition = typeof ART_COMPOSITIONS[number];
 export type ArtCompositionId = ArtComposition["id"];

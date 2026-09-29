@@ -654,6 +654,253 @@ export function drawArtComposition(
     }
   }
 
+  // 3. POP-COLLAGE (Die-cut sticker character, bold headline, contrast badge, Brandsheet warm cream)
+  if (id === "pop-collage") {
+    // Base: Warm Crema Background
+    ctx.fillStyle = C.cream;
+    ctx.fillRect(0, 0, 1080, 1350);
+
+    // Masthead: Circle with orange mark + "Puna Tech."
+    ctx.save();
+    ctx.fillStyle = C.ink;
+    ctx.beginPath();
+    ctx.arc(104, 76, 26, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "#FF6B00";
+    ctx.fillRect(94, 66, 20, 20);
+
+    ctx.fillStyle = C.ink;
+    ctx.font = `800 28px ${sans}`;
+    ctx.textAlign = "left";
+    ctx.fillText("Puna Tech", 146, 86);
+
+    ctx.fillStyle = C.orange;
+    ctx.fillText(".", 288, 86);
+    ctx.restore();
+
+    const accent = C.orange; // Terracota #BF5226
+
+    // Badge helper
+    const drawBadge = (cx: number, cy: number, text: string) => {
+      ctx.save();
+      ctx.font = `800 32px ${sans}`;
+      const bw = ctx.measureText(text).width + 48;
+      const bh = 64;
+      ctx.fillStyle = accent;
+      ctx.fillRect(cx - bw / 2, cy - bh / 2, bw, bh);
+      ctx.fillStyle = C.cream;
+      ctx.textAlign = "center";
+      ctx.fillText(text, cx, cy + 11);
+      ctx.restore();
+    };
+
+    // Doodle rays helper
+    const drawDoodles = (cx: number, cy: number) => {
+      ctx.save();
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(cx - 30, cy + 25);
+      ctx.lineTo(cx - 55, cy + 50);
+      ctx.moveTo(cx, cy + 10);
+      ctx.lineTo(cx, cy + 45);
+      ctx.moveTo(cx + 30, cy + 25);
+      ctx.lineTo(cx + 55, cy + 50);
+      ctx.stroke();
+      ctx.restore();
+    };
+
+    // Slide 0: Portada
+    if (slideIndex === 0) {
+      // Giant Number "4"
+      ctx.fillStyle = accent;
+      ctx.font = `800 240px ${sans}`;
+      ctx.textAlign = "left";
+      ctx.fillText("4", 260, 310);
+
+      // Headline
+      ctx.fillStyle = C.ink;
+      ctx.font = `800 88px ${sans}`;
+      ctx.fillText("COSAS QUE", 470, 245);
+      ctx.fillText("LA IA NO HACE", 260, 395);
+
+      // Badge [ PERO VOS SÍ ]
+      drawBadge(680, 480, copy.closing || "PERO VOS SÍ");
+
+      // Cutout photo at bottom
+      if (photo) {
+        ctx.save();
+        const sw = photo.naturalWidth;
+        const sh = photo.naturalHeight * 0.56;
+        const sy = photo.naturalHeight * 0.44;
+        ctx.drawImage(photo, 0, sy, sw, sh, 0, 600, 1080, 750);
+        ctx.restore();
+      }
+
+      // Swipe Pill Button ->
+      ctx.save();
+      ctx.translate(880, 920);
+      ctx.fillStyle = accent;
+      ctx.beginPath();
+      ctx.roundRect(-60, -28, 120, 56, 28);
+      ctx.fill();
+      ctx.strokeStyle = C.cream;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(-22, 0);
+      ctx.lineTo(22, 0);
+      ctx.moveTo(8, -12);
+      ctx.lineTo(22, 0);
+      ctx.lineTo(8, 12);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+
+    // Slide 1: Criterio
+    if (slideIndex === 1) {
+      ctx.fillStyle = C.ink;
+      ctx.font = `800 76px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("La IA no te va a dar", 540, 260);
+
+      ctx.fillStyle = accent;
+      ctx.fillText("criterio de negocio", 540, 345);
+
+      drawBadge(540, 435, copy.closing || "PERO VOS SÍ");
+
+      ctx.fillStyle = C.ink;
+      ctx.font = `500 30px ${sans}`;
+      ctx.fillText("y eso es exactamente lo que define", 540, 520);
+      ctx.fillText("qué procesos vale la pena automatizar.", 540, 562);
+
+      if (photo) {
+        ctx.save();
+        const sw = photo.naturalWidth;
+        const sh = photo.naturalHeight * 0.45;
+        const sy = photo.naturalHeight * 0.55;
+        ctx.drawImage(photo, 0, sy, sw, sh, 0, 750, 1080, 600);
+        ctx.restore();
+      }
+
+      drawDoodles(750, 770);
+
+      // Torn paper note "EL CRITERIO MANDA!"
+      ctx.save();
+      ctx.translate(820, 1140);
+      ctx.rotate(0.04);
+      ctx.fillStyle = C.cream;
+      ctx.shadowColor = "rgba(24, 20, 16, 0.2)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 4;
+      ctx.fillRect(-140, -40, 280, 80);
+      ctx.strokeStyle = C.ink;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(-140, -40, 280, 80);
+      ctx.fillStyle = C.ink;
+      ctx.font = `800 24px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("EL CRITERIO", 0, -8);
+      ctx.fillStyle = accent;
+      ctx.fillText("MANDA!", 0, 22);
+      ctx.restore();
+      return;
+    }
+
+    // Slide 2: Historia Real
+    if (slideIndex === 2) {
+      ctx.fillStyle = C.ink;
+      ctx.font = `800 76px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("La IA no conoce", 540, 260);
+
+      ctx.fillStyle = accent;
+      ctx.fillText("TU HISTORIA REAL.", 540, 345);
+
+      drawBadge(540, 435, copy.closing || "PERO VOS SÍ");
+
+      ctx.fillStyle = C.ink;
+      ctx.font = `500 30px ${sans}`;
+      ctx.fillText("esa experiencia propia es lo que genera", 540, 520);
+      ctx.fillText("confianza auténtica con tus clientes.", 540, 562);
+
+      if (photo) {
+        ctx.save();
+        const sw = photo.naturalWidth;
+        const sh = photo.naturalHeight * 0.54;
+        const sy = photo.naturalHeight * 0.46;
+        ctx.drawImage(photo, 0, sy, sw, sh, 0, 620, 1080, 730);
+        ctx.restore();
+      }
+
+      drawDoodles(280, 860);
+      return;
+    }
+
+    // Slide 3: Responsabilidad
+    if (slideIndex === 3) {
+      ctx.fillStyle = C.ink;
+      ctx.font = `800 74px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("La IA no asume la", 540, 260);
+
+      ctx.fillStyle = accent;
+      ctx.fillText("RESPONSABILIDAD", 540, 345);
+
+      drawBadge(540, 435, copy.closing || "PERO VOS SÍ");
+
+      ctx.fillStyle = C.ink;
+      ctx.font = `500 30px ${sans}`;
+      ctx.fillText("el sistema ejecuta las tareas repetitivas,", 540, 520);
+      ctx.fillText("pero las decisiones clave las toma tu equipo.", 540, 562);
+
+      if (photo) {
+        ctx.save();
+        const sw = photo.naturalWidth;
+        const sh = photo.naturalHeight * 0.50;
+        const sy = photo.naturalHeight * 0.50;
+        ctx.drawImage(photo, 0, sy, sw, sh, 0, 680, 1080, 670);
+        ctx.restore();
+      }
+      return;
+    }
+
+    // Slide 4: Confianza y Cierre
+    if (slideIndex === 4) {
+      ctx.fillStyle = C.ink;
+      ctx.font = `800 68px ${sans}`;
+      ctx.textAlign = "center";
+      ctx.fillText("La IA no reemplaza", 540, 245);
+
+      ctx.fillStyle = accent;
+      ctx.font = `800 64px ${sans}`;
+      ctx.fillText("SISTEMAS → CONFIANZA → EQUIPO", 540, 330);
+
+      drawBadge(540, 420, copy.closing || "PERO VOS SÍ");
+
+      ctx.fillStyle = C.ink;
+      ctx.font = `500 30px ${sans}`;
+      ctx.fillText("por eso lo repetitivo va al sistema,", 540, 505);
+      ctx.fillText("para devolverle tiempo a las personas.", 540, 547);
+
+      ctx.font = `italic 500 34px ${serif}`;
+      ctx.fillStyle = C.wine;
+      ctx.fillText("(Hablemos de tus procesos esta semana)", 540, 605);
+
+      if (photo) {
+        ctx.save();
+        const sw = photo.naturalWidth;
+        const sh = photo.naturalHeight * 0.50;
+        const sy = photo.naturalHeight * 0.50;
+        ctx.drawImage(photo, 0, sy, sw, sh, 0, 670, 1080, 680);
+        ctx.restore();
+      }
+      return;
+    }
+  }
+
   // Common photo guard: all 4 pro templates require photo
   if (!photo) {
     throw new Error("Esta composición necesita una fotografía.");
