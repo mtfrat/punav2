@@ -3,39 +3,56 @@ import type { Locale } from "../content/site";
 
 const ARTIFACTS = [
   {
-    webp: "/steep-artifacts/01-client-live.webp",
-    png: "/steep-artifacts/01-client-live.png",
+    webp: "/art-direction/steep/01-client-live.webp",
+    png: "/art-direction/steep/01-client-live.png",
     alt: {
       en: "Client delivery interface: production systems on the Puna landing",
       es: "Interfaz de entrega a cliente: sistemas en producción",
+    },
+    badge: {
+      en: "Client delivery",
+      es: "Entrega a cliente",
     },
     className: "steep-card steep-card-a",
     eager: true,
   },
   {
-    webp: "/steep-artifacts/02-starpress.webp",
-    png: "/steep-artifacts/02-starpress.png",
+    webp: "/art-direction/steep/02-starpress.webp",
+    png: "/art-direction/steep/02-starpress.png",
     alt: { en: "StarPress product interface", es: "Interfaz de producto StarPress" },
+    badge: {
+      en: "Lab demo · StarPress",
+      es: "Demo de lab · StarPress",
+    },
     className: "steep-card steep-card-b",
     eager: false,
   },
   {
-    webp: "/steep-artifacts/03-viralyt.webp",
-    png: "/steep-artifacts/03-viralyt.png",
+    webp: "/art-direction/steep/03-viralyt.webp",
+    png: "/art-direction/steep/03-viralyt.png",
     alt: { en: "Viralyt product interface", es: "Interfaz de producto Viralyt" },
+    badge: {
+      en: "Lab demo · Viralyt",
+      es: "Demo de lab · Viralyt",
+    },
     className: "steep-card steep-card-c",
     eager: false,
   },
   {
-    webp: "/steep-artifacts/04-videome.webp",
-    png: "/steep-artifacts/04-videome.png",
+    webp: "/art-direction/steep/04-videome.webp",
+    png: "/art-direction/steep/04-videome.png",
     alt: { en: "videome product interface", es: "Interfaz de producto videome" },
+    badge: {
+      en: "Lab demo · videome",
+      es: "Demo de lab · videome",
+    },
     className: "steep-card steep-card-d",
     eager: false,
   },
 ] as const;
 
 function motionAllowed() {
+  if (typeof window === "undefined") return false;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
   if (window.matchMedia("(pointer: coarse)").matches) return false;
   const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
@@ -106,6 +123,14 @@ export function SteepArtifactStage({ locale }: { locale: Locale }) {
     <div className="steep-stage" data-steep-stage>
       {ARTIFACTS.map((artifact) => (
         <figure className={artifact.className} data-steep-artifact key={artifact.png}>
+          <div className="steep-card-chrome">
+            <span className="steep-chrome-dots" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+            <small className="steep-chrome-badge">{artifact.badge[locale]}</small>
+          </div>
           <picture>
             <source srcSet={artifact.webp} type="image/webp" />
             <img

@@ -56,6 +56,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const studies = caseStudies[locale];
   const clients = steepClients[locale];
   const labs = steepLab[locale];
+  const quote = t.socialProofQuotes[0];
 
   return (
     <PageShell locale={locale}>
@@ -86,11 +87,28 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             </div>
             <SteepArtifactStage locale={locale} />
           </div>
+          <div className="steep-hero-foot">
+            <div className="shell steep-hero-foot-inner">
+              <div className="steep-foot-copy">
+                <strong>{t.heroMicrocopy}</strong>
+                <small>{locale === "en" ? "No package pitch · Straight architecture breakdown" : "Sin pitch de paquetes · Diagnóstico de arquitectura directo"}</small>
+              </div>
+              <CalButton locale={locale} placement="hero_foot" label={t.book} className="button-primary-paper" />
+            </div>
+          </div>
         </section>
 
         <section className="steep-section steep-outcomes" data-steep-cue="outcomes" aria-label={locale === "en" ? "Outcomes" : "Resultados"}>
           <div className="shell">
             <ul className="steep-chips">
+              <li className="steep-chip-metric">
+                <span className="chip-tag">{locale === "en" ? "CLIENT METRIC" : "MÉTRICA CLIENTE"}</span>
+                <strong>{locale === "en" ? "Lead response 8h → 2.4s" : "Respuesta de leads 8h → 2.4s"}</strong>
+              </li>
+              <li className="steep-chip-metric">
+                <span className="chip-tag">{locale === "en" ? "CLIENT METRIC" : "MÉTRICA CLIENTE"}</span>
+                <strong>{locale === "en" ? "Zero automated interruptions on human threads" : "Cero interrupciones automáticas en hilos humanos"}</strong>
+              </li>
               {t.proof.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </div>
@@ -214,7 +232,15 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        {/* Quote band omitted until a real client line is approved — no PLACEHOLDER brackets in public UI */}
+        <section className="steep-section" data-steep-cue="quote" aria-label={locale === "en" ? "Client quote placeholder" : "Cita de cliente en reserva"}>
+          <div className="shell">
+            <figure className="steep-quote">
+              <span className="quote-placeholder-label">{quote.placeholderLabel}</span>
+              <blockquote>{quote.quote}</blockquote>
+              <figcaption>{quote.role} · {quote.industry}</figcaption>
+            </figure>
+          </div>
+        </section>
 
         <section id="faq" className="steep-section steep-faq">
           <div className="shell steep-faq-grid">
