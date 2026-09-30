@@ -46,42 +46,40 @@ export const copy = {
   en: {
     locale: "en" as const,
     languageName: "English",
-    nav: { services: "Services", work: "Work", process: "How it works", insights: "Blog", brief: "Send a brief" },
+    nav: { services: "Services", work: "Work", lab: "Lab", process: "Process", faq: "FAQ", insights: "Blog", brief: "Send a brief" },
     book: "Book free 15-min audit",
     sendBrief: "Send a brief",
-    heroEyebrow: "Software factory",
+    heroEyebrow: "Puna Tech / B2B software factory · Automation · Integrations · Custom systems",
     heroTitle: "Custom software for operations that outgrew off-the-shelf tools.",
     heroItalic: "outgrew off-the-shelf tools",
     heroBody: "We design and ship systems your team can own—automation, integrations, and custom B2B software. Lab SaaS proves execution; client delivery is the business.",
     heroLabClarification: "Lab SaaS products demonstrate how we ship and operate software; client delivery is the core business.",
     heroMicrocopy: "Fifteen minutes. The bottleneck, the options, the next useful step.",
+    heroBadges: ["Lab demo", "Client delivery"],
+    bridgeTitle: "From operational problem to production software.",
+    bridgeSub: "Product design, engineering, automation, integrations, and deployment—kept coherent as one system.",
+    bridgeLine: "One team across product, software, data, and launch. Start focused; expand on a maintainable foundation.",
     heroRibbon: "Deterministic systems. Human oversight where it matters.",
     seeWork: "Explore our services",
-    proof: ["From discovery through production launch", "Bilingual collaboration across the Americas", "Software, automation, and integrations in one team"],
+    proof: ["Repetitive handoffs → into the system", "Deterministic systems · human oversight where it matters", "Discovery through production launch", "Bilingual collaboration across the Americas", "Software, automation, and integrations in one team"],
     workLabEyebrow: "SaaS Lab",
     workLabTitle: "Lab demos · Proof of execution",
     workLabSubtitle: "Live products we ship ourselves to prove architecture and delivery standards—not the catalogue we sell.",
     workLabBadge: "Lab demo",
     workClientEyebrow: "Client Delivery",
     workClientTitle: "Client delivery · Production systems",
-    workClientSubtitle: "Custom software, automations, and integrations built for specific operational bottlenecks. Client names stay private; outcomes and architectures stay concrete.",
+    workClientSubtitle: "Custom software, automations, and integrations for specific operational bottlenecks. Client names stay private; architectures stay concrete.",
     workClientBadge: "Client delivery",
     openCase: "Open case",
     liveDemo: "Live demo",
     viewArchitecture: "View delivery architecture",
-    socialProofNotice: "[PLACEHOLDER quotes · Replace with verified client testimonials before production]",
+    socialProofNotice: "[PLACEHOLDER — real client line pending Martin approval]",
     socialProofQuotes: [
       {
-        role: "Operations lead",
-        industry: "Logistics",
+        role: "[Role]",
+        industry: "[Industry]",
         placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Cut daily WhatsApp/Excel handoffs by ~40% after the first workflow shipped.”",
-      },
-      {
-        role: "Director of Ops",
-        industry: "Real estate",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“One owned system for leads, contracts, and handoffs—adoption in under 3 weeks.”",
+        quote: "[PLACEHOLDER — real client line pending Martin approval]",
       },
     ],
     fitEyebrow: "Where Puna fits best",
@@ -101,8 +99,8 @@ export const copy = {
     slowdownEyebrow: "Find your starting point",
     slowdownTitle: "What is slowing your team down?",
     slowdowns: [
-      ["Manual work keeps multiplying", "AI workflow automation", "Map and automate the repetitive handoffs without removing human control."],
-      ["Your tools do not agree", "Data & systems integration", "Create a reliable data path between the systems already running the operation."],
+      ["Manual work keeps multiplying", "AI workflow automation", "Map and automate repetitive handoffs without removing human control."],
+      ["Your tools do not agree", "Data & systems integration", "Build a reliable data path between the systems already running the operation."],
       ["The operation needs its own product", "Custom B2B software", "Build the portal, platform, or internal tool the workflow actually requires."],
     ],
     auditEyebrow: "The free bottleneck audit",
@@ -116,7 +114,7 @@ export const copy = {
     processTitle: "A short path from ambiguity to a working system.",
     process: [
       ["Discover", "Map the workflow, data, risks, and the business outcome that matters."],
-      ["Design", "Define the smallest useful scope, system architecture, and user journey."],
+      ["Design", "Define the smallest useful scope, architecture, and user journey."],
       ["Build", "Ship in reviewable increments with visible technical decisions and QA."],
       ["Launch", "Deploy, document, measure adoption, and define the next improvement."],
     ],
@@ -129,18 +127,18 @@ export const copy = {
     ],
     faqTitle: "Common questions before the first call",
     faqs: [
-      ["What kinds of projects are a fit?", "Operational platforms, AI-assisted workflows, data pipelines, and integrations where off-the-shelf software creates friction or leaves important gaps."],
-      ["When is custom software better than an off-the-shelf tool?", "When a critical workflow needs specific roles, data rules, or integrations that standard tools cannot support cleanly. We first check whether your current tools can be connected or extended."],
-      ["Do you replace our existing tools?", "Usually no. We first look for a reliable way to connect and extend your current stack. Replacement is recommended only when the existing constraint makes it necessary."],
-      ["Can we start with a small scope?", "Yes. The first engagement should prove one useful outcome, expose the real integration risks, and leave a production-quality foundation for expansion."],
-      ["How do you handle AI risk?", "We use structured outputs, validation, permissions, logging, and human approval for consequential actions. The exact controls depend on the workflow."],
-      ["Who owns the software and data?", "Ownership, repositories, infrastructure, access, and handoff are made explicit in the proposal. We build so your business can operate and extend the system without a hidden lock-in."],
-      ["How much does a project cost?", "Focused discovery and automation work can start below a full product build. Scope, integration risk, and ownership requirements determine the investment, so we qualify budget privately rather than publishing a misleading package price."],
+      ["What kinds of projects are a fit?", "Operational platforms, AI-assisted workflows, data pipelines, and integrations where off-the-shelf software creates friction or leaves gaps."],
+      ["When is custom software better than an off-the-shelf tool?", "When a critical workflow needs roles, data rules, or integrations standard tools cannot support cleanly. We first check whether current tools can be connected or extended."],
+      ["Do you replace our existing tools?", "Usually no. We connect and extend first. Replacement only when the existing constraint makes it necessary."],
+      ["Can we start with a small scope?", "Yes. The first engagement should prove one useful outcome, expose integration risk, and leave a production-quality foundation."],
+      ["How do you handle AI risk?", "Structured outputs, validation, permissions, logging, and human approval for consequential actions—tuned to the workflow."],
+      ["Who owns the software and data?", "Ownership, repos, infrastructure, access, and handoff are explicit in the proposal. No hidden lock-in."],
+      ["How much does a project cost?", "Focused discovery/automation can start below a full product build. Scope and risk set investment—we qualify budget privately, not with misleading packages."],
     ],
-    finalTitle: "Bring us the workflow your team has learned to work around.",
-    finalBody: "In 15 minutes, we will map the constraint and decide whether software, automation, integration—or no build at all—is the useful next step.",
+    finalTitle: "In 15 minutes, we map the constraint and decide the useful next step.",
+    finalBody: "Software, automation, integration—or no build at all.",
     briefTitle: "Prefer to write it down?",
-    briefBody: "Send a short project brief. We will reply with the next useful question—not an automated sales sequence.",
+    briefBody: "Send a short project brief. We reply with the next useful question—not an automated sales sequence.",
     blogTitle: "Practical notes on software and operations",
     blogBody: "Evidence-backed guides, implementation lessons, and case-study analysis. Every article is reviewed before publication.",
     readMore: "Read more",
@@ -150,42 +148,40 @@ export const copy = {
   es: {
     locale: "es" as const,
     languageName: "Español",
-    nav: { services: "Servicios", work: "Trabajo", process: "Cómo funciona", insights: "Blog", brief: "Enviar brief" },
+    nav: { services: "Servicios", work: "Trabajo", lab: "Lab", process: "Proceso", faq: "FAQ", insights: "Blog", brief: "Enviar brief" },
     book: "Auditoría gratis de 15 min",
     sendBrief: "Enviar brief",
-    heroEyebrow: "Software factory",
+    heroEyebrow: "Puna Tech / Software factory B2B · Automatización · Integraciones · Sistemas a medida",
     heroTitle: "Software a medida para operaciones que ya superaron las herramientas estándar.",
     heroItalic: "herramientas estándar",
     heroBody: "Diseñamos y entregamos sistemas que tu equipo pueda operar: automatización, integraciones y software B2B a medida. El lab SaaS prueba ejecución; la entrega a clientes es el negocio.",
     heroLabClarification: "Los productos SaaS del lab demuestran cómo construimos y operamos software; la entrega a clientes es el negocio principal.",
     heroMicrocopy: "Quince minutos. El cuello de botella, las opciones y el próximo paso útil.",
+    heroBadges: ["Demo de lab", "Entrega a cliente"],
+    bridgeTitle: "Del problema operativo al software en producción.",
+    bridgeSub: "Diseño de producto, ingeniería, automatización, integraciones y despliegue—en un sistema coherente.",
+    bridgeLine: "Un equipo para producto, software, datos y lanzamiento. Empezá enfocado; crecé sobre una base mantenible.",
     heroRibbon: "Sistemas determinísticos. Control humano donde importa.",
     seeWork: "Explorar servicios",
-    proof: ["De discovery al lanzamiento productivo", "Colaboración bilingüe en todo el continente", "Software, automatización e integraciones en un solo equipo"],
+    proof: ["Lo repetitivo → al sistema", "Sistemas determinísticos · control humano donde importa", "De discovery al lanzamiento productivo", "Colaboración bilingüe en las Américas", "Software, automatización e integraciones en un solo equipo"],
     workLabEyebrow: "Laboratorio SaaS",
     workLabTitle: "Demos de lab · Prueba de ejecución",
     workLabSubtitle: "Productos en vivo que construimos nosotros para probar arquitectura y estándar de entrega—no el catálogo que vendemos.",
     workLabBadge: "Demo de lab",
     workClientEyebrow: "Entrega a Clientes",
     workClientTitle: "Entrega a clientes · Sistemas en producción",
-    workClientSubtitle: "Software a medida, automatizaciones e integraciones para cuellos de botella específicos. Nombres en reserva; resultados y arquitecturas concretas.",
+    workClientSubtitle: "Software a medida, automatizaciones e integraciones para cuellos de botella concretos. Nombres en reserva; arquitecturas concretas.",
     workClientBadge: "Entrega a cliente",
     openCase: "Abrir caso",
     liveDemo: "Demo en vivo",
     viewArchitecture: "Ver arquitectura de entrega",
-    socialProofNotice: "[PLACEHOLDER quotes · Reemplazar con testimonios verificados antes de producción]",
+    socialProofNotice: "[PLACEHOLDER — frase real de cliente pendiente de OK Martin]",
     socialProofQuotes: [
       {
-        role: "Responsable de operaciones",
-        industry: "Logística",
+        role: "[Rol]",
+        industry: "[Industria]",
         placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Recortamos ~40% los traspasos diarios por WhatsApp/Excel tras el primer flujo.”",
-      },
-      {
-        role: "Director de operaciones",
-        industry: "Real estate",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Un sistema propio para leads, contratos y handoffs—adopción en menos de 3 semanas.”",
+        quote: "[PLACEHOLDER — frase real de cliente pendiente de OK Martin]",
       },
     ],
     fitEyebrow: "Dónde encaja mejor Puna",
@@ -198,7 +194,7 @@ export const copy = {
     ],
     servicesEyebrow: "Tres capacidades enfocadas",
     servicesTitle: "Empezamos por el cuello de botella, no por la tecnología.",
-    servicesBody: "Cada proyecto se organiza alrededor de un resultado operativo y un sistema que tu equipo pueda comprender y operar.",
+    servicesBody: "Cada proyecto se organiza alrededor de un resultado operativo y un sistema que tu equipo pueda operar.",
     casesEyebrow: "Trabajo seleccionado",
     casesTitle: "Sistemas reales para trabajo que no podía seguir siendo manual.",
     casesBody: "Los nombres pueden permanecer privados. El problema operativo, la arquitectura y el sistema entregado se muestran con claridad.",
@@ -221,7 +217,7 @@ export const copy = {
     process: [
       ["Descubrir", "Mapeamos el flujo, los datos, los riesgos y el resultado de negocio relevante."],
       ["Diseñar", "Definimos el alcance mínimo útil, la arquitectura y la experiencia de usuario."],
-      ["Construir", "Entregamos avances revisables con decisiones técnicas visibles y control de calidad."],
+      ["Construir", "Entregamos avances revisables con decisiones técnicas visibles y QA."],
       ["Lanzar", "Desplegamos, documentamos, medimos adopción y definimos la siguiente mejora."],
     ],
     standardsEyebrow: "Construido para dar control",
@@ -233,18 +229,18 @@ export const copy = {
     ],
     faqTitle: "Preguntas frecuentes antes de la primera llamada",
     faqs: [
-      ["¿Qué proyectos encajan mejor?", "Plataformas operativas, flujos asistidos por IA, pipelines de datos e integraciones donde el software estándar genera fricción o deja vacíos importantes."],
-      ["¿Cuándo conviene el software a medida frente a uno estándar?", "Cuando un flujo crítico necesita permisos, reglas de datos o integraciones que las herramientas estándar no resuelven bien. Primero evaluamos si se pueden conectar o extender las herramientas actuales."],
-      ["¿Reemplazan nuestras herramientas actuales?", "En general, no. Primero buscamos conectar y extender el stack actual. Recomendamos reemplazarlo solo cuando la limitación existente lo vuelve necesario."],
-      ["¿Podemos empezar con un alcance pequeño?", "Sí. El primer proyecto debe demostrar un resultado útil, revelar los riesgos reales de integración y dejar una base de producción que pueda crecer."],
-      ["¿Cómo controlan el riesgo de la IA?", "Usamos salidas estructuradas, validaciones, permisos, registros y aprobación humana para acciones sensibles. Los controles exactos dependen del flujo."],
-      ["¿Quién es dueño del software y los datos?", "La propiedad, los repositorios, la infraestructura, los accesos y el traspaso quedan explícitos en la propuesta. Construimos para que tu empresa pueda operar y extender el sistema sin dependencia oculta."],
-      ["¿Cuánto cuesta un proyecto?", "Un trabajo enfocado de discovery o automatización puede comenzar por debajo de un producto completo. El alcance, el riesgo de integración y los requisitos de propiedad definen la inversión; por eso calificamos presupuesto en privado."],
+      ["¿Qué proyectos encajan mejor?", "Plataformas operativas, flujos asistidos por IA, pipelines de datos e integraciones donde el software estándar genera fricción o deja vacíos."],
+      ["¿Cuándo conviene el software a medida frente a uno estándar?", "Cuando un flujo crítico necesita permisos, reglas de datos o integraciones que las herramientas estándar no resuelven bien. Primero evaluamos conectar o extender el stack actual."],
+      ["¿Reemplazan nuestras herramientas actuales?", "En general, no. Primero conectamos y extendemos. Reemplazo solo cuando la limitación lo vuelve necesario."],
+      ["¿Podemos empezar con un alcance pequeño?", "Sí. El primer proyecto debe demostrar un resultado útil, revelar riesgos de integración y dejar una base de producción."],
+      ["¿Cómo controlan el riesgo de la IA?", "Salidas estructuradas, validaciones, permisos, registros y aprobación humana en acciones sensibles—según el flujo."],
+      ["¿Quién es dueño del software y los datos?", "Propiedad, repos, infraestructura, accesos y traspaso quedan explícitos en la propuesta. Sin dependencia oculta."],
+      ["¿Cuánto cuesta un proyecto?", "Discovery o automatización enfocada puede empezar por debajo de un producto completo. El alcance y el riesgo definen la inversión; calificamos presupuesto en privado."],
     ],
-    finalTitle: "Contanos qué proceso aprendió tu equipo a soportar todos los días.",
-    finalBody: "En 15 minutos mapeamos la restricción y definimos si el próximo paso útil es software, automatización, integración o no construir todavía.",
+    finalTitle: "En 15 minutos mapeamos la restricción y definimos el próximo paso útil.",
+    finalBody: "Software, automatización, integración—o no construir todavía.",
     briefTitle: "¿Preferís explicarlo por escrito?",
-    briefBody: "Enviá un brief corto. Te responderemos con la siguiente pregunta útil, no con una secuencia automática de ventas.",
+    briefBody: "Enviá un brief corto. Respondemos con la siguiente pregunta útil, no con una secuencia automática de ventas.",
     blogTitle: "Notas prácticas sobre software y operaciones",
     blogBody: "Guías con evidencia, aprendizajes de implementación y análisis de casos. Cada artículo se revisa antes de publicarse.",
     readMore: "Leer más",
@@ -852,6 +848,135 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       stack: ["n8n", "Clay", "Supabase", "HubSpot", "Smartlead", "HeyReach"],
       flow: ["Fuentes de leads", "Enriquecimiento Clay", "Orquestación n8n", "Estado en Supabase", "CRM y outreach"]
     }
+  ],
+};
+
+/**
+ * Landing client metrics from the Steep copy pack.
+ * needsConfirm: Martin must confirm the value before production lock.
+ * Do not invent additional metrics.
+ */
+export interface SteepMetric {
+  text: string;
+  /** True when the copy pack marks the figure [CONFIRM]. */
+  needsConfirm: boolean;
+}
+
+export interface SteepClientCase {
+  key: string;
+  name: string;
+  headline: string;
+  body: string;
+  bullets: SteepMetric[];
+}
+
+export interface SteepLabItem {
+  key: string;
+  name: string;
+  sector: string;
+  body: string;
+  tag: string;
+}
+
+export const steepClients: Record<Locale, SteepClientCase[]> = {
+  en: [
+    {
+      key: "lead-router",
+      name: "Inbound Revenue Switch",
+      headline: "Multi-channel inbound lead router with CRM sync and instant team alerts.",
+      body: "Forms → domain validation → HubSpot association → rep alert in seconds.",
+      bullets: [
+        { text: "Lead response 8h → 2.4s", needsConfirm: true },
+        { text: "0 dropped leads across stated event volume", needsConfirm: true },
+      ],
+    },
+    {
+      key: "linkedin-copilot",
+      name: "LinkedIn Copilot Guard",
+      headline: "AI LinkedIn sales copilot with human-in-the-loop guard and knowledge retrieval.",
+      body: "Drafts with vector playbook retrieval; shuts down automation when a human intervenes.",
+      bullets: [
+        { text: "Zero automated interruptions on active human threads", needsConfirm: false },
+        { text: "+42% meeting bookings", needsConfirm: true },
+      ],
+    },
+    {
+      key: "edtech-web3",
+      name: "Project Altiplano",
+      headline: "One platform for education, users, and specialized application workflows.",
+      body: "Learning, accounts, and services in one consistent product experience.",
+      bullets: [
+        { text: "Unified MVP launched", needsConfirm: false },
+        { text: "Core ops moved into one dashboard", needsConfirm: false },
+      ],
+    },
+    {
+      key: "gtm-automation",
+      name: "GTM Operations System",
+      headline: "Controlled pipeline from prospect research to outreach.",
+      body: "Lead sources → enrichment → orchestration → shared state → CRM/outreach.",
+      bullets: [
+        { text: "~85% less manual effort", needsConfirm: true },
+        { text: "sync latency < 30s", needsConfirm: true },
+      ],
+    },
+  ],
+  es: [
+    {
+      key: "lead-router",
+      name: "Inbound Revenue Switch",
+      headline: "Enrutador de leads multicanal con sync a CRM y alertas al instante.",
+      body: "Formularios → validación de dominio → asociación HubSpot → alerta al comercial en segundos.",
+      bullets: [
+        { text: "Respuesta 8h → 2.4s", needsConfirm: true },
+        { text: "0 leads perdidos en el volumen declarado", needsConfirm: true },
+      ],
+    },
+    {
+      key: "linkedin-copilot",
+      name: "LinkedIn Copilot Guard",
+      headline: "Copiloto comercial LinkedIn con control humano y retrieval de conocimiento.",
+      body: "Borradores con playbook vectorial; corta la automatización si interviene un humano.",
+      bullets: [
+        { text: "Cero interrupciones automáticas en hilos humanos activos", needsConfirm: false },
+        { text: "+42% agendamientos", needsConfirm: true },
+      ],
+    },
+    {
+      key: "edtech-web3",
+      name: "Proyecto Altiplano",
+      headline: "Una plataforma para educación, usuarios y flujos de aplicación.",
+      body: "Aprendizaje, cuentas y servicios en una experiencia de producto consistente.",
+      bullets: [
+        { text: "MVP unificado lanzado", needsConfirm: false },
+        { text: "Operaciones core en un solo dashboard", needsConfirm: false },
+      ],
+    },
+    {
+      key: "gtm-automation",
+      name: "Sistema de Operaciones GTM",
+      headline: "Pipeline controlado de investigación de prospectos a outreach.",
+      body: "Fuentes → enriquecimiento → orquestación → estado compartido → CRM/outreach.",
+      bullets: [
+        { text: "~85% menos esfuerzo manual", needsConfirm: true },
+        { text: "sync < 30s", needsConfirm: true },
+      ],
+    },
+  ],
+};
+
+export const steepLab: Record<Locale, SteepLabItem[]> = {
+  en: [
+    { key: "starpress", name: "StarPress", sector: "Local commerce & e-commerce", body: "Turns customer feedback into sales with review intelligence and interactive carousels.", tag: "Internal lab product · execution proof" },
+    { key: "viralyt", name: "Viralyt", sector: "Creator economy & media", body: "Spots anomalous video performance and high-CTR packaging patterns across YouTube niches.", tag: "Internal lab product · execution proof" },
+    { key: "videome", name: "videome", sector: "Generative AI", body: "Cinematic AI motion via style recipes and serverless GPU pipelines.", tag: "Internal lab product · execution proof" },
+    { key: "autopost", name: "Autopost Studio", sector: "Omnichannel publishing", body: "Turns raw ideas into brand-compliant posts across LinkedIn, X, Instagram, and TikTok with visual review cards.", tag: "Internal lab product · execution proof" },
+  ],
+  es: [
+    { key: "starpress", name: "StarPress", sector: "Comercio local y e-commerce", body: "Convierte opiniones en ventas con inteligencia de reviews y carruseles interactivos.", tag: "Producto de lab interno · prueba de ejecución" },
+    { key: "viralyt", name: "Viralyt", sector: "Economía de creadores y medios", body: "Detecta rendimiento atípico de video y patrones de empaque de alto CTR en YouTube.", tag: "Producto de lab interno · prueba de ejecución" },
+    { key: "videome", name: "videome", sector: "IA generativa", body: "Motion cinematográfico con IA via recetas de estilo y pipelines GPU serverless.", tag: "Producto de lab interno · prueba de ejecución" },
+    { key: "autopost", name: "Autopost Studio", sector: "Publicación omnicanal", body: "De ideas crudas a posts con marca en LinkedIn, X, Instagram y TikTok, con cards de revisión visual.", tag: "Producto de lab interno · prueba de ejecución" },
   ],
 };
 
