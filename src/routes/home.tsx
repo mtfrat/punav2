@@ -56,7 +56,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const studies = caseStudies[locale];
   const clients = steepClients[locale];
   const labs = steepLab[locale];
-  const quote = t.socialProofQuotes[0];
 
   return (
     <PageShell locale={locale}>
@@ -101,14 +100,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
         <section className="steep-section steep-outcomes" data-steep-cue="outcomes" aria-label={locale === "en" ? "Outcomes" : "Resultados"}>
           <div className="shell">
             <ul className="steep-chips">
-              <li className="steep-chip-metric">
-                <span className="chip-tag">{locale === "en" ? "CLIENT METRIC" : "MÉTRICA CLIENTE"}</span>
-                <strong>{locale === "en" ? "Lead response 8h → 2.4s" : "Respuesta de leads 8h → 2.4s"}</strong>
-              </li>
-              <li className="steep-chip-metric">
-                <span className="chip-tag">{locale === "en" ? "CLIENT METRIC" : "MÉTRICA CLIENTE"}</span>
-                <strong>{locale === "en" ? "Zero automated interruptions on human threads" : "Cero interrupciones automáticas en hilos humanos"}</strong>
-              </li>
+              {/* Client metric number-claims omitted until Martin confirms needsConfirm values */}
               {t.proof.map((item) => <li key={item}>{item}</li>)}
             </ul>
           </div>
@@ -160,12 +152,13 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                     <p className="steep-client-headline">{item.headline}</p>
                     <p>{item.body}</p>
                     <ul>
-                      {item.bullets.map((bullet) => (
-                        <li key={bullet.text}>
-                          {/* needsConfirm stays in data only — never render [CONFIRM] in public UI */}
-                          <span>{bullet.text}</span>
-                        </li>
-                      ))}
+                      {item.bullets
+                        .filter((bullet) => !bullet.needsConfirm)
+                        .map((bullet) => (
+                          <li key={bullet.text}>
+                            <span>{bullet.text}</span>
+                          </li>
+                        ))}
                     </ul>
                     {study ? (
                       <Link className="text-link" to={casePath(locale, study.slug)}>
@@ -232,15 +225,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        <section className="steep-section" data-steep-cue="quote" aria-label={locale === "en" ? "Client quote placeholder" : "Cita de cliente en reserva"}>
-          <div className="shell">
-            <figure className="steep-quote">
-              <span className="quote-placeholder-label">{quote.placeholderLabel}</span>
-              <blockquote>{quote.quote}</blockquote>
-              <figcaption>{quote.role} · {quote.industry}</figcaption>
-            </figure>
-          </div>
-        </section>
+        {/* Quote band omitted until a real client line is approved — no PLACEHOLDER brackets in public UI */}
 
         <section id="faq" className="steep-section steep-faq">
           <div className="shell steep-faq-grid">
