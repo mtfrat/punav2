@@ -92,6 +92,8 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
       setPhotoSrc("/art-direction/3d-laptop-slate.jpg");
     } else if (id === "pop-collage") {
       setPhotoSrc("/art-direction/pop-cutout-couple.png");
+    } else if (id === "bolder-poster" && (photoSrc === EDITORIAL_PHOTO || photoSrc.startsWith("/art-direction/pop-cutout-") || photoSrc.startsWith("/art-direction/3d-"))) {
+      setPhotoSrc("/art-direction/editorial-craft-pottery.jpg");
     } else if (id === "paper-photo" && (photoSrc === "/art-direction/3d-laptop-slate.jpg" || photoSrc.startsWith("/art-direction/pop-cutout-"))) {
       setPhotoSrc(EDITORIAL_PHOTO);
     }
@@ -178,6 +180,23 @@ export function ArtCompositionStudio({ campaign }: { campaign?: { action: string
                   setPhotoSrc(tab.photo);
                 }
               }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>}
+        {selected === "bolder-poster" && <div style={{ display: "flex", gap: "6px", margin: "8px 0", flexWrap: "wrap" }}>
+          {[
+            { label: "01 · Fondo Terracota", idx: 0 },
+            { label: "02 · Fondo Crema", idx: 1 },
+            { label: "03 · Fotografía B&W", idx: 2 },
+          ].map(tab => (
+            <button
+              key={tab.idx}
+              type="button"
+              className={`ops-button ${slideIndex === tab.idx ? "" : "ops-button-secondary"}`}
+              style={{ padding: "4px 8px", fontSize: "11px", minHeight: "28px" }}
+              onClick={() => setSlideIndex(tab.idx)}
             >
               {tab.label}
             </button>

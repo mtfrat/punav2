@@ -13,6 +13,16 @@ export const CURATED_ART_ASSETS = [
   { id: "cup-of-couple", name: "Escena cotidiana · Cuaderno y laptop (Pexels)", url: "/art-direction/workspace-cup-of-couple.jpg" },
   { id: "3d-laptop", name: "Render Tech · Laptop en roca oscura", url: "/art-direction/3d-laptop-slate.jpg" },
   { id: "3d-chess", name: "Render Tech · Estrategia de ajedrez", url: "/art-direction/3d-chess-strategy.jpg" },
+  { id: "editorial-craft", name: "Oficio & Taller · Manos de alfarero en torno", url: "/art-direction/editorial-craft-pottery.jpg" },
+  { id: "editorial-stairs", name: "Arquitectura & Luz · Escalera brutalista y sombras", url: "/art-direction/editorial-architecture-stairs.jpg" },
+  { id: "editorial-mountain", name: "Paisaje & Raíces · Cordillera andina al amanecer", url: "/art-direction/editorial-mountain-ridge.jpg" },
+  { id: "editorial-urban", name: "Ciudad & Escala · Skyline urbano al atardecer", url: "/art-direction/editorial-urban-sunset.jpg" },
+  { id: "editorial-facade", name: "Diseño & Estructura · Fachada arquitectónica moderna", url: "/art-direction/editorial-modern-facade.jpg" },
+  { id: "editorial-team", name: "Colaboración & Criterio · Equipo en mesa de estudio", url: "/art-direction/editorial-team-blueprint.jpg" },
+  { id: "editorial-coffee", name: "Ritual Matinal · Taza terracota y libreta", url: "/art-direction/editorial-coffee-notebook.jpg" },
+  { id: "editorial-hands", name: "Trabajo Cotidiano · Manos, notas y laptop", url: "/art-direction/editorial-hands-laptop.jpg" },
+  { id: "editorial-mug", name: "Cultura Editorial · Cerámica sobre libros de diseño", url: "/art-direction/editorial-ceramic-mug.jpg" },
+  { id: "editorial-desk", name: "Espacio & Foco · Mesa de creación minimalista", url: "/art-direction/editorial-morning-desk.jpg" },
 ] as const;
 
 export const ART_COMPOSITIONS = [

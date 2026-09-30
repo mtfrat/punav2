@@ -201,6 +201,77 @@ function drawAsterisk(
   ctx.restore();
 }
 
+function drawDynamicBrushStroke(
+  targetCtx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  color: string
+) {
+  targetCtx.save();
+  targetCtx.strokeStyle = color;
+  targetCtx.lineWidth = 14;
+  targetCtx.lineCap = "round";
+  targetCtx.lineJoin = "round";
+
+  targetCtx.beginPath();
+  targetCtx.moveTo(x, y);
+  targetCtx.bezierCurveTo(x + width * 0.3, y - 6, x + width * 0.7, y + 6, x + width, y);
+  targetCtx.stroke();
+
+  // Second thinner energetic pass
+  targetCtx.lineWidth = 6;
+  targetCtx.beginPath();
+  targetCtx.moveTo(x + 12, y + 10);
+  targetCtx.lineTo(x + width - 15, y + 8);
+  targetCtx.stroke();
+  targetCtx.restore();
+}
+
+function drawBrandMarkMountains(
+  targetCtx: CanvasRenderingContext2D,
+  markX: number,
+  markY: number,
+  isDarkBg: boolean,
+  showLabel = true
+) {
+  const markColor = isDarkBg ? C.cream : C.ink;
+  targetCtx.save();
+  const scale = 34 / 48;
+  targetCtx.translate(markX, markY);
+  targetCtx.scale(scale, scale);
+
+  // Orange mountain
+  targetCtx.fillStyle = C.orange;
+  targetCtx.beginPath();
+  targetCtx.moveTo(0, 48); targetCtx.lineTo(23, 12); targetCtx.lineTo(41, 48); targetCtx.closePath();
+  targetCtx.fill();
+
+  // Central mountain
+  targetCtx.fillStyle = markColor;
+  targetCtx.beginPath();
+  targetCtx.moveTo(18, 48); targetCtx.lineTo(48, 0); targetCtx.lineTo(76, 48); targetCtx.closePath();
+  targetCtx.fill();
+
+  // Burgundy mountain
+  targetCtx.fillStyle = isDarkBg ? "#A23B4A" : C.wine;
+  targetCtx.beginPath();
+  targetCtx.moveTo(51, 48); targetCtx.lineTo(64, 25); targetCtx.lineTo(76, 48); targetCtx.closePath();
+  targetCtx.fill();
+  targetCtx.restore();
+
+  if (showLabel) {
+    targetCtx.save();
+    targetCtx.fillStyle = markColor;
+    targetCtx.font = `800 30px ${sans}`;
+    targetCtx.textAlign = "left";
+    targetCtx.fillText("Puna Tech", markX + 66, markY + 26);
+    targetCtx.fillStyle = C.orange;
+    targetCtx.fillText(".", markX + 216, markY + 26);
+    targetCtx.restore();
+  }
+}
+
 function drawImageCover(
   ctx: CanvasRenderingContext2D,
   photo: HTMLImageElement,
@@ -1063,93 +1134,180 @@ export function drawArtComposition(
     return;
   }
 
-  // 3. BOLDER-POSTER (Deep dark background, ultra-bold headline, integrated photo, pill badge, star mark)
+  // 3. BOLDER-POSTER (Póster Tipográfico de Alto Impacto: Fondos lisos Terracota/Crema o Fotografía B&W con autoajuste de márgenes)
   if (id === "bolder-poster") {
-    // Deep dark background
-    ctx.fillStyle = C.darkBg;
-    ctx.fillRect(0, 0, 1080, 1350);
+    const isCream = slideIndex === 1;
+    const isPhotoBW = slideIndex >= 2 && photo !== null;
+    const isTerracotta = !isCream && !isPhotoBW;
+    const maxTextWidth = 920; // 1080 - 80 - 80 = 920px (generous clean margins)
 
-    // Header
-    ctx.fillStyle = C.cream;
-    ctx.font = `800 27px ${sans}`;
-    ctx.fillText("PUNA", 72, 78);
-    ctx.font = `500 17px ${sans}`;
-    ctx.fillText("T E C H", 166, 78);
+    if (isTerracotta) {
+      // 01 · Fondo Liso Terracota (Solid Energy)
+      ctx.fillStyle = C.orange; // #BF5226
+      ctx.fillRect(0, 0, 1080, 1350);
 
-    ctx.textAlign = "right";
-    ctx.fillStyle = "rgba(247, 239, 226, 0.55)";
-    ctx.font = `600 15px ${sans}`;
-    ctx.fillText("// 2026 EDITORIAL", 1008, 78);
-    ctx.textAlign = "left";
+      // Subtle textured warmth
+      ctx.fillStyle = "rgba(24, 20, 16, 0.05)";
+      ctx.fillRect(0, 0, 1080, 1350);
 
-    // Pill badge in terracotta
-    ctx.fillStyle = C.orange;
-    ctx.beginPath();
-    ctx.roundRect(72, 118, 168, 38, 19);
-    ctx.fill();
-    ctx.fillStyle = C.cream;
-    ctx.font = `800 13px ${sans}`;
-    ctx.fillText("[ 01 · BOLDER ]", 90, 142);
+      // Header: Puna Tech Official Brand Mark
+      drawBrandMarkMountains(ctx, 80, 70, true, true);
 
-    // 4-pointed star mark
-    drawFourPointStar(ctx, 985, 137, 18, 6, C.cream);
+      // Massive Headline in Ink with dynamic fit
+      const titleFit = fitLines(ctx, copy.headline.toUpperCase(), maxTextWidth, 2, 130, 80, s => `800 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      const titleY = 360;
+      titleFit.lines.forEach((line, i) => {
+        ctx.font = `800 ${titleFit.size}px ${sans}`;
+        ctx.fillText(line, 80, titleY + i * (titleFit.size * 1.05));
+      });
+      const endTitleY = titleY + (titleFit.lines.length - 1) * (titleFit.size * 1.05);
 
-    // Headline in high-impact Cream
-    const titleFit = fitLines(ctx, copy.headline.toUpperCase(), 936, 3, 98, 70, s => `800 ${s}px ${sans}`);
-    ctx.fillStyle = C.cream;
-    titleFit.lines.forEach((line, i) => {
-      // Accent color on the last line for maximum punch
-      if (i === titleFit.lines.length - 1 && titleFit.lines.length > 1) {
-        ctx.fillStyle = C.orange;
-      } else {
-        ctx.fillStyle = C.cream;
+      // Accent Word in Cream (#FAF6EF) with auto-scaling protection
+      const accentY = endTitleY + 160;
+      const accentText = copy.closing.toUpperCase();
+      let accentSize = 130;
+      ctx.font = `800 ${accentSize}px ${sans}`;
+      let accentW = ctx.measureText(accentText).width;
+      if (accentW > maxTextWidth) {
+        accentSize = Math.floor(accentSize * (maxTextWidth / accentW));
+        ctx.font = `800 ${accentSize}px ${sans}`;
+        accentW = ctx.measureText(accentText).width;
       }
-      ctx.font = `800 ${titleFit.size}px ${sans}`;
-      ctx.fillText(line, 72, 225 + i * (titleFit.size * 1.08));
-    });
+      ctx.fillStyle = C.cream;
+      ctx.fillText(accentText, 80, accentY);
 
-    // Integrated photo block with subtle dark framing
-    const photoY = 560;
-    const photoH = 550;
+      // Dynamic brush underline
+      const brushW = Math.min(accentW * 0.95, maxTextWidth);
+      drawDynamicBrushStroke(ctx, 85, accentY + 28, brushW, C.cream);
+
+      // Support Statement
+      const supportFit = fitLines(ctx, copy.support, maxTextWidth, 3, 34, 24, s => `600 ${s}px ${sans}`);
+      ctx.fillStyle = C.cream;
+      supportFit.lines.forEach((line, i) => {
+        ctx.fillText(line, 80, 1120 + i * (supportFit.size * 1.3));
+      });
+
+      // Discreet clean footer (no rigid divider line)
+      ctx.fillStyle = "rgba(250, 246, 239, 0.55)";
+      ctx.font = `500 15px ${sans}`;
+      ctx.fillText("PUNA TECH // SISTEMAS CON INTENCIÓN", 80, 1280);
+      return;
+    }
+
+    if (isCream) {
+      // 02 · Fondo Liso Crema (Editorial Minimal)
+      ctx.fillStyle = C.cream;
+      ctx.fillRect(0, 0, 1080, 1350);
+
+      // Header: Puna Tech Official Brand Mark
+      drawBrandMarkMountains(ctx, 80, 70, false, true);
+
+      // Massive Headline in Ink with dynamic fit
+      const titleFit = fitLines(ctx, copy.headline.toUpperCase(), maxTextWidth, 2, 130, 80, s => `800 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      const titleY = 360;
+      titleFit.lines.forEach((line, i) => {
+        ctx.font = `800 ${titleFit.size}px ${sans}`;
+        ctx.fillText(line, 80, titleY + i * (titleFit.size * 1.05));
+      });
+      const endTitleY = titleY + (titleFit.lines.length - 1) * (titleFit.size * 1.05);
+
+      // Accent Word in Terracotta (#BF5226) with auto-scaling protection
+      const accentY = endTitleY + 160;
+      const accentText = copy.closing.toUpperCase();
+      let accentSize = 130;
+      ctx.font = `800 ${accentSize}px ${sans}`;
+      let accentW = ctx.measureText(accentText).width;
+      if (accentW > maxTextWidth) {
+        accentSize = Math.floor(accentSize * (maxTextWidth / accentW));
+        ctx.font = `800 ${accentSize}px ${sans}`;
+        accentW = ctx.measureText(accentText).width;
+      }
+      ctx.fillStyle = C.orange;
+      ctx.fillText(accentText, 80, accentY);
+
+      // Dynamic brush underline
+      const brushW = Math.min(accentW * 0.95, maxTextWidth);
+      drawDynamicBrushStroke(ctx, 85, accentY + 28, brushW, C.orange);
+
+      // Support Statement
+      const supportFit = fitLines(ctx, copy.support, maxTextWidth, 3, 34, 24, s => `600 ${s}px ${sans}`);
+      ctx.fillStyle = C.ink;
+      supportFit.lines.forEach((line, i) => {
+        ctx.fillText(line, 80, 1120 + i * (supportFit.size * 1.3));
+      });
+
+      // Discreet clean footer (no rigid divider line)
+      ctx.fillStyle = "rgba(24, 20, 16, 0.45)";
+      ctx.font = `500 15px ${sans}`;
+      ctx.fillText("ESTRATEGIA // PROCESOS // RESULTADOS", 80, 1280);
+      return;
+    }
+
+    // 03 · Fotografía B&W (Monochrome Depth)
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(72, photoY, 936, photoH);
-    ctx.clip();
-    drawImageCover(ctx, photo, 72, photoY, 936, photoH, 0.65);
-
-    // Gradient vignette overlay at bottom of photo
-    const grad = ctx.createLinearGradient(72, photoY + photoH - 180, 72, photoY + photoH);
-    grad.addColorStop(0, "rgba(18, 16, 14, 0)");
-    grad.addColorStop(1, "rgba(18, 16, 14, 0.95)");
-    ctx.fillStyle = grad;
-    ctx.fillRect(72, photoY + photoH - 180, 936, 180);
+    if (photo) {
+      // High-contrast dramatic B&W filter
+      ctx.filter = "grayscale(100%) contrast(140%) brightness(55%)";
+      drawImageCover(ctx, photo, 0, 0, 1080, 1350, 0.5);
+    } else {
+      ctx.fillStyle = C.ink;
+      ctx.fillRect(0, 0, 1080, 1350);
+    }
     ctx.restore();
 
-    // Floating support statement in Newsreader Italic over photo lower area
-    const supportFit = fitLines(ctx, copy.support, 860, 2, 44, 28, s => `italic 500 ${s}px ${serif}`);
+    // Dark moody vignette / gradient overlay to ensure WCAG AAA readability
+    const gradient = ctx.createLinearGradient(0, 0, 0, 1350);
+    gradient.addColorStop(0, "rgba(18, 16, 14, 0.85)");
+    gradient.addColorStop(0.3, "rgba(18, 16, 14, 0.48)");
+    gradient.addColorStop(0.7, "rgba(18, 16, 14, 0.65)");
+    gradient.addColorStop(1, "rgba(18, 16, 14, 0.95)");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1080, 1350);
+
+    // Header: Puna Tech Official Brand Mark
+    drawBrandMarkMountains(ctx, 80, 70, true, true);
+
+    // Massive Headline in Cream with dynamic fit
+    const titleFit = fitLines(ctx, copy.headline.toUpperCase(), maxTextWidth, 2, 130, 80, s => `800 ${s}px ${sans}`);
+    ctx.fillStyle = C.cream;
+    const titleY = 360;
+    titleFit.lines.forEach((line, i) => {
+      ctx.font = `800 ${titleFit.size}px ${sans}`;
+      ctx.fillText(line, 80, titleY + i * (titleFit.size * 1.05));
+    });
+    const endTitleY = titleY + (titleFit.lines.length - 1) * (titleFit.size * 1.05);
+
+    // Accent Word in Terracotta (#BF5226) with auto-scaling protection
+    const accentY = endTitleY + 160;
+    const accentText = copy.closing.toUpperCase();
+    let accentSize = 130;
+    ctx.font = `800 ${accentSize}px ${sans}`;
+    let accentW = ctx.measureText(accentText).width;
+    if (accentW > maxTextWidth) {
+      accentSize = Math.floor(accentSize * (maxTextWidth / accentW));
+      ctx.font = `800 ${accentSize}px ${sans}`;
+      accentW = ctx.measureText(accentText).width;
+    }
+    ctx.fillStyle = C.orange;
+    ctx.fillText(accentText, 80, accentY);
+
+    // Dynamic brush underline
+    const brushW = Math.min(accentW * 0.95, maxTextWidth);
+    drawDynamicBrushStroke(ctx, 85, accentY + 28, brushW, C.orange);
+
+    // Support Statement
+    const supportFit = fitLines(ctx, copy.support, maxTextWidth, 3, 34, 24, s => `600 ${s}px ${sans}`);
     ctx.fillStyle = C.cream;
     supportFit.lines.forEach((line, i) => {
-      ctx.fillText(line, 104, photoY + photoH - 85 + i * (supportFit.size * 1.15));
+      ctx.fillText(line, 80, 1120 + i * (supportFit.size * 1.3));
     });
 
-    // Subtle divider
-    ctx.strokeStyle = "rgba(247, 239, 226, 0.22)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(72, 1210);
-    ctx.lineTo(1008, 1210);
-    ctx.stroke();
-
-    // Footer
-    ctx.fillStyle = "rgba(247, 239, 226, 0.9)";
-    fitLines(ctx, copy.closing, 820, 1, 24, 18, s => `500 ${s}px ${sans}`);
-    ctx.fillText(copy.closing, 72, 1264);
-
-    ctx.textAlign = "right";
-    ctx.fillStyle = C.orange;
-    ctx.font = `700 16px ${sans}`;
-    ctx.fillText("PUNA TECH // 2026 ↗", 1008, 1264);
-    ctx.textAlign = "left";
+    // Discreet clean footer (no rigid divider line)
+    ctx.fillStyle = "rgba(250, 246, 239, 0.55)";
+    ctx.font = `500 15px ${sans}`;
+    ctx.fillText("AUTOMATIZACIÓN HUMANA // 2026", 80, 1280);
     return;
   }
 
