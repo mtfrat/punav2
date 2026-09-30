@@ -101,6 +101,7 @@ async function main() {
     }
   }
 
+  let scoutProspects = [];
   // 2. Scout Agent (B2B Leads & Niches)
   if (options.agent === "all" || options.agent === "scout") {
     console.log("▶ Ejecutando: Scout (Leads & Niche Explorer)...");
@@ -108,7 +109,8 @@ async function main() {
       const agent = new ScoutAgent({ llmClient, config });
       const res = await agent.run();
       results.push(res);
-      console.log(`  ✔ Completado: ${res.output?.prospects?.length || 0} prospectos B2B y 1 oportunidad de nicho evaluada.`);
+      scoutProspects = res.output?.prospects || [];
+      console.log(`  ✔ Completado: ${scoutProspects.length} prospectos B2B y 1 oportunidad de nicho evaluada.`);
     } catch (err) {
       console.error(`  ✖ Error en Scout Agent: ${err.message}`);
       results.push({ agent: "Scout (Leads & Niche Explorer)", status: "error", error: err.message });
@@ -117,12 +119,12 @@ async function main() {
 
   // 3. Demo Builder Agent
   if (options.agent === "all" || options.agent === "builder") {
-    console.log("▶ Ejecutando: Showcase & Demo Builder...");
+    console.log("▶ Ejecutando: Showcase & Demo Personalizer...");
     try {
       const agent = new DemoBuilderAgent({ llmClient, config });
-      const res = await agent.run();
+      const res = await agent.run({ prospects: scoutProspects });
       results.push(res);
-      console.log(`  ✔ Completado: Prototipo diseñado -> "${res.output?.demo_title || "Demo"}"`);
+      console.log(`  ✔ Completado: Demos personalizadas -> "${res.output?.demo_title || "Demo"}"`);
     } catch (err) {
       console.error(`  ✖ Error en Demo Builder: ${err.message}`);
       results.push({ agent: "Showcase & Demo Builder", status: "error", error: err.message });

@@ -93,6 +93,8 @@ interface ParsedProspect {
   vertical: string;
   role: string;
   website?: string;
+  email?: string;
+  demoUrl?: string;
   friction: string;
   strategy: string;
   subject: string;
@@ -167,6 +169,12 @@ function parseReportData(markdown: string) {
         strategy: "",
         subject: "",
       };
+    } else if (currentProspect && line.includes("*Contacto:*")) {
+      const emailMatch = line.match(/✉️\s*`([^`]+)`/);
+      if (emailMatch) currentProspect.email = emailMatch[1].trim();
+    } else if (currentProspect && line.includes("*Demo personalizada:*")) {
+      const demoMatch = line.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      if (demoMatch) currentProspect.demoUrl = demoMatch[2].trim();
     } else if (currentProspect && line.includes("*Cuello de botella:*")) {
       currentProspect.friction = line.replace(/.*\*Cuello de botella:\*/, "").trim();
     } else if (currentProspect && line.includes("*Estrategia:*")) {
@@ -321,6 +329,7 @@ export async function executeNightshiftDecision(options: {
                   country_code: mapCountryCode(pr.market),
                   city: pr.market,
                   website: pr.website || null,
+                  public_email: pr.email || null,
                   normalized_domain: pr.website
                     ? (() => {
                         try {
@@ -336,6 +345,8 @@ export async function executeNightshiftDecision(options: {
                     cuello_de_botella: pr.friction,
                     estrategia: pr.strategy,
                     target_role: pr.role,
+                    email_verificado: pr.email ? true : false,
+                    demo_url: pr.demoUrl || null,
                   },
                   updated_at: new Date().toISOString(),
                 },
@@ -355,6 +366,7 @@ export async function executeNightshiftDecision(options: {
                 `Detectamos que en ${pr.name} enfrentan un desafío operativo: ${pr.friction}`,
                 "",
                 `Nuestra propuesta de valor: ${pr.strategy}`,
+                pr.demoUrl ? `\nSimulador de ahorro interactivo para ${pr.name}: ${pr.demoUrl}` : "",
                 "",
                 `¿Tendrías 10 minutos esta semana para una breve demo técnica?`,
                 "",

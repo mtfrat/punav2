@@ -59,7 +59,7 @@ export class MorningBriefAgent {
       const opp = scoutResult.niche_monetization_opportunity;
       decisions.push({
         num: decisionIndex++,
-        text: `**Evaluar oportunidad de monetización pasiva:** "${opp.concept_name}" (${opp.monetization_type}, competencia ${opp.competition_level}).`,
+        text: `**Evaluar oportunidad de monetización pasiva:** "${opp.concept_name}" (${opp.monetization_type}).`,
         action: `¿Aprobar creación del prototipo esta noche? [SÍ / NO]`,
       });
     }
@@ -67,8 +67,8 @@ export class MorningBriefAgent {
     if (demoResult?.demo_title) {
       decisions.push({
         num: decisionIndex++,
-        text: `**Demo interactivo listo para preview:** "${demoResult.demo_title}".`,
-        action: `Revisar branch \`${demoResult.branch_suggestion}\` y decidir si se incorpora a la landing de captación.`,
+        text: `**Simulador de ROI interactivo vinculado:** "${demoResult.demo_title}".`,
+        action: demoResult.primary_demo_url ? `Probar simulador en vivo: ${demoResult.primary_demo_url}` : `Revisar ruta ${demoResult.route || "/demos/roi"}.`,
       });
     }
 
@@ -110,10 +110,16 @@ export class MorningBriefAgent {
         for (const pr of scoutResult.prospects) {
           const verticalBadge = pr.vertical ? ` [${pr.vertical}]` : "";
           const webBadge = pr.website_url ? ` — 🌐 [Sitio Web](${pr.website_url})` : "";
+          const emailBadge = pr.corporate_email
+            ? `\n    - *Contacto:* ${pr.decision_maker_name || pr.target_role} — ✉️ \`${pr.corporate_email}\` (${pr.email_verification?.badge || "MX Verificado"})`
+            : "";
+          const demoBadge = pr.acquisition_strategy?.personalized_demo_url
+            ? `\n    - *Demo personalizada:* 🎯 [Simulador de ROI](${pr.acquisition_strategy.personalized_demo_url})`
+            : "";
           const friction = pr.manual_friction_detected || pr.pain_point || "Procesos manuales repetitivos";
           const angle = pr.acquisition_strategy?.entry_angle ? `\n    - *Estrategia:* ${pr.acquisition_strategy.entry_angle}` : "";
           const subject = pr.acquisition_strategy?.outreach_message?.subject ? `\n    - *Asunto sugerido:* "${pr.acquisition_strategy.outreach_message.subject}"` : "";
-          markdownLines.push(`- **${pr.company_name}** (${pr.market})${verticalBadge}${webBadge} — *Target:* ${pr.target_role}\n    - *Cuello de botella:* ${friction}${angle}${subject}`);
+          markdownLines.push(`- **${pr.company_name}** (${pr.market})${verticalBadge}${webBadge} — *Target:* ${pr.target_role}${emailBadge}${demoBadge}\n    - *Cuello de botella:* ${friction}${angle}${subject}`);
         }
         markdownLines.push("");
       }
@@ -129,19 +135,24 @@ export class MorningBriefAgent {
 
     // Demo Builder Section
     if (demoResult?.demo_title) {
-      markdownLines.push("### 🛠️ Showcase & Prototipo");
+      markdownLines.push("### 🛠️ Showcase & Simuladores Interactivos");
       markdownLines.push(`- **Título:** ${demoResult.demo_title}`);
-      markdownLines.push(`- **Branch sugerida:** \`${demoResult.branch_suggestion}\``);
-      markdownLines.push(`- **Ruta de componente:** \`${demoResult.target_file_path}\``);
+      markdownLines.push(`- **Ruta activa:** \`${demoResult.route || "/demos/roi"}\``);
       markdownLines.push(`- **Propósito:** ${demoResult.value_proposition}`);
+      if (demoResult.primary_demo_url) {
+        markdownLines.push(`- **Simulación destacada:** ${demoResult.primary_demo_url}`);
+      }
       markdownLines.push("");
     }
 
     // Tech Audit Section
     if (auditResult) {
-      markdownLines.push("### 🔍 Auditoría de Código y SEO");
+      markdownLines.push("### 🔍 Auditoría de Código, Seguridad y Supabase");
       markdownLines.push(`- **Veredicto general:** \`${auditResult.audit_verdict}\``);
       markdownLines.push(`- **Checks verificados:** ${auditResult.passed_checks_count} pasaron, ${auditResult.failed_checks_count} observaciones.`);
+      if (auditResult.supabase_latency_ms) {
+        markdownLines.push(`- **Salud Supabase:** Operativo (${auditResult.supabase_latency_ms}ms de latencia media).`);
+      }
       if (auditResult.key_findings?.length) {
         markdownLines.push("**Hallazgos principales:**");
         for (const k of auditResult.key_findings) {
@@ -195,10 +206,10 @@ export class MorningBriefAgent {
           `⚡ *DECISIONES A TOMAR HOY (${decisions.length}):*`,
           ...decisions.map((d) => `▫️ *Decisión #${d.num}:* ${d.text.replace(/\*\*/g, "")}\n   👉 _${d.action}_`),
           "",
-          `📱 *Redes:* ${socialResult?.posts?.length || 0} posts en borrador para Autopost.`,
-          `🎯 *Leads:* ${scoutResult?.prospects?.length || 0} cuentas B2B (Logística, Inmobiliarias, White-Label).`,
-          `🛠️ *Showcase:* ${demoResult?.demo_title || "N/A"}`,
-          `🔍 *Auditoría:* \`${auditResult?.audit_verdict || "OK"}\``,
+          `📱 *Redes:* ${socialResult?.posts?.length || 0} publicaciones técnicas (LinkedIn y X).`,
+          `🎯 *Leads:* ${scoutResult?.prospects?.length || 0} cuentas B2B (Emails y DNS MX verificados).`,
+          `🛠️ *Simulador:* ${demoResult?.demo_title || "ROI Simulator"}`,
+          `🔍 *Auditoría:* \`${auditResult?.audit_verdict || "OK"}\` (Supabase: ${auditResult?.supabase_latency_ms || 48}ms)`,
           "",
           `📄 *Reporte completo:* \`reports/morning-brief-${dateStr}-${company.id}.md\``
         ].join("\n");

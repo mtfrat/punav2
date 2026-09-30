@@ -19,6 +19,8 @@ export default [
   route("terms", "./routes/legal.tsx", { id: "terms-en" }),
   route("es/privacidad", "./routes/legal.tsx", { id: "privacy-es" }),
   route("es/terminos", "./routes/legal.tsx", { id: "terms-es" }),
+  route("demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-en" }),
+  route("es/demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-es" }),
   route("en", "./routes/legacy-redirect.ts", { id: "legacy-en-root" }),
   route("en/*", "./routes/legacy-redirect.ts", { id: "legacy-en-wildcard" }),
   route("sitemap.xml", "./routes/sitemap.ts"),

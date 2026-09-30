@@ -42,6 +42,9 @@ interface ParsedReport {
     vertical: string;
     role: string;
     website?: string;
+    email?: string;
+    emailBadge?: string;
+    demoUrl?: string;
     friction: string;
     strategy: string;
     subject: string;
@@ -90,7 +93,7 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
       if (text.toLowerCase().includes("post") || text.toLowerCase().includes("autopost")) category = "social";
       else if (text.toLowerCase().includes("outreach") || text.toLowerCase().includes("cuentas b2b")) category = "prospects";
       else if (text.toLowerCase().includes("monetización") || text.toLowerCase().includes("nicho")) category = "monetization";
-      else if (text.toLowerCase().includes("demo") || text.toLowerCase().includes("preview")) category = "demo";
+      else if (text.toLowerCase().includes("demo") || text.toLowerCase().includes("preview") || text.toLowerCase().includes("simulador")) category = "demo";
       else if (text.toLowerCase().includes("refactor") || text.toLowerCase().includes("técnico") || text.toLowerCase().includes("seo")) category = "audit";
 
       currentDecision = { num, text, category };
@@ -164,6 +167,17 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
         strategy: "",
         subject: "",
       };
+    } else if (currentProspect && line.includes("*Contacto:*")) {
+      const emailMatch = line.match(/✉️\s*`([^`]+)`(?:\s*\(([^)]+)\))?/);
+      if (emailMatch) {
+        currentProspect.email = emailMatch[1].trim();
+        currentProspect.emailBadge = emailMatch[2] ? emailMatch[2].trim() : "MX OK";
+      }
+    } else if (currentProspect && line.includes("*Demo personalizada:*")) {
+      const demoMatch = line.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      if (demoMatch) {
+        currentProspect.demoUrl = demoMatch[2].trim();
+      }
     } else if (currentProspect && line.includes("*Cuello de botella:*")) {
       currentProspect.friction = line.replace(/.*\*Cuello de botella:\*/, "").trim();
     } else if (currentProspect && line.includes("*Estrategia:*")) {
@@ -689,6 +703,41 @@ export default function OpsNightshift({ loaderData }: { loaderData: any }) {
                         </a>
                       )}
                     </div>
+
+                    {pr.email && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginTop: "0.3rem", fontSize: "0.76rem" }}>
+                        <span>✉️ <strong>{pr.email}</strong></span>
+                        <span style={{ fontSize: "0.65rem", padding: "0.05rem 0.35rem", background: "var(--paper-deep)", border: "1px solid var(--line)", borderRadius: "2px", fontWeight: 600 }}>
+                          {pr.emailBadge || "MX OK"}
+                        </span>
+                      </div>
+                    )}
+
+                    {pr.demoUrl && (
+                      <div style={{ marginTop: "0.45rem" }}>
+                        <a
+                          href={pr.demoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.3rem",
+                            padding: "0.2rem 0.6rem",
+                            fontSize: "0.72rem",
+                            background: "var(--surface)",
+                            border: "1px solid var(--terracotta)",
+                            color: "var(--terracotta)",
+                            fontWeight: 650,
+                            textDecoration: "none",
+                            borderRadius: "2px",
+                          }}
+                        >
+                          🎯 Ver Simulación de ROI Personalizada
+                          <ExternalLink size={10} />
+                        </a>
+                      </div>
+                    )}
 
                     <p style={{ margin: "0.45rem 0 0.2rem", fontSize: "0.78rem", color: "var(--ink)" }}>
                       <strong>Cuello de botella (Dolor):</strong> {pr.friction}

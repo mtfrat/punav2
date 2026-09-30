@@ -65,11 +65,13 @@ assert.equal(scoutRes.status, "success");
 assert(scoutRes.output.prospects.length >= 1);
 assert(scoutRes.output.niche_monetization_opportunity.concept_name.length > 0);
 
-// Demo Builder Agent
+// Demo Builder Agent (Showcase & Personalizer)
 const demoAgent = new DemoBuilderAgent({ llmClient, config: punaConfig });
-const demoRes = await demoAgent.run();
+const demoRes = await demoAgent.run({ prospects: scoutRes.output.prospects });
 assert.equal(demoRes.status, "success");
-assert(demoRes.output.component_code.includes("export function"));
+assert(demoRes.output.demo_title.length > 0);
+assert(demoRes.output.target_file_path.includes("demo-roi"));
+assert(demoRes.output.primary_demo_url.includes("/demos/roi"));
 
 // Tech Audit Agent
 const auditAgent = new TechAuditAgent({ llmClient, config: punaConfig });

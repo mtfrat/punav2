@@ -4,9 +4,9 @@
     "name": "Puna Tech",
     "industry": "AI & Software Factory",
     "tagline": "Software e inteligencia artificial que transforman operaciones de negocio",
-    "website": "https://puna-tech.com",
+    "website": "https://www.puna-tech.com",
     "locales": ["es", "en"],
-    "valueProposition": "Desarrollo de software a medida, portales operativos y agentes de IA para empresas tradicionales y agencias que necesitan eliminar el caos manual de planillas y WhatsApp.",
+    "valueProposition": "Desarrollo de software a medida, portales operativos y pipelines de datos para empresas tradicionales y agencias que necesitan eliminar el caos manual de planillas y WhatsApp.",
     "targetAudience": [
       "Gerentes de operaciones y dueños de empresas de logística, transporte y distribución",
       "Directores de agencias de marketing y medios que necesitan un brazo técnico white-label",
@@ -25,13 +25,14 @@
   "agents": {
     "social": {
       "enabled": true,
-      "channels": ["linkedin", "x", "instagram"],
+      "channels": ["linkedin", "x"],
       "postsPerNight": 3,
       "targetPlatformFormat": "autopost",
       "pillars": [
-        "Cómo reemplazar hojas de cálculo y WhatsApp por portales operativos simples",
-        "Por qué las agencias digitales multiplican sus ingresos ofreciendo desarrollo white-label",
-        "Casos reales de ahorro de 15+ horas semanales con automatizaciones de n8n y Supabase"
+        "StarPress: Captura automatizada de reseñas en Google Maps con IA y +34% de calificaciones verificadas",
+        "Viralyt: Plataforma analítica de YouTube para predecir videos virales con cálculo de velocidad por hora (VPH)",
+        "videome: Inferencia serverless en GPU para generación cinemática de video en <60s a costo fijo $0",
+        "Portales B2B: Sustitución de 15+ horas semanales de caos en WhatsApp y planillas por portales en Supabase"
       ]
     },
     "scout": {
@@ -57,7 +58,8 @@
         "portal seguimiento pedidos flota logística",
         "desarrollo white label software agencias marketing",
         "automatizar extracción datos facturas contratos pdf",
-        "sistema gestion cuotas y leads inmobiliaria"
+        "sistema gestion cuotas y leads inmobiliaria",
+        "asistente operativo carga planillas conciliacion"
       ],
       "affiliateFocus": [
         "Software empresarial de gestión y CRMs (HubSpot, Notion, Supabase)",
@@ -67,23 +69,23 @@
     },
     "demoBuilder": {
       "enabled": true,
-      "techStack": "React 19 + React Router Framework Mode + Tailwind CSS",
-      "outputDirectory": "src/pages/demos",
+      "techStack": "React 19 + React Router + Tailwind CSS",
+      "route": "/demos/roi",
+      "targetFilePath": "src/routes/demo-roi.tsx",
       "demoTypes": [
         "Calculadora de ahorro de horas hombre en planillas de cálculo",
-        "Simulador interactivo de portal de seguimiento de envíos/operaciones",
-        "Extractor de datos de comprobantes y facturas con IA"
+        "Simulador interactivo de ROI operativo por empresa"
       ]
     },
     "techAudit": {
       "enabled": true,
       "runCommands": [
         "node scripts/verify-build-seo.mjs",
-        "node scripts/validate-n8n-workflows.mjs",
         "npm run lint"
       ],
       "checkDependencies": true,
-      "checkSeo": true
+      "checkSeo": true,
+      "checkSupabase": true
     },
     "morningBrief": {
       "enabled": true,
