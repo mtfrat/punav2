@@ -221,10 +221,12 @@ export async function executeNightshiftDecision(options: {
 }): Promise<ExecutionResult> {
   const { decisionNumOrAll, dateStr, actor, notes } = options;
   const isAll = String(decisionNumOrAll).toLowerCase() === "all";
-  const targetNumbers = isAll ? [1, 2, 3, 4, 5] : [Number(decisionNumOrAll)];
 
   const markdown = options.reportContent || (await getReportMarkdown(dateStr));
   const { socialPosts, prospects } = parseReportData(markdown);
+
+  const parsedNumbers = Array.from(markdown.matchAll(/- \[[ x]?\] \*\*Decisión #(\d+):\*\*/g)).map((m) => Number(m[1]));
+  const targetNumbers = isAll ? (parsedNumbers.length ? parsedNumbers : [1, 2, 3, 4, 5]) : [Number(decisionNumOrAll)];
 
   const supabase = getSupabaseClient();
   const states = await loadDecisionsState();
@@ -387,9 +389,30 @@ export async function executeNightshiftDecision(options: {
                   { onConflict: "prospect_id" }
                 );
               insertedCount++;
+
+              // Despacho de correo si tiene email verificado
+              if (pr.email) {
+                try {
+                  const mailer = await import("../../nightshift/core/mailer.mjs");
+                  const mailRes = await mailer.sendOutboundEmail({
+                    to: pr.email,
+                    subject: draftSubject,
+                    text: draftMessage,
+                    demoUrl: pr.demoUrl,
+                  });
+                  if (mailRes?.success) {
+                    if (!mailRes.simulated) {
+                      await supabase.from("prospect_accounts").update({ status: "contacted" }).eq("id", account.id);
+                      await supabase.from("prospect_drafts").update({ status: "sent", sent_at: new Date().toISOString() }).eq("prospect_id", account.id);
+                    }
+                  }
+                } catch (mErr: any) {
+                  console.warn("[NightshiftExecutor] Mailer dispatch notice:", mErr.message);
+                }
+              }
             }
           }
-          actionSummaries.push(`🎯 #2: Importados ${insertedCount} prospectos calificados a /ops/prospects con borradores listos.`);
+          actionSummaries.push(`🎯 #2: Importados ${insertedCount} prospectos calificados a /ops/prospects con despacho ejecutado (SMTP o simulación segura).`);
         } catch (e: any) {
           console.warn("[NightshiftExecutor] Prospect insert failed:", e.message);
           actionSummaries.push(`🎯 #2: Aprobado.`);
@@ -416,6 +439,12 @@ export async function executeNightshiftDecision(options: {
     else if (num === 5) {
       actionSummaries.push(`⚡ #5: Aprobado refactor técnico.`);
       executedDecisions.push(5);
+    }
+
+    // 6+. Inbound Reply or Custom Decision
+    else if (num >= 6) {
+      actionSummaries.push(`📬 #${num}: Aprobada respuesta a prospecto entrante (Inbound).`);
+      executedDecisions.push(num);
     }
 
     // Record audit entry in Supabase

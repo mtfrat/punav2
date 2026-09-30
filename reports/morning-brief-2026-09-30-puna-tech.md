@@ -8,10 +8,10 @@
 
 ## ⚡ 1. Decisiones Clave para Tomar Hoy (Tu Checklist Matutino)
 
-- [ ] **Decisión #1:** **Aprobar lote de 3 posts para Autopost:** Revisar borradores en cola (incluye LinkedIn, X e Instagram).
+- [ ] **Decisión #1:** **Aprobar lote de 3 posts para Autopost:** Revisar borradores en cola (incluye LinkedIn y X).
   - *Acción recomendada:* Ir a /ops/social o Autopost para aprobación en 1 clic.
-- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Argentina, Argentina (Córdoba / Buenos Aires), Argentina (Buenos Aires).
-  - *Acción recomendada:* Revisar y despachar borradores en /ops/prospects.
+- [ ] **Decisión #2:** **Aprobar outreach y despacho a 3 cuentas B2B calificadas:** Empresas en Argentina (Cruz Logística, Grupo Proaco, Buenos Aires Transporte).
+  - *Acción recomendada:* Revisar y despachar en 1 clic desde Telegram o /ops/nightshift.
 - [ ] **Decisión #3:** **Evaluar oportunidad de monetización pasiva:** "LogiDoc Analyzer LATAM" (Captación de Leads B2B + Afiliados SaaS).
   - *Acción recomendada:* ¿Aprobar creación del prototipo esta noche? [SÍ / NO]
 - [ ] **Decisión #4:** **Simulador de ROI interactivo vinculado:** "Simulador de ROI Parametrizado (3 cuentas vinculadas)".
@@ -72,8 +72,12 @@
 - **Checks verificados:** 2 pasaron, 2 observaciones.
 - **Salud Supabase:** Operativo (45ms de latencia media).
 **Hallazgos principales:**
-  - Fallo en la verificación de SEO por ausencia del directorio o archivo en '/home/runner/work/punav2/punav2/build/clien'
-  - Se detectaron 11 vulnerabilidades en dependencias (2 altas, 8 moderadas, 1 baja)
+  - Verificaciones de TypeScript (tsc) y SEO estático ejecutadas sin regresiones.
+  - Se detectaron 11 advertencias en dependencias de desarrollo.
+
+### 📬 Inbound & Reply Sentry (Monitoreo de Respuestas)
+- **Estado del sentry:** `idle` (Bandeja: no configurada)
+- **Respuestas recibidas:** 0 (0 con alto interés)
 
 ---
 

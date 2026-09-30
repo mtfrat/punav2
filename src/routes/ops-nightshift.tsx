@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Sliders,
   ExternalLink,
+  Mail,
 } from "lucide-react";
 import { EmptyState, formatDate, OpsPageHeader, StatusBadge } from "../components/ops";
 import { assertTrustedMutation, opsData, requireAdmin } from "../lib/admin.server";
@@ -26,7 +27,7 @@ interface DecisionItem {
   num: number;
   text: string;
   action: string;
-  category: "social" | "prospects" | "monetization" | "demo" | "audit" | "other";
+  category: "social" | "prospects" | "monetization" | "demo" | "audit" | "inbound" | "other";
   status: "pending" | "approved" | "rejected";
 }
 
@@ -52,6 +53,20 @@ interface ParsedReport {
   nicheOpportunity?: { concept: string; model: string; nextStep: string };
   demo?: { title: string; branch: string; path: string; purpose: string };
   audit?: { verdict: string; passed: number; observations: number; findings: string[] };
+  inbound?: {
+    status: string;
+    inbox: string;
+    repliesCount: number;
+    highInterestCount: number;
+    replies: Array<{
+      badge: string;
+      from: string;
+      subject: string;
+      snippet: string;
+      action: string;
+      draftReply?: string;
+    }>;
+  };
 }
 
 function parseMarkdownReport(content: string, reportDate: string, savedStates: Record<string, any>): ParsedReport {
@@ -95,6 +110,7 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
       else if (text.toLowerCase().includes("monetización") || text.toLowerCase().includes("nicho")) category = "monetization";
       else if (text.toLowerCase().includes("demo") || text.toLowerCase().includes("preview") || text.toLowerCase().includes("simulador")) category = "demo";
       else if (text.toLowerCase().includes("refactor") || text.toLowerCase().includes("técnico") || text.toLowerCase().includes("seo")) category = "audit";
+      else if (text.toLowerCase().includes("inbound") || text.toLowerCase().includes("entrante") || text.toLowerCase().includes("responder a")) category = "inbound";
 
       currentDecision = { num, text, category };
     } else if (currentDecision && line.startsWith("- *Acción recomendada:*")) {
@@ -221,6 +237,59 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
     }
   }
 
+  // Parse Inbound Sentry Section
+  let inbound: ParsedReport["inbound"] = undefined;
+  let inInbound = false;
+  const inboundReplies: NonNullable<ParsedReport["inbound"]>["replies"] = [];
+  let currentInboundReply: Partial<NonNullable<ParsedReport["inbound"]>["replies"][0]> | null = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.includes("### 📬 Inbound & Reply Sentry")) {
+      inInbound = true;
+      inbound = {
+        status: "idle",
+        inbox: "no configurada",
+        repliesCount: 0,
+        highInterestCount: 0,
+        replies: inboundReplies,
+      };
+    } else if (inInbound && line.startsWith("### ")) {
+      inInbound = false;
+    } else if (inInbound) {
+      const statusMatch = line.match(/- \*\*Estado del sentry:\*\* `([^`]+)` \(Bandeja: ([^\)]+)\)/);
+      if (statusMatch && inbound) {
+        inbound.status = statusMatch[1];
+        inbound.inbox = statusMatch[2];
+      }
+      const countMatch = line.match(/- \*\*Respuestas recibidas:\*\* (\d+)(?: \((\d+) con alto interés\))?/);
+      if (countMatch && inbound) {
+        inbound.repliesCount = parseInt(countMatch[1], 10);
+        inbound.highInterestCount = countMatch[2] ? parseInt(countMatch[2], 10) : 0;
+      }
+      if (line.startsWith("- **[")) {
+        if (currentInboundReply?.from) inboundReplies.push(currentInboundReply as any);
+        const repMatch = line.match(/- \*\*\[([^\]]+)\]\*\* De: `([^`]+)` \| Asunto: "([^"]+)"/);
+        if (repMatch) {
+          currentInboundReply = {
+            badge: repMatch[1],
+            from: repMatch[2],
+            subject: repMatch[3],
+            snippet: "",
+            action: "",
+          };
+        }
+      } else if (currentInboundReply && line.startsWith("- *Mensaje:*")) {
+        currentInboundReply.snippet = line.replace("- *Mensaje:*", "").replace(/["']/g, "").trim();
+      } else if (currentInboundReply && line.startsWith("- *Acción requerida:*")) {
+        currentInboundReply.action = line.replace("- *Acción requerida:*", "").trim();
+      } else if (currentInboundReply && line.startsWith("- *Borrador sugerido:*")) {
+        currentInboundReply.draftReply = line.replace("- *Borrador sugerido:*", "").replace(/["']/g, "").trim();
+      }
+    }
+  }
+  if (currentInboundReply?.from) inboundReplies.push(currentInboundReply as any);
+
   return {
     date: reportDate,
     duration,
@@ -231,6 +300,7 @@ function parseMarkdownReport(content: string, reportDate: string, savedStates: R
     nicheOpportunity,
     demo,
     audit,
+    inbound,
   };
 }
 
@@ -800,6 +870,37 @@ export default function OpsNightshift({ loaderData }: { loaderData: any }) {
                 </div>
               )}
             </div>
+
+            {/* Inbound & Respuestas Entrantes */}
+            {report.inbound?.replies?.length ? (
+              <div style={{ padding: "1.5rem", border: "1px solid var(--ink)", background: "var(--surface)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+                  <Mail size={18} style={{ color: "var(--terracotta)" }} />
+                  <h3 style={{ margin: 0, fontSize: "1.1rem" }}>📬 Inbound & Respuestas ({report.inbound.replies.length})</h3>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: "var(--ink-soft)", marginBottom: "1rem" }}>
+                  Monitoreo IMAP: {report.inbound.highInterestCount} con alto interés para agendar demo:
+                </p>
+                <div style={{ display: "grid", gap: "0.8rem" }}>
+                  {report.inbound.replies.map((rep: any, idx: number) => (
+                    <div key={idx} style={{ padding: "0.9rem", border: "1px solid var(--line)", background: "#fff" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: "0.4rem" }}>
+                        <strong style={{ fontSize: "0.88rem", color: "var(--ink)" }}>{rep.from}</strong>
+                        <span style={{ fontSize: "0.65rem", padding: "0.1rem 0.4rem", background: rep.badge.includes("INTERÉS") ? "#dcfce7" : "var(--paper-deep)", border: "1px solid var(--line)", fontWeight: 700, color: rep.badge.includes("INTERÉS") ? "#15803d" : "var(--ink)" }}>
+                          {rep.badge}
+                        </span>
+                      </div>
+                      <p style={{ margin: "0.3rem 0 0", fontSize: "0.82rem", fontStyle: "italic", color: "var(--ink)" }}>
+                        "{rep.snippet}"
+                      </p>
+                      <p style={{ margin: "0.4rem 0 0", fontSize: "0.78rem", color: "var(--terracotta)", fontWeight: 600 }}>
+                        👉 {rep.action}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         </section>
       )}

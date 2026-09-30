@@ -160,6 +160,20 @@ export async function action({ request }: ActionFunctionArgs) {
       return data({ ok: true });
     }
 
+    if (text === "/despachar" || text === "/despachar_outbound" || text === "/outbound") {
+      const res = await executeNightshiftDecision({
+        decisionNumOrAll: 2,
+        dateStr: todayStr,
+        actor: {
+          email: "telegram-admin@puna-tech.com",
+          source: "telegram",
+        },
+      });
+
+      await sendTelegramMessage(chatId, `🚀 *Despacho Outbound Ejecutado:*\n\n${res.message}\n\n🔗 Panel: https://www.puna-tech.com/ops/prospects`);
+      return data({ ok: true });
+    }
+
     if (text === "/status" || text === "/estado") {
       const states = await loadDecisionsState();
       const todayKeys = Object.keys(states).filter((k) => k.startsWith(todayStr));
@@ -171,6 +185,7 @@ export async function action({ request }: ActionFunctionArgs) {
         `• Aprobadas: ${approved}`,
         "",
         `Para aprobar todo respondé: \`/aprobar todo\``,
+        `Para despachar outreach B2B: \`/despachar\` o \`/aprobar 2\``,
         `Para aprobar una individual: \`/aprobar 1\`, \`/aprobar 2\`, etc.`,
         `Panel web: https://www.puna-tech.com/ops/nightshift`,
       ].join("\n");
@@ -184,9 +199,9 @@ export async function action({ request }: ActionFunctionArgs) {
         `🤖 *Puna Tech Nightshift Bot*`,
         "",
         `Comandos disponibles:`,
-        `• \`/aprobar todo\` — Aprueba las 5 decisiones del día en bloque.`,
+        `• \`/aprobar todo\` — Aprueba las decisiones del día en bloque.`,
         `• \`/aprobar 1\` — Aprueba los borradores de redes para Autopost.`,
-        `• \`/aprobar 2\` — Importa los prospectos calificados a /ops/prospects.`,
+        `• \`/aprobar 2\` o \`/despachar\` — Despacha outreach B2B y envía correos (vía SMTP configurado o simulación).`,
         `• \`/aprobar 3\` — Aprueba la oportunidad de nicho.`,
         `• \`/aprobar 4\` — Aprueba el demo para preview.`,
         `• \`/aprobar 5\` — Aprueba el refactor técnico.`,

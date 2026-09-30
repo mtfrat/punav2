@@ -22,11 +22,26 @@ export class MorningBriefAgent {
     const scoutResult = results.find((r) => r.agent === "Scout (Leads & Niche Explorer)")?.output;
     const demoResult = results.find((r) => r.agent === "Showcase & Demo Builder")?.output;
     const auditResult = results.find((r) => r.agent === "Code & Tech Quality Auditor")?.output;
+    const inboundResult = results.find((r) => r.agent === "Inbound & Reply Sentry")?.output;
+
+    const alertLines = [];
+    if (inboundResult?.replies?.length) {
+      const highInterest = inboundResult.replies.filter((r) => r.intent === "INTERESTED");
+      if (highInterest.length > 0) {
+        alertLines.push(
+          `> [!IMPORTANT]`,
+          `> 🔥 **¡Atención Inbound! Se detectaron ${highInterest.length} respuesta(s) con alto interés comercial.**`,
+          ...highInterest.map((r) => `> - **${r.from}**: *"${r.snippet.slice(0, 90)}..."*`),
+          ""
+        );
+      }
+    }
 
     const markdownLines = [
       `# ☀️ Morning Executive Brief — ${company.name}`,
       `**Fecha:** ${dateStr} | **Duración del ciclo:** ${(executionTimeMs / 1000).toFixed(1)}s | **Empresa:** ${company.name} (${company.industry})`,
       "",
+      ...alertLines,
       `> [!NOTE]`,
       `> **Estado de la Flota:** Todos los agentes nocturnos completaron su ciclo en modo seguro (*Draft-First*). Ningún mensaje o cambio fue publicado sin tu consentimiento explícito.`,
       "",
@@ -39,10 +54,29 @@ export class MorningBriefAgent {
     const decisions = [];
     let decisionIndex = 1;
 
+    // Inbound immediate decisions
+    if (inboundResult?.replies?.length) {
+      for (const rep of inboundResult.replies) {
+        if (rep.intent === "INTERESTED" || rep.intent === "QUESTION") {
+          decisions.push({
+            num: decisionIndex++,
+            text: `**Responder a prospecto entrante (${rep.intent}):** \`${rep.from}\` — "${rep.snippet.slice(0, 60)}..."`,
+            action: `Despachar respuesta con Cal.com: ${rep.action_required || "Agendar demo"}`,
+          });
+        } else if (rep.intent === "UNSUBSCRIBE") {
+          decisions.push({
+            num: decisionIndex++,
+            text: `**Confirmar baja de prospecto:** \`${rep.from}\``,
+            action: `Registrar exclusión en base de datos.`,
+          });
+        }
+      }
+    }
+
     if (socialResult?.posts?.length) {
       decisions.push({
         num: decisionIndex++,
-        text: `**Aprobar lote de ${socialResult.posts.length} posts para Autopost:** Revisar borradores en cola (incluye LinkedIn, X e Instagram).`,
+        text: `**Aprobar lote de ${socialResult.posts.length} posts para Autopost:** Revisar borradores en cola (incluye LinkedIn y X).`,
         action: `Ir a /ops/social o Autopost para aprobación en 1 clic.`,
       });
     }
@@ -50,8 +84,8 @@ export class MorningBriefAgent {
     if (scoutResult?.prospects?.length) {
       decisions.push({
         num: decisionIndex++,
-        text: `**Aprobar outreach a ${scoutResult.prospects.length} cuentas B2B calificadas:** Empresas identificadas en ${scoutResult.prospects.map((p) => p.market).join(", ")}.`,
-        action: `Revisar y despachar borradores en /ops/prospects.`,
+        text: `**Aprobar outreach y despacho a ${scoutResult.prospects.length} cuentas B2B calificadas:** Empresas en ${scoutResult.prospects.map((p) => p.market).join(", ")}.`,
+        action: `Revisar y despachar en 1 clic desde Telegram o /ops/nightshift.`,
       });
     }
 
@@ -162,6 +196,27 @@ export class MorningBriefAgent {
       markdownLines.push("");
     }
 
+    // Inbound & Reply Sentry Section
+    if (inboundResult) {
+      markdownLines.push("### 📬 Inbound & Reply Sentry (Monitoreo de Respuestas)");
+      markdownLines.push(`- **Estado del sentry:** \`${inboundResult.status || "idle"}\` (Bandeja: ${inboundResult.inbox_monitored || "no configurada"})`);
+      markdownLines.push(`- **Respuestas recibidas:** ${inboundResult.new_replies_count || 0} (${inboundResult.high_priority_count || 0} con alto interés)`);
+      if (inboundResult.replies?.length) {
+        markdownLines.push("");
+        markdownLines.push("**Detalle de respuestas:**");
+        for (const rep of inboundResult.replies) {
+          const badge = rep.intent === "INTERESTED" ? "🔥 ALTO INTERÉS" : rep.intent === "QUESTION" ? "❓ CONSULTA TÉCNICA" : "🛑 BAJA";
+          markdownLines.push(`- **[${badge}]** De: \`${rep.from}\` | Asunto: "${rep.subject}"`);
+          markdownLines.push(`  - *Mensaje:* "${rep.snippet}"`);
+          markdownLines.push(`  - *Acción requerida:* ${rep.action_required}`);
+          if (rep.suggested_draft_reply?.body) {
+            markdownLines.push(`  - *Borrador sugerido:* "${rep.suggested_draft_reply.body.split("\n")[0]}..."`);
+          }
+        }
+      }
+      markdownLines.push("");
+    }
+
     // Budget Section
     markdownLines.push("---", "", "## 💰 3. Control de Presupuesto y Consumo", "");
     markdownLines.push(`- **Gasto total de la corrida nocturna:** **$${budgetSummary.totalSpentUsd.toFixed(4)} USD**`);
@@ -199,6 +254,10 @@ export class MorningBriefAgent {
 
     if (tgToken && tgChatId) {
       try {
+        const inboundLine = inboundResult?.new_replies_count
+          ? `📬 *Inbound:* ${inboundResult.new_replies_count} respuestas (${inboundResult.high_priority_count} calientes 🔥).`
+          : `📬 *Inbound:* 0 respuestas nuevas (Sentry activo).`;
+
         const tgMessage = [
           `☀️ *Morning Executive Brief — ${company.name}*`,
           `📅 *Fecha:* ${dateStr} | 💰 *Gasto:* $${budgetSummary.totalSpentUsd.toFixed(4)} USD`,
@@ -208,6 +267,7 @@ export class MorningBriefAgent {
           "",
           `📱 *Redes:* ${socialResult?.posts?.length || 0} publicaciones técnicas (LinkedIn y X).`,
           `🎯 *Leads:* ${scoutResult?.prospects?.length || 0} cuentas B2B (Emails y DNS MX verificados).`,
+          inboundLine,
           `🛠️ *Simulador:* ${demoResult?.demo_title || "ROI Simulator"}`,
           `🔍 *Auditoría:* \`${auditResult?.audit_verdict || "OK"}\` (Supabase: ${auditResult?.supabase_latency_ms || 48}ms)`,
           "",
@@ -220,7 +280,7 @@ export class MorningBriefAgent {
           ],
           [
             { text: "📱 #1 Redes", callback_data: `approve_dec:1:${dateStr}` },
-            { text: "🎯 #2 Leads", callback_data: `approve_dec:2:${dateStr}` },
+            { text: "🎯 #2 Leads & Dispatch", callback_data: `approve_dec:2:${dateStr}` },
           ],
           [
             { text: "💡 #3 Nicho", callback_data: `approve_dec:3:${dateStr}` },

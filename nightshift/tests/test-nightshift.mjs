@@ -79,19 +79,60 @@ const auditRes = await auditAgent.run();
 assert.equal(auditRes.status, "success");
 assert(auditRes.output.actionable_refactors.length >= 1);
 
-// Morning Brief Agent
+// Inbound & Reply Sentry Agent
+const { InboundSentryAgent } = await import("../agents/inbound-sentry-agent.mjs");
+const inboundAgent = new InboundSentryAgent({ llmClient, config: punaConfig });
+const inboundRes = await inboundAgent.run({
+  testEmails: [
+    { from: "carlos@transporte-sur.com", subject: "Re: Simulador ROI", snippet: "Nos interesa mucho coordinar una demo para la flota." },
+    { from: "laura@agenciacreativa.com", subject: "Re: Portales B2B", snippet: "Tienen experiencia integrando con APIs de Shopify y React?" },
+    { from: "baja@empresa.com", subject: "Re: Consulta", snippet: "Por favor desuscribir este correo de la lista." },
+  ],
+});
+assert.equal(inboundRes.status, "success");
+assert.equal(inboundRes.output.new_replies_count, 3);
+assert.equal(inboundRes.output.high_priority_count, 1);
+assert.equal(inboundRes.output.replies[0].intent, "INTERESTED");
+assert.equal(inboundRes.output.replies[1].intent, "QUESTION");
+assert.equal(inboundRes.output.replies[2].intent, "UNSUBSCRIBE");
+
+// Outbound Mailer Core Test
+const { sendOutboundEmail, formatEmailHtml } = await import("../core/mailer.mjs");
+const mailRes = await sendOutboundEmail({
+  to: "prospecto@ejemplo.com",
+  subject: "Optimización operativa para Ejemplo",
+  text: "Hola, detectamos un cuello de botella en su empresa.\n\nQueremos presentarles nuestro simulador.",
+  demoUrl: "https://www.puna-tech.com/es/demos/roi?company=Ejemplo",
+  dryRun: true,
+});
+assert.equal(mailRes.success, true);
+assert.equal(mailRes.simulated, true);
+assert(mailRes.messageId.startsWith("sim-"));
+
+const htmlOutput = formatEmailHtml({
+  subject: "Test Subject",
+  text: "Primer párrafo de prueba.\n\nSegundo párrafo con [Link a Puna](https://www.puna-tech.com).",
+  demoUrl: "https://www.puna-tech.com/es/demos/roi?company=Test",
+});
+assert(htmlOutput.includes("PUNA TECH"));
+assert(htmlOutput.includes("Ver Simulación de ROI Personalizada"));
+assert(htmlOutput.includes("baja"));
+
+// Morning Brief Agent (aggregating all agents including Inbound)
 const briefAgent = new MorningBriefAgent({ config: punaConfig, budgetGuard: testGuard });
 const briefRes = await briefAgent.generateBrief({
-  results: [socialRes, scoutRes, demoRes, auditRes],
+  results: [socialRes, scoutRes, demoRes, auditRes, inboundRes],
   executionTimeMs: 1500,
 });
 assert.equal(briefRes.status, "success");
-assert(briefRes.decisionsCount >= 4);
+assert(briefRes.decisionsCount >= 5);
 
 const generatedMd = await readFile(briefRes.filePath, "utf-8");
 assert(generatedMd.includes("Morning Executive Brief"));
 assert(generatedMd.includes("Decisiones Clave para Tomar Hoy"));
+assert(generatedMd.includes("Inbound & Reply Sentry"));
 assert(generatedMd.includes("Control de Presupuesto y Consumo"));
 
-console.log(`✔ Flota completa probada. Reporte generado en: ${briefRes.filePath}\n`);
+console.log(`✔ Flota completa probada (Social, Scout, Demo, QA, Inbound y Mailer).`);
+console.log(`📄 Reporte generado en: ${briefRes.filePath}\n`);
 console.log("🎉 TODOS LOS TESTS DE NIGHTSHIFT AI PASARON EXITOSAMENTE.");

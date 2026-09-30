@@ -72,6 +72,13 @@
       "checkDependencies": true,
       "checkSeo": true
     },
+    "inboundSentry": {
+      "enabled": true,
+      "imapHost": null,
+      "imapPort": 993,
+      "imapUser": null,
+      "highPriorityAlerts": true
+    },
     "morningBrief": {
       "enabled": true,
       "language": "es",

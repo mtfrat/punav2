@@ -24,6 +24,7 @@ import { SocialAgent } from "./agents/social-agent.mjs";
 import { ScoutAgent } from "./agents/scout-agent.mjs";
 import { DemoBuilderAgent } from "./agents/demo-builder-agent.mjs";
 import { TechAuditAgent } from "./agents/tech-audit-agent.mjs";
+import { InboundSentryAgent } from "./agents/inbound-sentry-agent.mjs";
 import { MorningBriefAgent } from "./agents/morning-brief-agent.mjs";
 
 // Helper to parse simple CLI args
@@ -48,7 +49,7 @@ function parseArgs() {
 Comandos:
   --company <id>     ID de la empresa (busca en nightshift/config/<id>.json). Default: puna-tech
   --dry-run          Modo simulación sin consumo de tokens ni llamadas de API externas
-  --agent <name>     Filtrar agente: all | social | scout | builder | qa | brief
+  --agent <name>     Filtrar agente: all | social | scout | builder | qa | inbound | brief
       `);
       process.exit(0);
     }
@@ -145,7 +146,21 @@ async function main() {
     }
   }
 
-  // 5. Morning Brief Synthesizer
+  // 5. Inbound & Reply Sentry Agent
+  if (options.agent === "all" || options.agent === "inbound") {
+    console.log("▶ Ejecutando: Inbound & Reply Sentry (Email Monitor)...");
+    try {
+      const agent = new InboundSentryAgent({ llmClient, config });
+      const res = await agent.run();
+      results.push(res);
+      console.log(`  ✔ Completado: ${res.output?.new_replies_count || 0} respuestas procesadas (${res.output?.status}).`);
+    } catch (err) {
+      console.error(`  ✖ Error en Inbound Sentry: ${err.message}`);
+      results.push({ agent: "Inbound & Reply Sentry", status: "error", error: err.message });
+    }
+  }
+
+  // 6. Morning Brief Synthesizer
   if (options.agent === "all" || options.agent === "brief") {
     console.log("\n▶ Sintetizando: Executive Morning Brief...");
     const briefAgent = new MorningBriefAgent({ config, budgetGuard });
