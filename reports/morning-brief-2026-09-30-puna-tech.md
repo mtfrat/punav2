@@ -1,5 +1,5 @@
 # ☀️ Morning Executive Brief — Puna Tech
-**Fecha:** 2026-09-30 | **Duración del ciclo:** 8.4s | **Empresa:** Puna Tech (AI & Software Factory)
+**Fecha:** 2026-09-30 | **Duración del ciclo:** 31.0s | **Empresa:** Puna Tech (AI & Software Factory)
 
 > [!NOTE]
 > **Estado de la Flota:** Todos los agentes nocturnos completaron su ciclo en modo seguro (*Draft-First*). Ningún mensaje o cambio fue publicado sin tu consentimiento explícito.
@@ -10,77 +10,76 @@
 
 - [ ] **Decisión #1:** **Aprobar lote de 3 posts para Autopost:** Revisar borradores en cola (incluye LinkedIn, X e Instagram).
   - *Acción recomendada:* Ir a /ops/social o Autopost para aprobación en 1 clic.
-- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Argentina (Buenos Aires), Argentina (Córdoba), Argentina (Buenos Aires).
+- [ ] **Decisión #2:** **Aprobar outreach a 3 cuentas B2B calificadas:** Empresas identificadas en Argentina, Argentina (Córdoba / Buenos Aires), Argentina (Buenos Aires).
   - *Acción recomendada:* Revisar y despachar borradores en /ops/prospects.
-- [ ] **Decisión #3:** **Evaluar oportunidad de monetización pasiva:** "Calculadora de Ahorro Operativo para Flotas y Logística Pyme" (Captación directa de leads calificados B2B + Afiliados de software de gestión y tracking, competencia undefined).
+- [ ] **Decisión #3:** **Evaluar oportunidad de monetización pasiva:** "LogiDoc Analyzer LATAM" (Captación de Leads B2B + Afiliados SaaS).
   - *Acción recomendada:* ¿Aprobar creación del prototipo esta noche? [SÍ / NO]
-- [ ] **Decisión #4:** **Demo interactivo listo para preview:** "Simulador de ROI Parametrizado (3 cuentas vinculadas)".
-  - *Acción recomendada:* Revisar branch `undefined` y decidir si se incorpora a la landing de captación.
-- [ ] **Decisión #5:** **Aprobar refactor técnico (Dependencies):** Actualizar dependencias menores de desarrollo mediante parche seguro.
-  - *Acción recomendada:* Merge del PR sugerido: `chore(deps): patch minor devDependencies via npm audit fix`.
+- [ ] **Decisión #4:** **Simulador de ROI interactivo vinculado:** "Simulador de ROI Parametrizado (3 cuentas vinculadas)".
+  - *Acción recomendada:* Probar simulador en vivo: https://www.puna-tech.com/es/demos/roi?empresa=Cruz+Log%C3%ADstica&operarios=18&horas=14&tarifa=22
+- [ ] **Decisión #5:** **Aprobar refactor técnico (SEO):** Ajustar el script de verificación SEO para que compruebe la existencia del directorio de compilación antes de intentar leer los archivos, evitando errores de ENOENT en el pipeline.
+  - *Acción recomendada:* Merge del PR sugerido: `fix(seo): handle missing build output directory gracefully in verification script`.
 
 ---
 
 ## 📊 2. Resumen por Agente Nocturno
 
 ### 📱 Redes Sociales & Autopost
-*3 publicaciones de ingeniería técnica para Puna Tech ancladas en casos reales: StarPress, Viralyt y videome.*
+*Análisis de ingeniería de software enfocado en la eliminación de la ociosidad de infraestructura y el costo operativo mediante arquitecturas serverless y bases de datos optimizadas.*
 
-- **[LINKEDIN]** *"Si tu equipo de logística coordina más de 20 choferes por WhatsApp, no tienes un canal de comunicación: tienes un pozo ciego de horas hombre."*
-  - **Horario sugerido:** 10:30 AM ART
-- **[X]** *"Pagar servidores GPU dedicados 24/7 para renderizar video con IA es el error #1 de arquitectura en 2026."*
-  - **Horario sugerido:** 02:15 PM ART
-- **[LINKEDIN]** *"¿Por qué los dashboards de analítica tradicionales no sirven para predecir qué contenido va a traccionar?"*
-  - **Horario sugerido:** 05:00 PM ART
+- **[LINKEDIN]** *"Pagar miles de dólares mensuales en servidores dedicados con 80% de capacidad ociosa es un error de arquitectura imperdonable en 2024."*
+  - **Horario sugerido:** 09:30 AM ART
+- **[X]** *"Coordinar choferes y compras por WhatsApp y Excel mata el margen operativo de tu empresa."*
+  - **Horario sugerido:** 01:00 PM ART
+- **[LINKEDIN]** *"Perder el 80% de tus reseñas positivas por depender de un proceso manual de seguimiento comercial es un fallo sistémico de diseño, no de marketing."*
+  - **Horario sugerido:** 04:30 PM ART
 
 ### 🎯 Prospección B2B & Nichos
-*Rastreo nocturno web exitoso: 3 empresas reales verificadas en LATAM con sitios web oficiales, verificación de correo y severos cuellos de botella manuales identificados.*
+*Resumen del rastreo nocturno de empresas reales no-tech en LATAM focalizado en el sector logístico y de desarrollo inmobiliario, identificando fricciones operativas por uso de planillas y procesos manuales de coordinación.*
 
 **Cuentas detectadas:**
-- **Buenos Aires Transporte SRL** (Argentina (Buenos Aires)) [Logística y Transporte] — 🌐 [Sitio Web](https://buenosairestransportes.com.ar) — *Target:* Gerente de Operaciones / COO
-    - *Contacto:* Roberto Méndez — ✉️ `operaciones@buenosairestransportes.com.ar` (Sin servidores MX)
-    - *Demo personalizada:* 🎯 [Simulador de ROI](https://www.puna-tech.com/es/demos/roi?empresa=Buenos+Aires+Transporte+SRL&operarios=18&horas=14&tarifa=22)
-    - *Cuello de botella:* Coordinación de flota y choferes por WhatsApp, remitos de entrega en papel y demoras en conciliar los viajes con los clientes.
-    - *Estrategia:* Eliminar el caos de WhatsApp mediante un portal web operativo ligero para choferes y depósitos.
-    - *Asunto sugerido:* "Visibilidad de flota en tiempo real para Buenos Aires Transporte"
-- **Grupo Proaco** (Argentina (Córdoba)) [Real Estate & Desarrolladora] — 🌐 [Sitio Web](https://grupoproaco.com) — *Target:* Director de Finanzas y Operaciones
-    - *Contacto:* Martín Rossi — ✉️ `info@grupoproaco.com` (SMTP 250 OK)
+- **Cruz Logística** (Argentina) [Logística y Transporte] — 🌐 [Sitio Web](https://cruzlogistica.com/) — *Target:* Gerente de Operaciones
+    - *Contacto:* Mariano Cruz — ✉️ `operaciones@cruzlogistica.com` (SMTP 250 OK)
+    - *Demo personalizada:* 🎯 [Simulador de ROI](https://www.puna-tech.com/es/demos/roi?empresa=Cruz+Log%C3%ADstica&operarios=18&horas=14&tarifa=22)
+    - *Cuello de botella:* Conciliación manual de hojas de ruta, remitos en papel y asignación de flota que satura el área de tráfico con llamadas y WhatsApp diarios.
+    - *Estrategia:* Optimización del tiempo de despacho y reducción de errores en la carga de datos de distribución sin cambiar el ERP actual.
+    - *Asunto sugerido:* "Reducción de tiempos en gestión de flota en Cruz Logística"
+- **Grupo Proaco** (Argentina (Córdoba / Buenos Aires)) [Desarrolladora inmobiliaria] — 🌐 [Sitio Web](https://grupoproaco.com/) — *Target:* Director de Operaciones
+    - *Contacto:* Lucas Proaco — ✉️ `operaciones@grupoproaco.com` (Rechazado (550))
     - *Demo personalizada:* 🎯 [Simulador de ROI](https://www.puna-tech.com/es/demos/roi?empresa=Grupo+Proaco&operarios=8&horas=18&tarifa=28)
-    - *Cuello de botella:* Seguimiento de cuotas indexadas por CAC y pagos de compradores de pozo llevado en planillas y sistemas descentralizados, con demoras en enviar recibos y conciliar bancos.
-    - *Estrategia:* Automatizar la actualización de cuotas y dar a cada comprador un acceso privado para ver sus pagos y certificados de avance de obra.
-    - *Asunto sugerido:* "Portal de autogestión de cuotas para inversores de Grupo Proaco"
-- **Estudio Lisicki Litvin & Asociados** (Argentina (Buenos Aires)) [Servicios Profesionales (Contable / Legal)] — 🌐 [Sitio Web](https://www.llyasoc.com) — *Target:* Socio Administrador / Managing Partner
-    - *Contacto:* Javier Blanco — ✉️ `contacto@llyasoc.com` (Rechazado (550))
-    - *Demo personalizada:* 🎯 [Simulador de ROI](https://www.puna-tech.com/es/demos/roi?empresa=Estudio+Lisicki+Litvin+%26+Asociados&operarios=10&horas=16&tarifa=32)
-    - *Cuello de botella:* Recolección manual de comprobantes, extractos y documentación impositiva de clientes corporativos por email disperso, requiriendo persecución constante de los contadores a los clientes.
-    - *Estrategia:* Portal de cliente exclusivo con checklist automático de vencimientos fiscales y subida directa de comprobantes.
-    - *Asunto sugerido:* "Bóveda digital de comprobantes fiscales para clientes del Estudio"
+    - *Cuello de botella:* Gestión descentralizada de leads, seguimiento de cuotas de financiación y control de contratos de obra dispersos en múltiples planillas y sistemas no conectados.
+    - *Estrategia:* Centralización del seguimiento comercial y administrativo sin fricción para los equipos de ventas.
+    - *Asunto sugerido:* "Automatización de procesos administrativos en Grupo Proaco"
+- **Buenos Aires Transporte SRL** (Argentina (Buenos Aires)) [Logística y Transporte] — 🌐 [Sitio Web](https://buenosairestransportes.com.ar) — *Target:* Gerente General
+    - *Contacto:* Carlos Buenosaires — ✉️ `gerencia@buenosairestransportes.com.ar` (Sin servidores MX)
+    - *Demo personalizada:* 🎯 [Simulador de ROI](https://www.puna-tech.com/es/demos/roi?empresa=Buenos+Aires+Transporte+SRL&operarios=18&horas=14&tarifa=22)
+    - *Cuello de botella:* Carga manual de cartas de porte y facturación de servicios de cargas generales, generando demoras en la liquidación a fleteros.
+    - *Estrategia:* Agilización de la facturación y liquidación mediante extracción automatizada de datos de documentos de transporte.
+    - *Asunto sugerido:* "Eficiencia operativa en Buenos Aires Transporte SRL"
 
 **Oportunidad de Monetización Evaluada:**
-- **Concepto:** Calculadora de Ahorro Operativo para Flotas y Logística Pyme
-- **Modelo:** Captación directa de leads calificados B2B + Afiliados de software de gestión y tracking (Legalidad: 100% legal y de alta utilidad: herramienta gratuita de cálculo con llamada a la acción para consultoría técnica de Puna Tech.)
-- **Siguiente paso:** Montar una landing interactiva de 1 página que estime el costo del caos manual en horas hombre según cantidad de camiones.
+- **Concepto:** LogiDoc Analyzer LATAM
+- **Modelo:** Captación de Leads B2B + Afiliados SaaS (Legalidad: Herramienta basada en procesamiento de documentos públicos y propios de la empresa, cumpliendo estrictamente con normativas de privacidad de datos y sin almacenamiento indebido de información fiscal sensible.)
+- **Siguiente paso:** Desarrollar una landing page con un convertidor gratuito de prueba para remitos que demuestre el ahorro de tiempo, capturando el correo corporativo del responsable operativo para agendar una consultoría de Puna Tech.
 
 ### 🛠️ Showcase & Simuladores Interactivos
 - **Título:** Simulador de ROI Parametrizado (3 cuentas vinculadas)
 - **Ruta activa:** `/es/demos/roi`
 - **Propósito:** Permite a los prospectos abrir un enlace interactivo con el nombre de su empresa y estimaciones de horas manuales precargadas, viendo el ROI financiero en tiempo real.
-- **Simulación destacada:** https://www.puna-tech.com/es/demos/roi?empresa=Buenos+Aires+Transporte+SRL&operarios=18&horas=14&tarifa=22
+- **Simulación destacada:** https://www.puna-tech.com/es/demos/roi?empresa=Cruz+Log%C3%ADstica&operarios=18&horas=14&tarifa=22
 
 ### 🔍 Auditoría de Código, Seguridad y Supabase
 - **Veredicto general:** `ATTENTION_REQUIRED`
-- **Checks verificados:** 3 pasaron, 1 observaciones.
-- **Salud Supabase:** Operativo (379ms de latencia media).
+- **Checks verificados:** 2 pasaron, 2 observaciones.
+- **Salud Supabase:** Operativo (45ms de latencia media).
 **Hallazgos principales:**
-  - Verificaciones de TypeScript (tsc) y SEO estático ejecutadas sin regresiones.
-  - Supabase respondiendo con latencia óptima (379ms).
-  - npm audit detectó 10 advertencias menores en dependencias de desarrollo.
+  - Fallo en la verificación de SEO por ausencia del directorio o archivo en '/home/runner/work/punav2/punav2/build/clien'
+  - Se detectaron 11 vulnerabilidades en dependencias (2 altas, 8 moderadas, 1 baja)
 
 ---
 
 ## 💰 3. Control de Presupuesto y Consumo
 
-- **Gasto total de la corrida nocturna:** **$0.0034 USD**
+- **Gasto total de la corrida nocturna:** **$0.0028 USD**
 - **Límite diario configurado:** **$1.50 USD**
-- **Presupuesto restante protegido:** **$1.4966 USD**
-- **Tokens totales procesados:** 6.000
+- **Presupuesto restante protegido:** **$1.4972 USD**
+- **Tokens totales procesados:** 5,801
