@@ -116,9 +116,9 @@ export function Brand() {
   return (
     <span className="brand">
       <svg className="brand-mark" aria-hidden="true" viewBox="0 0 76 48" focusable="false">
-        <path d="M0 48 23 12l18 36H0Z" fill="#ff6b00" />
+        <path d="M0 48 23 12l18 36H0Z" fill="#BF5226" />
         <path d="M18 48 48 0l28 48H18Z" fill="currentColor" />
-        <path d="M51 48 64 25l12 23H51Z" fill="#7d2935" />
+        <path d="M51 48 64 25l12 23H51Z" fill="#702B38" />
       </svg>
       <span className="brand-name"><strong>Puna</strong><small>Tech</small></span>
     </span>
@@ -157,7 +157,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           >
             {locale === "en" ? "ES" : "EN"}
           </Link>
-          <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={locale === "en" ? "Book audit" : "Auditoría gratis"} />
+          <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={t.book} />
           <button className="menu-button" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? (locale === "en" ? "Close menu" : "Cerrar menú") : (locale === "en" ? "Open menu" : "Abrir menú")}>
             {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
@@ -169,7 +169,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           <Link to={workAnchor}>{t.nav.work}</Link>
           <Link to={processAnchor}>{t.nav.process}</Link>
           <Link to={insights}>{t.nav.insights}</Link>
-          <CalButton locale={locale} placement="mobile_navigation" label={locale === "en" ? "Get the free audit" : "Pedir auditoría gratis"} />
+          <CalButton locale={locale} placement="mobile_navigation" label={t.book} />
         </nav>
       )}
     </header>
