@@ -56,7 +56,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const studies = caseStudies[locale];
   const clients = steepClients[locale];
   const labs = steepLab[locale];
-  const quote = t.socialProofQuotes[0];
 
   return (
     <PageShell locale={locale}>
@@ -145,7 +144,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                     <ul>
                       {item.bullets.map((bullet) => (
                         <li key={bullet.text}>
-                          {bullet.needsConfirm ? <span className="steep-confirm">[CONFIRM]</span> : null}
+                          {/* needsConfirm stays in data only — never render [CONFIRM] in public UI */}
                           <span>{bullet.text}</span>
                         </li>
                       ))}
@@ -215,15 +214,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        <section className="steep-section" data-steep-cue="quote" aria-label={locale === "en" ? "Client quote placeholder" : "Cita de cliente en reserva"}>
-          <div className="shell">
-            <figure className="steep-quote">
-              <span className="quote-placeholder-label">{quote.placeholderLabel}</span>
-              <blockquote>“{quote.quote}”</blockquote>
-              <figcaption>{quote.role} · {quote.industry}</figcaption>
-            </figure>
-          </div>
-        </section>
+        {/* Quote band omitted until a real client line is approved — no PLACEHOLDER brackets in public UI */}
 
         <section id="faq" className="steep-section steep-faq">
           <div className="shell steep-faq-grid">
