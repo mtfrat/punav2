@@ -3,6 +3,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import {
   ArrowRight,
+  ArrowUpRight,
   Check,
   ChevronRight,
   Compass,
@@ -44,16 +45,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
-function MountainSymbol() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 160 102" focusable="false">
-      <path d="M0 102 48 26l37 76H0Z" fill="#ff6b00" />
-      <path d="M38 102 101 0l59 102H38Z" fill="currentColor" />
-      <path d="M108 102 136 52l24 50h-52Z" fill="#7d2935" />
-    </svg>
-  );
-}
-
 function SystemMap({ study, compact = false }: { study: CaseStudyContent; compact?: boolean }) {
   return (
     <figure className={`editorial-map ${compact ? "editorial-map-compact" : ""}`} aria-label={`${study.displayName}: ${study.flow.join(", ")}`}>
@@ -76,22 +67,6 @@ function SystemMap({ study, compact = false }: { study: CaseStudyContent; compac
   );
 }
 
-function HeroProof({ locale }: { locale: Locale }) {
-  const study = caseStudies[locale][0];
-  return (
-    <div className="hero-proof" aria-label={locale === "en" ? "Software factory capabilities and selected system architecture" : "Capacidades de la software factory y arquitectura seleccionada"}>
-      <SystemMap study={study} compact />
-      <div className="factory-proof-card">
-        <MountainSymbol />
-        <div>
-          <span>SOFTWARE FACTORY</span>
-          <strong>{locale === "en" ? "Product, automation, data, and deployment in one delivery system." : "Producto, automatización, datos y despliegue en un mismo sistema de entrega."}</strong>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 const slowdownIcons = [ScanSearch, Link2, Layers3];
 
 export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
@@ -101,23 +76,81 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const localizedServices = services[locale];
   const slowdownServices = [localizedServices[0], localizedServices[2], localizedServices[1]];
 
+  const labCases = localizedCases.filter((c) => ["starpress", "viralyt", "videome", "autopost"].includes(c.key));
+  const clientCases = localizedCases.filter((c) => ["lead-router", "linkedin-copilot", "edtech-web3", "gtm-automation"].includes(c.key));
+
   return (
     <PageShell locale={locale}>
       <main id="main-content">
-        <section className="hero-section editorial-hero">
-          <div className="shell hero-grid">
-            <div className="hero-copy">
-              <p className="eyebrow">{t.heroEyebrow}</p>
-              <h1>{t.heroTitle}</h1>
-              <p className="hero-body">{t.heroBody}</p>
-              <div className="hero-actions">
-                <CalButton locale={locale} placement="hero_audit" />
-                <a className="button-text" href="#services">{t.seeWork}<ArrowRight aria-hidden="true" size={18} /></a>
-              </div>
-              <p className="hero-microcopy"><Check aria-hidden="true" size={16} />{t.heroMicrocopy}</p>
-            </div>
-            <HeroProof locale={locale} />
+        {/* PILAR 1: HERO editorial asimétrico estilo cover brandsheet */}
+        <section className="bs-cover-hero" aria-label={locale === "en" ? "Puna Tech Cover" : "Portada de Puna Tech"}>
+          <div className="bs-cover-masthead shell">
+            <span>{locale === "en" ? "PUNA TECH / B2B SOFTWARE FACTORY · 2026" : "PUNA TECH / SOFTWARE FACTORY B2B · 2026"}</span>
+            <span>{locale === "en" ? "AUTOMATION · INTEGRATIONS · CUSTOM SYSTEMS" : "AUTOMATIZACIÓN · INTEGRACIONES · SOFTWARE A MEDIDA"}</span>
           </div>
+          <div className="shell bs-cover-grid">
+            <div className="bs-cover-copy">
+              <p className="eyebrow">{t.heroEyebrow}</p>
+              <h1 className="bs-cover-h1">
+                {(() => {
+                  const title = t.heroTitle;
+                  const italic = t.heroItalic;
+                  const idx = title.indexOf(italic);
+                  if (idx === -1) return title;
+                  return (
+                    <>
+                      {title.slice(0, idx)}
+                      <em className="bs-hero-italic">{italic}</em>
+                      {title.slice(idx + italic.length)}
+                    </>
+                  );
+                })()}
+              </h1>
+              <p className="bs-intro-lead">
+                {t.heroBody}
+              </p>
+              {/* PILAR 3: CTA Único como objeto de diseño (Primario Terracota + Secundario Ghost Borgoña) */}
+              <div className="cta-group bs-cover-actions">
+                <CalButton
+                  locale={locale}
+                  placement="hero_audit"
+                  label={t.book}
+                  className="button-primary-terracotta"
+                />
+                <a href="#brief" className="button-ghost-burgundy">
+                  <span>{t.sendBrief}</span>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </a>
+              </div>
+              <p className="bs-cover-microcopy">
+                <Check aria-hidden="true" size={16} />
+                <span>{t.heroMicrocopy}</span>
+              </p>
+            </div>
+            <figure className="bs-cover-photo-side">
+              <img
+                src="/art-direction/workspace-cup-of-couple.jpg"
+                alt={locale === "en" ? "Natural light on wooden work desk with laptop and notebook representing intentional engineering." : "Luz natural sobre mesa de trabajo con laptop y cuaderno: trabajo con criterio."}
+                width="1600"
+                height="2400"
+                loading="eager"
+              />
+              <figcaption>
+                {locale === "en" ? (
+                  <>Repetitive handoffs,<br /><em>into the system.</em></>
+                ) : (
+                  <>Lo repetitivo,<br /><em>al sistema.</em></>
+                )}
+              </figcaption>
+              <span className="bs-cover-photo-badge">
+                {locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}
+              </span>
+            </figure>
+          </div>
+          <footer className="bs-cover-ribbon shell">
+            <span>{t.heroRibbon}</span>
+            <ArrowUpRight aria-hidden="true" size={24} />
+          </footer>
         </section>
 
         <section className="proof-strip" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>
@@ -126,6 +159,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
+        {/* SERVICES: Estructura preservada intacta */}
         <section id="services" className="section slowdown-section">
           <div className="shell slowdown-grid">
             <header className="section-heading sticky-heading"><p className="eyebrow">{t.slowdownEyebrow}</p><h2>{t.slowdownTitle}</h2><p>{t.servicesBody}</p></header>
@@ -145,6 +179,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
+        {/* INDUSTRY ENTRY: Estructura preservada */}
         <section className="industry-entry-section" aria-labelledby="software-factory-title">
           <div className="shell industry-entry-grid">
             <div className="industry-entry-intro">
@@ -162,75 +197,115 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        <section id="work" className="section work-section">
-          <div className="shell">
-            <header className="section-heading work-heading">
-              <div><p className="eyebrow">{t.casesEyebrow}</p><h2>{t.casesTitle}</h2></div>
-              <p>{t.casesBody}</p>
-            </header>
-            <div className="featured-work">
-              {localizedCases.slice(0, 3).map((study, index) => (
-                <article className={`work-piece work-piece-${index + 1}`} key={study.slug}>
-                  <div className="work-copy">
-                    <div className="work-number">{String(index + 1).padStart(2, "0")}</div>
-                    <div className="case-meta">
-                      <span>{study.type}</span>
-                      <span>{study.sector}</span>
-                      {study.liveDemoUrl && (
-                        <span className="demo-pill demo-pill-live">
-                          <span className="demo-pill-dot" />
-                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
-                        </span>
-                      )}
+        {/* PILAR 2: SELECTED WORK — Dos franjas (Lab demo vs Client delivery) */}
+        <section id="work" className="work-section-v3" aria-label={t.casesTitle}>
+          {/* Franja 1: Lab demo (badge “Built by Puna · demo”) */}
+          <div className="franja-lab" aria-labelledby="lab-demos-heading">
+            <div className="shell">
+              <header className="franja-header">
+                <p className="eyebrow">{t.workLabEyebrow}</p>
+                <h2 id="lab-demos-heading">{t.workLabTitle}</h2>
+                <p>{t.workLabSubtitle}</p>
+              </header>
+              <div className="lab-demo-grid">
+                {labCases.map((study) => (
+                  <article className="lab-demo-card" key={study.slug}>
+                    <div>
+                      <div className="lab-demo-badge">
+                        <span className="lab-demo-dot" aria-hidden="true" />
+                        <span>{t.workLabBadge}</span>
+                      </div>
+                      <div className="lab-card-title">
+                        <h3>{study.displayName}</h3>
+                        <span className="lab-card-name">{study.sector.split("·")[0]}</span>
+                      </div>
+                      <p className="lab-card-desc">{study.summary}</p>
+                      <p className="lab-card-role">
+                        {locale === "en" ? "Internal lab product · execution proof" : "Producto de lab interno · prueba de ejecución"}
+                      </p>
                     </div>
-                    <p className="work-name">{study.displayName}</p>
-                    <h3>{study.title}</h3>
-                    <p>{study.summary}</p>
-                    <ul className="work-outcomes">
-                      {study.impact.slice(0, 2).map((item) => <li key={item}><Check aria-hidden="true" size={16} />{item}</li>)}
-                    </ul>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", alignItems: "center" }}>
+                    <div className="lab-card-actions">
                       <Link className="text-link" to={casePath(locale, study.slug)} aria-label={locale === "en" ? `Open ${study.displayName} case study` : `Abrir caso de ${study.displayName}`}>
-                        {locale === "en" ? "Open the case" : "Abrir el caso"}
-                        <ArrowRight aria-hidden="true" size={18} />
+                        {t.openCase}
+                        <ArrowRight aria-hidden="true" size={17} />
                       </Link>
                       {study.liveDemoUrl && (
                         <a
                           href={study.liveDemoUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-link"
+                          className="lab-live-link"
                           aria-label={locale === "en" ? `Open ${study.displayName} live demo` : `Abrir demo en vivo de ${study.displayName}`}
                         >
-                          {locale === "en" ? "Live Demo" : "Demo en vivo"}
-                          <ExternalLink aria-hidden="true" size={15} />
+                          <span>{t.liveDemo}</span>
+                          <ExternalLink aria-hidden="true" size={14} />
                         </a>
                       )}
                     </div>
-                  </div>
-                  <SystemMap study={study} />
-                </article>
-              ))}
+                  </article>
+                ))}
+              </div>
             </div>
-            <div className="more-work">
-              <h3>{locale === "en" ? "More systems we built" : "Más sistemas que construimos"}</h3>
-              <div className="more-work-links">
-                {localizedCases.slice(3).map((study) => (
-                  <Link key={study.slug} to={casePath(locale, study.slug)}>
-                    <span><small>{study.type}</small><strong>{study.displayName}</strong><span>{study.title}</span></span>
-                    <ArrowRight aria-hidden="true" size={18} />
-                  </Link>
+          </div>
+
+          {/* Franja 2: Client delivery (badge “Client delivery” + outcome operativo) */}
+          <div className="franja-client" aria-labelledby="client-delivery-heading">
+            <div className="shell">
+              <header className="franja-header">
+                <p className="eyebrow">{t.workClientEyebrow}</p>
+                <h2 id="client-delivery-heading">{t.workClientTitle}</h2>
+                <p>{t.workClientSubtitle}</p>
+              </header>
+              <div className="client-delivery-stack">
+                {clientCases.map((study) => (
+                  <article className="client-delivery-row" key={study.slug}>
+                    <div className="client-row-info">
+                      <div className="client-row-meta">
+                        <span className="client-delivery-badge">{t.workClientBadge}</span>
+                        {study.operationalOutcome && (
+                          <span className="client-outcome-badge">
+                            {study.operationalOutcome}
+                          </span>
+                        )}
+                      </div>
+                      <p className="client-row-name">{study.displayName}</p>
+                      <h3>{study.title}</h3>
+                      <p>{study.summary}</p>
+                      <ul className="work-outcomes">
+                        {study.impact.slice(0, 2).map((item) => (
+                          <li key={item}>
+                            <Check aria-hidden="true" size={16} />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="client-row-cta">
+                        <Link
+                          className="client-row-link"
+                          to={casePath(locale, study.slug)}
+                          aria-label={locale === "en" ? `View delivery architecture for ${study.displayName}` : `Ver arquitectura de entrega de ${study.displayName}`}
+                        >
+                          <span>{t.viewArchitecture}</span>
+                          <ArrowRight aria-hidden="true" size={18} />
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="client-row-visual">
+                      <SystemMap study={study} compact />
+                    </div>
+                  </article>
                 ))}
               </div>
             </div>
           </div>
         </section>
 
+        {/* PROCESS: Estructura preservada con CTA actualizado */}
         <section id="process" className="section audit-section">
           <div className="shell">
             <div className="audit-intro">
               <div><p className="eyebrow eyebrow-dark">{t.auditEyebrow}</p><h2>{t.auditTitle}</h2></div>
-              <CalButton locale={locale} placement="audit_section" label={locale === "en" ? "Book the free audit" : "Agendar auditoría gratis"} />
+              <CalButton locale={locale} placement="audit_section" label={t.book} className="button-primary-terracotta" />
             </div>
             <ol className="audit-steps">
               {t.auditSteps.map(([title, description], index) => <li key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{description}</p></li>)}
@@ -242,6 +317,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
+        {/* FAQ: Estructura preservada intacta */}
         <section className="section faq-section" id="faq">
           <div className="shell faq-grid">
             <header className="section-heading"><p className="eyebrow">FAQ</p><h2>{t.faqTitle}</h2><Compass aria-hidden="true" /></header>
@@ -249,10 +325,49 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        <section className="section final-section">
+        {/* PILAR 3 & 4: FINAL SECTION - CTA único + Prueba social "nota editorial" + Brief form */}
+        <section className="section final-section" id="brief">
           <div className="shell final-grid">
-            <div className="final-copy"><p className="eyebrow eyebrow-dark">{locale === "en" ? "Start with the bottleneck" : "Empezá por el cuello de botella"}</p><h2>{t.finalTitle}</h2><p>{t.finalBody}</p><CalButton locale={locale} placement="final_audit" label={locale === "en" ? "Get the free audit" : "Pedir auditoría gratis"} /></div>
-            <div className="brief-card"><p className="eyebrow">{locale === "en" ? "Written route" : "Por escrito"}</p><h3>{t.briefTitle}</h3><p>{t.briefBody}</p><ProjectBrief locale={locale} /></div>
+            <div className="final-copy">
+              <p className="eyebrow eyebrow-dark">{locale === "en" ? "Start with the bottleneck" : "Empezá por el cuello de botella"}</p>
+              <h2>{t.finalTitle}</h2>
+              <p>{t.finalBody}</p>
+              <div className="cta-group" style={{ marginBottom: "2.5rem" }}>
+                <CalButton locale={locale} placement="final_audit" label={t.book} className="button-primary-terracotta" />
+                <a href="#brief-form" className="button-ghost-burgundy button-ghost-burgundy-light">
+                  <span>{t.sendBrief}</span>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </a>
+              </div>
+
+              {/* PILAR 4: Bloque "nota editorial" de prueba social junto al CTA final */}
+              <div className="editorial-social-proof" aria-label={locale === "en" ? "Editorial notes and operational reviews" : "Notas editoriales y revisiones operativas"}>
+                <div className="editorial-proof-header">
+                  <small>{locale === "en" ? "EDITORIAL DISPATCH · OPERATIONAL FEEDBACK" : "DESPACHO EDITORIAL · FEEDBACK OPERATIVO"}</small>
+                  <span className="editorial-proof-placeholder">{t.socialProofNotice}</span>
+                </div>
+                <div className="editorial-quotes-list">
+                  {t.socialProofQuotes.map((item, idx) => (
+                    <div key={idx} className="editorial-quote-item">
+                      <span className="quote-placeholder-label">{item.placeholderLabel}</span>
+                      <blockquote>{item.quote}</blockquote>
+                      <div className="editorial-quote-meta">
+                        <strong>{item.role}</strong>
+                        <span>·</span>
+                        <span>{item.industry}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="brief-card" id="brief-form">
+              <p className="eyebrow">{locale === "en" ? "Written route" : "Por escrito"}</p>
+              <h3>{t.briefTitle}</h3>
+              <p>{t.briefBody}</p>
+              <ProjectBrief locale={locale} />
+            </div>
           </div>
         </section>
       </main>
