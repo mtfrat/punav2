@@ -25,6 +25,7 @@ export function StripeFactoryDiagram({ locale }: { locale: Locale }) {
           width={1078}
           height={766}
           decoding="async"
+          loading="lazy"
         />
       </picture>
       <ol className="sr-only">

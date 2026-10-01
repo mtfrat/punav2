@@ -14,7 +14,7 @@ const ARTIFACTS = [
       es: "Entrega a cliente",
     },
     className: "steep-card steep-card-a",
-    eager: true,
+    eager: false,
   },
   {
     webp: "/art-direction/steep/02-starpress.webp",

@@ -12,10 +12,12 @@ import {
   useRouteLoaderData,
 } from "react-router";
 import plusJakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
+import newsreaderItalicLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2";
 import "./index.css";
 
 export const links: LinksFunction = () => [
   { rel: "preload", href: plusJakartaLatin, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+  { rel: "preload", href: newsreaderItalicLatin, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
   { rel: "icon", href: "/favicon.svg?v=20260827", type: "image/svg+xml" },
   { rel: "icon", href: "/favicon-32x32.png?v=20260827", type: "image/png", sizes: "32x32" },
   { rel: "shortcut icon", href: "/favicon-32x32.png?v=20260827", type: "image/png" },

@@ -132,13 +132,27 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               </p>
             </div>
             <figure className="bs-cover-photo-side">
-              <img
-                src="/art-direction/workspace-cup-of-couple.jpg"
-                alt={locale === "en" ? "Natural light on wooden work desk with laptop and notebook representing intentional engineering." : "Luz natural sobre mesa de trabajo con laptop y cuaderno: trabajo con criterio."}
-                width="1600"
-                height="2400"
-                loading="eager"
-              />
+              <picture>
+                <source
+                  type="image/avif"
+                  srcSet="/art-direction/workspace-cup-of-couple-480.avif 480w, /art-direction/workspace-cup-of-couple-768.avif 768w, /art-direction/workspace-cup-of-couple-960.avif 960w, /art-direction/workspace-cup-of-couple-1200.avif 1200w"
+                  sizes="(max-width: 960px) 100vw, 520px"
+                />
+                <source
+                  type="image/webp"
+                  srcSet="/art-direction/workspace-cup-of-couple-480.webp 480w, /art-direction/workspace-cup-of-couple-768.webp 768w, /art-direction/workspace-cup-of-couple-960.webp 960w, /art-direction/workspace-cup-of-couple-1200.webp 1200w"
+                  sizes="(max-width: 960px) 100vw, 520px"
+                />
+                <img
+                  src="/art-direction/workspace-cup-of-couple-960.jpg"
+                  alt={locale === "en" ? "Natural light on wooden work desk with laptop and notebook representing intentional engineering." : "Luz natural sobre mesa de trabajo con laptop y cuaderno: trabajo con criterio."}
+                  width={1600}
+                  height={2400}
+                  decoding="async"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </picture>
               <figcaption>
                 {locale === "en" ? (
                   <>Repetitive handoffs,<br /><em>into the system.</em></>
