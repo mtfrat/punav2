@@ -2,7 +2,8 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight, Check, ExternalLink } from "lucide-react";
 import { Accordion, CalButton, PageShell, ProjectBrief } from "../components/marketing";
-import { SteepArtifactStage, SteepMotion } from "../components/steep-motion";
+import { SteepMotion } from "../components/steep-motion";
+import { StripeFactoryDiagram } from "../components/stripe-factory-diagram";
 import {
   casePath,
   caseStudies,
@@ -61,17 +62,18 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
     <PageShell locale={locale}>
       <SteepMotion />
       <main id="main-content" className="steep-landing">
-        <section className="steep-hero" aria-label={locale === "en" ? "Puna Tech" : "Puna Tech"}>
+        <section className="steep-hero stripe-quiet-hero" aria-label={locale === "en" ? "Puna Tech" : "Puna Tech"}>
           <div className="shell steep-hero-grid">
             <div className="steep-hero-copy">
-              <p className="eyebrow">{t.heroEyebrow}</p>
+              <p className="eyebrow stripe-quiet-eyebrow">{t.heroEyebrow}</p>
               <h1>
                 <HeroTitle title={t.heroTitle} italic={t.heroItalic} />
               </h1>
+              <div className="stripe-wine-rule" aria-hidden="true" />
               <p className="steep-sub">{t.heroBody}</p>
-              <div className="cta-group steep-hero-actions">
+              <div className="cta-group steep-hero-actions stripe-quiet-actions">
                 <CalButton locale={locale} placement="hero_audit" label={t.book} className="button-primary-terracotta" />
-                <a href="#brief" className="button-ghost-ink">
+                <a href="#brief" className="stripe-quiet-text-link">
                   <span>{t.sendBrief}</span>
                   <ArrowRight aria-hidden="true" size={16} />
                 </a>
@@ -80,20 +82,8 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                 <Check aria-hidden="true" size={16} />
                 <span>{t.heroMicrocopy}</span>
               </p>
-              <ul className="steep-badges">
-                {t.heroBadges.map((badge) => <li key={badge}>{badge}</li>)}
-              </ul>
             </div>
-            <SteepArtifactStage locale={locale} />
-          </div>
-          <div className="steep-hero-foot">
-            <div className="shell steep-hero-foot-inner">
-              <div className="steep-foot-copy">
-                <strong>{t.heroMicrocopy}</strong>
-                <small>{locale === "en" ? "No package pitch · Straight architecture breakdown" : "Sin pitch de paquetes · Diagnóstico de arquitectura directo"}</small>
-              </div>
-              <CalButton locale={locale} placement="hero_foot" label={t.book} className="button-primary-paper" />
-            </div>
+            <StripeFactoryDiagram locale={locale} />
           </div>
         </section>
 

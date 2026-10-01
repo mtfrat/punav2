@@ -1059,15 +1059,15 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .steep-heading h2, .steep-bridge h2, .steep-final-copy h2 { font-size: clamp(2.2rem, 4vw, 3.5rem); line-height: 1.08; }
 .steep-heading p, .steep-bridge p, .steep-sub { max-width: 62ch; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.7; }
 .steep-heading-compact h2 { font-size: clamp(1.7rem, 2.6vw, 2.3rem); }
-.steep-hero { padding: 1.5rem 0 0; }
-.steep-hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr); gap: 2rem; align-items: center; }
+.steep-hero { padding: 2.75rem 0 3.5rem; }
+.steep-hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr); gap: clamp(2.5rem, 5vw, 4.5rem); align-items: center; }
 .steep-hero h1 {
-  margin: 0 0 1rem;
-  font-family: var(--font-sans);
-  font-size: clamp(3rem, 5.4vw, 5.15rem);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
+  margin: 0 0 1.1rem;
+  font-family: var(--font-editorial);
+  font-size: clamp(2.85rem, 5.2vw, 4.75rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
   text-wrap: balance;
   color: var(--ink);
 }
@@ -1266,4 +1266,98 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
   .steep-section { padding: 64px 0; }
   .steep-lab-grid, .steep-process-grid { grid-template-columns: 1fr; }
   .steep-hero h1 { font-size: clamp(2.4rem, 11vw, 3.3rem); }
+}
+
+/* —— Stripe-quiet #5 hero overrides (software factory diagram) —— */
+.stripe-quiet-hero {
+  background: var(--paper);
+}
+.stripe-quiet-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+.stripe-wine-rule {
+  width: min(7.5rem, 40%);
+  height: 1px;
+  margin: 0 0 1.35rem;
+  background: var(--burgundy);
+}
+.stripe-quiet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.1rem 1.6rem;
+  margin-bottom: 1.15rem;
+}
+.stripe-quiet-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0;
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 160ms ease, border-color 160ms ease;
+}
+.stripe-quiet-text-link:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.stripe-quiet-text-link svg {
+  transition: transform 160ms ease;
+}
+.stripe-quiet-text-link:hover svg {
+  transform: translateX(3px);
+}
+
+.stripe-factory {
+  margin: 0;
+  padding: clamp(1.25rem, 3vw, 2rem) clamp(0.75rem, 2vw, 1.25rem);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.stripe-factory-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.stripe-factory-stroke {
+  stroke: var(--ink);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+.stripe-factory-node {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.25;
+}
+.stripe-factory-index {
+  fill: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+.stripe-factory-label {
+  fill: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 980px) {
+  .stripe-quiet-hero { padding-bottom: 2rem; }
+  .stripe-factory { margin-top: 0.25rem; }
 }
