@@ -1,9 +1,18 @@
 import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
-import { CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
-import { casePath, caseStudies, getService, servicePath, type Locale } from "../content/site";
+import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
+import { Accordion, CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
+import {
+  casePath,
+  caseStudies,
+  copy,
+  getCaseStudy,
+  getService,
+  servicePath,
+  servicesHubPath,
+  type Locale,
+} from "../content/site";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -12,7 +21,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const service = getService(locale, params.slug || "");
   if (!service) throw new Response("Not found", { status: 404 });
   const relatedCase = caseStudies[locale].find((study) => study.slug === service.relatedCase) || caseStudies[locale][0];
-  return { locale, service, relatedCase };
+  const proofCases = service.proofCaseSlugs
+    .map((slug) => getCaseStudy(locale, slug))
+    .filter((study): study is NonNullable<typeof study> => Boolean(study));
+  return { locale, service, relatedCase, proofCases };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -24,28 +36,178 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     ? (locale === "en" ? "Custom Software Development | Puna Tech" : "Desarrollo de Software a Medida | Puna Tech")
     : `${service.eyebrow} | Puna Tech`;
   const description = service.description;
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: service.faqs.map(([question, answer]) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
+    })),
+  };
   return createMeta({
     locale, title, description, path, alternatePath,
     schema: [
-      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, description, provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America"] },
-      breadcrumbSchema([{ name: "Puna Tech", path: locale === "en" ? "/" : "/es" }, { name: service.eyebrow, path }]),
+      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, description, provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America", "AR"] },
+      breadcrumbSchema([
+        { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
+        { name: locale === "en" ? "Services" : "Servicios", path: servicesHubPath(locale) },
+        { name: service.eyebrow, path },
+      ]),
+      faqSchema,
     ],
   });
 };
 
 export default function ServicePage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
-  const { locale, service, relatedCase } = loaderData;
+  const { locale, service, relatedCase, proofCases } = loaderData;
+  const t = copy[locale];
   useEffect(() => trackEvent("service_view", { locale, service: service.key }), [locale, service.key]);
+  const briefHref = locale === "en" ? "/#brief" : "/es#brief";
+
   return (
     <PageShell locale={locale}>
       <main id="main-content">
         <section className="detail-hero dark-section">
-          <div className="shell detail-hero-grid"><div><p className="eyebrow eyebrow-dark">{locale === "en" ? "Focused capability" : "Capacidad enfocada"} · {service.eyebrow}</p><h1>{service.title}</h1><p>{service.description}</p><CalButton locale={locale} placement={`service_${service.key}`} label={locale === "en" ? "Audit this bottleneck" : "Auditar este cuello de botella"} /></div><div><p className="eyebrow eyebrow-dark">{locale === "en" ? "Reference architecture" : "Arquitectura de referencia"}</p><FlowDiagram items={service.architecture} label={`${service.eyebrow}: ${service.architecture.join(", ")}`} /></div></div>
+          <div className="shell detail-hero-grid">
+            <div>
+              <p className="eyebrow eyebrow-dark">{locale === "en" ? "Focused capability" : "Capacidad enfocada"} · {service.eyebrow}</p>
+              <h1>{service.title}</h1>
+              <p>{service.description}</p>
+              <div className="cta-group">
+                <CalButton locale={locale} placement={`service_${service.key}`} label={t.book} className="button-primary-terracotta" />
+                <a
+                  href={briefHref}
+                  className="button-ghost-burgundy"
+                  onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}`, destination: "brief" })}
+                >
+                  <span>{t.sendBrief}</span>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </a>
+              </div>
+            </div>
+            <div>
+              <p className="eyebrow eyebrow-dark">{locale === "en" ? "Reference architecture" : "Arquitectura de referencia"}</p>
+              <FlowDiagram items={service.architecture} label={`${service.eyebrow}: ${service.architecture.join(", ")}`} />
+            </div>
+          </div>
         </section>
-        <section className="section light-section"><div className="shell two-column"><header className="section-heading"><p className="eyebrow">{locale === "en" ? "The operating problem" : "El problema operativo"}</p><h2>{locale === "en" ? "Signals this service may be useful." : "Señales de que este servicio puede ser útil."}</h2></header><ul className="check-list">{service.problems.map((item) => <li key={item}><CheckCircle2 aria-hidden="true" /><span>{item}</span></li>)}</ul></div></section>
-        <section className="section soft-section"><div className="shell two-column"><header className="section-heading"><p className="eyebrow">{locale === "en" ? "What you receive" : "Qué recibís"}</p><h2>{service.outcome}</h2></header><ul className="number-list">{service.deliverables.map((item, index) => <li key={item}><span>0{index + 1}</span><p>{item}</p></li>)}</ul></div></section>
-        <section className="section light-section"><div className="shell related-case"><div><p className="eyebrow">{locale === "en" ? "Related work" : "Trabajo relacionado"}</p><p className="work-name">{relatedCase.displayName}</p><h2>{relatedCase.title}</h2><p>{relatedCase.summary}</p><Link className="text-link" to={casePath(locale, relatedCase.slug)}>{locale === "en" ? "Read the case study" : "Ver el caso"}<ArrowRight aria-hidden="true" size={17} /></Link></div><div><p className="eyebrow">{relatedCase.confidentialityLabel}</p><FlowDiagram items={relatedCase.flow} label={relatedCase.flow.join(", ")} /></div></div></section>
-        <section className="detail-cta dark-section"><div className="shell"><div><p className="eyebrow eyebrow-dark">{locale === "en" ? "A useful first conversation" : "Una primera conversación útil"}</p><h2>{locale === "en" ? "Bring the workflow, constraints, and current stack." : "Traé el flujo, las restricciones y el stack actual."}</h2></div><CalButton locale={locale} placement={`service_${service.key}_final`} label={locale === "en" ? "Get the free audit" : "Pedir auditoría gratis"} /></div></section>
+
+        <section className="section light-section">
+          <div className="shell two-column">
+            <header className="section-heading">
+              <p className="eyebrow">{locale === "en" ? "The operating problem" : "El problema operativo"}</p>
+              <h2>{locale === "en" ? "Signals this service may be useful." : "Señales de que este servicio puede ser útil."}</h2>
+            </header>
+            <ul className="check-list">{service.problems.map((item) => <li key={item}><CheckCircle2 aria-hidden="true" /><span>{item}</span></li>)}</ul>
+          </div>
+        </section>
+
+        <section className="section soft-section" aria-label={locale === "en" ? "Commercial focus" : "Enfoque comercial"}>
+          <div className="shell">
+            <header className="section-heading" style={{ marginBottom: "2.5rem" }}>
+              <p className="eyebrow">{locale === "en" ? "Commercial focus" : "Enfoque comercial"}</p>
+              <h2>{locale === "en" ? "What buyers usually need to decide next." : "Lo que suele hacer falta decidir a continuación."}</h2>
+            </header>
+            <div className="commercial-h2-grid">
+              {service.commercialSections.map((section) => (
+                <article className="commercial-h2-card" key={section.heading}>
+                  <h2>{section.heading}</h2>
+                  <p>{section.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section light-section">
+          <div className="shell two-column">
+            <header className="section-heading">
+              <p className="eyebrow">{locale === "en" ? "What you receive" : "Qué recibís"}</p>
+              <h2>{service.outcome}</h2>
+            </header>
+            <ul className="number-list">{service.deliverables.map((item, index) => <li key={item}><span>0{index + 1}</span><p>{item}</p></li>)}</ul>
+          </div>
+        </section>
+
+        {proofCases.length > 0 && (
+          <section className="section soft-section" aria-label={locale === "en" ? "Proof from real systems" : "Prueba en sistemas reales"}>
+            <div className="shell">
+              <header className="section-heading" style={{ marginBottom: "2rem" }}>
+                <p className="eyebrow">{locale === "en" ? "Proof strip" : "Franja de prueba"}</p>
+                <h2>{locale === "en" ? "Real systems linked to this capability." : "Sistemas reales vinculados a esta capacidad."}</h2>
+                <p>{locale === "en" ? "Client names can stay private. Outcomes and architecture stay concrete. Lab demos are labeled as such." : "Los nombres de clientes pueden quedar en reserva. Resultados y arquitectura se muestran con claridad. Las demos de lab se marcan como tales."}</p>
+              </header>
+              <div className="proof-case-grid">
+                {proofCases.map((study) => {
+                  const labish = ["starpress", "viralyt", "videome", "autopost"].includes(study.key);
+                  return (
+                    <article className="proof-case-card" key={study.slug}>
+                      <p className="eyebrow">{labish ? (locale === "en" ? "Lab demo" : "Demo de lab") : (locale === "en" ? "Client delivery" : "Entrega a cliente")}</p>
+                      <p className="work-name">{study.displayName}</p>
+                      <h3>{study.title}</h3>
+                      <p>{study.summary}</p>
+                      {study.operationalOutcome && !study.operationalOutcomeNeedsConfirm && (
+                        <p className="proof-case-outcome">{study.operationalOutcome}</p>
+                      )}
+                      <Link className="text-link" to={casePath(locale, study.slug)}>
+                        {locale === "en" ? "Read the case study" : "Ver el caso"}
+                        <ArrowRight aria-hidden="true" size={17} />
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="section light-section">
+          <div className="shell related-case">
+            <div>
+              <p className="eyebrow">{locale === "en" ? "Related work" : "Trabajo relacionado"}</p>
+              <p className="work-name">{relatedCase.displayName}</p>
+              <h2>{relatedCase.title}</h2>
+              <p>{relatedCase.summary}</p>
+              <Link className="text-link" to={casePath(locale, relatedCase.slug)}>{locale === "en" ? "Read the case study" : "Ver el caso"}<ArrowRight aria-hidden="true" size={17} /></Link>
+            </div>
+            <div>
+              <p className="eyebrow">{relatedCase.confidentialityLabel}</p>
+              <FlowDiagram items={relatedCase.flow} label={relatedCase.flow.join(", ")} />
+            </div>
+          </div>
+        </section>
+
+        <section className="section faq-section" id="faq">
+          <div className="shell faq-grid">
+            <header className="section-heading">
+              <p className="eyebrow">FAQ</p>
+              <h2>{locale === "en" ? "Questions before you book the audit" : "Preguntas antes de agendar la auditoría"}</h2>
+              <Compass aria-hidden="true" />
+            </header>
+            <Accordion items={service.faqs} />
+          </div>
+        </section>
+
+        <section className="detail-cta dark-section">
+          <div className="shell">
+            <div>
+              <p className="eyebrow eyebrow-dark">{locale === "en" ? "A useful first conversation" : "Una primera conversación útil"}</p>
+              <h2>{locale === "en" ? "Bring the workflow, constraints, and current stack." : "Traé el flujo, las restricciones y el stack actual."}</h2>
+            </div>
+            <div className="cta-group detail-cta-actions">
+              <CalButton locale={locale} placement={`service_${service.key}_final`} label={t.book} className="button-primary-terracotta" />
+              <a
+                href={briefHref}
+                className="button-ghost-burgundy"
+                onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}_final`, destination: "brief" })}
+              >
+                <span>{t.sendBrief}</span>
+                <ArrowRight aria-hidden="true" size={16} />
+              </a>
+            </div>
+          </div>
+        </section>
       </main>
     </PageShell>
   );

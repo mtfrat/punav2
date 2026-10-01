@@ -1,4 +1,4 @@
-import { caseStudies, casePath, servicePath, services, SITE_URL } from "../content/site";
+import { caseStudies, casePath, casesHubPath, servicePath, services, servicesHubPath, SITE_URL } from "../content/site";
 import { getPublishedPosts } from "../lib/posts.server";
 
 function esc(value: string) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -11,7 +11,9 @@ function localizedPair(en: string, es: string, lastmod?: string): SitemapItem[] 
 export async function loader() {
   const staticItems: SitemapItem[] = [
     ...localizedPair("/", "/es"),
+    ...localizedPair(servicesHubPath("en"), servicesHubPath("es")),
     ...services.en.flatMap((service, index) => localizedPair(servicePath("en", service.slug), servicePath("es", services.es[index].slug))),
+    ...localizedPair(casesHubPath("en"), casesHubPath("es")),
     ...caseStudies.en.flatMap((study, index) => localizedPair(casePath("en", study.slug), casePath("es", caseStudies.es[index].slug))),
     ...localizedPair("/blog", "/es/blog"),
     ...localizedPair("/privacy", "/es/privacidad"),

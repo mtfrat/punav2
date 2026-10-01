@@ -19,6 +19,7 @@ import {
   copy,
   servicePath,
   services,
+  servicesHubPath,
   type CaseStudyContent,
   type Locale,
 } from "../content/site";
@@ -172,6 +173,30 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             {t.proof.map((item, index) => <div key={item}><span>0{index + 1}</span><p>{item}</p></div>)}
           </div>
         </section>
+
+        {locale === "es" && (
+          <section className="section latam-ar-section" aria-labelledby="latam-ar-heading">
+            <div className="shell latam-ar-grid">
+              <header className="section-heading">
+                <p className="eyebrow">{t.latamEyebrow}</p>
+                <h2 id="latam-ar-heading">{t.latamTitle}</h2>
+                <p>{t.latamBody}</p>
+                <Link className="text-link" to={servicesHubPath("es")}>
+                  Ver servicios
+                  <ArrowRight aria-hidden="true" size={17} />
+                </Link>
+              </header>
+              <ul className="latam-ar-points">
+                {t.latamPoints.map(([title, body]) => (
+                  <li key={title}>
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
 
         {/* SERVICES: Estructura preservada intacta */}
         <section id="services" className="section slowdown-section">

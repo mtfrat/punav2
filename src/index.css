@@ -1048,3 +1048,132 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
   html { scroll-behavior: auto; }
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+
+/* Commercial SEO expand + hubs */
+.commercial-h2-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.commercial-h2-card {
+  padding: 1.5rem 1.35rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.commercial-h2-card h2 {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.25;
+  color: var(--ink);
+}
+.commercial-h2-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.proof-case-grid,
+.hub-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.proof-case-card,
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem 1.35rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+.proof-case-card h3,
+.hub-card h2 {
+  margin: 0;
+  font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+  line-height: 1.3;
+}
+.proof-case-card h3 a,
+.hub-card h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+.proof-case-card h3 a:hover,
+.hub-card h2 a:hover {
+  color: var(--wine);
+}
+.proof-case-outcome {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-left: 3px solid var(--terracotta);
+  background: color-mix(in srgb, var(--terracotta) 8%, transparent);
+  color: var(--ink);
+  font-size: 0.82rem;
+  font-weight: 680;
+}
+.hub-card-index {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 760;
+  color: var(--terracotta);
+}
+.hub-card-points {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+.hub-card .text-link,
+.proof-case-card .text-link {
+  margin-top: auto;
+}
+.detail-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+.latam-ar-section {
+  background: var(--paper-deep);
+  border-bottom: 1px solid var(--line);
+}
+.latam-ar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+}
+.latam-ar-points {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--ink);
+}
+.latam-ar-points li {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--ink);
+}
+.latam-ar-points strong {
+  color: var(--ink);
+  font-size: 1rem;
+}
+.latam-ar-points span {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+@media (max-width: 960px) {
+  .commercial-h2-grid,
+  .proof-case-grid,
+  .hub-card-grid,
+  .latam-ar-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-cta-actions {
+    justify-content: flex-start;
+  }
+}

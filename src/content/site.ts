@@ -12,6 +12,11 @@ export interface ServiceContent {
   deliverables: string[];
   architecture: string[];
   relatedCase: string;
+  /** Commercial intent H2 sections (SEO expand) */
+  commercialSections: { heading: string; body: string }[];
+  /** Real case study slugs for proof strip (locale-specific) */
+  proofCaseSlugs: string[];
+  faqs: [string, string][];
 }
 
 export interface CaseStudyContent {
@@ -132,6 +137,14 @@ export const copy = {
     readMore: "Read more",
     emptyBlog: "Editorial work is in review. New articles will appear here after human approval.",
     footerLine: "Custom software, AI automation, and systems integrations.",
+    latamEyebrow: "Buenos Aires · LATAM-AR delivery",
+    latamTitle: "B2B software factory for companies across Argentina and the region.",
+    latamBody: "Based in Buenos Aires for teams that need process automation, CRM/ERP integration, and custom systems without giving up code ownership. Bilingual collaboration with LATAM and US stakeholders.",
+    latamPoints: [
+      ["Software factory", "Discovery, design, engineering, and launch in one team—focused scope and a maintainable foundation."],
+      ["Process automation", "n8n/HubSpot workflows and orchestration with human validation where risk requires it."],
+      ["Integrations and ownership", "We connect the current stack; repositories, access, and handoff stay explicit."],
+    ],
   },
   es: {
     locale: "es" as const,
@@ -220,6 +233,14 @@ export const copy = {
     readMore: "Leer más",
     emptyBlog: "El contenido editorial está en revisión. Los nuevos artículos aparecerán después de la aprobación humana.",
     footerLine: "Software a medida, automatización con IA e integraciones de sistemas.",
+    latamEyebrow: "Buenos Aires · Entrega LATAM-AR",
+    latamTitle: "Software factory B2B para empresas en Argentina y la región.",
+    latamBody: "Trabajamos desde Buenos Aires con equipos que necesitan automatizar procesos, integrar CRM/ERP y construir sistemas a medida sin perder propiedad del código. Colaboración bilingüe con stakeholders en LATAM y EE.UU.",
+    latamPoints: [
+      ["Fábrica de software", "Discovery, diseño, ingeniería y lanzamiento en un solo equipo—alcance enfocado y base mantenible."],
+      ["Automatización de procesos", "Flujos n8n/HubSpot y orquestación con validación humana donde el riesgo lo pide."],
+      ["Integraciones y ownership", "Conectamos el stack actual; repositorios, accesos y traspaso quedan explícitos."],
+    ],
   },
 };
 
@@ -233,6 +254,19 @@ export const services: Record<Locale, ServiceContent[]> = {
       problems: ["Teams copying information between systems", "Unstructured documents blocking downstream work", "AI prototypes with no validation or ownership model"],
       deliverables: ["Workflow and risk map", "Production integrations and validation rules", "Observability, handoff, and operating documentation"],
       architecture: ["Sources", "Orchestration", "Validation", "Human review", "Systems of record"], relatedCase: "b2b-gtm-automation",
+      commercialSections: [
+        { heading: "Business process automation without black-box bots", body: "We map the handoffs that stall revenue and operations, then automate classification, enrichment, validation, and routing across the tools you already run—with human review where risk requires it." },
+        { heading: "n8n and HubSpot workflow automation that sales can trust", body: "Production workflows on n8n (and similar orchestrators) connect forms, CRM, enrichment, and alerts. Built so reps see context in seconds—not another opaque chatbot demo." },
+        { heading: "When Zapier or Make hit their ceiling", body: "Volume caps, brittle zaps, and missing approval steps are common reasons teams move to a custom orchestration layer. We design the owned workflow first; the tool follows." },
+      ],
+      proofCaseSlugs: ["inbound-lead-routing-hubspot", "ai-linkedin-copilot-hitl", "b2b-gtm-automation"],
+      faqs: [
+        ["What kinds of processes fit automation?", "Repetitive handoffs with clear inputs and outputs: inbound lead routing, document triage, CRM enrichment, outreach sync, and internal approvals. If the workflow is still undefined, we start with a map—not a model."],
+        ["Do you only build with AI?", "No. AI is useful when unstructured input needs structure. Many high-ROI automations are deterministic integrations with validation and alerts. We choose the lightest reliable approach."],
+        ["Can we keep human approval?", "Yes. Consequential actions—quotes, outreach sends, CRM stage changes—can require review. Automation should remove busywork, not remove accountability."],
+        ["How is this different from a chatbot project?", "We automate operational pipelines with observability, retries, and ownership. Chatbots are optional interfaces; the system of record and failure handling are the product."],
+        ["What stack do you typically use?", "n8n or equivalent orchestration, your CRM/APIs (often HubSpot), databases for state, and structured model calls only where they reduce manual judgment. Lab demos prove patterns; client delivery uses what your operation can own."],
+      ],
     },
     {
       key: "custom-software", slug: "custom-software", alternateSlug: "software-a-medida", eyebrow: "Custom B2B software",
@@ -242,6 +276,19 @@ export const services: Record<Locale, ServiceContent[]> = {
       problems: ["Spreadsheets acting as a critical system", "Disconnected customer and internal experiences", "Legacy interfaces that make simple work difficult"],
       deliverables: ["Product scope and interaction design", "Frontend, backend, database, and deployment", "Testing, documentation, and launch support"],
       architecture: ["User journeys", "Application", "Business logic", "Data model", "Cloud deployment"], relatedCase: "edtech-web3-platform",
+      commercialSections: [
+        { heading: "Custom software development for operations that outgrew spreadsheets", body: "We build portals, internal tools, and B2B platforms around real roles, permissions, and workflows—not a generic template dressed as a product." },
+        { heading: "Software factory delivery you can own", body: "One bilingual team across discovery, design, engineering, and launch. Repositories, infrastructure, and handoff are explicit so your business is not locked into a black box." },
+        { heading: "Internal tools and customer portals in one coherent product", body: "When customer experience and internal ops share the same data rules, we ship a maintainable application shell instead of three disconnected workarounds." },
+      ],
+      proofCaseSlugs: ["edtech-web3-platform", "starpress-reviews-to-revenue", "viralyt-youtube-intelligence"],
+      faqs: [
+        ["When is custom software better than SaaS?", "When a critical workflow needs specific roles, data rules, or integrations that off-the-shelf tools cannot support cleanly. We first check whether connecting or extending your current stack is enough."],
+        ["Do you build internal tools or only customer-facing products?", "Both. Internal portals, ops dashboards, and customer-facing platforms are in scope when they remove a real bottleneck and have a clear owner."],
+        ["Who owns the code and infrastructure?", "Ownership, repositories, access, and handoff are written into the proposal. We build for operation and extension without hidden lock-in."],
+        ["Can we start with an MVP?", "Yes. The first scope should prove one useful outcome, expose integration risk, and leave a production-quality foundation—not a throwaway prototype."],
+        ["Where is the team based?", "Buenos Aires with bilingual delivery across the Americas. Collaboration is designed for US and LATAM stakeholders in the same engagement."],
+      ],
     },
     {
       key: "data-integrations", slug: "data-integrations", alternateSlug: "integraciones-de-datos", eyebrow: "Data and systems integration",
@@ -251,6 +298,19 @@ export const services: Record<Locale, ServiceContent[]> = {
       problems: ["Duplicate or incomplete records", "Brittle point-to-point automations", "No shared source of truth for operational data"],
       deliverables: ["System and data-flow audit", "Versioned integrations and retry policies", "Monitoring, alerting, and runbooks"],
       architecture: ["Applications", "API contracts", "Workflow engine", "Database", "Monitoring"], relatedCase: "b2b-gtm-automation",
+      commercialSections: [
+        { heading: "Systems integration for CRM, ERP, and the tools already running the business", body: "We connect CRMs, databases, outreach tools, and internal APIs with deterministic pipelines, explicit contracts, and visible failure handling—not fragile point-to-point scripts." },
+        { heading: "HubSpot and revenue-ops data paths that do not drop leads", body: "Inbound forms, company matching, enrichment, and rep alerts belong in one observable flow. Case work includes production HubSpot routing and GTM pipelines teams can monitor." },
+        { heading: "A shared source of truth instead of spreadsheet reconciliation", body: "Duplicate records and silent sync failures cost more than another dashboard. We audit the data path, version integrations, and leave runbooks your team can operate." },
+      ],
+      proofCaseSlugs: ["inbound-lead-routing-hubspot", "b2b-gtm-automation", "ai-linkedin-copilot-hitl"],
+      faqs: [
+        ["Which systems can you connect?", "CRMs (often HubSpot), enrichment tools, outreach platforms, databases, webhooks, and internal APIs. Scope starts from the systems of record your operation already depends on."],
+        ["How do you handle failures and retries?", "Integrations are designed with retries, alerting, and runbooks. Failures should be visible and isolatable—not a silent drop that sales discovers days later."],
+        ["Will you replace our CRM?", "Usually no. We first build a reliable path between current tools. Replacement is only recommended when the existing constraint makes it necessary."],
+        ["Is this the same as buying Zapier seats?", "iPaaS tools help for light syncs. When volume, approvals, identity matching, or multi-step revenue logic outgrow them, a owned workflow layer is usually cleaner."],
+        ["What does discovery include?", "A system and data-flow audit: sources, contracts, ownership, and the smallest useful integration that removes the bottleneck."],
+      ],
     },
   ],
   es: [
@@ -262,6 +322,19 @@ export const services: Record<Locale, ServiceContent[]> = {
       problems: ["Equipos copiando información entre sistemas", "Documentos sin estructura que bloquean procesos", "Prototipos de IA sin validación ni responsables"],
       deliverables: ["Mapa del flujo y sus riesgos", "Integraciones productivas y reglas de validación", "Observabilidad, traspaso y documentación operativa"],
       architecture: ["Fuentes", "Orquestación", "Validación", "Revisión humana", "Sistemas de registro"], relatedCase: "automatizacion-gtm-b2b",
+      commercialSections: [
+        { heading: "Automatización de procesos empresariales sin cajas negras", body: "Mapeamos los traspasos que frenan ingresos y operación, y automatizamos clasificación, enriquecimiento, validación y ruteo entre las herramientas que ya usás—con revisión humana donde el riesgo lo pide." },
+        { heading: "Automatización n8n y HubSpot en la que ventas puede confiar", body: "Flujos productivos en n8n (u orquestadores similares) conectan formularios, CRM, enriquecimiento y alertas. Los reps ven contexto en segundos—no otra demo opaca de chatbot." },
+        { heading: "Cuando Zapier o Make ya no alcanzan", body: "Límites de operaciones, zaps frágiles y falta de aprobación son motivos frecuentes para pasar a una capa de orquestación propia. Primero diseñamos el flujo; la herramienta sigue." },
+      ],
+      proofCaseSlugs: ["enrutamiento-leads-hubspot", "copiloto-linkedin-ia-hitl", "automatizacion-gtm-b2b"],
+      faqs: [
+        ["¿Qué procesos encajan para automatizar?", "Traspasos repetitivos con entradas y salidas claras: ruteo de leads, triaje de documentos, enriquecimiento de CRM, sync de outreach y aprobaciones internas. Si el flujo todavía no está definido, empezamos por el mapa—no por el modelo."],
+        ["¿Solo construyen con IA?", "No. La IA sirve cuando hace falta estructurar información desordenada. Muchas automatizaciones de alto impacto son integraciones determinísticas con validación y alertas."],
+        ["¿Podemos mantener aprobación humana?", "Sí. Acciones sensibles—cotizaciones, envíos, cambios de etapa en CRM—pueden requerir revisión. La automatización saca trabajo repetitivo, no la responsabilidad."],
+        ["¿En qué se diferencia de un proyecto de chatbot?", "Automatizamos pipelines operativos con observabilidad, reintentos y dueños claros. El chatbot es opcional; el sistema de registro y el manejo de fallas son el producto."],
+        ["¿Qué stack usan habitualmente?", "n8n u orquestación equivalente, tu CRM/APIs (a menudo HubSpot), base de datos para estado, y modelos estructurados solo donde reducen juicio manual. El lab prueba patrones; la entrega usa lo que tu operación puede operar."],
+      ],
     },
     {
       key: "custom-software", slug: "software-a-medida", alternateSlug: "custom-software", eyebrow: "Software B2B a medida",
@@ -271,6 +344,19 @@ export const services: Record<Locale, ServiceContent[]> = {
       problems: ["Planillas funcionando como sistema crítico", "Experiencias internas y de clientes desconectadas", "Interfaces heredadas que complican tareas simples"],
       deliverables: ["Alcance de producto y diseño de interacción", "Frontend, backend, base de datos y despliegue", "Pruebas, documentación y acompañamiento de lanzamiento"],
       architecture: ["Experiencia", "Aplicación", "Lógica de negocio", "Modelo de datos", "Despliegue cloud"], relatedCase: "plataforma-edtech-web3",
+      commercialSections: [
+        { heading: "Desarrollo de software a medida para operaciones que ya superaron las planillas", body: "Construimos portales, herramientas internas y plataformas B2B alrededor de roles, permisos y flujos reales—no un template genérico vestido de producto." },
+        { heading: "Software factory que tu empresa puede operar", body: "Un equipo bilingüe en discovery, diseño, ingeniería y lanzamiento. Repositorios, infraestructura y traspaso quedan explícitos para que no quedes atrapado en una caja negra." },
+        { heading: "Herramientas internas y portales de clientes en un producto coherente", body: "Cuando la experiencia del cliente y la operación interna comparten las mismas reglas de datos, entregamos una aplicación mantenible en lugar de tres parches desconectados." },
+      ],
+      proofCaseSlugs: ["plataforma-edtech-web3", "starpress-resenas-a-ingresos", "viralyt-inteligencia-youtube"],
+      faqs: [
+        ["¿Cuándo conviene software a medida frente a un SaaS?", "Cuando un flujo crítico necesita roles, reglas de datos o integraciones que las herramientas estándar no resuelven bien. Primero evaluamos si conectar o extender el stack actual alcanza."],
+        ["¿Hacen herramientas internas o solo productos de cara al cliente?", "Ambas. Portales internos, tableros operativos y plataformas para clientes entran en alcance cuando sacan un cuello de botella real y tienen un dueño claro."],
+        ["¿Quién es dueño del código y la infraestructura?", "Propiedad, repositorios, accesos y traspaso quedan en la propuesta. Construimos para operar y extender sin dependencia oculta."],
+        ["¿Podemos empezar con un MVP?", "Sí. El primer alcance debe demostrar un resultado útil, revelar riesgos de integración y dejar una base de producción—no un prototipo descartable."],
+        ["¿Dónde está el equipo?", "Buenos Aires, con entrega bilingüe en las Américas. La colaboración está pensada para stakeholders de EE.UU. y LATAM en el mismo proyecto."],
+      ],
     },
     {
       key: "data-integrations", slug: "integraciones-de-datos", alternateSlug: "data-integrations", eyebrow: "Integración de datos y sistemas",
@@ -280,6 +366,19 @@ export const services: Record<Locale, ServiceContent[]> = {
       problems: ["Registros duplicados o incompletos", "Automatizaciones punto a punto frágiles", "Ausencia de una fuente compartida de datos operativos"],
       deliverables: ["Auditoría de sistemas y flujos de datos", "Integraciones versionadas y políticas de reintento", "Monitoreo, alertas y manuales operativos"],
       architecture: ["Aplicaciones", "Contratos de API", "Motor de flujos", "Base de datos", "Monitoreo"], relatedCase: "automatizacion-gtm-b2b",
+      commercialSections: [
+        { heading: "Integración de sistemas CRM, ERP y las herramientas que ya sostienen el negocio", body: "Conectamos CRMs, bases de datos, outreach y APIs internas con pipelines determinísticos, contratos explícitos y fallas visibles—no scripts frágiles punto a punto." },
+        { heading: "Rutas de datos HubSpot y revenue ops que no pierden leads", body: "Formularios, matching de empresas, enriquecimiento y alertas a reps van en un flujo observable. El trabajo en casos incluye ruteo HubSpot y pipelines GTM que el equipo puede monitorear." },
+        { heading: "Una fuente compartida de verdad en lugar de conciliar planillas", body: "Registros duplicados y syncs silenciosos cuestan más que otro tablero. Auditamos el recorrido de datos, versionamos integraciones y dejamos runbooks operables." },
+      ],
+      proofCaseSlugs: ["enrutamiento-leads-hubspot", "automatizacion-gtm-b2b", "copiloto-linkedin-ia-hitl"],
+      faqs: [
+        ["¿Qué sistemas pueden conectar?", "CRMs (a menudo HubSpot), herramientas de enriquecimiento, plataformas de outreach, bases de datos, webhooks y APIs internas. El alcance parte de los sistemas de registro que ya sostienen la operación."],
+        ["¿Cómo manejan fallas y reintentos?", "Las integraciones se diseñan con reintentos, alertas y runbooks. Las fallas tienen que ser visibles y aislables—no un drop silencioso que ventas descubre días después."],
+        ["¿Van a reemplazar nuestro CRM?", "En general, no. Primero armamos un recorrido confiable entre las herramientas actuales. Reemplazar solo tiene sentido cuando la limitación existente lo vuelve necesario."],
+        ["¿Es lo mismo que sumar asientos de Zapier?", "Las iPaaS ayudan en syncs livianos. Cuando el volumen, las aprobaciones, el matching de identidad o la lógica de revenue superan ese techo, una capa de flujo propia suele ser más limpia."],
+        ["¿Qué incluye el discovery?", "Una auditoría de sistemas y flujos de datos: fuentes, contratos, dueños y la integración mínima útil que saca el cuello de botella."],
+      ],
     },
   ],
 };
@@ -862,6 +961,14 @@ export function servicePath(locale: Locale, slug: string) {
 
 export function casePath(locale: Locale, slug: string) {
   return locale === "en" ? `/case-studies/${slug}` : `/es/casos/${slug}`;
+}
+
+export function servicesHubPath(locale: Locale) {
+  return locale === "en" ? "/services" : "/es/servicios";
+}
+
+export function casesHubPath(locale: Locale) {
+  return locale === "en" ? "/case-studies" : "/es/casos";
 }
 
 export function blogPath(locale: Locale, slug?: string) {

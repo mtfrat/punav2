@@ -4,6 +4,10 @@ import { vercelPreset } from "@vercel/react-router/vite";
 const marketingRoutes = [
   "/",
   "/es",
+  "/services",
+  "/es/servicios",
+  "/case-studies",
+  "/es/casos",
   "/services/ai-automation",
   "/services/custom-software",
   "/services/data-integrations",

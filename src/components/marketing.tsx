@@ -11,7 +11,7 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { CAL_LINK, CONTACT_EMAIL, copy, type Locale } from "../content/site";
+import { CAL_LINK, CONTACT_EMAIL, casesHubPath, copy, servicesHubPath, type Locale } from "../content/site";
 import { trackEvent } from "./tracking";
 export { trackEvent } from "./tracking";
 
@@ -75,6 +75,10 @@ export function CalButton({ locale, placement, className = "", compact = false, 
 const localeRoutePairs: Record<string, string> = {
   "/": "/es",
   "/es": "/",
+  "/services": "/es/servicios",
+  "/es/servicios": "/services",
+  "/case-studies": "/es/casos",
+  "/es/casos": "/case-studies",
   "/services/ai-automation": "/es/servicios/automatizacion-ia",
   "/services/custom-software": "/es/servicios/software-a-medida",
   "/services/data-integrations": "/es/servicios/integraciones-de-datos",
@@ -130,8 +134,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const location = useLocation();
   const t = copy[locale];
   const home = locale === "en" ? "/" : "/es";
-  const servicesAnchor = `${home}#services`;
-  const workAnchor = `${home}#work`;
+  const servicesAnchor = servicesHubPath(locale);
+  const workAnchor = casesHubPath(locale);
   const processAnchor = `${home}#process`;
   const insights = locale === "en" ? "/blog" : "/es/blog";
   const briefAnchor = `${home}#brief`;
@@ -195,8 +199,8 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       <div className="shell footer-grid">
         <div><Brand /><p>{copy[locale].footerLine}</p></div>
         <div className="footer-links">
-          <Link to={`${home}#services`}>{copy[locale].nav.services}</Link>
-          <Link to={`${home}#work`}>{copy[locale].nav.work}</Link>
+          <Link to={servicesHubPath(locale)}>{copy[locale].nav.services}</Link>
+          <Link to={casesHubPath(locale)}>{copy[locale].nav.work}</Link>
           <Link to={locale === "en" ? "/services/custom-software" : "/es/servicios/software-a-medida"}>{locale === "en" ? "Custom software" : "Software a medida"}</Link>
           <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
         </div>

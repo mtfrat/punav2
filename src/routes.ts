@@ -3,8 +3,12 @@ import { index, route, type RouteConfig } from "@react-router/dev/routes";
 export default [
   index("./routes/home.tsx", { id: "home-en" }),
   route("es", "./routes/home.tsx", { id: "home-es" }),
+  route("services", "./routes/services-hub.tsx", { id: "services-hub-en" }),
+  route("es/servicios", "./routes/services-hub.tsx", { id: "services-hub-es" }),
   route("services/:slug", "./routes/service.tsx", { id: "service-en" }),
   route("es/servicios/:slug", "./routes/service.tsx", { id: "service-es" }),
+  route("case-studies", "./routes/case-studies-hub.tsx", { id: "cases-hub-en" }),
+  route("es/casos", "./routes/case-studies-hub.tsx", { id: "cases-hub-es" }),
   route("for-agencies", "./routes/legacy-industry-redirect.ts", { id: "legacy-agencies-en" }),
   route("es/para-agencias", "./routes/legacy-industry-redirect.ts", { id: "legacy-agencies-es" }),
   route("industries/:slug", "./routes/legacy-industry-redirect.ts", { id: "legacy-industry-en" }),
