@@ -25,6 +25,7 @@ export interface CaseStudyContent {
   challenge: string;
   solution: string;
   impact: string[];
+  impactNeedsConfirm?: string[];
   stack: string[];
   flow: string[];
   displayName: string;
@@ -32,10 +33,11 @@ export interface CaseStudyContent {
   visualCaption: string;
   relatedService: string;
   liveDemoUrl?: string;
-  metrics?: { label: string; value: string }[];
+  metrics?: { label: string; value: string; needsConfirm?: boolean }[];
   beforeAfter?: { before: string; after: string };
   category?: "saas" | "automation";
   operationalOutcome?: string;
+  operationalOutcomeNeedsConfirm?: boolean;
 }
 
 export const SITE_URL = "https://www.puna-tech.com";
@@ -46,16 +48,15 @@ export const copy = {
   en: {
     locale: "en" as const,
     languageName: "English",
-    nav: { services: "Services", work: "Work", process: "How it works", insights: "Blog", brief: "Send a brief" },
-    book: "Book free 15-min audit",
-    sendBrief: "Send a brief",
+    nav: { services: "Services", work: "Work", process: "How it works", insights: "Blog", brief: "Prefer writing? Send a short note" },
+    book: "Map the bottleneck in 15 min",
+    sendBrief: "Prefer writing? Send a short note",
     heroEyebrow: "Software factory",
     heroTitle: "Custom software for operations that outgrew off-the-shelf tools.",
     heroItalic: "outgrew off-the-shelf tools",
     heroBody: "We design and ship systems your team can own—automation, integrations, and custom B2B software. Lab SaaS proves execution; client delivery is the business.",
     heroLabClarification: "Lab SaaS products demonstrate how we ship and operate software; client delivery is the core business.",
     heroMicrocopy: "Fifteen minutes. The bottleneck, the options, the next useful step.",
-    heroRibbon: "Deterministic systems. Human oversight where it matters.",
     seeWork: "Explore our services",
     proof: ["From discovery through production launch", "Bilingual collaboration across the Americas", "Software, automation, and integrations in one team"],
     workLabEyebrow: "SaaS Lab",
@@ -69,21 +70,6 @@ export const copy = {
     openCase: "Open case",
     liveDemo: "Live demo",
     viewArchitecture: "View delivery architecture",
-    socialProofNotice: "[PLACEHOLDER quotes · Replace with verified client testimonials before production]",
-    socialProofQuotes: [
-      {
-        role: "Operations lead",
-        industry: "Logistics",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Cut daily WhatsApp/Excel handoffs by ~40% after the first workflow shipped.”",
-      },
-      {
-        role: "Director of Ops",
-        industry: "Real estate",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“One owned system for leads, contracts, and handoffs—adoption in under 3 weeks.”",
-      },
-    ],
     fitEyebrow: "Where Puna fits best",
     fitTitle: "For operations that have outgrown spreadsheets, manual handoffs, and disconnected tools.",
     fitBody: "We are most useful when the problem crosses product, data, and operations—not when the answer is another generic website or an AI demo.",
@@ -150,16 +136,15 @@ export const copy = {
   es: {
     locale: "es" as const,
     languageName: "Español",
-    nav: { services: "Servicios", work: "Trabajo", process: "Cómo funciona", insights: "Blog", brief: "Enviar brief" },
-    book: "Auditoría gratis de 15 min",
-    sendBrief: "Enviar brief",
+    nav: { services: "Servicios", work: "Trabajo", process: "Cómo funciona", insights: "Blog", brief: "¿Preferís escribir? Mandá una nota corta" },
+    book: "Mapeá el cuello de botella en 15 min",
+    sendBrief: "¿Preferís escribir? Mandá una nota corta",
     heroEyebrow: "Software factory",
     heroTitle: "Software a medida para operaciones que ya superaron las herramientas estándar.",
     heroItalic: "herramientas estándar",
     heroBody: "Diseñamos y entregamos sistemas que tu equipo pueda operar: automatización, integraciones y software B2B a medida. El lab SaaS prueba ejecución; la entrega a clientes es el negocio.",
     heroLabClarification: "Los productos SaaS del lab demuestran cómo construimos y operamos software; la entrega a clientes es el negocio principal.",
     heroMicrocopy: "Quince minutos. El cuello de botella, las opciones y el próximo paso útil.",
-    heroRibbon: "Sistemas determinísticos. Control humano donde importa.",
     seeWork: "Explorar servicios",
     proof: ["De discovery al lanzamiento productivo", "Colaboración bilingüe en todo el continente", "Software, automatización e integraciones en un solo equipo"],
     workLabEyebrow: "Laboratorio SaaS",
@@ -173,21 +158,6 @@ export const copy = {
     openCase: "Abrir caso",
     liveDemo: "Demo en vivo",
     viewArchitecture: "Ver arquitectura de entrega",
-    socialProofNotice: "[PLACEHOLDER quotes · Reemplazar con testimonios verificados antes de producción]",
-    socialProofQuotes: [
-      {
-        role: "Responsable de operaciones",
-        industry: "Logística",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Recortamos ~40% los traspasos diarios por WhatsApp/Excel tras el primer flujo.”",
-      },
-      {
-        role: "Director de operaciones",
-        industry: "Real estate",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Un sistema propio para leads, contratos y handoffs—adopción en menos de 3 semanas.”",
-      },
-    ],
     fitEyebrow: "Dónde encaja mejor Puna",
     fitTitle: "Para operaciones que ya superaron las planillas, los traspasos manuales y las herramientas desconectadas.",
     fitBody: "Somos más útiles cuando el problema cruza producto, datos y operaciones, no cuando la respuesta es otro sitio genérico o una demo de IA.",
@@ -461,6 +431,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       displayName: "Inbound Revenue Switch",
       confidentialityLabel: "Production enterprise deployment · 82 Nodes",
       operationalOutcome: "8h → 2.4s response latency · 0 dropped leads across 50k events",
+      operationalOutcomeNeedsConfirm: true,
       visualCaption: "12-channel form switch & HubSpot v4 company matching",
       relatedService: "data-integrations",
       title: "82-node inbound lead router: zero-drop CRM synchronization and instant team alerts.",
@@ -472,10 +443,14 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
         "100% of enterprise contacts automatically associated with parent CRM accounts",
         "Zero dropped submissions across 50,000+ monthly inbound events"
       ],
+      impactNeedsConfirm: [
+        "Lead response time dropped from 8 hours to 2.4 seconds",
+        "Zero dropped submissions across 50,000+ monthly inbound events"
+      ],
       metrics: [
-        { label: "Routing Latency", value: "2.4 sec" },
-        { label: "Enrichment Match", value: "99.9%" },
-        { label: "Dropped Leads", value: "0%" }
+        { label: "Routing Latency", value: "2.4 sec", needsConfirm: true },
+        { label: "Enrichment Match", value: "99.9%", needsConfirm: true },
+        { label: "Dropped Leads", value: "0%", needsConfirm: true }
       ],
       beforeAfter: {
         before: "Form submissions arrived via email inboxes, taking 4 to 24 hours to be triaged and manually typed into HubSpot by sales coordinators.",
@@ -730,6 +705,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       displayName: "Inbound Revenue Switch",
       confidentialityLabel: "Despliegue enterprise productivo · 82 Nodos",
       operationalOutcome: "8h → 2.4s latencia de respuesta · 0 leads perdidos en 50k eventos",
+      operationalOutcomeNeedsConfirm: true,
       visualCaption: "Enrutador de 12 formularios y asociación de cuentas en HubSpot v4",
       relatedService: "integraciones-de-datos",
       title: "Enrutador de leads de 82 nodos: sincronización con CRM y alertas instantáneas.",
@@ -741,10 +717,14 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
         "100% de contactos B2B asociados a su empresa matriz en el CRM",
         "Cero registros perdidos sobre más de 50.000 conversiones mensuales"
       ],
+      impactNeedsConfirm: [
+        "Tiempo promedio de primera respuesta reducido de 8 horas a 2.4 segundos",
+        "Cero registros perdidos sobre más de 50.000 conversiones mensuales"
+      ],
       metrics: [
-        { label: "Latencia de Enrutamiento", value: "2.4 seg" },
-        { label: "Precisión de Enriquecimiento", value: "99.9%" },
-        { label: "Leads Perdidos", value: "0%" }
+        { label: "Latencia de Enrutamiento", value: "2.4 seg", needsConfirm: true },
+        { label: "Precisión de Enriquecimiento", value: "99.9%", needsConfirm: true },
+        { label: "Leads Perdidos", value: "0%", needsConfirm: true }
       ],
       beforeAfter: {
         before: "Los prospectos llegaban a casillas de correo dispersas y tardaban hasta 24 horas en ser cargados a mano en HubSpot por el equipo de ventas.",

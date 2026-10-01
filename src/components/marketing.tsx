@@ -134,6 +134,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const workAnchor = `${home}#work`;
   const processAnchor = `${home}#process`;
   const insights = locale === "en" ? "/blog" : "/es/blog";
+  const briefAnchor = `${home}#brief`;
   const languageHref = alternatePath(location.pathname, locale);
 
   useEffect(() => setOpen(false), [location.pathname]);
@@ -157,6 +158,11 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           >
             {locale === "en" ? "ES" : "EN"}
           </Link>
+          <a
+            href={briefAnchor}
+            className="button-ghost-ink button-compact desktop-brief"
+            onClick={() => trackEvent("cta_click", { locale, placement: "navigation", destination: "brief" })}
+          >{t.sendBrief}</a>
           <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={t.book} />
           <button className="menu-button" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? (locale === "en" ? "Close menu" : "Cerrar menú") : (locale === "en" ? "Open menu" : "Abrir menú")}>
             {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
@@ -169,6 +175,11 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           <Link to={workAnchor}>{t.nav.work}</Link>
           <Link to={processAnchor}>{t.nav.process}</Link>
           <Link to={insights}>{t.nav.insights}</Link>
+          <a
+            href={briefAnchor}
+            className="button-ghost-ink"
+            onClick={() => trackEvent("cta_click", { locale, placement: "mobile_navigation", destination: "brief" })}
+          >{t.sendBrief}</a>
           <CalButton locale={locale} placement="mobile_navigation" label={t.book} />
         </nav>
       )}
@@ -237,7 +248,10 @@ export function ProjectBrief({ locale }: { locale: Locale }) {
   const fieldErrors = fetcher.data?.fieldErrors || {};
 
   useEffect(() => {
-    if (success) trackEvent("project_brief_submit", { locale, placement: "final_cta" });
+    if (success) {
+      trackEvent("project_brief_submit", { locale, placement: "final_cta" });
+      trackEvent("generate_lead", { locale, placement: "final_cta", method: "project_brief" });
+    }
   }, [success, locale]);
 
   function recordStart() {

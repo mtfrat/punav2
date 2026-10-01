@@ -16,6 +16,7 @@ export type AnalyticsEvent =
   | "service_view"
   | "project_brief_start"
   | "project_brief_submit"
+  | "generate_lead"
   | "chat_open"
   | "chat_qualified"
   | "language_switch";

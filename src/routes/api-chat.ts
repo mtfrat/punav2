@@ -6,8 +6,15 @@ const attempts = new Map<string, { count: number; resetAt: number }>();
 function allowedOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return true;
-  try { return ["www.puna-tech.com", "puna-tech.com", "localhost", "127.0.0.1"].includes(new URL(origin).hostname); }
-  catch { return false; }
+  try {
+    const { hostname } = new URL(origin);
+    if (["www.puna-tech.com", "puna-tech.com", "localhost", "127.0.0.1"].includes(hostname)) return true;
+    // Branch/preview deploys (Vercel share + team aliases)
+    if (hostname.endsWith(".vercel.app") && hostname.includes("punav2")) return true;
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function hasCapacity(request: Request) {

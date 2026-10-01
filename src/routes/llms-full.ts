@@ -41,7 +41,7 @@ export async function loader() {
       `Production Flow: ${item.flow.join(" -> ")}`,
       `Tech Stack: ${item.stack.join(", ")}`,
       `Verified Outcomes:`,
-      ...item.impact.map((imp) => `  - ${imp}`),
+      ...item.impact.filter((imp) => !item.impactNeedsConfirm?.includes(imp)).map((imp) => `  - ${imp}`),
       `Canonical URL: ${SITE_URL}${casePath("en", item.slug)}`,
       "",
     ].join("\n")),

@@ -47,6 +47,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function CaseStudyPage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { locale, study } = loaderData;
   useEffect(() => trackEvent("case_study_view", { locale, case_study: study.key }), [locale, study.key]);
+  const confirmedMetrics = study.metrics?.filter((metric) => !metric.needsConfirm) || [];
+  const confirmedImpact = study.impact.filter((item) => !study.impactNeedsConfirm?.includes(item));
   return (
     <PageShell locale={locale}>
       <main id="main-content">
@@ -88,11 +90,11 @@ export default function CaseStudyPage({ loaderData }: { loaderData: Awaited<Retu
           </div>
         </section>
 
-        {study.metrics && study.metrics.length > 0 && (
+        {confirmedMetrics.length > 0 && (
           <section className="case-metrics-ribbon" aria-label={locale === "en" ? "Key performance metrics" : "Métricas clave de rendimiento"}>
             <div className="shell">
               <div className="case-metrics-grid">
-                {study.metrics.map((m) => (
+                {confirmedMetrics.map((m) => (
                   <div key={m.label} className="case-metric-card">
                     <div className="metric-value">{m.value}</div>
                     <div className="metric-label">{m.label}</div>
@@ -147,7 +149,7 @@ export default function CaseStudyPage({ loaderData }: { loaderData: Awaited<Retu
               <p>{locale === "en" ? "Real outcomes delivered for operational teams and end users." : "Resultados reales entregados para equipos operativos y usuarios finales."}</p>
             </header>
             <ul className="check-list">
-              {study.impact.map((item) => (
+              {confirmedImpact.map((item) => (
                 <li key={item}>
                   <CheckCircle2 aria-hidden="true" />
                   <span>{item}</span>
