@@ -130,10 +130,10 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const location = useLocation();
   const t = copy[locale];
   const home = locale === "en" ? "/" : "/es";
+  const servicesAnchor = `${home}#services`;
   const workAnchor = `${home}#work`;
-  const labAnchor = `${home}#lab`;
   const processAnchor = `${home}#process`;
-  const faqAnchor = `${home}#faq`;
+  const insights = locale === "en" ? "/blog" : "/es/blog";
   const briefAnchor = `${home}#brief`;
   const languageHref = alternatePath(location.pathname, locale);
 
@@ -144,10 +144,10 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       <div className="site-nav shell">
         <Link to={home} className="brand-link"><Brand /></Link>
         <nav className="desktop-nav" aria-label={locale === "en" ? "Primary navigation" : "Navegación principal"}>
+          <Link to={servicesAnchor}>{t.nav.services}</Link>
           <Link to={workAnchor}>{t.nav.work}</Link>
-          <Link to={labAnchor}>{t.nav.lab}</Link>
           <Link to={processAnchor}>{t.nav.process}</Link>
-          <Link to={faqAnchor}>{t.nav.faq}</Link>
+          <Link to={insights}>{t.nav.insights}</Link>
         </nav>
         <div className="nav-actions">
           <Link
@@ -158,7 +158,11 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           >
             {locale === "en" ? "ES" : "EN"}
           </Link>
-          <a href={briefAnchor} className="button-ghost-ink button-compact desktop-brief">{t.sendBrief}</a>
+          <a
+            href={briefAnchor}
+            className="button-ghost-ink button-compact desktop-brief"
+            onClick={() => trackEvent("cta_click", { locale, placement: "navigation", destination: "brief" })}
+          >{t.sendBrief}</a>
           <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={t.book} />
           <button className="menu-button" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? (locale === "en" ? "Close menu" : "Cerrar menú") : (locale === "en" ? "Open menu" : "Abrir menú")}>
             {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
@@ -167,11 +171,15 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       </div>
       {open && (
         <nav id="mobile-navigation" className="mobile-nav" aria-label={locale === "en" ? "Mobile navigation" : "Navegación móvil"}>
+          <Link to={servicesAnchor}>{t.nav.services}</Link>
           <Link to={workAnchor}>{t.nav.work}</Link>
-          <Link to={labAnchor}>{t.nav.lab}</Link>
           <Link to={processAnchor}>{t.nav.process}</Link>
-          <Link to={faqAnchor}>{t.nav.faq}</Link>
-          <a href={briefAnchor} className="button-ghost-ink">{t.sendBrief}</a>
+          <Link to={insights}>{t.nav.insights}</Link>
+          <a
+            href={briefAnchor}
+            className="button-ghost-ink"
+            onClick={() => trackEvent("cta_click", { locale, placement: "mobile_navigation", destination: "brief" })}
+          >{t.sendBrief}</a>
           <CalButton locale={locale} placement="mobile_navigation" label={t.book} />
         </nav>
       )}
@@ -181,10 +189,17 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
 export function SiteFooter({ locale }: { locale: Locale }) {
   const year = new Date().getFullYear();
+  const home = locale === "en" ? "/" : "/es";
   return (
     <footer className="site-footer">
       <div className="shell footer-grid">
         <div><Brand /><p>{copy[locale].footerLine}</p></div>
+        <div className="footer-links">
+          <Link to={`${home}#services`}>{copy[locale].nav.services}</Link>
+          <Link to={`${home}#work`}>{copy[locale].nav.work}</Link>
+          <Link to={locale === "en" ? "/services/custom-software" : "/es/servicios/software-a-medida"}>{locale === "en" ? "Custom software" : "Software a medida"}</Link>
+          <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
+        </div>
         <div className="footer-links">
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           <a href="https://www.linkedin.com/company/puna-tech" target="_blank" rel="noreferrer">LinkedIn <ExternalLink aria-hidden="true" size={14} /></a>
@@ -233,7 +248,10 @@ export function ProjectBrief({ locale }: { locale: Locale }) {
   const fieldErrors = fetcher.data?.fieldErrors || {};
 
   useEffect(() => {
-    if (success) trackEvent("project_brief_submit", { locale, placement: "final_cta" });
+    if (success) {
+      trackEvent("project_brief_submit", { locale, placement: "final_cta" });
+      trackEvent("generate_lead", { locale, placement: "final_cta", method: "project_brief" });
+    }
   }, [success, locale]);
 
   function recordStart() {
