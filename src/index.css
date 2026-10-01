@@ -1177,3 +1177,37 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
     justify-content: flex-start;
   }
 }
+
+.commercial-expand-stack {
+  display: grid;
+  gap: 2.25rem;
+}
+.commercial-h2-block h2 {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  line-height: 1.25;
+  color: var(--ink);
+}
+.commercial-h2-block p {
+  margin: 0.75rem 0 0;
+  color: var(--ink-soft);
+  max-width: 52rem;
+  line-height: 1.55;
+}
+.commercial-bullet-list {
+  margin: 0.5rem 0 0;
+  padding-left: 1.15rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.commercial-bullet-list li + li { margin-top: 0.35rem; }
+.detail-cta-body {
+  margin: 0.85rem 0 0;
+  max-width: 36rem;
+  color: color-mix(in srgb, var(--cream) 78%, transparent);
+}
+.detail-cta-micro {
+  margin: 0.65rem 0 0;
+  font-size: 0.9rem;
+  color: color-mix(in srgb, var(--cream) 62%, transparent);
+}

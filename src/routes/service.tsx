@@ -21,9 +21,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const service = getService(locale, params.slug || "");
   if (!service) throw new Response("Not found", { status: 404 });
   const relatedCase = caseStudies[locale].find((study) => study.slug === service.relatedCase) || caseStudies[locale][0];
-  const proofCases = service.proofCaseSlugs
-    .map((slug) => getCaseStudy(locale, slug))
-    .filter((study): study is NonNullable<typeof study> => Boolean(study));
+  const proofCases = service.proofStrip
+    .map((item) => {
+      const study = getCaseStudy(locale, item.slug);
+      return study ? { study, caption: item.caption } : null;
+    })
+    .filter((item): item is { study: NonNullable<ReturnType<typeof getCaseStudy>>; caption: string } => Boolean(item));
   return { locale, service, relatedCase, proofCases };
 }
 
@@ -32,10 +35,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const { locale, service } = data;
   const path = servicePath(locale, service.slug);
   const alternatePath = servicePath(locale === "en" ? "es" : "en", service.alternateSlug);
-  const title = service.key === "custom-software"
-    ? (locale === "en" ? "Custom Software Development | Puna Tech" : "Desarrollo de Software a Medida | Puna Tech")
-    : `${service.eyebrow} | Puna Tech`;
-  const description = service.description;
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -46,9 +45,13 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     })),
   };
   return createMeta({
-    locale, title, description, path, alternatePath,
+    locale,
+    title: service.metaTitle,
+    description: service.metaDescription,
+    path,
+    alternatePath,
     schema: [
-      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, description, provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America", "AR"] },
+      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, description: service.metaDescription, provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America", "AR"] },
       breadcrumbSchema([
         { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
         { name: locale === "en" ? "Services" : "Servicios", path: servicesHubPath(locale) },
@@ -104,19 +107,18 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
         </section>
 
         <section className="section soft-section" aria-label={locale === "en" ? "Commercial focus" : "Enfoque comercial"}>
-          <div className="shell">
-            <header className="section-heading" style={{ marginBottom: "2.5rem" }}>
-              <p className="eyebrow">{locale === "en" ? "Commercial focus" : "Enfoque comercial"}</p>
-              <h2>{locale === "en" ? "What buyers usually need to decide next." : "Lo que suele hacer falta decidir a continuación."}</h2>
-            </header>
-            <div className="commercial-h2-grid">
-              {service.commercialSections.map((section) => (
-                <article className="commercial-h2-card" key={section.heading}>
-                  <h2>{section.heading}</h2>
-                  <p>{section.body}</p>
-                </article>
-              ))}
-            </div>
+          <div className="shell commercial-expand-stack">
+            {service.commercialSections.map((section) => (
+              <article className="commercial-h2-block" key={section.heading}>
+                <h2>{section.heading}</h2>
+                {section.bullets && section.bullets.length > 0 ? (
+                  <ul className="commercial-bullet-list">
+                    {section.bullets.map((item) => <li key={item}>{item}</li>)}
+                  </ul>
+                ) : null}
+                <p>{section.body}</p>
+              </article>
+            ))}
           </div>
         </section>
 
@@ -131,25 +133,21 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
         </section>
 
         {proofCases.length > 0 && (
-          <section className="section soft-section" aria-label={locale === "en" ? "Proof from real systems" : "Prueba en sistemas reales"}>
+          <section className="section soft-section" aria-label={locale === "en" ? "Proof from related work" : "Prueba de trabajo relacionado"}>
             <div className="shell">
               <header className="section-heading" style={{ marginBottom: "2rem" }}>
-                <p className="eyebrow">{locale === "en" ? "Proof strip" : "Franja de prueba"}</p>
-                <h2>{locale === "en" ? "Real systems linked to this capability." : "Sistemas reales vinculados a esta capacidad."}</h2>
+                <p className="eyebrow">{locale === "en" ? "Proof from related work" : "Prueba de trabajo relacionado"}</p>
+                <h2>{locale === "en" ? "Proof from related work" : "Prueba de trabajo relacionado"}</h2>
                 <p>{locale === "en" ? "Client names can stay private. Outcomes and architecture stay concrete. Lab demos are labeled as such." : "Los nombres de clientes pueden quedar en reserva. Resultados y arquitectura se muestran con claridad. Las demos de lab se marcan como tales."}</p>
               </header>
               <div className="proof-case-grid">
-                {proofCases.map((study) => {
+                {proofCases.map(({ study, caption }) => {
                   const labish = ["starpress", "viralyt", "videome", "autopost"].includes(study.key);
                   return (
                     <article className="proof-case-card" key={study.slug}>
                       <p className="eyebrow">{labish ? (locale === "en" ? "Lab demo" : "Demo de lab") : (locale === "en" ? "Client delivery" : "Entrega a cliente")}</p>
                       <p className="work-name">{study.displayName}</p>
-                      <h3>{study.title}</h3>
-                      <p>{study.summary}</p>
-                      {study.operationalOutcome && !study.operationalOutcomeNeedsConfirm && (
-                        <p className="proof-case-outcome">{study.operationalOutcome}</p>
-                      )}
+                      <h3>{caption}</h3>
                       <Link className="text-link" to={casePath(locale, study.slug)}>
                         {locale === "en" ? "Read the case study" : "Ver el caso"}
                         <ArrowRight aria-hidden="true" size={17} />
@@ -182,7 +180,7 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
           <div className="shell faq-grid">
             <header className="section-heading">
               <p className="eyebrow">FAQ</p>
-              <h2>{locale === "en" ? "Questions before you book the audit" : "Preguntas antes de agendar la auditoría"}</h2>
+              <h2>{locale === "en" ? "FAQ" : "FAQ"}</h2>
               <Compass aria-hidden="true" />
             </header>
             <Accordion items={service.faqs} />
@@ -193,7 +191,9 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
           <div className="shell">
             <div>
               <p className="eyebrow eyebrow-dark">{locale === "en" ? "A useful first conversation" : "Una primera conversación útil"}</p>
-              <h2>{locale === "en" ? "Bring the workflow, constraints, and current stack." : "Traé el flujo, las restricciones y el stack actual."}</h2>
+              <h2>{service.finalCtaTitle}</h2>
+              <p className="detail-cta-body">{service.finalCtaBody}</p>
+              {service.finalCtaMicro ? <p className="detail-cta-micro">{service.finalCtaMicro}</p> : null}
             </div>
             <div className="cta-group detail-cta-actions">
               <CalButton locale={locale} placement={`service_${service.key}_final`} label={t.book} className="button-primary-terracotta" />

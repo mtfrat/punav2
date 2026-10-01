@@ -174,29 +174,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        {locale === "es" && (
-          <section className="section latam-ar-section" aria-labelledby="latam-ar-heading">
-            <div className="shell latam-ar-grid">
-              <header className="section-heading">
-                <p className="eyebrow">{t.latamEyebrow}</p>
-                <h2 id="latam-ar-heading">{t.latamTitle}</h2>
-                <p>{t.latamBody}</p>
-                <Link className="text-link" to={servicesHubPath("es")}>
-                  Ver servicios
-                  <ArrowRight aria-hidden="true" size={17} />
-                </Link>
-              </header>
-              <ul className="latam-ar-points">
-                {t.latamPoints.map(([title, body]) => (
-                  <li key={title}>
-                    <strong>{title}</strong>
-                    <span>{body}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
+
 
         {/* SERVICES: Estructura preservada intacta */}
         <section id="services" className="section slowdown-section">
@@ -217,6 +195,37 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             </div>
           </div>
         </section>
+
+        {locale === "es" && (
+          <section className="section latam-ar-section" aria-labelledby="latam-ar-heading">
+            <div className="shell latam-ar-grid">
+              <header className="section-heading">
+                <p className="eyebrow">{t.latamEyebrow}</p>
+                <h2 id="latam-ar-heading">{t.latamTitle}</h2>
+                <p>{t.latamBody}</p>
+                <div className="cta-group" style={{ marginTop: "1.5rem" }}>
+                  <CalButton locale={locale} placement="es_latam_block" label={t.book} className="button-primary-terracotta" />
+                  <a
+                    href="#brief"
+                    className="button-ghost-burgundy"
+                    onClick={() => trackEvent("cta_click", { locale, placement: "es_latam_block", destination: "brief" })}
+                  >
+                    <span>{t.sendBrief}</span>
+                    <ArrowRight aria-hidden="true" size={16} />
+                  </a>
+                </div>
+              </header>
+              <ul className="latam-ar-points">
+                {t.latamPoints.map(([title, body]) => (
+                  <li key={title}>
+                    <strong>{title}</strong>
+                    <span>{body}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
 
         {/* INDUSTRY ENTRY: Estructura preservada */}
         <section className="industry-entry-section" aria-labelledby="software-factory-title">

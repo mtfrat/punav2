@@ -2,27 +2,28 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { CalButton, PageShell, trackEvent } from "../components/marketing";
-import { copy, servicePath, services, servicesHubPath, type Locale } from "../content/site";
+import { copy, servicePath, services, servicesHubCopy, servicesHubPath, type Locale } from "../content/site";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
   const locale: Locale = pathname.startsWith("/es") ? "es" : "en";
-  return { locale, services: services[locale] };
+  const hub = servicesHubCopy[locale];
+  const byKey = Object.fromEntries(services[locale].map((service) => [service.key, service]));
+  const ordered = hub.cardOrderKeys.map((key) => byKey[key]).filter(Boolean);
+  return { locale, hub, ordered };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const locale = data?.locale || "en";
+  const hub = data?.hub || servicesHubCopy.en;
   const path = servicesHubPath(locale);
-  const alternatePath = servicesHubPath(locale === "en" ? "es" : "en");
   return createMeta({
     locale,
-    title: locale === "en" ? "Services | Custom Software, Automation & Integrations | Puna Tech" : "Servicios | Software a Medida, Automatización e Integraciones | Puna Tech",
-    description: locale === "en"
-      ? "Three focused capabilities: custom B2B software, business process automation, and systems integration. Start with the bottleneck."
-      : "Tres capacidades enfocadas: software B2B a medida, automatización de procesos e integración de sistemas. Empezá por el cuello de botella.",
+    title: hub.metaTitle,
+    description: hub.metaDescription,
     path,
-    alternatePath,
+    alternatePath: servicesHubPath(locale === "en" ? "es" : "en"),
     schema: [
       breadcrumbSchema([
         { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
@@ -33,7 +34,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function ServicesHub({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
-  const { locale, services: list } = loaderData;
+  const { locale, hub, ordered } = loaderData;
   const t = copy[locale];
   const briefHref = locale === "en" ? "/#brief" : "/es#brief";
 
@@ -42,13 +43,9 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
       <main id="main-content">
         <section className="detail-hero dark-section">
           <div className="shell">
-            <p className="eyebrow eyebrow-dark">{locale === "en" ? "Services hub" : "Hub de servicios"}</p>
-            <h1>{locale === "en" ? "Start with the bottleneck, not the technology." : "Empezá por el cuello de botella, no por la tecnología."}</h1>
-            <p style={{ maxWidth: "42rem" }}>
-              {locale === "en"
-                ? "Custom software, process automation, and systems integration—shaped around one operational outcome and a system your team can own."
-                : "Software a medida, automatización de procesos e integración de sistemas—organizados alrededor de un resultado operativo y un sistema que tu equipo pueda operar."}
-            </p>
+            <p className="eyebrow eyebrow-dark">{hub.eyebrow}</p>
+            <h1>{hub.title}</h1>
+            <p style={{ maxWidth: "46rem" }}>{hub.intro}</p>
             <div className="cta-group">
               <CalButton locale={locale} placement="services_hub" label={t.book} className="button-primary-terracotta" />
               <a
@@ -65,15 +62,12 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
 
         <section className="section light-section">
           <div className="shell hub-card-grid">
-            {list.map((service, index) => (
+            {ordered.map((service, index) => (
               <article className="hub-card" key={service.slug}>
                 <span className="hub-card-index">0{index + 1}</span>
-                <p className="eyebrow">{service.eyebrow}</p>
-                <h2><Link to={servicePath(locale, service.slug)}>{service.title}</Link></h2>
-                <p>{service.description}</p>
-                <ul className="hub-card-points">
-                  {service.problems.slice(0, 2).map((item) => <li key={item}>{item}</li>)}
-                </ul>
+                <p className="eyebrow">{hub.cardTitles[service.key] || service.eyebrow}</p>
+                <h2><Link to={servicePath(locale, service.slug)}>{hub.cardTitles[service.key] || service.eyebrow}</Link></h2>
+                <p>{service.hubBlurb}</p>
                 <Link className="text-link" to={servicePath(locale, service.slug)}>
                   {locale === "en" ? "Open service" : "Abrir servicio"}
                   <ArrowRight aria-hidden="true" size={17} />
@@ -87,7 +81,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
           <div className="shell">
             <div>
               <p className="eyebrow eyebrow-dark">{locale === "en" ? "Not sure which capability fits?" : "¿No estás seguro qué capacidad encaja?"}</p>
-              <h2>{locale === "en" ? "Fifteen minutes to map the constraint." : "Quince minutos para mapear la restricción."}</h2>
+              <h2>{locale === "en" ? "Map the bottleneck in 15 min." : "Mapeá el cuello de botella en 15 min."}</h2>
             </div>
             <div className="cta-group detail-cta-actions">
               <CalButton locale={locale} placement="services_hub_final" label={t.book} className="button-primary-terracotta" />
