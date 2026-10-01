@@ -160,7 +160,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           </Link>
           <a
             href={briefAnchor}
-            className="button-ghost-burgundy button-compact desktop-brief"
+            className="button-ghost-ink button-compact desktop-brief"
             onClick={() => trackEvent("cta_click", { locale, placement: "navigation", destination: "brief" })}
           >{t.sendBrief}</a>
           <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={t.book} />
@@ -177,7 +177,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           <Link to={insights}>{t.nav.insights}</Link>
           <a
             href={briefAnchor}
-            className="button-ghost-burgundy"
+            className="button-ghost-ink"
             onClick={() => trackEvent("cta_click", { locale, placement: "mobile_navigation", destination: "brief" })}
           >{t.sendBrief}</a>
           <CalButton locale={locale} placement="mobile_navigation" label={t.book} />

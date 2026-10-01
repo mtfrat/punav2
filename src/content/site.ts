@@ -25,6 +25,7 @@ export interface CaseStudyContent {
   challenge: string;
   solution: string;
   impact: string[];
+  impactNeedsConfirm?: string[];
   stack: string[];
   flow: string[];
   displayName: string;
@@ -32,10 +33,11 @@ export interface CaseStudyContent {
   visualCaption: string;
   relatedService: string;
   liveDemoUrl?: string;
-  metrics?: { label: string; value: string }[];
+  metrics?: { label: string; value: string; needsConfirm?: boolean }[];
   beforeAfter?: { before: string; after: string };
   category?: "saas" | "automation";
   operationalOutcome?: string;
+  operationalOutcomeNeedsConfirm?: boolean;
 }
 
 export const SITE_URL = "https://www.puna-tech.com";
@@ -429,6 +431,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       displayName: "Inbound Revenue Switch",
       confidentialityLabel: "Production enterprise deployment · 82 Nodes",
       operationalOutcome: "8h → 2.4s response latency · 0 dropped leads across 50k events",
+      operationalOutcomeNeedsConfirm: true,
       visualCaption: "12-channel form switch & HubSpot v4 company matching",
       relatedService: "data-integrations",
       title: "82-node inbound lead router: zero-drop CRM synchronization and instant team alerts.",
@@ -440,10 +443,14 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
         "100% of enterprise contacts automatically associated with parent CRM accounts",
         "Zero dropped submissions across 50,000+ monthly inbound events"
       ],
+      impactNeedsConfirm: [
+        "Lead response time dropped from 8 hours to 2.4 seconds",
+        "Zero dropped submissions across 50,000+ monthly inbound events"
+      ],
       metrics: [
-        { label: "Routing Latency", value: "2.4 sec" },
-        { label: "Enrichment Match", value: "99.9%" },
-        { label: "Dropped Leads", value: "0%" }
+        { label: "Routing Latency", value: "2.4 sec", needsConfirm: true },
+        { label: "Enrichment Match", value: "99.9%", needsConfirm: true },
+        { label: "Dropped Leads", value: "0%", needsConfirm: true }
       ],
       beforeAfter: {
         before: "Form submissions arrived via email inboxes, taking 4 to 24 hours to be triaged and manually typed into HubSpot by sales coordinators.",
@@ -698,6 +705,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       displayName: "Inbound Revenue Switch",
       confidentialityLabel: "Despliegue enterprise productivo · 82 Nodos",
       operationalOutcome: "8h → 2.4s latencia de respuesta · 0 leads perdidos en 50k eventos",
+      operationalOutcomeNeedsConfirm: true,
       visualCaption: "Enrutador de 12 formularios y asociación de cuentas en HubSpot v4",
       relatedService: "integraciones-de-datos",
       title: "Enrutador de leads de 82 nodos: sincronización con CRM y alertas instantáneas.",
@@ -709,10 +717,14 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
         "100% de contactos B2B asociados a su empresa matriz en el CRM",
         "Cero registros perdidos sobre más de 50.000 conversiones mensuales"
       ],
+      impactNeedsConfirm: [
+        "Tiempo promedio de primera respuesta reducido de 8 horas a 2.4 segundos",
+        "Cero registros perdidos sobre más de 50.000 conversiones mensuales"
+      ],
       metrics: [
-        { label: "Latencia de Enrutamiento", value: "2.4 seg" },
-        { label: "Precisión de Enriquecimiento", value: "99.9%" },
-        { label: "Leads Perdidos", value: "0%" }
+        { label: "Latencia de Enrutamiento", value: "2.4 seg", needsConfirm: true },
+        { label: "Precisión de Enriquecimiento", value: "99.9%", needsConfirm: true },
+        { label: "Leads Perdidos", value: "0%", needsConfirm: true }
       ],
       beforeAfter: {
         before: "Los prospectos llegaban a casillas de correo dispersas y tardaban hasta 24 horas en ser cargados a mano en HubSpot por el equipo de ventas.",

@@ -199,6 +199,60 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
 
         {/* PILAR 2: SELECTED WORK — Dos franjas (Lab demo vs Client delivery) */}
         <section id="work" className="work-section-v3" aria-label={t.casesTitle}>
+          {/* Franja 2: Client delivery (badge “Client delivery” + outcome operativo) */}
+          <div className="franja-client" aria-labelledby="client-delivery-heading">
+            <div className="shell">
+              <header className="franja-header">
+                <p className="eyebrow">{t.workClientEyebrow}</p>
+                <h2 id="client-delivery-heading">{t.workClientTitle}</h2>
+                <p>{t.workClientSubtitle}</p>
+              </header>
+              <div className="client-delivery-stack">
+                {clientCases.map((study) => (
+                  <article className="client-delivery-row" key={study.slug}>
+                    <div className="client-row-info">
+                      <div className="client-row-meta">
+                        <span className="client-delivery-badge">{t.workClientBadge}</span>
+                        {study.operationalOutcome && !study.operationalOutcomeNeedsConfirm && (
+                          <span className="client-outcome-badge">
+                            {study.operationalOutcome}
+                          </span>
+                        )}
+                      </div>
+                      <p className="client-row-name">{study.displayName}</p>
+                      <h3>{study.title}</h3>
+                      <p>{study.summary}</p>
+                      <ul className="work-outcomes">
+                        {study.impact
+                          .filter((item) => !study.impactNeedsConfirm?.includes(item))
+                          .slice(0, 2)
+                          .map((item) => (
+                          <li key={item}>
+                            <Check aria-hidden="true" size={16} />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="client-row-cta">
+                        <Link
+                          className="client-row-link"
+                          to={casePath(locale, study.slug)}
+                          aria-label={locale === "en" ? `View delivery architecture for ${study.displayName}` : `Ver arquitectura de entrega de ${study.displayName}`}
+                        >
+                          <span>{t.viewArchitecture}</span>
+                          <ArrowRight aria-hidden="true" size={18} />
+                        </Link>
+                      </div>
+                    </div>
+                    <div className="client-row-visual">
+                      <SystemMap study={study} compact />
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Franja 1: Lab demo (badge “Built by Puna · demo”) */}
           <div className="franja-lab" aria-labelledby="lab-demos-heading">
             <div className="shell">
@@ -248,56 +302,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             </div>
           </div>
 
-          {/* Franja 2: Client delivery (badge “Client delivery” + outcome operativo) */}
-          <div className="franja-client" aria-labelledby="client-delivery-heading">
-            <div className="shell">
-              <header className="franja-header">
-                <p className="eyebrow">{t.workClientEyebrow}</p>
-                <h2 id="client-delivery-heading">{t.workClientTitle}</h2>
-                <p>{t.workClientSubtitle}</p>
-              </header>
-              <div className="client-delivery-stack">
-                {clientCases.map((study) => (
-                  <article className="client-delivery-row" key={study.slug}>
-                    <div className="client-row-info">
-                      <div className="client-row-meta">
-                        <span className="client-delivery-badge">{t.workClientBadge}</span>
-                        {study.operationalOutcome && (
-                          <span className="client-outcome-badge">
-                            {study.operationalOutcome}
-                          </span>
-                        )}
-                      </div>
-                      <p className="client-row-name">{study.displayName}</p>
-                      <h3>{study.title}</h3>
-                      <p>{study.summary}</p>
-                      <ul className="work-outcomes">
-                        {study.impact.slice(0, 2).map((item) => (
-                          <li key={item}>
-                            <Check aria-hidden="true" size={16} />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="client-row-cta">
-                        <Link
-                          className="client-row-link"
-                          to={casePath(locale, study.slug)}
-                          aria-label={locale === "en" ? `View delivery architecture for ${study.displayName}` : `Ver arquitectura de entrega de ${study.displayName}`}
-                        >
-                          <span>{t.viewArchitecture}</span>
-                          <ArrowRight aria-hidden="true" size={18} />
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="client-row-visual">
-                      <SystemMap study={study} compact />
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
         </section>
 
         {/* PROCESS: Estructura preservada con CTA actualizado */}
