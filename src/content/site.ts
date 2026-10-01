@@ -68,21 +68,6 @@ export const copy = {
     openCase: "Open case",
     liveDemo: "Live demo",
     viewArchitecture: "View delivery architecture",
-    socialProofNotice: "[PLACEHOLDER quotes · Replace with verified client testimonials before production]",
-    socialProofQuotes: [
-      {
-        role: "Operations lead",
-        industry: "Logistics",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Cut daily WhatsApp/Excel handoffs by ~40% after the first workflow shipped.”",
-      },
-      {
-        role: "Director of Ops",
-        industry: "Real estate",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“One owned system for leads, contracts, and handoffs—adoption in under 3 weeks.”",
-      },
-    ],
     fitEyebrow: "Where Puna fits best",
     fitTitle: "For operations that have outgrown spreadsheets, manual handoffs, and disconnected tools.",
     fitBody: "We are most useful when the problem crosses product, data, and operations—not when the answer is another generic website or an AI demo.",
@@ -171,21 +156,6 @@ export const copy = {
     openCase: "Abrir caso",
     liveDemo: "Demo en vivo",
     viewArchitecture: "Ver arquitectura de entrega",
-    socialProofNotice: "[PLACEHOLDER quotes · Reemplazar con testimonios verificados antes de producción]",
-    socialProofQuotes: [
-      {
-        role: "Responsable de operaciones",
-        industry: "Logística",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Recortamos ~40% los traspasos diarios por WhatsApp/Excel tras el primer flujo.”",
-      },
-      {
-        role: "Director de operaciones",
-        industry: "Real estate",
-        placeholderLabel: "[PLACEHOLDER]",
-        quote: "“Un sistema propio para leads, contratos y handoffs—adopción en menos de 3 semanas.”",
-      },
-    ],
     fitEyebrow: "Dónde encaja mejor Puna",
     fitTitle: "Para operaciones que ya superaron las planillas, los traspasos manuales y las herramientas desconectadas.",
     fitBody: "Somos más útiles cuando el problema cruza producto, datos y operaciones, no cuando la respuesta es otro sitio genérico o una demo de IA.",

@@ -344,26 +344,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                 </a>
               </div>
 
-              {/* PILAR 4: Bloque "nota editorial" de prueba social junto al CTA final */}
-              <div className="editorial-social-proof" aria-label={locale === "en" ? "Editorial notes and operational reviews" : "Notas editoriales y revisiones operativas"}>
-                <div className="editorial-proof-header">
-                  <small>{locale === "en" ? "EDITORIAL DISPATCH · OPERATIONAL FEEDBACK" : "DESPACHO EDITORIAL · FEEDBACK OPERATIVO"}</small>
-                  <span className="editorial-proof-placeholder">{t.socialProofNotice}</span>
-                </div>
-                <div className="editorial-quotes-list">
-                  {t.socialProofQuotes.map((item, idx) => (
-                    <div key={idx} className="editorial-quote-item">
-                      <span className="quote-placeholder-label">{item.placeholderLabel}</span>
-                      <blockquote>{item.quote}</blockquote>
-                      <div className="editorial-quote-meta">
-                        <strong>{item.role}</strong>
-                        <span>·</span>
-                        <span>{item.industry}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             <div className="brief-card" id="brief-form">
