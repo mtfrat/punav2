@@ -3,6 +3,7 @@ import { Form, Link, redirect } from "react-router";
 import { ArrowLeft, ExternalLink, Save } from "lucide-react";
 import { Field, Notice, OpsPageHeader, StatusBadge, SubmitButton, TextAreaField } from "../components/ops";
 import { audit, assertTrustedMutation, compactSnapshot, operationsHeaders, opsData, requireAdmin, sourcesFromText, sourcesToText, stringField } from "../lib/admin.server";
+import { validateEditorialPair } from "../lib/editorial-quality";
 import { renderPostContent } from "../lib/posts.server";
 
 const editable = ["title", "slug", "meta_title", "meta_description", "excerpt", "content", "hero_image_url", "hero_image_alt", "category", "primary_keyword", "author_name", "reviewer_name", "related_service_slug"];
@@ -40,6 +41,7 @@ function validatePair(posts: Array<Record<string, unknown>>) {
     if (post.hero_image_url && !String(post.hero_image_alt || "").trim()) errors.push(`${locale.toUpperCase()}: falta alt text de la imagen.`);
     if (!Array.isArray(post.source_urls) || post.source_urls.length < 2) errors.push(`${locale.toUpperCase()}: se requieren al menos dos fuentes HTTPS.`);
   }
+  errors.push(...validateEditorialPair(posts));
   return errors;
 }
 
