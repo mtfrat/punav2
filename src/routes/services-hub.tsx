@@ -65,7 +65,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
             {ordered.map((service, index) => (
               <article className="hub-card" key={service.slug}>
                 <span className="hub-card-index">0{index + 1}</span>
-                <p className="eyebrow">{hub.cardTitles[service.key] || service.eyebrow}</p>
+                <p className="eyebrow">{service.eyebrow}</p>
                 <h2><Link to={servicePath(locale, service.slug)}>{hub.cardTitles[service.key] || service.eyebrow}</Link></h2>
                 <p>{service.hubBlurb}</p>
                 <Link className="text-link" to={servicePath(locale, service.slug)}>

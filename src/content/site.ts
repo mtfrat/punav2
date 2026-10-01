@@ -98,7 +98,7 @@ export const copy = {
     slowdownEyebrow: "Find your starting point",
     slowdownTitle: "What is slowing your team down?",
     slowdowns: [
-      ["Manual work keeps multiplying", "AI workflow automation", "Map and automate the repetitive handoffs without removing human control."],
+      ["Manual work keeps multiplying", "Process automation · AI workflows", "Map and automate the repetitive handoffs without removing human control."],
       ["Your tools do not agree", "Data & systems integration", "Create a reliable data path between the systems already running the operation."],
       ["The operation needs its own product", "Custom B2B software", "Build the portal, platform, or internal tool the workflow actually requires."],
     ],
@@ -196,7 +196,7 @@ export const copy = {
     slowdownEyebrow: "Encontrá el punto de partida",
     slowdownTitle: "¿Qué está frenando a tu equipo?",
     slowdowns: [
-      ["El trabajo manual no deja de crecer", "Automatización de flujos con IA", "Mapeamos y automatizamos traspasos repetitivos sin eliminar el control humano."],
+      ["El trabajo manual no deja de crecer", "Automatización de procesos · flujos con IA", "Mapeamos y automatizamos traspasos repetitivos sin eliminar el control humano."],
       ["Tus herramientas no se ponen de acuerdo", "Integración de datos y sistemas", "Creamos un recorrido confiable entre los sistemas que ya sostienen la operación."],
       ["La operación necesita un producto propio", "Software B2B a medida", "Construimos el portal, la plataforma o la herramienta interna que el flujo necesita."],
     ],
@@ -248,7 +248,7 @@ export const copy = {
       ["Software a medida · herramientas internas", "Plataformas y portales armados alrededor de tus flujos."],
       ["Automatización de procesos con control humano", "Traspasos con validación donde el riesgo lo pide."],
       ["Integración CRM / ERP / APIs", "Corredores confiables con fallas visibles."],
-      ["Propiedad explícita · sin lock-in oculto", "Repos, accesos e infraestructura en la propuesta."],
+      ["Propiedad explícita · sin lock-in oculto", "repositorios, accesos e infraestructura en la propuesta."],
       ["Colaboración bilingüe en las Américas", "Stakeholders en LATAM y EE.UU. en el mismo proyecto."],
     ],
   },
