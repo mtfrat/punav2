@@ -3,7 +3,6 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import {
   ArrowRight,
-  ArrowUpRight,
   Check,
   ChevronRight,
   Compass,
@@ -152,10 +151,6 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               </span>
             </figure>
           </div>
-          <footer className="bs-cover-ribbon shell">
-            <span>{t.heroRibbon}</span>
-            <ArrowUpRight aria-hidden="true" size={24} />
-          </footer>
         </section>
 
         <section className="proof-strip" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>

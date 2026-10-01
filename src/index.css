@@ -119,6 +119,10 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
    ========================================================================== */
 .bs-cover-hero {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* fallback for browsers without dvh */
+  min-height: 100dvh;
   background: var(--paper);
   border-bottom: 1px solid var(--line);
   overflow: hidden;
@@ -139,6 +143,7 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .bs-cover-grid {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
+  flex: 1 1 auto;
   min-height: 640px;
 }
 .bs-cover-copy {
@@ -284,21 +289,6 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
   text-transform: uppercase;
   box-shadow: 0 4px 14px rgba(24, 20, 16, 0.18);
 }
-.bs-cover-ribbon {
-  background: var(--terracotta);
-  color: var(--paper);
-  padding: 1rem 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.95rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-}
-.bs-cover-ribbon svg {
-  color: var(--paper);
-}
-
 @media (max-width: 960px) {
   .bs-cover-grid {
     grid-template-columns: 1fr;
