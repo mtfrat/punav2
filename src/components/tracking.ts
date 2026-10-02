@@ -8,6 +8,7 @@ declare global {
 
 export type AnalyticsEvent =
   | "cta_view"
+  | "cta_primary_view"
   | "cta_click"
   | "cal_open"
   | "cal_booked"

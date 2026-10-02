@@ -15,6 +15,11 @@ import { CAL_LINK, CONTACT_EMAIL, casesHubPath, copy, servicesHubPath, type Loca
 import { trackEvent } from "./tracking";
 export { trackEvent } from "./tracking";
 
+/**
+ * Tip A — Cal CTA impressions.
+ * `cta_view` fires for every CalButton placement (diagnostic; multi-placement inflates counts).
+ * Funnel denominator = `cta_primary_view` only (hero_audit, once). Do NOT use raw cta_view as denom.
+ */
 function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, placement: string) {
   useEffect(() => {
     if (!ref.current || typeof IntersectionObserver === "undefined") return;
@@ -23,6 +28,9 @@ function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, pl
       if (entry.isIntersecting && !sent) {
         sent = true;
         trackEvent("cta_view", { locale, placement });
+        if (placement === "hero_audit") {
+          trackEvent("cta_primary_view", { locale, placement: "hero_audit", is_primary: true });
+        }
         observer.disconnect();
       }
     }, { threshold: 0.6 });
