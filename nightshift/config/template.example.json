@@ -27,11 +27,13 @@
       "enabled": true,
       "channels": ["linkedin", "x", "instagram"],
       "postsPerNight": 3,
-      "targetPlatformFormat": "autopost",
+      "targetPlatformFormat": "art-reels",
       "pillars": [
-        "Casos de éxito y lecciones de arquitectura técnica",
-        "Tendencias y comparativas objetivas de herramientas de IA",
-        "Tips prácticos de optimización operativa para fundadores"
+        "P1 Automatización: lo repetitivo → sistema (handoffs, gates humanos, Zap≠sistema)",
+        "P2 Integraciones: sistemas que se hablan (contratos, glue code, triage de stack)",
+        "P3 Custom software: cuando SaaS no alcanza (techo off-the-shelf, proceso real)",
+        "P4 Lab vs Client: honestidad de entorno (no vender Lab como prod)",
+        "P5 Bottlenecks de operador: cuello → 2–3 opciones → próximo paso (Cal/brief)"
       ]
     },
     "scout": {

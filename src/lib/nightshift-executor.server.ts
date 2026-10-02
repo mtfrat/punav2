@@ -106,6 +106,10 @@ interface ParsedSocialPost {
   body: string;
   cta: string;
   hashtags: string[];
+  format?: string;
+  pillar?: string;
+  artMoldSuggestion?: string;
+  opsHandoffPath?: string;
 }
 
 function parseReportData(markdown: string) {
@@ -116,20 +120,38 @@ function parseReportData(markdown: string) {
   let inSocial = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (line.includes("### 📱 Redes Sociales & Autopost")) inSocial = true;
+    if (line.includes("### 📱 Redes Sociales") || line.includes("### 📱 Social Studio")) inSocial = true;
     else if (line.startsWith("### ")) inSocial = false;
     else if (inSocial && line.startsWith("- **[")) {
-      const match = line.match(/- \*\*\[(LINKEDIN|X|INSTAGRAM)\]\*\* ["']?([^"']+)["']?/i);
+      const match = line.match(/- \*\*\[(LINKEDIN|X|INSTAGRAM)\]\*\*(?:\s*\[([^\]]+)\])?(?:\s*·\s*([A-Za-z0-9]+))?\s*["']?([^"']+)["']?/i);
       if (match) {
         const rawChannel = match[1].toLowerCase() as "linkedin" | "x" | "instagram";
-        const hook = match[2];
-        const nextLine = lines[i + 1]?.trim() || "";
+        const format = match[2]?.toLowerCase();
+        const pillar = match[3];
+        const hook = match[4];
+
+        let artMoldSuggestion: string | undefined;
+        let opsHandoffPath: string | undefined;
+
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          const sub = lines[j].trim();
+          if (sub.startsWith("- **[") || sub.startsWith("### ")) break;
+          const moldMatch = sub.match(/\*\*Molde Art Studio:\*\*\s*`([^`]+)`/);
+          if (moldMatch) artMoldSuggestion = moldMatch[1];
+          const handoffMatch = sub.match(/\*\*Handoff:\*\*\s*`([^`]+)`/);
+          if (handoffMatch) opsHandoffPath = handoffMatch[1];
+        }
+
         socialPosts.push({
           channel: rawChannel,
           hook,
           body: hook,
           cta: "¿Cómo manejan hoy este proceso en su equipo? Los leemos.",
           hashtags: ["#PunaTech", "#SoftwareEngineering", "#AIWorkflows"],
+          format,
+          pillar,
+          artMoldSuggestion,
+          opsHandoffPath,
         });
       }
     }
@@ -243,7 +265,7 @@ export async function executeNightshiftDecision(options: {
       notes: notes || `Aprobado vía ${actor.source}`,
     };
 
-    // 1. Redes Sociales & Autopost Drafts
+    // 1. Social Studio & Art Drafts
     if (num === 1) {
       if (supabase && socialPosts.length > 0) {
         try {
@@ -291,21 +313,30 @@ export async function executeNightshiftDecision(options: {
                     status: "draft",
                     content_type: "structured",
                     media_strategy: "text_only",
+                    generation_metadata: {
+                      art_mold_suggestion: post.artMoldSuggestion || null,
+                      format: post.format || null,
+                      pillar: post.pillar || null,
+                      ops_handoff: {
+                        path_hint: post.opsHandoffPath || (post.artMoldSuggestion ? "/ops/art" : "/ops/social/new"),
+                        ready_to_queue: false,
+                      },
+                    },
                     updated_at: new Date().toISOString(),
                   },
                   { onConflict: "translation_group_id,locale,channel" }
                 );
             }
-            actionSummaries.push(`📱 #1: Generada campaña con ${socialPosts.length} borradores en Autopost Studio (/ops/social).`);
+            actionSummaries.push(`📱 #1: Generada campaña con ${socialPosts.length} borradores en Social Studio (/ops/social).`);
           } else {
-            actionSummaries.push(`📱 #1: Aprobado (Redes).`);
+            actionSummaries.push(`📱 #1: Aprobado (Social Studio / Art).`);
           }
         } catch (e: any) {
           console.warn("[NightshiftExecutor] Social insert failed:", e.message);
-          actionSummaries.push(`📱 #1: Aprobado.`);
+          actionSummaries.push(`📱 #1: Aprobado (Social Studio / Art).`);
         }
       } else {
-        actionSummaries.push(`📱 #1: Aprobado en checklist.`);
+        actionSummaries.push(`📱 #1: Aprobado en checklist (Social Studio / Art).`);
       }
       executedDecisions.push(1);
     }

@@ -39,10 +39,12 @@ const punaConfigRaw = await readFile(resolve("nightshift/config/puna-tech.json")
 const punaConfig = JSON.parse(punaConfigRaw);
 assert.equal(punaConfig.company.id, "puna-tech");
 assert(punaConfig.agents.social.pillars.length >= 3);
+assert.equal(punaConfig.agents.social.targetPlatformFormat, "art-reels");
 
 const templateConfigRaw = await readFile(resolve("nightshift/config/template.example.json"), "utf-8");
 const templateConfig = JSON.parse(templateConfigRaw);
 assert(templateConfig.company.id.length > 0);
+assert(templateConfig.agents.social.pillars.length >= 3);
 assert(templateConfig.agents.scout.targetMarkets.length > 0);
 console.log("✔ Configuraciones de Puna Tech y Template válidas.\n");
 
@@ -57,6 +59,25 @@ const socialRes = await socialAgent.run();
 assert.equal(socialRes.status, "success");
 assert(socialRes.output.posts.length >= 1);
 assert(socialRes.output.posts[0].hook.length > 0);
+
+for (const post of socialRes.output.posts) {
+  assert(post.pillar_id || post.pillar, "Post must have pillar or pillar_id");
+  assert(["static", "carousel", "reel", "text"].includes(post.format), `Invalid format: ${post.format}`);
+  assert.equal(post.ops_handoff?.ready_to_queue, false, "ops_handoff.ready_to_queue must be false");
+  if (post.target_autopost_payload) {
+    assert.equal(post.target_autopost_payload.ready_to_queue, false, "target_autopost_payload.ready_to_queue must be false");
+  }
+  if (post.art_mold_suggestion) {
+    assert(
+      ["marker-note", "paper-photo", "bolder-poster", "notebook-carousel", "dark-tech", "polaroid"].includes(post.art_mold_suggestion),
+      `Invalid art mold suggestion: ${post.art_mold_suggestion}`
+    );
+  }
+  if (post.format === "reel") {
+    assert(Array.isArray(post.reel_scene_hints), "Reel must have reel_scene_hints");
+    assert.equal(post.reel_scene_hints.length, 5, "Reel storyboard must have 5 scenes / beats");
+  }
+}
 
 // Scout Agent
 const scoutAgent = new ScoutAgent({ llmClient, config: punaConfig });
@@ -130,6 +151,7 @@ assert(briefRes.decisionsCount >= 5);
 const generatedMd = await readFile(briefRes.filePath, "utf-8");
 assert(generatedMd.includes("Morning Executive Brief"));
 assert(generatedMd.includes("Decisiones Clave para Tomar Hoy"));
+assert(generatedMd.includes("Social Studio / Art (borradores)"));
 assert(generatedMd.includes("Inbound & Reply Sentry"));
 assert(generatedMd.includes("Control de Presupuesto y Consumo"));
 

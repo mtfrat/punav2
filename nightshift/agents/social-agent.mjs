@@ -1,39 +1,47 @@
 /**
- * Social Media & Autopost Agent (Engineering Authority & Real Case Studies)
- * Generates high-impact B2B publications for LinkedIn and X anchored in Puna Tech's
- * real engineering projects (StarPress, Viralyt, videome, B2B Custom Portals).
- * Eliminates generic advice and drops low-ROI channels (Instagram).
+ * Social Media & Content Agent (Commercial Pillars → Art Studio + Reels)
+ * Generates commercial B2B drafts selling Puna Tech's core services:
+ * Custom Software, Systems Integrations, and Process Automation.
+ * Hands off toward /ops Art Studio molds + Social Studio reel storyboards.
+ * Draft-first: ready_to_queue is strictly false.
  */
 
-const PUNA_CASE_STUDIES = [
+const DEFAULT_PILLARS = [
+  "P1 Automatización: lo repetitivo → sistema (handoffs, gates humanos, Zap≠sistema)",
+  "P2 Integraciones: sistemas que se hablan (contratos, glue code, triage de stack)",
+  "P3 Custom software: cuando SaaS no alcanza (techo off-the-shelf, proceso real)",
+  "P4 Lab vs Client: honestidad de entorno (no vender Lab como prod)",
+  "P5 Bottlenecks de operador: cuello → 2–3 opciones → próximo paso (Cal/brief)"
+];
+
+const LAB_PROOF_REFERENCES = [
   {
-    name: "StarPress",
-    focus: "Motor de análisis de sentimiento con IA y captura automatizada de reseñas en Google Maps",
-    metric: "+34% de calificaciones verificadas y 0 tiempo administrativo de persecución",
-    tech: "Supabase + Node.js Microservices + Google Places API",
-    problem: "Comercios y franquicias pierden el 80% de reseñas positivas porque pedir feedback manualmente a clientes es lento y desordenado."
+    name: "[Lab] StarPress",
+    focus: "Captura automatizada de reseñas en Google Maps con IA y microservicios",
+    status: "Laboratorio interno (Lab)",
+    use_case: "Demuestra capacidad de ingeniería y microservicios; nunca se vende como producto principal cerrado."
   },
   {
-    name: "Viralyt",
-    focus: "Plataforma analítica para creadores de YouTube con cálculo de velocidad de reproducciones (VPH)",
-    metric: "Predicción temprana de videos virales aislando métricas atípicas de retención",
-    tech: "Pipeline de datos en TypeScript + Serverless Aggregations + YouTube Data API",
-    problem: "Los paneles nativos de analítica muestran métricas con 48h de retraso, impidiendo iterar títulos y miniaturas a tiempo."
+    name: "[Lab] Viralyt",
+    focus: "Pipeline analítico de YouTube con cálculo de velocidad por hora (VPH)",
+    status: "Laboratorio interno (Lab)",
+    use_case: "Demuestra manejo de streaming de datos y pipelines de retención en tiempo real."
   },
   {
-    name: "videome",
-    focus: "Plataforma SaaS de generación de video con inferencia en GPU serverless",
-    metric: "Procesamiento cinemático de videos en menos de 60 segundos",
-    tech: "Inferencia en GPU serverless + React Router + Worker Queues",
-    problem: "Renderizar videos con IA en servidores dedicados fijos cuesta miles de dólares al mes en capacidad ociosa."
-  },
-  {
-    name: "Portales Operativos B2B",
-    focus: "Sustitución de planillas Excel gigantescas y caos de WhatsApp por portales web ligeros",
-    metric: "15 a 20 horas semanales ahorradas por equipo y conciliación inmediata de remitos/estados",
-    tech: "React 19 + Supabase RLS + Webhooks en tiempo real",
-    problem: "Empresas con decenas de choferes o compradores de pozo coordinan operaciones críticas por mensajes dispersos de WhatsApp."
+    name: "[Lab] videome",
+    focus: "Inferencia serverless en GPU para video cinemático con costo fijo $0",
+    status: "Laboratorio interno (Lab)",
+    use_case: "Demuestra optimización de infraestructura cloud y cómputo serverless."
   }
+];
+
+export const ART_MOLDS = [
+  "marker-note",
+  "paper-photo",
+  "bolder-poster",
+  "notebook-carousel",
+  "dark-tech",
+  "polaroid"
 ];
 
 export class SocialAgent {
@@ -50,97 +58,198 @@ export class SocialAgent {
       return { status: "skipped", message: "Social agent disabled in configuration." };
     }
 
-    // Default to LinkedIn and X only for engineering B2B authority
-    const channels = (socialConfig.channels || ["linkedin", "x"]).filter(c => c !== "instagram");
+    const pillars = socialConfig.pillars?.length ? socialConfig.pillars : DEFAULT_PILLARS;
+    const channels = socialConfig.channels || ["linkedin", "x", "instagram"];
+    const targetPlatformFormat = socialConfig.targetPlatformFormat || "art-reels";
 
-    const systemPrompt = `Eres el Director de Estrategia de Contenido y Comunicación Técnica de "${company.name}".
-Tu misión es redactar publicaciones de autoridad en ingeniería de software para LinkedIn y X (Twitter).
-Cero clichés, cero hype superficial de IA, cero tecnicismos vacíos.
+    const systemPrompt = `Eres el Director Editorial y Estratega de Contenido Comercial de "${company.name}".
+Tu misión es redactar publicaciones estratégicas para vender servicios B2B de desarrollo de software a medida, integraciones de sistemas y automatización operativa.
+Los borradores se preparan en modo "Draft-First" para alimentar /ops/art (moldes de Art Studio) y /ops/social (Social Studio y guiones de Reels).
 
-Fórmula obligatoria para cada post:
-1. Problema Operativo Real (el dolor concreto en horas, dinero o caos que sufre una empresa).
-2. Arquitectura de Código Implementada (la solución de ingeniería que Puna Tech construyó).
-3. Resultado Cuantificable (la métrica de ahorro, velocidad o conversión lograda).
+PILARes COMERCIALES OBLIGATORIOS (P1 a P5):
+${pillars.map((p, idx) => `${idx + 1}. ${p}`).join("\n")}
 
-Casos de estudio reales de Puna Tech en los que DEBES anclar las publicaciones:
-${JSON.stringify(PUNA_CASE_STUDIES, null, 2)}
+REGLAS DE VOZ Y ESTILO:
+- Voz: ACM editorial, español rioplatense (ES-AR voseo: tenés, hacé, mirá, resolvé, desarmá, fijate).
+- Tono: Pragmático, directo, técnico con criterio operativo, cero humo, cero hype de IA.
+- Estructura del contenido: Cuello de botella de operador → 2 a 3 opciones de resolución → Próximo paso concreto.
+- Llamada a la acción (CTA): Orientada a Cal.com (diagnóstico de 20 min) o envío de brief de operaciones.
+- Honestidad y métricas: Cero métricas inventadas o porcentajes fantasma. Si no hay dato verificado, describir el mecanismo técnico y la ganancia cualitativa real (horas ahorradas, desincronización eliminada, trazabilidad ganada).
+- Regla Lab vs Cliente: Puna vende servicios de software y arquitectura. Los productos de laboratorio (${LAB_PROOF_REFERENCES.map(l => l.name).join(", ")}) son SOLO pruebas secundarias opcionales y DEBEN estar etiquetados como '[Lab]'. NUNCA los vendas como producto cerrado de catálogo.
+- Anti-temas prohibidos: Growth hacks superficiales, métricas fabricadas, tutoriales Zapier genéricos, o anécdotas personales de Martin en la página de empresa.
 
-Reglas de formato:
-- Para X (Twitter): Máximo 275 caracteres por tweet, gancho contundente y directo.
-- Para LinkedIn: Estructura clara con gancho inicial, desarrollo arquitectónico con valor real, y llamada a la acción (CTA) orientada a debate entre directores técnicos u operativos.
-- Formato de respuesta: JSON estructurado.`;
+CANALES Y FORMATOS:
+- LinkedIn: Formato carousel (carrusel educativo/proceso), static (foto editorial + nota) o text.
+- X (Twitter): Formato text (máximo 275 caracteres por tweet, conciso y de alto impacto técnico).
+- Instagram: Reservado EXCLUSIVAMENTE para formato reel (guion vertical de 5 escenas).
+- Moldes Art Studio disponibles (art_mold_suggestion): ${ART_MOLDS.join(", ")}.
+  * marker-note: Anotación y marcador sobre fotografía de oficina/taller.
+  * paper-photo: Papel rasgado + nota sobre escena cotidiana de trabajo.
+  * bolder-poster: Afiche de impacto tipográfico y alto contraste editorial.
+  * notebook-carousel: Hoja de cuaderno perforado con espiral, stickers y pestañas.
+  * dark-tech: Estilo dark glow, render 3D / arquitectura técnica.
+  * polaroid: Fotografía polaroid con cinta adhesiva y retícula editorial.
 
-    const userPrompt = `Genera ${socialConfig.postsPerNight || 3} publicaciones estratégicas distribuidas en los canales: ${channels.join(", ")}.
-Rotar entre los casos de estudio reales de Puna Tech (StarPress, Viralyt, videome y Portales Operativos B2B).
+ESTRUCTURA DE REELS (5 BEATS / ESCENAS):
+Cuando el formato sea 'reel', incluir 'reel_scene_hints' con exactamente 5 beats (15-30s total):
+1. Gancho (hook, 3-5s): Plantea el dolor o error operativo sin rodeos.
+2. Desarrollo 1 (problem, 3-5s): El síntoma visible en el día a día.
+3. Desarrollo 2 (insight, 4-6s): Comparación de 2-3 opciones (parche vs solución real).
+4. Desarrollo 3 (insight, 4-6s): Cómo lo resuelve Puna con software/sistema.
+5. Cierre (cta, 3-5s): Llamada al brief o Cal.com.`;
 
-Retorna un objeto JSON con este esquema:
+    const userPrompt = `Genera ${socialConfig.postsPerNight || 3} borradores de contenido comercial para ${company.name}.
+Distribución de canales: ${channels.join(", ")}.
+Asegurate de cubrir distintos pilares (P1 a P5) y variar los formatos (carrusel, reel, static, text).
+Recordá: Instagram solo para formato reel; LinkedIn/X para static, carousel o text.
+Target platform format: ${targetPlatformFormat}.
+
+Retorna un objeto JSON con este esquema exacto:
 {
-  "summary": "Enfoque técnico del día y caso de estudio destacado",
+  "summary": "Resumen del lote comercial del día y enfoque de pilares",
   "posts": [
     {
-      "id": "draft-1",
-      "channel": "linkedin" | "x",
-      "case_study_referenced": "StarPress | Viralyt | videome | Portales B2B",
+      "id": "draft-social-1",
+      "pillar_id": "P1" | "P2" | "P3" | "P4" | "P5",
+      "pillar": "Nombre completo del pilar",
+      "channel": "linkedin" | "x" | "instagram",
+      "format": "static" | "carousel" | "reel" | "text",
       "locale": "es",
-      "hook": "Gancho inicial de alto impacto",
-      "body": "Cuerpo del post con la arquitectura técnica y el resultado cuantificable",
-      "cta": "Llamada a la acción orientada a conversación",
+      "hook": "Gancho inicial de alto impacto (voseo ES-AR)",
+      "body": "Cuerpo con problema de operador, opciones y solución técnica",
+      "cta": "Llamada a la acción con Cal.com o brief operativo",
       "hashtags": ["#Tag1", "#Tag2"],
-      "image_suggestion": "Diagrama de arquitectura o captura de terminal sugerida",
+      "art_mold_suggestion": "marker-note" | "paper-photo" | "bolder-poster" | "notebook-carousel" | "dark-tech" | "polaroid",
+      "ops_handoff": {
+        "path_hint": "/ops/art" | "/ops/social/new",
+        "visual_kind": "reel" | "single" | "carousel" | "text",
+        "ready_to_queue": false
+      },
+      "reel_scene_hints": [
+        {
+          "beat": "Gancho" | "Desarrollo 1" | "Desarrollo 2" | "Desarrollo 3" | "Cierre",
+          "role": "hook" | "problem" | "insight" | "cta",
+          "duration_seconds": 4,
+          "headline": "Titular de la escena",
+          "visual_hint": "Descripción de la toma o material visual sugerido"
+        }
+      ],
+      "scheduled_time_suggestion": "10:30 AM ART",
       "target_autopost_payload": {
         "scheduled_time_suggestion": "10:30 AM ART",
-        "ready_to_queue": true
+        "ready_to_queue": false
       }
     }
   ]
 }`;
 
     const mockGenerator = () => ({
-      summary: `3 publicaciones de ingeniería técnica para Puna Tech ancladas en casos reales: StarPress, Viralyt y videome.`,
+      summary: "3 borradores comerciales de Puna Tech orientados a cuellos de botella de operador (P1, P2 y P5) con handoff hacia Art Studio y Social Reels.",
       posts: [
         {
           id: "draft-social-1",
+          pillar_id: "P1",
+          pillar: "P1 Automatización: lo repetitivo → sistema (handoffs, gates humanos, Zap≠sistema)",
           channel: "linkedin",
-          case_study_referenced: "Portales B2B",
+          format: "carousel",
           locale: "es",
-          hook: "Si tu equipo de logística coordina más de 20 choferes por WhatsApp, no tienes un canal de comunicación: tienes un pozo ciego de horas hombre.",
-          body: "El error común es contratar más personal administrativo para pasar datos de chats a un Excel que tarda 48 horas en conciliarse.\n\nEn Puna Tech construimos portales operativos web ligeros sobre Supabase: el chofer marca 'Entregado' con una foto desde el navegador móvil en 3 segundos, y el cliente recibe trazabilidad en tiempo real sin instalar apps.\n\nResultado: 18 horas semanales ahorradas en llamados y 0 remitos extraviados.",
-          cta: "¿Cómo resuelven hoy la trazabilidad de operaciones de última milla en su equipo? Los leo en comentarios.",
-          hashtags: ["#SoftwareEngineering", "#Logistica", "#B2BArchitecture", "#PunaTech"],
-          image_suggestion: "Diagrama minimalista de flujo: Chofer Móvil -> Supabase RLS -> Dashboard de Control en Tiempo Real.",
+          hook: "Un Zap no es un sistema: si tu operación se cae porque alguien cambió el nombre de una columna, tenés una bomba de tiempo.",
+          body: "El error común en operaciones es conectar herramientas sueltas sin un contrato de datos ni gates humanos de validación.\n\nCuando el volumen sube, los handoffs silenciosos fallan y el equipo pasa horas apagando incendios en planillas.\n\nEn Puna diseñamos automatizaciones con estado persistente, trazabilidad y alertas claras antes de que el error llegue al cliente.",
+          cta: "Si tus automatizaciones te generan más soporte que alivio, agendá 20 minutos de diagnóstico en Cal.com o mandanos tu proceso en un brief.",
+          hashtags: ["#Automatizacion", "#OperacionesB2B", "#Sistemas", "#PunaTech"],
+          art_mold_suggestion: "notebook-carousel",
+          ops_handoff: {
+            path_hint: "/ops/art",
+            visual_kind: "carousel",
+            ready_to_queue: false
+          },
+          scheduled_time_suggestion: "10:30 AM ART",
           target_autopost_payload: {
             scheduled_time_suggestion: "10:30 AM ART",
-            ready_to_queue: true
+            ready_to_queue: false
           }
         },
         {
           id: "draft-social-2",
+          pillar_id: "P2",
+          pillar: "P2 Integraciones: sistemas que se hablan (contratos, glue code, triage de stack)",
           channel: "x",
-          case_study_referenced: "videome",
+          format: "text",
           locale: "es",
-          hook: "Pagar servidores GPU dedicados 24/7 para renderizar video con IA es el error #1 de arquitectura en 2026.",
-          body: "En videome implementamos inferencia serverless en GPU: las instancias se levantan en frío y procesan en <60s solo cuando entra el request. Cero costo fijo ocioso.",
-          cta: "Medir latencia antes de sobreaprovisionar.",
-          hashtags: ["#Serverless", "#GPUInference", "#BuildInPublic"],
-          image_suggestion: "Gráfico de uso de GPU serverless vs instancias dedicadas ociosas.",
+          hook: "Comprar otro SaaS casi nunca resuelve un problema de datos entre sistemas.",
+          body: "Antes de sumar otra suscripción mensual, hacé triage de stack: definí qué sistema es la fuente de verdad y qué glue code falta para que hablen con contratos claros.\n\nMenos herramientas, mejor conectadas.",
+          cta: "¿Cuántas herramientas pagan hoy que duplican datos? Coordiná un brief de integraciones en Cal.com.",
+          hashtags: ["#Integraciones", "#StackB2B", "#SoftwareArchitecture"],
+          art_mold_suggestion: "dark-tech",
+          ops_handoff: {
+            path_hint: "/ops/social/new",
+            visual_kind: "text",
+            ready_to_queue: false
+          },
+          scheduled_time_suggestion: "02:15 PM ART",
           target_autopost_payload: {
             scheduled_time_suggestion: "02:15 PM ART",
-            ready_to_queue: true
+            ready_to_queue: false
           }
         },
         {
           id: "draft-social-3",
-          channel: "linkedin",
-          case_study_referenced: "Viralyt",
+          pillar_id: "P5",
+          pillar: "P5 Bottlenecks de operador: cuello → 2–3 opciones → próximo paso (Cal/brief)",
+          channel: "instagram",
+          format: "reel",
           locale: "es",
-          hook: "¿Por qué los dashboards de analítica tradicionales no sirven para predecir qué contenido va a traccionar?",
-          body: "El problema es la latencia de datos: cuando una plataforma te muestra que un video rindió bien, la curva de distribución orgánica ya pasó.\n\nCon Viralyt diseñamos un motor en TypeScript que calcula la velocidad por hora (VPH) y compara la retención contra la mediana histórica en los primeros 120 minutos.\n\nEso permite tomar decisiones de miniaturas y títulos en tiempo real, no como una autopsia a las 72 horas.",
-          cta: "¿En sus productos analizan métricas en tiempo real o dependen de reportes diferidos?",
-          hashtags: ["#DataPipelines", "#TypeScript", "#Analytics", "#PunaTech"],
-          image_suggestion: "Captura de pantalla de la curva VPH con detección de anomalías.",
+          hook: "El cuello de botella de tu negocio no es la falta de herramientas, es la falta de handoffs claros.",
+          body: "Cuando un pedido o cliente pasa de mano en mano por chats de WhatsApp, la fricción se come el margen operativo.\n\nTe mostramos las 3 opciones para destrabarlo sin rehacer todo el stack desde cero.",
+          cta: "Revisá el brief en el link de la bio o coordiná 20 min en Cal.com para destrabar tu proceso.",
+          hashtags: ["#Operaciones", "#ReelsB2B", "#Optimizacion", "#PunaTech"],
+          art_mold_suggestion: "bolder-poster",
+          ops_handoff: {
+            path_hint: "/ops/social/new",
+            visual_kind: "reel",
+            ready_to_queue: false
+          },
+          reel_scene_hints: [
+            {
+              beat: "Gancho",
+              role: "hook",
+              duration_seconds: 4,
+              headline: "¿Tu equipo pierde 15 horas por semana pasando datos a mano?",
+              visual_hint: "Operador visiblemente saturado frente a múltiples pestañas de planillas y mensajes."
+            },
+            {
+              beat: "Desarrollo 1",
+              role: "problem",
+              duration_seconds: 4,
+              headline: "El síntoma: el caos operativo se disfraza de 'trabajo diario'",
+              visual_hint: "Notificaciones acumuladas de chats y planillas de cálculo desincronizadas."
+            },
+            {
+              beat: "Desarrollo 2",
+              role: "insight",
+              duration_seconds: 5,
+              headline: "3 caminos: emparchar con otro Zap, contratar más personal, o fijar contratos de datos.",
+              visual_hint: "Cuadro comparativo limpio con las 3 alternativas y su impacto de costo."
+            },
+            {
+              beat: "Desarrollo 3",
+              role: "insight",
+              duration_seconds: 5,
+              headline: "En Puna implementamos portales ligeros que eliminan la doble carga.",
+              visual_hint: "Captura de interfaz de portal con validación de un clic y estado en tiempo real."
+            },
+            {
+              beat: "Cierre",
+              role: "cta",
+              duration_seconds: 4,
+              headline: "Destrabá el cuello de botella: enviá tu brief de operaciones.",
+              visual_hint: "Placa tipográfica estilo Bolder Poster con llamada al brief y Cal.com."
+            }
+          ],
+          scheduled_time_suggestion: "05:00 PM ART",
           target_autopost_payload: {
             scheduled_time_suggestion: "05:00 PM ART",
-            ready_to_queue: true
+            ready_to_queue: false
           }
         }
       ]

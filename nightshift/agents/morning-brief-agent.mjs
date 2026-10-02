@@ -74,10 +74,11 @@ export class MorningBriefAgent {
     }
 
     if (socialResult?.posts?.length) {
+      const channelSet = Array.from(new Set(socialResult.posts.map((p) => p.channel?.toLowerCase()))).map(c => c === "x" ? "X" : c.charAt(0).toUpperCase() + c.slice(1));
       decisions.push({
         num: decisionIndex++,
-        text: `**Aprobar lote de ${socialResult.posts.length} posts para Autopost:** Revisar borradores en cola (incluye LinkedIn y X).`,
-        action: `Ir a /ops/social o Autopost para aprobación en 1 clic.`,
+        text: `**Aprobar lote de ${socialResult.posts.length} posts para Social Studio / Art:** Revisar borradores comerciales (${channelSet.join(", ")}).`,
+        action: `Ir a /ops/social o /ops/art para revisión y handoff.`,
       });
     }
 
@@ -124,12 +125,23 @@ export class MorningBriefAgent {
 
     // Social Section
     if (socialResult?.posts?.length) {
-      markdownLines.push("### 📱 Redes Sociales & Autopost");
+      markdownLines.push("### 📱 Social Studio / Art (borradores)");
       markdownLines.push(`*${socialResult.summary || "Borradores generados"}*`);
       markdownLines.push("");
       for (const p of socialResult.posts) {
-        markdownLines.push(`- **[${p.channel.toUpperCase()}]** *"${p.hook}"*`);
-        markdownLines.push(`  - **Horario sugerido:** ${p.target_autopost_payload?.scheduled_time_suggestion || "11:00 AM"}`);
+        const time = p.scheduled_time_suggestion || p.target_autopost_payload?.scheduled_time_suggestion || "11:00 AM ART";
+        const formatBadge = p.format ? ` [${p.format.toUpperCase()}]` : "";
+        const pillarBadge = p.pillar_id ? ` · ${p.pillar_id}` : "";
+        markdownLines.push(`- **[${p.channel.toUpperCase()}]**${formatBadge}${pillarBadge} *"${p.hook}"*`);
+        if (p.art_mold_suggestion) {
+          const handoffPath = p.ops_handoff?.path_hint || "/ops/art";
+          markdownLines.push(`  - **Molde Art Studio:** \`${p.art_mold_suggestion}\` | **Handoff:** \`${handoffPath}\``);
+        }
+        if (p.reel_scene_hints?.length) {
+          const beats = p.reel_scene_hints.map((s) => s.beat || s.role).join(" → ");
+          markdownLines.push(`  - **Storyboard Reel:** ${p.reel_scene_hints.length} escenas (${beats})`);
+        }
+        markdownLines.push(`  - **Horario sugerido:** ${time}`);
       }
       markdownLines.push("");
     }
@@ -265,7 +277,7 @@ export class MorningBriefAgent {
           `⚡ *DECISIONES A TOMAR HOY (${decisions.length}):*`,
           ...decisions.map((d) => `▫️ *Decisión #${d.num}:* ${d.text.replace(/\*\*/g, "")}\n   👉 _${d.action}_`),
           "",
-          `📱 *Redes:* ${socialResult?.posts?.length || 0} publicaciones técnicas (LinkedIn y X).`,
+          `📱 *Social Studio / Art:* ${socialResult?.posts?.length || 0} borradores comerciales (LinkedIn, X, IG).`,
           `🎯 *Leads:* ${scoutResult?.prospects?.length || 0} cuentas B2B (Emails y DNS MX verificados).`,
           inboundLine,
           `🛠️ *Simulador:* ${demoResult?.demo_title || "ROI Simulator"}`,
@@ -279,7 +291,7 @@ export class MorningBriefAgent {
             { text: `✅ Aprobar TODO (${decisions.length})`, callback_data: `approve_all:${dateStr}` },
           ],
           [
-            { text: "📱 #1 Redes", callback_data: `approve_dec:1:${dateStr}` },
+            { text: "📱 #1 Social / Art", callback_data: `approve_dec:1:${dateStr}` },
             { text: "🎯 #2 Leads & Dispatch", callback_data: `approve_dec:2:${dateStr}` },
           ],
           [
