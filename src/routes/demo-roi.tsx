@@ -36,6 +36,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     description,
     path,
     alternatePath,
+    robots: "noindex, follow",
     schema: [
       breadcrumbSchema([
         { name: "Puna Tech", path: isEs ? "/es" : "/" },

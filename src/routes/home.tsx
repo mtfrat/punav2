@@ -34,6 +34,15 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const locale = data?.locale || "en";
   const path = locale === "en" ? "/" : "/es";
   const alternatePath = locale === "en" ? "/es" : "/";
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: copy[locale].faqs.map(([question, answer]) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
+    })),
+  };
   return createMeta({
     locale,
     title: locale === "en" ? "Custom Software & AI Automation | Puna Tech" : "Software a Medida y Automatización con IA | Puna Tech",
@@ -42,7 +51,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       : "Software a medida para automatizar operaciones B2B en Argentina. Puna Tech, Buenos Aires: automatización, integraciones y sistemas que tu equipo puede operar.",
     path,
     alternatePath,
-    schema: organizationSchema(locale),
+    schema: [organizationSchema(locale), faqSchema],
   });
 };
 
