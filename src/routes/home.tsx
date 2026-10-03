@@ -38,8 +38,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     locale,
     title: locale === "en" ? "Custom Software & AI Automation | Puna Tech" : "Software a Medida y Automatización con IA | Puna Tech",
     description: locale === "en"
-      ? "Bilingual software factory building custom software, AI automation, and systems integrations for complex operational workflows."
-      : "Software factory bilingüe que construye software a medida, automatización con IA e integraciones para flujos operativos complejos.",
+      ? "Custom software to automate B2B operations in Argentina. Puna Tech, Buenos Aires: automation, integrations, and systems your team can run."
+      : "Software a medida para automatizar operaciones B2B en Argentina. Puna Tech, Buenos Aires: automatización, integraciones y sistemas que tu equipo puede operar.",
     path,
     alternatePath,
     schema: organizationSchema(locale),
@@ -110,6 +110,9 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               <p className="bs-intro-lead">
                 {t.heroBody}
               </p>
+              <p className="bs-intro-lead">
+                {t.heroCompare}
+              </p>
               {/* PILAR 3: CTA Único como objeto de diseño (Primario Terracota + Secundario Ghost Borgoña) */}
               <div className="cta-group bs-cover-actions">
                 <CalButton
@@ -171,6 +174,46 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
         <section className="proof-strip" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>
           <div className="shell proof-grid">
             {t.proof.map((item, index) => <div key={item}><span>0{index + 1}</span><p>{item}</p></div>)}
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="compare-heading">
+          <div className="shell">
+            <header className="section-heading">
+              <h2 id="compare-heading">{t.compareTitle}</h2>
+            </header>
+            <div className="compare-table-wrap">
+              <table className="compare-table">
+                <thead>
+                  <tr>
+                    <th scope="col" />
+                    {t.compareColumns.map((column) => <th scope="col" key={column}>{column}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {t.compareRows.map(([label, standard, custom]) => (
+                    <tr key={label}>
+                      <th scope="row">{label}</th>
+                      <td>{standard}</td>
+                      <td>{custom}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section className="section" aria-labelledby="versus-heading">
+          <div className="shell">
+            <header className="section-heading">
+              <h2 id="versus-heading">{t.versusTitle}</h2>
+            </header>
+            <ol className="versus-list">
+              {t.versus.map(([title, body]) => (
+                <li key={title}><strong>{title}</strong> {body}</li>
+              ))}
+            </ol>
           </div>
         </section>
 
