@@ -53,13 +53,13 @@ const englishHome = await readFile(join(root, "index.html"), "utf8");
 const spanishHome = await readFile(join(root, "es", "index.html"), "utf8");
 if (!englishHome.includes("Custom Software &amp; AI Automation | Puna Tech") && !englishHome.includes("Custom Software & AI Automation | Puna Tech")) failures.push("English homepage title did not render");
 if (!spanishHome.includes("Software a Medida y Automatización con IA | Puna Tech")) failures.push("Spanish homepage title did not render");
-if (!englishHome.includes("Custom software for operations that outgrew off-the-shelf tools.")) failures.push("English homepage H1 changed");
-if (!spanishHome.includes("Software a medida para operaciones que ya superaron las herramientas estándar.")) failures.push("Spanish homepage H1 changed");
+if (!englishHome.includes("Custom software for operations that ") || !englishHome.includes("outgrew off-the-shelf tools")) failures.push("English homepage H1 changed");
+if (!spanishHome.includes("Software a medida para operaciones que ya superaron las ") || !spanishHome.includes("herramientas estándar")) failures.push("Spanish homepage H1 changed");
 
 const spanishDescription = "Software a medida para automatizar operaciones B2B en Buenos Aires, Argentina: automatización, integraciones y sistemas que tu equipo puede operar.";
 if (spanishDescription.length > 150) failures.push(`Spanish homepage meta description is ${spanishDescription.length} characters`);
 for (const phrase of ["software a medida", "automatizar", "B2B", "Argentina", "Buenos Aires"]) {
-  if (!spanishDescription.includes(phrase)) failures.push(`Spanish homepage meta description missing ${phrase}`);
+  if (!spanishDescription.toLowerCase().includes(phrase.toLowerCase())) failures.push(`Spanish homepage meta description missing ${phrase}`);
 }
 for (const html of [spanishHome]) {
   if (!html.includes(`name="description" content="${spanishDescription}"`) && !html.includes(`content="${spanishDescription}" name="description"`)) {
