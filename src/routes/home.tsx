@@ -48,7 +48,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     title: locale === "en" ? "Custom Software & AI Automation | Puna Tech" : "Software a Medida y Automatización con IA | Puna Tech",
     description: locale === "en"
       ? "Custom software to automate B2B operations in Argentina. Puna Tech, Buenos Aires: automation, integrations, and systems your team can run."
-      : "Software a medida para automatizar operaciones B2B en Argentina. Puna Tech, Buenos Aires: automatización, integraciones y sistemas que tu equipo puede operar.",
+      : "Software a medida para automatizar operaciones B2B en Buenos Aires, Argentina: automatización, integraciones y sistemas que tu equipo puede operar.",
     path,
     alternatePath,
     schema: [organizationSchema(locale), faqSchema],

@@ -670,7 +670,8 @@ export const servicesHubCopy = {
     metaTitle: "Services | Software, Automation, Integrations | Puna Tech",
     metaDescription: "Custom software, process automation, and systems integration for B2B operations—factory delivery your team can own.",
     eyebrow: "Three focused capabilities",
-    title: "Start with the bottleneck, not the technology.",
+    title: "Custom software, automation, and integrations for B2B operations.",
+    lead: "We start with the bottleneck, not the technology.",
     intro: "Puna Tech is a B2B software factory for automation, integrations, and custom systems. Each engagement is shaped around one operational outcome and a system your team can own. Lab SaaS proves execution; client delivery is the business. Choose the path that matches the constraint—or map it with us in 15 minutes.",
     /** Card order: custom → automation → integrations */
     cardOrderKeys: ["custom-software", "ai-automation", "data-integrations"] as const,
@@ -684,7 +685,8 @@ export const servicesHubCopy = {
     metaTitle: "Servicios | Software, automatización, integraciones | Puna Tech",
     metaDescription: "Software a medida, automatización de procesos e integración de sistemas para operaciones B2B—entrega factory que tu equipo pueda operar.",
     eyebrow: "Tres capacidades enfocadas",
-    title: "Empezamos por el cuello de botella, no por la tecnología.",
+    title: "Software a medida, automatización e integraciones para operaciones B2B.",
+    lead: "Empezamos por el cuello de botella, no por la tecnología.",
     intro: "Puna Tech es una software factory B2B para automatización, integraciones y sistemas a medida. Cada proyecto se organiza alrededor de un resultado operativo y un sistema que tu equipo pueda operar. El lab SaaS prueba ejecución; la entrega a clientes es el negocio. Elegí el camino que matchea la restricción—o mapealo con nosotros en 15 minutos.",
     cardOrderKeys: ["custom-software", "ai-automation", "data-integrations"] as const,
     cardTitles: {

@@ -143,6 +143,40 @@ export function organizationSchema(locale: Locale) {
   };
 }
 
+export function collectionPageSchema({
+  locale,
+  name,
+  path,
+  items,
+}: {
+  locale: Locale;
+  name: string;
+  path: string;
+  items: Array<{ name: string; path: string }>;
+}) {
+  const pageUrl = absoluteUrl(path);
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${pageUrl}#webpage`,
+    name,
+    url: pageUrl,
+    inLanguage: locale === "en" ? "en" : "es-AR",
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: items.length,
+      itemListElement: items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: item.name,
+        url: absoluteUrl(item.path),
+      })),
+    },
+  };
+}
+
 export function breadcrumbSchema(items: Array<{ name: string; path: string }>) {
   return {
     "@context": "https://schema.org",
