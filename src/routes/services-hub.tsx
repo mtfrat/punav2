@@ -3,7 +3,7 @@ import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { CalButton, PageShell, trackEvent } from "../components/marketing";
 import { copy, servicePath, services, servicesHubCopy, servicesHubPath, type Locale } from "../content/site";
-import { breadcrumbSchema, createMeta } from "../lib/seo";
+import { breadcrumbSchema, collectionPageSchema, createMeta } from "../lib/seo";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
@@ -29,6 +29,15 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
         { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
         { name: locale === "en" ? "Services" : "Servicios", path },
       ]),
+      collectionPageSchema({
+        locale,
+        name: hub.title,
+        path,
+        items: (data?.ordered ?? []).map((service) => ({
+          name: hub.cardTitles[service.key] || service.eyebrow,
+          path: servicePath(locale, service.slug),
+        })),
+      }),
     ],
   });
 };
@@ -41,11 +50,12 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
   return (
     <PageShell locale={locale}>
       <main id="main-content">
-        <section className="detail-hero dark-section">
+        <section className="detail-hero services-hub-hero dark-section">
           <div className="shell">
             <p className="eyebrow eyebrow-dark">{hub.eyebrow}</p>
             <h1>{hub.title}</h1>
-            <p style={{ maxWidth: "46rem" }}>{hub.intro}</p>
+            <p className="hero-lead">{hub.lead}</p>
+            <p className="hero-intro">{hub.intro}</p>
             <div className="cta-group">
               <CalButton locale={locale} placement="services_hub" label={t.book} className="button-primary-terracotta" />
               <a

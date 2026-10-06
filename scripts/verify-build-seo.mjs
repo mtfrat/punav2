@@ -53,6 +53,79 @@ const englishHome = await readFile(join(root, "index.html"), "utf8");
 const spanishHome = await readFile(join(root, "es", "index.html"), "utf8");
 if (!englishHome.includes("Custom Software &amp; AI Automation | Puna Tech") && !englishHome.includes("Custom Software & AI Automation | Puna Tech")) failures.push("English homepage title did not render");
 if (!spanishHome.includes("Software a Medida y Automatización con IA | Puna Tech")) failures.push("Spanish homepage title did not render");
+if (!englishHome.includes("Custom software for operations that ") || !englishHome.includes("outgrew off-the-shelf tools")) failures.push("English homepage H1 changed");
+if (!spanishHome.includes("Software a medida para operaciones que ya superaron las ") || !spanishHome.includes("herramientas estándar")) failures.push("Spanish homepage H1 changed");
+
+const spanishDescription = "Software a medida para automatizar operaciones B2B en Buenos Aires, Argentina: automatización, integraciones y sistemas que tu equipo puede operar.";
+if (spanishDescription.length > 150) failures.push(`Spanish homepage meta description is ${spanishDescription.length} characters`);
+for (const phrase of ["software a medida", "automatizar", "B2B", "Argentina", "Buenos Aires"]) {
+  if (!spanishDescription.toLowerCase().includes(phrase.toLowerCase())) failures.push(`Spanish homepage meta description missing ${phrase}`);
+}
+for (const html of [spanishHome]) {
+  if (!html.includes(`name="description" content="${spanishDescription}"`) && !html.includes(`content="${spanishDescription}" name="description"`)) {
+    failures.push("Spanish homepage meta description did not render");
+  }
+  if (!html.includes(`property="og:description" content="${spanishDescription}"`)) failures.push("Spanish homepage og:description did not match meta description");
+  if (!html.includes(`name="twitter:description" content="${spanishDescription}"`)) failures.push("Spanish homepage twitter:description did not match meta description");
+}
+
+function jsonLdBlocks(html) {
+  return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((match) => {
+    const raw = match[1]
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, "&")
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">");
+    return JSON.parse(raw);
+  });
+}
+
+const serviceHubExpectations = [
+  ["/services", "Custom software, automation, and integrations for B2B operations.", "We start with the bottleneck, not the technology.", [
+    ["Custom B2B software", "https://www.puna-tech.com/services/custom-software"],
+    ["Process automation · AI workflows", "https://www.puna-tech.com/services/ai-automation"],
+    ["Data & systems integration", "https://www.puna-tech.com/services/data-integrations"],
+  ]],
+  ["/es/servicios", "Software a medida, automatización e integraciones para operaciones B2B.", "Empezamos por el cuello de botella, no por la tecnología.", [
+    ["Software B2B a medida", "https://www.puna-tech.com/es/servicios/software-a-medida"],
+    ["Automatización de procesos · flujos con IA", "https://www.puna-tech.com/es/servicios/automatizacion-ia"],
+    ["Integración de datos y sistemas", "https://www.puna-tech.com/es/servicios/integraciones-de-datos"],
+  ]],
+];
+
+for (const [route, heading, lead, items] of serviceHubExpectations) {
+  const file = join(root, route.slice(1), "index.html");
+  const html = await readFile(file, "utf8");
+  if (!html.includes(`<h1>${heading}</h1>`)) failures.push(`${route}: H1 is not the target keyword heading`);
+  if (!html.includes(lead)) failures.push(`${route}: bottleneck lead is missing`);
+  let blocks = [];
+  try {
+    blocks = jsonLdBlocks(html);
+  } catch (error) {
+    failures.push(`${route}: JSON-LD did not parse (${error.message})`);
+    continue;
+  }
+  const nodes = blocks.flatMap((block) => Array.isArray(block) ? block : [block]);
+  const collection = nodes.find((node) => node["@type"] === "CollectionPage");
+  const list = collection?.mainEntity?.["@type"] === "ItemList" ? collection.mainEntity : nodes.find((node) => node["@type"] === "ItemList");
+  if (!list) {
+    failures.push(`${route}: ItemList JSON-LD missing`);
+    continue;
+  }
+  const listed = (list.itemListElement || []).map((item) => [item.name, item.url]);
+  const expected = items.map(([name, url]) => [name, url]);
+  if (JSON.stringify(listed) !== JSON.stringify(expected)) {
+    failures.push(`${route}: ItemList entries mismatch ${JSON.stringify(listed)}`);
+  }
+  const publisherId = collection?.publisher?.["@id"];
+  if (publisherId !== "https://www.puna-tech.com/#organization") {
+    failures.push(`${route}: CollectionPage publisher is not the home Organization @id`);
+  }
+  if (JSON.stringify(list).match(/review|aggregateRating|price|offers/i)) {
+    failures.push(`${route}: ItemList includes invented commercial fields`);
+  }
+}
 for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["es", spanishHome, "/es/casos/"]]) {
   if (html.indexOf('id="services"') > html.indexOf('id="work"')) failures.push(`${locale}: services should appear before work`);
   const caseLinks = new Set([...html.matchAll(new RegExp(`href="(${prefix}[^"#?]+)"`, "g"))].map((match) => match[1]));
