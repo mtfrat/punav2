@@ -85,6 +85,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const localizedCases = caseStudies[locale];
   const localizedServices = services[locale];
   const slowdownServices = [localizedServices[0], localizedServices[2], localizedServices[1]];
+  const latamServices = [localizedServices[1], localizedServices[0], localizedServices[2]];
 
   const labCases = localizedCases.filter((c) => ["starpress", "viralyt", "videome", "autopost"].includes(c.key));
   const clientCases = localizedCases.filter((c) => ["lead-router", "linkedin-copilot", "edtech-web3", "gtm-automation"].includes(c.key));
@@ -268,9 +269,9 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                 </div>
               </header>
               <ul className="latam-ar-points">
-                {t.latamPoints.map(([title, body]) => (
+                {t.latamPoints.map(([title, body], index) => (
                   <li key={title}>
-                    <strong>{title}</strong>
+                    <strong>{latamServices[index] ? <Link to={servicePath(locale, latamServices[index].slug)}>{title}</Link> : title}</strong>
                     <span>{body}</span>
                   </li>
                 ))}

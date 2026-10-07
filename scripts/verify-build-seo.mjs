@@ -101,7 +101,7 @@ const serviceHubExpectations = [
   ]],
   ["/es/servicios", "Software a medida, automatización e integraciones para operaciones B2B.", "Empezamos por el cuello de botella, no por la tecnología.", [
     ["Software B2B a medida", "https://www.puna-tech.com/es/servicios/software-a-medida"],
-    ["Automatización de procesos · flujos con IA", "https://www.puna-tech.com/es/servicios/automatizacion-ia"],
+    ["Automatización de procesos con IA", "https://www.puna-tech.com/es/servicios/automatizacion-ia"],
     ["Integración de datos y sistemas", "https://www.puna-tech.com/es/servicios/integraciones-de-datos"],
   ]],
 ];
@@ -150,7 +150,7 @@ const serviceGuideExpectations = [
   ["/services/ai-automation", "Automate the handoffs that slow your operation down.", "Related guide", [
     ["/blog/when-to-use-ai-vs-deterministic-software", "When to use AI—and when deterministic software is the better choice"],
   ]],
-  ["/es/servicios/automatizacion-ia", "Automatizá los traspasos que frenan tu operación.", "Guía relacionada", [
+  ["/es/servicios/automatizacion-ia", "Automatización de procesos con IA para empresas", "Guía relacionada", [
     ["/es/blog/cuando-usar-ia-vs-software-deterministico", "Cuándo usar IA y cuándo conviene software determinístico"],
   ]],
 ];
@@ -168,6 +168,28 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
   const finalCta = html.indexOf("detail-cta");
   const guidesAt = html.indexOf("related-guides");
   if (guidesAt === -1 || finalCta === -1 || guidesAt > finalCta) failures.push(`${route}: related guides should stay above the final CTA`);
+}
+
+{
+  const route = "/es/servicios/automatizacion-ia";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes("<title>Automatización de procesos con IA para empresas | Puna Tech</title>")) failures.push(`${route}: target-query title missing`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Automatización de procesos con IA") || description.length > 155) failures.push(`${route}: target-query meta description (${description.length})`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  if (!faq || (faq.mainEntity || []).length < 5) failures.push(`${route}: FAQPage JSON-LD missing or too short`);
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.name !== "Automatización de procesos con IA") failures.push(`${route}: Service schema name is not the target query`);
+  for (const heading of ["Qué es la automatización de procesos con IA (y qué no)", "Qué procesos automatizamos en pymes y empresas argentinas", "Cómo trabajamos y en cuánto tiempo"]) {
+    if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
+  }
+}
+
+for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes(`href="${href}"`)) failures.push(`${route}: missing internal link to ${href}`);
 }
 
 for (const route of ["/services/data-integrations", "/es/servicios/integraciones-de-datos"]) {
@@ -302,6 +324,8 @@ else {
         if (typeof url !== "string" || !url.startsWith("https://www.puna-tech.com/")) failures.push(`${path}: schema URL is not absolute (${url})`);
       }
       if (list && list.numberOfItems !== (list.itemListElement || []).length) failures.push(`${path}: ItemList count mismatch`);
+      const serviceHref = path === "/blog" ? "/services/ai-automation" : "/es/servicios/automatizacion-ia";
+      if (!page.html.includes(`href="${serviceHref}"`)) failures.push(`${path}: blog hub missing link to ${serviceHref}`);
     }
 
     const sitemap = await fetchPath("/sitemap.xml");

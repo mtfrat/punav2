@@ -77,7 +77,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     path,
     alternatePath,
     schema: [
-      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, description: service.metaDescription, provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America", "AR"] },
+      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, serviceType: service.eyebrow, description: service.metaDescription, url: `https://www.puna-tech.com${path}`, inLanguage: locale === "en" ? "en" : "es-AR", provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America", "AR"] },
       breadcrumbSchema([
         { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
         { name: locale === "en" ? "Services" : "Servicios", path: servicesHubPath(locale) },
