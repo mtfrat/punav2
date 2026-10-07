@@ -19,6 +19,8 @@ const routes = [
   ["/es/servicios/software-a-medida", "es", "https://www.puna-tech.com/es/servicios/software-a-medida", "https://www.puna-tech.com/og-es.png"],
   ["/case-studies/autopost-b2b-content-studio", "en", "https://www.puna-tech.com/case-studies/autopost-b2b-content-studio", "https://www.puna-tech.com/og-en.png"],
   ["/es/casos/autopost-estudio-contenido-b2b", "es", "https://www.puna-tech.com/es/casos/autopost-estudio-contenido-b2b", "https://www.puna-tech.com/og-es.png"],
+  ["/contact", "en", "https://www.puna-tech.com/contact", "https://www.puna-tech.com/og-en.png"],
+  ["/es/contacto", "es", "https://www.puna-tech.com/es/contacto", "https://www.puna-tech.com/og-es.png"],
 ];
 
 const failures = [];
@@ -203,6 +205,58 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   if (caseLinks.size !== 8) failures.push(`${locale}: expected links to all 8 case studies, found ${caseLinks.size}`);
 }
 
+
+const useCaseExpectations = [
+  ["/es/automatizaciones/carga-de-facturas-proveedores", "Automatizar carga de facturas de proveedores | Puna Tech", "/og/carga-de-facturas-proveedores.png"],
+  ["/es/integraciones/mercado-pago", "Integrar Mercado Pago y conciliar pagos | Puna Tech", "/og/integracion-mercado-pago.png"],
+  ["/es/automatizaciones/pedidos-por-whatsapp", "Automatizar pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
+];
+for (const [route, title, image] of useCaseExpectations) {
+  const file = join(root, route.slice(1), "index.html");
+  let html = "";
+  try { html = await readFile(file, "utf8"); } catch { failures.push(`${route}: prerendered HTML is missing`); continue; }
+  const titles = html.match(/<title>[^<]*<\/title>/g) || [];
+  if (titles.length !== 1 || titles[0] !== `<title>${title}</title>`) failures.push(`${route}: title mismatch ${JSON.stringify(titles)}`);
+  if (title.length > 60) failures.push(`${route}: title longer than 60 (${title.length})`);
+  const description = metaDescription(html);
+  if (description.length < 70 || description.length > 155) failures.push(`${route}: meta description length ${description.length}`);
+  if (!html.includes('<html lang="es"')) failures.push(`${route}: html lang is not es`);
+  if (!html.includes(`rel="canonical" href="https://www.puna-tech.com${route}"`)) failures.push(`${route}: canonical mismatch`);
+  if (!html.includes(`property="og:image" content="https://www.puna-tech.com${image}"`)) failures.push(`${route}: og:image mismatch`);
+  try { await access(join(root, image.slice(1))); } catch { failures.push(`${image}: OG asset missing from build`); }
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  if (!faq || (faq.mainEntity || []).length < 5) failures.push(`${route}: FAQPage JSON-LD missing or too short`);
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (!service || service.provider?.["@id"] !== "https://www.puna-tech.com/#organization") failures.push(`${route}: Service JSON-LD missing provider`);
+  if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
+  if (!html.includes("Automatizamos un proceso en 2 semanas a precio cerrado.")) failures.push(`${route}: offer missing`);
+  if (!html.includes('href="/es/contacto"')) failures.push(`${route}: contact CTA missing`);
+  if (!html.includes("button-primary")) failures.push(`${route}: primary CTA missing`);
+  if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
+  for (const [linkRoute] of [["/es"], ["/es/servicios"]]) {
+    const linking = await readFile(join(root, linkRoute.slice(1), "index.html"), "utf8");
+    if (!linking.includes(`href="${route}"`)) failures.push(`${linkRoute}: missing internal link to ${route}`);
+  }
+}
+
+for (const route of ["/es/servicios/automatizacion-ia", "/es/servicios/software-a-medida", "/es/servicios"]) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (html.includes('href="/es#brief"')) failures.push(`${route}: brief CTA still jumps to /es#brief`);
+  if (!html.includes('href="/es/contacto"')) failures.push(`${route}: missing contact page CTA`);
+}
+for (const route of ["/es/contacto", "/contact"]) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes('action="/api/lead"')) failures.push(`${route}: brief form missing`);
+  if (!html.includes("mailto:punatechba@gmail.com")) failures.push(`${route}: email missing`);
+  if (!html.includes("cal.com/puna-tech-r7xi5x/15min")) failures.push(`${route}: Cal.com link missing`);
+  if (metaDescription(html).length > 155) failures.push(`${route}: meta description longer than 155`);
+}
+for (const [locale, html] of [["en", englishHome], ["es", spanishHome]]) {
+  if (html.includes("mfrats-projects.vercel.app")) failures.push(`${locale}: home links to a protected Vercel deployment`);
+}
+
 for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
   const source = await readFile(new URL(`../src/routes/${routeFile}`, import.meta.url), "utf8");
   if (!source.includes('timeZone: "America/Argentina/Buenos_Aires"')) {
@@ -284,6 +338,8 @@ else {
       ["/es/servicios/servicio-inexistente", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
       ["/case-studies/not-a-real-case", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
       ["/blog/not-a-real-post", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/es/automatizaciones/no-existe", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+      ["/es/integraciones/no-existe", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
     ];
     for (const [path, language, title, heading, homeHref, cta] of notFoundPages) {
       const { status, html } = await fetchPath(path);
@@ -330,7 +386,7 @@ else {
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos"]) {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }

@@ -11,7 +11,7 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { CAL_LINK, CONTACT_EMAIL, casesHubPath, copy, servicesHubPath, type Locale } from "../content/site";
+import { CAL_LINK, CONTACT_EMAIL, casesHubPath, contactPath, copy, servicesHubPath, type Locale } from "../content/site";
 import { languageSwitchPath, routeAlternatePath } from "../lib/locale-switch";
 import { trackEvent } from "./tracking";
 export { trackEvent } from "./tracking";
@@ -103,7 +103,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const workAnchor = casesHubPath(locale);
   const processAnchor = `${home}#process`;
   const insights = locale === "en" ? "/blog" : "/es/blog";
-  const briefAnchor = `${home}#brief`;
+  // On the home page the brief form is in-page; everywhere else the CTA opens the contact page.
+  const briefAnchor = location.pathname === home ? "#brief" : location.pathname === contactPath(locale) ? "#brief-form" : contactPath(locale);
   const matches = useMatches();
   const translatedPath = [...matches].reverse().map((match) => routeAlternatePath(match.data)).find((path): path is string => Boolean(path));
   const languageHref = languageSwitchPath(location.pathname, locale, translatedPath);
@@ -172,6 +173,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
         </div>
         <div className="footer-links">
+          <Link to={contactPath(locale)}>{locale === "en" ? "Contact" : "Contacto"}</Link>
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           <a href="https://www.linkedin.com/company/puna-tech" target="_blank" rel="noreferrer">LinkedIn <ExternalLink aria-hidden="true" size={14} /></a>
           <Link to={locale === "en" ? "/privacy" : "/es/privacidad"}>{locale === "en" ? "Privacy" : "Privacidad"}</Link>
@@ -211,7 +213,7 @@ export function FlowDiagram({ items, label }: { items: string[]; label: string }
 
 interface LeadActionData { ok?: boolean; error?: string; fieldErrors?: Record<string, string> }
 
-export function ProjectBrief({ locale }: { locale: Locale }) {
+export function ProjectBrief({ locale, placement = "final_cta" }: { locale: Locale; placement?: string }) {
   const fetcher = useFetcher<LeadActionData>();
   const started = useRef(false);
   const busy = fetcher.state !== "idle";
@@ -220,15 +222,15 @@ export function ProjectBrief({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     if (success) {
-      trackEvent("project_brief_submit", { locale, placement: "final_cta" });
-      trackEvent("generate_lead", { locale, placement: "final_cta", method: "project_brief" });
+      trackEvent("project_brief_submit", { locale, placement });
+      trackEvent("generate_lead", { locale, placement, method: "project_brief" });
     }
-  }, [success, locale]);
+  }, [success, locale, placement]);
 
   function recordStart() {
     if (!started.current) {
       started.current = true;
-      trackEvent("project_brief_start", { locale, placement: "final_cta" });
+      trackEvent("project_brief_start", { locale, placement });
     }
   }
 

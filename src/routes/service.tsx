@@ -6,6 +6,7 @@ import { Accordion, CalButton, FlowDiagram, PageShell, trackEvent } from "../com
 import {
   casePath,
   caseStudies,
+  contactPath,
   copy,
   getCaseStudy,
   getService,
@@ -93,7 +94,7 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
   const t = copy[locale];
   const guides = serviceGuides[service.key]?.[locale] ?? [];
   useEffect(() => trackEvent("service_view", { locale, service: service.key }), [locale, service.key]);
-  const briefHref = locale === "en" ? "/#brief" : "/es#brief";
+  const briefHref = contactPath(locale);
 
   return (
     <PageShell locale={locale}>
@@ -109,7 +110,7 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
                 <a
                   href={briefHref}
                   className="button-ghost-burgundy"
-                  onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}`, destination: "brief" })}
+                  onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}`, destination: "contact" })}
                 >
                   <span>{t.sendBrief}</span>
                   <ArrowRight aria-hidden="true" size={16} />
@@ -246,7 +247,7 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
               <a
                 href={briefHref}
                 className="button-ghost-burgundy"
-                onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}_final`, destination: "brief" })}
+                onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}_final`, destination: "contact" })}
               >
                 <span>{t.sendBrief}</span>
                 <ArrowRight aria-hidden="true" size={16} />

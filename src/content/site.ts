@@ -54,6 +54,12 @@ export interface CaseStudyContent {
 export const SITE_URL = "https://www.puna-tech.com";
 export const CAL_LINK = "puna-tech-r7xi5x/15min";
 export const CONTACT_EMAIL = "punatechba@gmail.com";
+/**
+ * WhatsApp / phone: intentionally empty until Martin confirms a number.
+ * Set it in international format without "+" or spaces (e.g. "5491100000000") and the
+ * contact page shows a WhatsApp button automatically. Leave "" to hide it.
+ */
+export const CONTACT_WHATSAPP = "";
 
 export const copy = {
   en: {
@@ -814,7 +820,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       operationalOutcome: "< 45s clip generation turnaround · 100% billing fidelity",
       visualCaption: "Generative AI video inference & ledger pipeline",
       relatedService: "ai-automation",
-      liveDemoUrl: "https://video-dy9egdm6l-mfrats-projects.vercel.app/",
+      liveDemoUrl: "https://video-me-alpha.vercel.app/",
       title: "Viral AI video recipes: cinematic motion without prompt engineering.",
       summary: "A generative video SaaS that democratizes cinematic AI motion using pre-tuned style recipes, serverless GPU pipelines, and real-time generation polling.",
       challenge: "Advanced diffusion video models generate stunning motion, but everyday marketers and creators are blocked by technical prompts, aspect ratio failures, and unpredictably high cloud GPU costs.",
@@ -1088,7 +1094,7 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
       operationalOutcome: "< 45 seg tiempo de render · 100% fidelidad de facturación",
       visualCaption: "Pipeline de inferencia cloud y contabilidad atómica",
       relatedService: "automatizacion-ia",
-      liveDemoUrl: "https://video-dy9egdm6l-mfrats-projects.vercel.app/",
+      liveDemoUrl: "https://video-me-alpha.vercel.app/",
       title: "Recetas de video con IA: movimiento cinematográfico sin prompts complejos.",
       summary: "Plataforma SaaS que permite generar clips de video con IA a partir de plantillas estilizadas, orquestando pipelines de inferencia cloud con balance de créditos.",
       challenge: "Los modelos modernos de video generan resultados visuales increíbles, pero los usuarios comunes se pierden en parámetros técnicos, fallas de aspect ratio y costos descontrolados de GPU.",
@@ -1323,4 +1329,8 @@ export function casesHubPath(locale: Locale) {
 export function blogPath(locale: Locale, slug?: string) {
   const base = locale === "en" ? "/blog" : "/es/blog";
   return slug ? `${base}/${slug}` : base;
+}
+
+export function contactPath(locale: Locale) {
+  return locale === "en" ? "/contact" : "/es/contacto";
 }

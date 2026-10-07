@@ -2,7 +2,8 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { CalButton, PageShell, trackEvent } from "../components/marketing";
-import { copy, servicePath, services, servicesHubCopy, servicesHubPath, type Locale } from "../content/site";
+import { contactPath, copy, servicePath, services, servicesHubCopy, servicesHubPath, type Locale } from "../content/site";
+import { useCases } from "../content/use-cases";
 import { breadcrumbSchema, collectionPageSchema, createMeta } from "../lib/seo";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -45,7 +46,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function ServicesHub({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { locale, hub, ordered } = loaderData;
   const t = copy[locale];
-  const briefHref = locale === "en" ? "/#brief" : "/es#brief";
+  const briefHref = contactPath(locale);
 
   return (
     <PageShell locale={locale}>
@@ -61,7 +62,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
               <a
                 href={briefHref}
                 className="button-ghost-burgundy"
-                onClick={() => trackEvent("cta_click", { locale, placement: "services_hub", destination: "brief" })}
+                onClick={() => trackEvent("cta_click", { locale, placement: "services_hub", destination: "contact" })}
               >
                 <span>{t.sendBrief}</span>
                 <ArrowRight aria-hidden="true" size={16} />
@@ -87,6 +88,32 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
+        {locale === "es" ? (
+          <section className="section soft-section" aria-labelledby="use-cases-heading">
+            <div className="shell">
+              <header className="section-heading" style={{ marginBottom: "2rem" }}>
+                <p className="eyebrow">Casos de uso del día a día</p>
+                <h2 id="use-cases-heading">Problemas concretos que automatizamos</h2>
+                <p>Una página por problema: cómo es hoy, cómo queda y cómo lo resolvemos. Automatizamos un proceso en 2 semanas a precio cerrado.</p>
+              </header>
+              <div className="hub-card-grid">
+                {useCases.map((item, index) => (
+                  <article className="hub-card" key={item.path}>
+                    <span className="hub-card-index">0{index + 1}</span>
+                    <p className="eyebrow">{item.eyebrow}</p>
+                    <h3><Link to={item.path}>{item.cardTitle}</Link></h3>
+                    <p>{item.cardBlurb}</p>
+                    <Link className="text-link" to={item.path}>
+                      Ver cómo funciona
+                      <ArrowRight aria-hidden="true" size={17} />
+                    </Link>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
+
         <section className="detail-cta dark-section">
           <div className="shell">
             <div>
@@ -98,7 +125,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
               <a
                 href={briefHref}
                 className="button-ghost-burgundy"
-                onClick={() => trackEvent("cta_click", { locale, placement: "services_hub_final", destination: "brief" })}
+                onClick={() => trackEvent("cta_click", { locale, placement: "services_hub_final", destination: "contact" })}
               >
                 <span>{t.sendBrief}</span>
                 <ArrowRight aria-hidden="true" size={16} />
