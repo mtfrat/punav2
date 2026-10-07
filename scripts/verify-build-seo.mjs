@@ -1,6 +1,9 @@
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
+import { createServer } from "node:http";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import express from "express";
+import { createRequestHandler } from "@react-router/express";
 
 const root = fileURLToPath(new URL("../build/client/", import.meta.url));
 const routes = [
@@ -188,38 +191,57 @@ if (termsDescription.en === privacyDescription.en || termsDescription.es === pri
   failures.push("Terms meta description still duplicates privacy");
 }
 
-const serverBuild = await import(new URL("../build/server/index.js", import.meta.url));
-const fetchDocument = serverBuild.default?.fetch || serverBuild.fetch;
-if (typeof fetchDocument !== "function") failures.push("Server build does not export a fetch handler for 404 checks");
+const serverRoot = fileURLToPath(new URL("../build/server/", import.meta.url));
+const runtimeDir = (await readdir(serverRoot)).find((name) => name.startsWith("nodejs_"));
+if (!runtimeDir) failures.push("Server build directory is missing");
 else {
-  const notFoundPages = [
-    ["/this-page-does-not-exist", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
-    ["/es/esta-pagina-no-existe", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
-    ["/services/not-a-real-service", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
-    ["/es/servicios/servicio-inexistente", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
-  ];
-  for (const [path, language, title, heading, homeHref, cta] of notFoundPages) {
-    const response = await fetchDocument(new Request(`https://www.puna-tech.com${path}`));
-    const html = await response.text();
-    if (response.status !== 404) failures.push(`${path}: expected HTTP 404, got ${response.status}`);
-    if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${path}: html lang is not ${language}`);
-    const titles = html.match(/<title>[^<]*<\/title>/g) || [];
-    if (titles.length !== 1 || titles[0] !== `<title>${title}</title>`) failures.push(`${path}: title mismatch ${JSON.stringify(titles)}`);
-    if (!html.includes(`<h1>${heading}</h1>`)) failures.push(`${path}: missing heading ${heading}`);
-    if (!html.includes("site-header") || !html.includes("site-footer")) failures.push(`${path}: missing branded header or footer`);
-    if (!html.includes(homeHref) || !html.includes(cta)) failures.push(`${path}: missing home link`);
-    if (html.includes("This page could not be found.")) failures.push(`${path}: default Next 404 copy remains`);
-    if (html.includes('rel="canonical"') || html.includes("rel='canonical'")) failures.push(`${path}: 404 should not declare a canonical`);
+  const serverBuild = await import(pathToFileURL(join(serverRoot, runtimeDir, "index.js")).href);
+  const app = express();
+  app.use(createRequestHandler({ build: serverBuild, mode: "production" }));
+  const server = createServer(app);
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address ? address.port : 0;
+
+  async function fetchPath(path) {
+    const response = await fetch(`http://127.0.0.1:${port}${path}`);
+    return { status: response.status, html: await response.text() };
   }
 
-  const sitemap = await fetchDocument(new Request("https://www.puna-tech.com/sitemap.xml"));
-  const sitemapXml = await sitemap.text();
-  if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-  for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos"]) {
-    if (!sitemapXml.includes(`https://www.puna-tech.com${path}`)) failures.push(`sitemap.xml: missing ${path}`);
-  }
-  if (sitemapXml.includes("this-page-does-not-exist") || sitemapXml.includes("not-a-real-service")) {
-    failures.push("sitemap.xml: includes a 404 URL");
+  try {
+    const notFoundPages = [
+      ["/this-page-does-not-exist", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/es/esta-pagina-no-existe", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+      ["/services/not-a-real-service", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/es/servicios/servicio-inexistente", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+      ["/case-studies/not-a-real-case", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/blog/not-a-real-post", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+    ];
+    for (const [path, language, title, heading, homeHref, cta] of notFoundPages) {
+      const { status, html } = await fetchPath(path);
+      if (status !== 404) failures.push(`${path}: expected HTTP 404, got ${status}`);
+      if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${path}: html lang is not ${language}`);
+      const titles = html.match(/<title>[^<]*<\/title>/g) || [];
+      if (titles.length !== 1 || titles[0] !== `<title>${title}</title>`) failures.push(`${path}: title mismatch ${JSON.stringify(titles)}`);
+      if (!html.includes(`<h1>${heading}</h1>`)) failures.push(`${path}: missing heading ${heading}`);
+      if (!html.includes("site-header") || !html.includes("site-footer")) failures.push(`${path}: missing branded header or footer`);
+      if (!html.includes(homeHref) || !html.includes(cta)) failures.push(`${path}: missing home link`);
+      if (html.includes("This page could not be found.")) failures.push(`${path}: default Next 404 copy remains`);
+      if (html.includes('rel="canonical"') || html.includes("rel='canonical'")) failures.push(`${path}: 404 should not declare a canonical`);
+    }
+
+    const sitemap = await fetchPath("/sitemap.xml");
+    if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos"]) {
+      if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
+        failures.push(`sitemap.xml: missing ${path}`);
+      }
+    }
+    if (sitemap.html.includes("this-page-does-not-exist") || sitemap.html.includes("not-a-real-service")) {
+      failures.push("sitemap.xml: includes a 404 URL");
+    }
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }
 }
 

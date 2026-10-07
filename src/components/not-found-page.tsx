@@ -1,21 +1,14 @@
-import { Link } from "react-router";
+import { isRouteErrorResponse, Link, useLocation, useRouteError } from "react-router";
 import { ArrowRight } from "lucide-react";
 import type { Locale } from "../content/site";
+import { localeFromPathname } from "../lib/not-found";
 import { PageShell } from "./marketing";
 
-export function localeFromPathname(pathname: string): Locale {
-  return pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en";
-}
-
-export function notFoundTitle(locale: Locale) {
-  return locale === "es" ? "Página no encontrada | Puna Tech" : "Page not found | Puna Tech";
-}
-
-export function notFoundDocumentMeta(locale: Locale) {
-  return [
-    { title: notFoundTitle(locale) },
-    { name: "robots", content: "noindex, nofollow" },
-  ];
+export function PublicNotFoundBoundary() {
+  const error = useRouteError();
+  const location = useLocation();
+  if (!(isRouteErrorResponse(error) && error.status === 404)) throw error;
+  return <RouteErrorPage locale={localeFromPathname(location.pathname)} notFound />;
 }
 
 export function RouteErrorPage({ locale, notFound }: { locale: Locale; notFound: boolean }) {

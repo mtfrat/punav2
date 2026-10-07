@@ -1,7 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { data } from "react-router";
 import type { Locale } from "../content/site";
-import { localeFromPathname, notFoundDocumentMeta, RouteErrorPage } from "../components/not-found-page";
+import { RouteErrorPage } from "../components/not-found-page";
+import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 
 export function loader({ request }: LoaderFunctionArgs) {
   const locale = localeFromPathname(new URL(request.url).pathname);

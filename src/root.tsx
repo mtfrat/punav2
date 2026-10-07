@@ -12,7 +12,7 @@ import {
   useRouteError,
   useRouteLoaderData,
 } from "react-router";
-import { localeFromPathname, notFoundDocumentMeta, RouteErrorPage } from "./components/not-found-page";
+import { localeFromPathname, notFoundDocumentMeta } from "./lib/not-found";
 import plusJakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
 import newsreaderItalicLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2";
 import "./index.css";
@@ -36,7 +36,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export const meta: MetaFunction<typeof loader> = ({ error, location }) => {
   if (!error) return [];
-  const locale = localeFromPathname(location.pathname);
+  const ops = location.pathname === "/ops" || location.pathname.startsWith("/ops/");
+  const locale = ops ? "es" : localeFromPathname(location.pathname);
   if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(locale);
   return [
     { title: locale === "es" ? "Algo salió mal | Puna Tech" : "Something went wrong | Puna Tech" },
@@ -100,13 +101,21 @@ export function ErrorBoundary() {
   const location = useLocation();
   const notFound = isRouteErrorResponse(error) && error.status === 404;
   const ops = location.pathname === "/ops" || location.pathname.startsWith("/ops/");
-  if (!ops) return <RouteErrorPage locale={localeFromPathname(location.pathname)} notFound={notFound} />;
+  const locale = ops ? "es" : localeFromPathname(location.pathname);
+  const home = ops ? "/ops" : (locale === "es" ? "/es" : "/");
+  const heading = notFound
+    ? (locale === "es" ? "Página no encontrada." : "Page not found.")
+    : (locale === "es" ? "Algo salió mal." : "Something went wrong.");
+  const body = notFound
+    ? (locale === "es" ? "La dirección puede haber cambiado o la página puede haber sido retirada." : "The address may have changed, or the page may no longer exist.")
+    : (locale === "es" ? "Volvé a intentar o regresá al inicio." : "Please retry, or return to the homepage.");
+  const cta = ops ? "Volver a operaciones" : (locale === "es" ? "Volver al inicio" : "Return home");
   return (
     <main className="error-page" id="main-content">
       <p className="eyebrow">{notFound ? "404" : "Error"}</p>
-      <h1>{notFound ? "Página no encontrada." : "Algo salió mal."}</h1>
-      <p>{notFound ? "La dirección puede haber cambiado o la página puede haber sido retirada." : "Volvé a intentar o regresá al inicio."}</p>
-      <a className="button-primary" href="/ops">Volver a operaciones</a>
+      <h1>{heading}</h1>
+      <p>{body}</p>
+      <a className="button-primary" href={home}>{cta}</a>
     </main>
   );
 }
