@@ -139,6 +139,90 @@ for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
   }
 }
 
+const privacyDescription = {
+  en: "How Puna Tech handles website and inquiry data.",
+  es: "Cómo Puna Tech gestiona los datos del sitio y las consultas.",
+};
+const termsDescription = {
+  en: "Terms of use for the Puna Tech website. Pages are general information, not a binding proposal, and a discovery call or brief is not a signed agreement.",
+  es: "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante, y una llamada o un brief no son un acuerdo firmado.",
+};
+
+function metaDescription(html) {
+  const match = html.match(/<meta[^>]*name=["']description["'][^>]*>/i);
+  if (!match) return "";
+  const content = match[0].match(/content=["']([^"']*)["']/i);
+  return content?.[1] || "";
+}
+
+const legalPages = [
+  ["/privacy", "en", "https://www.puna-tech.com/privacy", "https://www.puna-tech.com/es/privacidad", privacyDescription.en, "Google Analytics"],
+  ["/es/privacidad", "es", "https://www.puna-tech.com/es/privacidad", "https://www.puna-tech.com/privacy", privacyDescription.es, "Google Analytics"],
+  ["/terms", "en", "https://www.puna-tech.com/terms", "https://www.puna-tech.com/es/terminos", termsDescription.en, null],
+  ["/es/terminos", "es", "https://www.puna-tech.com/es/terminos", "https://www.puna-tech.com/terms", termsDescription.es, null],
+];
+
+for (const [route, language, canonical, alternate, description, cookieMarker] of legalPages) {
+  const file = join(root, route.slice(1), "index.html");
+  let html = "";
+  try {
+    html = await readFile(file, "utf8");
+  } catch {
+    failures.push(`${route}: prerendered HTML is missing`);
+    continue;
+  }
+  const rendered = metaDescription(html);
+  if (rendered !== description) failures.push(`${route}: meta description mismatch (${rendered})`);
+  if (!cookieMarker && (description.length < 50 || description.length > 160)) failures.push(`${route}: meta description length is ${description.length}`);
+  if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${route}: html lang is not ${language}`);
+  if (!html.includes(`rel="canonical" href="${canonical}"`) && !html.includes(`rel='canonical' href='${canonical}'`)) failures.push(`${route}: canonical mismatch`);
+  if (!html.includes('hreflang="en"') && !html.includes('hrefLang="en"')) failures.push(`${route}: English hreflang missing`);
+  if (!html.includes('hreflang="es-AR"') && !html.includes('hrefLang="es-AR"')) failures.push(`${route}: es-AR hreflang missing`);
+  if (!html.includes('hreflang="x-default"') && !html.includes('hrefLang="x-default"')) failures.push(`${route}: x-default hreflang missing`);
+  if (!html.includes(alternate)) failures.push(`${route}: missing alternate ${alternate}`);
+  if (cookieMarker && !html.includes(cookieMarker)) failures.push(`${route}: privacy page does not mention ${cookieMarker}`);
+  if (cookieMarker && !/cookie/i.test(html)) failures.push(`${route}: privacy page does not mention cookies`);
+}
+
+if (termsDescription.en === privacyDescription.en || termsDescription.es === privacyDescription.es) {
+  failures.push("Terms meta description still duplicates privacy");
+}
+
+const serverBuild = await import(new URL("../build/server/index.js", import.meta.url));
+const fetchDocument = serverBuild.default?.fetch || serverBuild.fetch;
+if (typeof fetchDocument !== "function") failures.push("Server build does not export a fetch handler for 404 checks");
+else {
+  const notFoundPages = [
+    ["/this-page-does-not-exist", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+    ["/es/esta-pagina-no-existe", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+    ["/services/not-a-real-service", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+    ["/es/servicios/servicio-inexistente", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+  ];
+  for (const [path, language, title, heading, homeHref, cta] of notFoundPages) {
+    const response = await fetchDocument(new Request(`https://www.puna-tech.com${path}`));
+    const html = await response.text();
+    if (response.status !== 404) failures.push(`${path}: expected HTTP 404, got ${response.status}`);
+    if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${path}: html lang is not ${language}`);
+    const titles = html.match(/<title>[^<]*<\/title>/g) || [];
+    if (titles.length !== 1 || titles[0] !== `<title>${title}</title>`) failures.push(`${path}: title mismatch ${JSON.stringify(titles)}`);
+    if (!html.includes(`<h1>${heading}</h1>`)) failures.push(`${path}: missing heading ${heading}`);
+    if (!html.includes("site-header") || !html.includes("site-footer")) failures.push(`${path}: missing branded header or footer`);
+    if (!html.includes(homeHref) || !html.includes(cta)) failures.push(`${path}: missing home link`);
+    if (html.includes("This page could not be found.")) failures.push(`${path}: default Next 404 copy remains`);
+    if (html.includes('rel="canonical"') || html.includes("rel='canonical'")) failures.push(`${path}: 404 should not declare a canonical`);
+  }
+
+  const sitemap = await fetchDocument(new Request("https://www.puna-tech.com/sitemap.xml"));
+  const sitemapXml = await sitemap.text();
+  if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
+  for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos"]) {
+    if (!sitemapXml.includes(`https://www.puna-tech.com${path}`)) failures.push(`sitemap.xml: missing ${path}`);
+  }
+  if (sitemapXml.includes("this-page-does-not-exist") || sitemapXml.includes("not-a-real-service")) {
+    failures.push("sitemap.xml: includes a 404 URL");
+  }
+}
+
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);
