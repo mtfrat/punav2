@@ -1,4 +1,5 @@
 import { caseStudies, casePath, CONTACT_EMAIL, servicePath, services, SITE_URL } from "../content/site";
+import { useCases } from "../content/use-cases";
 import { getPublishedPosts } from "../lib/posts.server";
 
 export async function loader() {
@@ -22,6 +23,9 @@ export async function loader() {
     ...services.en.map((item) => `- [${item.eyebrow}](${SITE_URL}${servicePath("en", item.slug)}): ${item.description}`),
     ...services.es.map((item) => `- [${item.eyebrow}](${SITE_URL}${servicePath("es", item.slug)}): ${item.description}`),
     "",
+    "## Use cases (Spanish, Argentina)",
+    ...useCases.map((item) => `- [${item.title}](${SITE_URL}${item.path}): ${item.metaDescription}`),
+    "",
     "## Case Studies & Proven Workflows",
     ...caseStudies.en.map((item) => `- [${item.title}](${SITE_URL}${casePath("en", item.slug)}): ${item.summary} Flow: ${item.flow.join(" -> ")}`),
     ...caseStudies.es.map((item) => `- [${item.title}](${SITE_URL}${casePath("es", item.slug)}): ${item.summary} Flujo: ${item.flow.join(" -> ")}`),
@@ -34,6 +38,7 @@ export async function loader() {
     "",
     "## Contact & Assessment",
     `- Discovery & 15-min Audit: ${SITE_URL}/#estimador`,
+    `- Contact page: ${SITE_URL}/contact (Spanish: ${SITE_URL}/es/contacto)`,
     `- Direct Email: ${CONTACT_EMAIL}`,
     "",
     "Full technical documentation for LLMs available at: /llms-full.txt",

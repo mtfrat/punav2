@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { blogDocumentTitle, blogIndexSchema, createMeta } from "../src/lib/seo.ts";
+import { blogDocumentTitle, blogIndexSchema, createMeta, normalizeDocumentTitle } from "../src/lib/seo.ts";
 import { languageSwitchPath } from "../src/lib/locale-switch.ts";
 
 const suffix = " | Puna Tech";
@@ -74,5 +74,20 @@ const englishHub = blogIndexSchema("en", "Practical notes", [
 ]);
 assert.equal(englishHub[1].inLanguage, "en");
 assert.equal(englishHub[1].mainEntity.itemListElement[0].url, "https://www.puna-tech.com/blog/when-to-leave-zapier-n8n-for-custom-software");
+
+for (const [raw, expected] of [
+  ["Términos de Uso | Puna Tech - Software Factory | Puna Tech", "Términos de Uso | Puna Tech"],
+  ["clasificación de sentimiento y widgets con IA. - Software Factory | Puna Tech", "clasificación de sentimiento y widgets con IA | Puna Tech"],
+  ["De Google Reviews a ingresos: widgets con IA. | Puna Tech", "De Google Reviews a ingresos: widgets con IA | Puna Tech"],
+  ["Contacto | Puna Tech | Puna Tech", "Contacto | Puna Tech"],
+  ["Contacto | Puna Tech", "Contacto | Puna Tech"],
+  ["AI vs deterministic software: a practical decision guide", "AI vs deterministic software: a practical decision guide"],
+  ["Sobre Puna Tech", "Sobre Puna Tech"],
+]) {
+  assert.equal(normalizeDocumentTitle(raw), expected);
+  assert.equal(createMeta({ locale: "es", title: raw, description: "x".repeat(60), path: "/es" })[0].title, expected);
+}
+assert.equal(languageSwitchPath("/es/contacto", "es"), "/contact");
+assert.equal(languageSwitchPath("/contact", "en"), "/es/contacto");
 
 console.log("Verified blog title limits, language-switch paths, and blog hub schema.");

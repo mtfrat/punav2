@@ -23,6 +23,7 @@ import {
   type CaseStudyContent,
   type Locale,
 } from "../content/site";
+import { useCases } from "../content/use-cases";
 import { createMeta, organizationSchema } from "../lib/seo";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -248,6 +249,25 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             </div>
           </div>
         </section>
+
+        {locale === "es" && (
+          <section className="related-guides" aria-labelledby="home-use-cases-heading">
+            <div className="shell">
+              <h2 id="home-use-cases-heading">Problemas del día a día que automatizamos</h2>
+              <ol className="related-guide-list">
+                {useCases.map((item, index) => (
+                  <li key={item.path}>
+                    <Link to={item.path}>
+                      <span className="related-guide-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="related-guide-title">{item.cardTitle}</span>
+                      <ArrowRight aria-hidden="true" size={18} />
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        )}
 
         {locale === "es" && (
           <section className="section latam-ar-section" aria-labelledby="latam-ar-heading">

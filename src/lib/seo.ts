@@ -39,6 +39,23 @@ export function blogDocumentTitle(base: string) {
   return `${title}${BRAND_SUFFIX}`;
 }
 
+/**
+ * Keeps the brand suffix exactly once ("Términos | Puna Tech", never
+ * "Términos | Puna Tech - Software Factory | Puna Tech") and drops a stray period before it.
+ */
+export function normalizeDocumentTitle(raw: string) {
+  let title = raw.trim().replace(/\s+/g, " ");
+  const brand = /\s*[|\-–—]\s*(?:Puna Tech\s*[-–—]\s*Software Factory|Puna Tech|Software Factory)\s*$/i;
+  let stripped = false;
+  while (brand.test(title) && title.replace(brand, "").trim().length > 0) {
+    title = title.replace(brand, "").trim();
+    stripped = true;
+  }
+  if (!stripped) return title;
+  title = title.replace(/[\s.|\-–—]+$/, "");
+  return `${title}${BRAND_SUFFIX}`;
+}
+
 export function createMeta({
   locale,
   title,
@@ -55,6 +72,7 @@ export function createMeta({
   schema,
   article,
 }: SeoInput) {
+  title = normalizeDocumentTitle(title);
   const canonical = absoluteUrl(path);
   const usesDefaultImage = !image;
   const resolvedImage = image || (locale === "en" ? "/og-en.png" : "/og-es.png");

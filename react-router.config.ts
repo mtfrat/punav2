@@ -34,6 +34,11 @@ const marketingRoutes = [
   "/terms",
   "/es/privacidad",
   "/es/terminos",
+  "/contact",
+  "/es/contacto",
+  "/es/automatizaciones/carga-de-facturas-proveedores",
+  "/es/integraciones/mercado-pago",
+  "/es/automatizaciones/pedidos-por-whatsapp",
 ];
 
 export default {

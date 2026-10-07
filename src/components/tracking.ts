@@ -15,6 +15,7 @@ export type AnalyticsEvent =
   | "case_study_view"
   | "audience_view"
   | "service_view"
+  | "use_case_view"
   | "project_brief_start"
   | "project_brief_submit"
   | "generate_lead"

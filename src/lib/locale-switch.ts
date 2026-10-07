@@ -35,6 +35,8 @@ const localeRoutePairs: Record<string, string> = {
   "/es/privacidad": "/privacy",
   "/terms": "/es/terminos",
   "/es/terminos": "/terms",
+  "/contact": "/es/contacto",
+  "/es/contacto": "/contact",
 };
 
 /** The hreflang target returned by a route loader, when that route has one. */
