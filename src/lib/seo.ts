@@ -1,4 +1,4 @@
-import { SITE_URL, type Locale } from "../content/site";
+import { SITE_URL, type Locale } from "../content/site.ts";
 
 type JsonLd = Record<string, unknown> | Array<Record<string, unknown>>;
 
@@ -27,6 +27,16 @@ export interface SeoInput {
 export function absoluteUrl(path: string) {
   if (/^https?:\/\//i.test(path)) return path;
   return `${SITE_URL}${path === "/" ? "/" : path}`;
+}
+
+const BRAND_SUFFIX = " | Puna Tech";
+const BLOG_TITLE_LIMIT = 60;
+
+/** Blog document title. Appends the brand only when the full title stays within 60 characters. */
+export function blogDocumentTitle(base: string) {
+  const title = base.trim();
+  if (title.endsWith(BRAND_SUFFIX) || title.length + BRAND_SUFFIX.length > BLOG_TITLE_LIMIT) return title;
+  return `${title}${BRAND_SUFFIX}`;
 }
 
 export function createMeta({
@@ -175,6 +185,17 @@ export function collectionPageSchema({
       })),
     },
   };
+}
+
+export function blogIndexSchema(locale: Locale, name: string, posts: Array<{ name: string; path: string }>) {
+  const path = locale === "en" ? "/blog" : "/es/blog";
+  return [
+    breadcrumbSchema([
+      { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
+      { name: "Blog", path },
+    ]),
+    collectionPageSchema({ locale, name, path, items: posts }),
+  ];
 }
 
 export function breadcrumbSchema(items: Array<{ name: string; path: string }>) {

@@ -19,6 +19,27 @@ import { breadcrumbSchema, createMeta } from "../lib/seo";
 
 export { PublicNotFoundBoundary as ErrorBoundary };
 
+const serviceGuides: Record<string, Record<Locale, Array<{ path: string; title: string }>>> = {
+  "custom-software": {
+    en: [
+      { path: "/blog/when-to-leave-zapier-n8n-for-custom-software", title: "When to leave Zapier or n8n for custom software" },
+      { path: "/blog/audit-crm-integration-commercial-follow-up", title: "How to audit a CRM integration and commercial follow-up workflow" },
+    ],
+    es: [
+      { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
+      { path: "/es/blog/auditar-integracion-crm-seguimiento-comercial", title: "Cómo auditar una integración CRM y el seguimiento comercial" },
+    ],
+  },
+  "ai-automation": {
+    en: [
+      { path: "/blog/when-to-use-ai-vs-deterministic-software", title: "When to use AI—and when deterministic software is the better choice" },
+    ],
+    es: [
+      { path: "/es/blog/cuando-usar-ia-vs-software-deterministico", title: "Cuándo usar IA y cuándo conviene software determinístico" },
+    ],
+  },
+};
+
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
   const locale: Locale = pathname.startsWith("/es/") ? "es" : "en";
@@ -70,6 +91,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
 export default function ServicePage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { locale, service, relatedCase, proofCases } = loaderData;
   const t = copy[locale];
+  const guides = serviceGuides[service.key]?.[locale] ?? [];
   useEffect(() => trackEvent("service_view", { locale, service: service.key }), [locale, service.key]);
   const briefHref = locale === "en" ? "/#brief" : "/es#brief";
 
@@ -180,6 +202,25 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
             </div>
           </div>
         </section>
+
+        {guides.length ? (
+          <section className="related-guides" aria-labelledby="related-guides-heading">
+            <div className="shell">
+              <h2 id="related-guides-heading">{guides.length > 1 ? (locale === "en" ? "Related guides" : "Guías relacionadas") : (locale === "en" ? "Related guide" : "Guía relacionada")}</h2>
+              <ol className="related-guide-list">
+                {guides.map((guide, index) => (
+                  <li key={guide.path}>
+                    <Link to={guide.path}>
+                      <span className="related-guide-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="related-guide-title">{guide.title}</span>
+                      <ArrowRight aria-hidden="true" size={18} />
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        ) : null}
 
         <section className="section faq-section" id="faq">
           <div className="shell faq-grid">

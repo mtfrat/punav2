@@ -52,6 +52,15 @@ for (const image of ["og-en.png", "og-es.png"]) {
   try { await access(join(root, image)); } catch { failures.push(`/${image}: generated asset is missing from build`); }
 }
 
+try {
+  const ico = await readFile(join(root, "favicon.ico"));
+  const count = ico.readUInt16LE(4);
+  if (ico.length < 32 || ico.readUInt16LE(0) !== 0 || ico.readUInt16LE(2) !== 1) failures.push("favicon.ico is not an ICO file");
+  if (count < 3) failures.push(`favicon.ico should include 16, 32, and 48px images, found ${count}`);
+} catch {
+  failures.push("/favicon.ico: generated asset is missing from build");
+}
+
 const englishHome = await readFile(join(root, "index.html"), "utf8");
 const spanishHome = await readFile(join(root, "es", "index.html"), "utf8");
 if (!englishHome.includes("Custom Software &amp; AI Automation | Puna Tech") && !englishHome.includes("Custom Software & AI Automation | Puna Tech")) failures.push("English homepage title did not render");
@@ -129,6 +138,43 @@ for (const [route, heading, lead, items] of serviceHubExpectations) {
     failures.push(`${route}: ItemList includes invented commercial fields`);
   }
 }
+const serviceGuideExpectations = [
+  ["/services/custom-software", "Custom software for operations that need their own product.", "Related guides", [
+    ["/blog/when-to-leave-zapier-n8n-for-custom-software", "When to leave Zapier or n8n for custom software"],
+    ["/blog/audit-crm-integration-commercial-follow-up", "How to audit a CRM integration and commercial follow-up workflow"],
+  ]],
+  ["/es/servicios/software-a-medida", "Software a medida para operaciones que necesitan un producto propio.", "Guías relacionadas", [
+    ["/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", "Cuándo dejar Zapier o n8n por software a medida"],
+    ["/es/blog/auditar-integracion-crm-seguimiento-comercial", "Cómo auditar una integración CRM y el seguimiento comercial"],
+  ]],
+  ["/services/ai-automation", "Automate the handoffs that slow your operation down.", "Related guide", [
+    ["/blog/when-to-use-ai-vs-deterministic-software", "When to use AI—and when deterministic software is the better choice"],
+  ]],
+  ["/es/servicios/automatizacion-ia", "Automatizá los traspasos que frenan tu operación.", "Guía relacionada", [
+    ["/es/blog/cuando-usar-ia-vs-software-deterministico", "Cuándo usar IA y cuándo conviene software determinístico"],
+  ]],
+];
+
+for (const [route, heading, label, guides] of serviceGuideExpectations) {
+  const file = join(root, route.slice(1), "index.html");
+  const html = await readFile(file, "utf8");
+  if (!html.includes(`<h1>${heading}</h1>`)) failures.push(`${route}: service H1 changed`);
+  if (!html.includes(`<h2 id="related-guides-heading">${label}</h2>`)) failures.push(`${route}: related guide label missing`);
+  if (!html.includes("button-primary")) failures.push(`${route}: primary CTA missing`);
+  for (const [path, title] of guides) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing guide link ${path}`);
+    if (!html.includes(title)) failures.push(`${route}: missing guide title ${title}`);
+  }
+  const finalCta = html.indexOf("detail-cta");
+  const guidesAt = html.indexOf("related-guides");
+  if (guidesAt === -1 || finalCta === -1 || guidesAt > finalCta) failures.push(`${route}: related guides should stay above the final CTA`);
+}
+
+for (const route of ["/services/data-integrations", "/es/servicios/integraciones-de-datos"]) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (html.includes("related-guides")) failures.push(`${route}: unexpected related guides block`);
+}
+
 for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["es", spanishHome, "/es/casos/"]]) {
   if (html.indexOf('id="services"') > html.indexOf('id="work"')) failures.push(`${locale}: services should appear before work`);
   const caseLinks = new Set([...html.matchAll(new RegExp(`href="(${prefix}[^"#?]+)"`, "g"))].map((match) => match[1]));
@@ -228,6 +274,34 @@ else {
       if (!html.includes(homeHref) || !html.includes(cta)) failures.push(`${path}: missing home link`);
       if (html.includes("This page could not be found.")) failures.push(`${path}: default Next 404 copy remains`);
       if (html.includes('rel="canonical"') || html.includes("rel='canonical'")) failures.push(`${path}: 404 should not declare a canonical`);
+    }
+
+    for (const [path, language] of [["/blog", "en"], ["/es/blog", "es-AR"]]) {
+      const page = await fetchPath(path);
+      if (page.status !== 200) {
+        failures.push(`${path}: expected HTTP 200, got ${page.status}`);
+        continue;
+      }
+      let blocks = [];
+      try {
+        blocks = jsonLdBlocks(page.html);
+      } catch (error) {
+        failures.push(`${path}: JSON-LD did not parse (${error.message})`);
+        continue;
+      }
+      const nodes = blocks.flatMap((block) => Array.isArray(block) ? block : [block]);
+      const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+      const collection = nodes.find((node) => node["@type"] === "CollectionPage");
+      const list = collection?.mainEntity?.["@type"] === "ItemList" ? collection.mainEntity : null;
+      if (!crumbs) failures.push(`${path}: BreadcrumbList JSON-LD missing`);
+      if (!collection || !list) failures.push(`${path}: CollectionPage ItemList JSON-LD missing`);
+      if (collection?.inLanguage !== language) failures.push(`${path}: blog hub inLanguage is ${collection?.inLanguage}`);
+      const crumbUrls = (crumbs?.itemListElement || []).map((item) => item.item);
+      const itemUrls = (list?.itemListElement || []).map((item) => item.url);
+      for (const url of [...crumbUrls, ...itemUrls]) {
+        if (typeof url !== "string" || !url.startsWith("https://www.puna-tech.com/")) failures.push(`${path}: schema URL is not absolute (${url})`);
+      }
+      if (list && list.numberOfItems !== (list.itemListElement || []).length) failures.push(`${path}: ItemList count mismatch`);
     }
 
     const sitemap = await fetchPath("/sitemap.xml");

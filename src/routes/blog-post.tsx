@@ -6,7 +6,7 @@ import { blogPath, legacyPostRedirects, servicePath, services, SITE_URL, type Lo
 import { getLegacyPostRedirect, getPublishedPost, getTranslation, renderPostContent } from "../lib/posts.server";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
-import { breadcrumbSchema, createMeta } from "../lib/seo";
+import { blogDocumentTitle, breadcrumbSchema, createMeta } from "../lib/seo";
 
 export { PublicNotFoundBoundary as ErrorBoundary };
 
@@ -24,17 +24,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
   const otherLocale: Locale = locale === "en" ? "es" : "en";
   const alternateSlug = await getTranslation(otherLocale, post.translation_group_id);
-  return { locale, post: { ...post, safeContent: renderPostContent(post.content) }, alternateSlug };
+  const alternatePath = alternateSlug ? blogPath(otherLocale, alternateSlug) : undefined;
+  return { locale, post: { ...post, safeContent: renderPostContent(post.content) }, alternatePath };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => {
   if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(localeFromPathname(location.pathname));
   if (!data) return [];
-  const { locale, post, alternateSlug } = data;
+  const { locale, post, alternatePath } = data;
   const path = blogPath(locale, post.slug);
-  const alternatePath = alternateSlug ? blogPath(locale === "en" ? "es" : "en", alternateSlug) : undefined;
+  const title = blogDocumentTitle(post.meta_title || post.title);
   return createMeta({
-    locale, title: post.meta_title || `${post.title} | Puna Tech`, description: post.meta_description || post.excerpt || post.title, path, alternatePath, type: "article",
+    locale, title, description: post.meta_description || post.excerpt || post.title, path, alternatePath, type: "article",
     image: post.hero_image_url || undefined,
     imageAlt: post.hero_image_alt || post.title,
     article: { publishedTime: post.published_at, modifiedTime: post.updated_at, section: post.category || undefined, author: post.author_name || "Puna Tech Engineering" },

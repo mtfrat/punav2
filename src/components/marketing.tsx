@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type * as React from "react";
-import { Form, Link, useFetcher, useLocation } from "react-router";
+import { Form, Link, useFetcher, useLocation, useMatches } from "react-router";
 import {
   ArrowRight,
   Bot,
@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { CAL_LINK, CONTACT_EMAIL, casesHubPath, copy, servicesHubPath, type Locale } from "../content/site";
+import { languageSwitchPath, routeAlternatePath } from "../lib/locale-switch";
 import { trackEvent } from "./tracking";
 export { trackEvent } from "./tracking";
 
@@ -80,50 +81,6 @@ export function CalButton({ locale, placement, className = "", compact = false, 
   );
 }
 
-const localeRoutePairs: Record<string, string> = {
-  "/": "/es",
-  "/es": "/",
-  "/services": "/es/servicios",
-  "/es/servicios": "/services",
-  "/case-studies": "/es/casos",
-  "/es/casos": "/case-studies",
-  "/services/ai-automation": "/es/servicios/automatizacion-ia",
-  "/services/custom-software": "/es/servicios/software-a-medida",
-  "/services/data-integrations": "/es/servicios/integraciones-de-datos",
-  "/es/servicios/automatizacion-ia": "/services/ai-automation",
-  "/es/servicios/software-a-medida": "/services/custom-software",
-  "/es/servicios/integraciones-de-datos": "/services/data-integrations",
-  "/case-studies/starpress-reviews-to-revenue": "/es/casos/starpress-resenas-a-ingresos",
-  "/case-studies/viralyt-youtube-intelligence": "/es/casos/viralyt-inteligencia-youtube",
-  "/case-studies/videome-ai-motion-recipes": "/es/casos/videome-recetas-video-ia",
-  "/case-studies/autopost-b2b-content-studio": "/es/casos/autopost-estudio-contenido-b2b",
-  "/case-studies/inbound-lead-routing-hubspot": "/es/casos/enrutamiento-leads-hubspot",
-  "/case-studies/ai-linkedin-copilot-hitl": "/es/casos/copiloto-linkedin-ia-hitl",
-  "/case-studies/edtech-web3-platform": "/es/casos/plataforma-edtech-web3",
-  "/case-studies/b2b-gtm-automation": "/es/casos/automatizacion-gtm-b2b",
-  "/es/casos/starpress-resenas-a-ingresos": "/case-studies/starpress-reviews-to-revenue",
-  "/es/casos/viralyt-inteligencia-youtube": "/case-studies/viralyt-youtube-intelligence",
-  "/es/casos/videome-recetas-video-ia": "/case-studies/videome-ai-motion-recipes",
-  "/es/casos/autopost-estudio-contenido-b2b": "/case-studies/autopost-b2b-content-studio",
-  "/es/casos/enrutamiento-leads-hubspot": "/case-studies/inbound-lead-routing-hubspot",
-  "/es/casos/copiloto-linkedin-ia-hitl": "/case-studies/ai-linkedin-copilot-hitl",
-  "/es/casos/plataforma-edtech-web3": "/case-studies/edtech-web3-platform",
-  "/es/casos/automatizacion-gtm-b2b": "/case-studies/b2b-gtm-automation",
-  "/blog": "/es/blog",
-  "/es/blog": "/blog",
-  "/privacy": "/es/privacidad",
-  "/es/privacidad": "/privacy",
-  "/terms": "/es/terminos",
-  "/es/terminos": "/terms",
-};
-
-function alternatePath(pathname: string, locale: Locale) {
-  if (localeRoutePairs[pathname]) return localeRoutePairs[pathname];
-  if (pathname.startsWith("/es/blog/")) return pathname.replace("/es/blog/", "/blog/");
-  if (pathname.startsWith("/blog/")) return pathname.replace("/blog/", "/es/blog/");
-  return locale === "en" ? "/es" : "/";
-}
-
 export function Brand() {
   return (
     <span className="brand">
@@ -147,7 +104,9 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const processAnchor = `${home}#process`;
   const insights = locale === "en" ? "/blog" : "/es/blog";
   const briefAnchor = `${home}#brief`;
-  const languageHref = alternatePath(location.pathname, locale);
+  const matches = useMatches();
+  const translatedPath = [...matches].reverse().map((match) => routeAlternatePath(match.data)).find((path): path is string => Boolean(path));
+  const languageHref = languageSwitchPath(location.pathname, locale, translatedPath);
 
   useEffect(() => setOpen(false), [location.pathname]);
 

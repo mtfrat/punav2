@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { PageShell } from "../components/marketing";
 import { blogPath, copy, type Locale } from "../content/site";
 import { getPublishedPosts } from "../lib/posts.server";
-import { createMeta } from "../lib/seo";
+import { blogIndexSchema, createMeta } from "../lib/seo";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale: Locale = new URL(request.url).pathname.startsWith("/es") ? "es" : "en";
@@ -14,7 +14,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const locale = data?.locale || "en";
-  return createMeta({ locale, title: locale === "en" ? "Software & Automation Blog | Puna Tech" : "Blog de Software y Automatización | Puna Tech", description: locale === "en" ? "Reviewed guides and implementation lessons about custom software, AI workflows, digital products, and systems integrations." : "Guías revisadas sobre software a medida, flujos con IA, productos digitales e integraciones de sistemas.", path: blogPath(locale), alternatePath: blogPath(locale === "en" ? "es" : "en") });
+  const posts = data?.posts ?? [];
+  return createMeta({
+    locale,
+    title: locale === "en" ? "Software & Automation Blog | Puna Tech" : "Blog de Software y Automatización | Puna Tech",
+    description: locale === "en" ? "Reviewed guides and implementation lessons about custom software, AI workflows, digital products, and systems integrations." : "Guías revisadas sobre software a medida, flujos con IA, productos digitales e integraciones de sistemas.",
+    path: blogPath(locale),
+    alternatePath: blogPath(locale === "en" ? "es" : "en"),
+    schema: blogIndexSchema(locale, copy[locale].blogTitle, posts.map((post) => ({ name: post.title, path: blogPath(locale, post.slug) }))),
+  });
 };
 
 export default function BlogIndex({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
