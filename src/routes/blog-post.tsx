@@ -1,10 +1,14 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import { Link, redirect } from "react-router";
+import { isRouteErrorResponse, Link, redirect } from "react-router";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { CalButton, PageShell } from "../components/marketing";
 import { blogPath, legacyPostRedirects, servicePath, services, SITE_URL, type Locale } from "../content/site";
 import { getLegacyPostRedirect, getPublishedPost, getTranslation, renderPostContent } from "../lib/posts.server";
+import { PublicNotFoundBoundary } from "../components/not-found-page";
+import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
+
+export { PublicNotFoundBoundary as ErrorBoundary };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
@@ -23,7 +27,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return { locale, post: { ...post, safeContent: renderPostContent(post.content) }, alternateSlug };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => {
+  if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(localeFromPathname(location.pathname));
   if (!data) return [];
   const { locale, post, alternateSlug } = data;
   const path = blogPath(locale, post.slug);

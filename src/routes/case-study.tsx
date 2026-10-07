@@ -1,9 +1,14 @@
 import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
+import { isRouteErrorResponse } from "react-router";
 import { CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
 import { CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
 import { casePath, getCaseStudy, SITE_URL, type Locale } from "../content/site";
+import { PublicNotFoundBoundary } from "../components/not-found-page";
+import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
+
+export { PublicNotFoundBoundary as ErrorBoundary };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
@@ -13,7 +18,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return { locale, study };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => {
+  if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(localeFromPathname(location.pathname));
   if (!data) return [];
   const { locale, study } = data;
   const path = casePath(locale, study.slug);

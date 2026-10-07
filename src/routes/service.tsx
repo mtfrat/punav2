@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import { Link } from "react-router";
+import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
 import { Accordion, CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
 import {
@@ -13,7 +13,11 @@ import {
   servicesHubPath,
   type Locale,
 } from "../content/site";
+import { PublicNotFoundBoundary } from "../components/not-found-page";
+import { notFoundDocumentMeta, localeFromPathname } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
+
+export { PublicNotFoundBoundary as ErrorBoundary };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
@@ -30,7 +34,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   return { locale, service, relatedCase, proofCases };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => {
+  if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(localeFromPathname(location.pathname));
   if (!data) return [];
   const { locale, service } = data;
   const path = servicePath(locale, service.slug);

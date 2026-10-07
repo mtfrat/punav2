@@ -1,6 +1,9 @@
-import { access, readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
+import { createServer } from "node:http";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import express from "express";
+import { createRequestHandler } from "@react-router/express";
 
 const root = fileURLToPath(new URL("../build/client/", import.meta.url));
 const routes = [
@@ -136,6 +139,109 @@ for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
   const source = await readFile(new URL(`../src/routes/${routeFile}`, import.meta.url), "utf8");
   if (!source.includes('timeZone: "America/Argentina/Buenos_Aires"')) {
     failures.push(`${routeFile}: blog dates must use the Buenos Aires timezone during SSR and hydration`);
+  }
+}
+
+const privacyDescription = {
+  en: "How Puna Tech handles website and inquiry data.",
+  es: "Cómo Puna Tech gestiona los datos del sitio y las consultas.",
+};
+const termsDescription = {
+  en: "Terms of use for the Puna Tech website. Pages are general information, not a binding proposal, and a discovery call or brief is not a signed agreement.",
+  es: "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante, y una llamada o un brief no son un acuerdo firmado.",
+};
+
+function metaDescription(html) {
+  const match = html.match(/<meta[^>]*name=["']description["'][^>]*>/i);
+  if (!match) return "";
+  const content = match[0].match(/content=["']([^"']*)["']/i);
+  return content?.[1] || "";
+}
+
+const legalPages = [
+  ["/privacy", "en", "https://www.puna-tech.com/privacy", "https://www.puna-tech.com/es/privacidad", privacyDescription.en, "Google Analytics"],
+  ["/es/privacidad", "es", "https://www.puna-tech.com/es/privacidad", "https://www.puna-tech.com/privacy", privacyDescription.es, "Google Analytics"],
+  ["/terms", "en", "https://www.puna-tech.com/terms", "https://www.puna-tech.com/es/terminos", termsDescription.en, null],
+  ["/es/terminos", "es", "https://www.puna-tech.com/es/terminos", "https://www.puna-tech.com/terms", termsDescription.es, null],
+];
+
+for (const [route, language, canonical, alternate, description, cookieMarker] of legalPages) {
+  const file = join(root, route.slice(1), "index.html");
+  let html = "";
+  try {
+    html = await readFile(file, "utf8");
+  } catch {
+    failures.push(`${route}: prerendered HTML is missing`);
+    continue;
+  }
+  const rendered = metaDescription(html);
+  if (rendered !== description) failures.push(`${route}: meta description mismatch (${rendered})`);
+  if (!cookieMarker && (description.length < 50 || description.length > 160)) failures.push(`${route}: meta description length is ${description.length}`);
+  if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${route}: html lang is not ${language}`);
+  if (!html.includes(`rel="canonical" href="${canonical}"`) && !html.includes(`rel='canonical' href='${canonical}'`)) failures.push(`${route}: canonical mismatch`);
+  if (!html.includes('hreflang="en"') && !html.includes('hrefLang="en"')) failures.push(`${route}: English hreflang missing`);
+  if (!html.includes('hreflang="es-AR"') && !html.includes('hrefLang="es-AR"')) failures.push(`${route}: es-AR hreflang missing`);
+  if (!html.includes('hreflang="x-default"') && !html.includes('hrefLang="x-default"')) failures.push(`${route}: x-default hreflang missing`);
+  if (!html.includes(alternate)) failures.push(`${route}: missing alternate ${alternate}`);
+  if (cookieMarker && !html.includes(cookieMarker)) failures.push(`${route}: privacy page does not mention ${cookieMarker}`);
+  if (cookieMarker && !/cookie/i.test(html)) failures.push(`${route}: privacy page does not mention cookies`);
+}
+
+if (termsDescription.en === privacyDescription.en || termsDescription.es === privacyDescription.es) {
+  failures.push("Terms meta description still duplicates privacy");
+}
+
+const serverRoot = fileURLToPath(new URL("../build/server/", import.meta.url));
+const runtimeDir = (await readdir(serverRoot)).find((name) => name.startsWith("nodejs_"));
+if (!runtimeDir) failures.push("Server build directory is missing");
+else {
+  const serverBuild = await import(pathToFileURL(join(serverRoot, runtimeDir, "index.js")).href);
+  const app = express();
+  app.use(createRequestHandler({ build: serverBuild, mode: "production" }));
+  const server = createServer(app);
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  const port = typeof address === "object" && address ? address.port : 0;
+
+  async function fetchPath(path) {
+    const response = await fetch(`http://127.0.0.1:${port}${path}`);
+    return { status: response.status, html: await response.text() };
+  }
+
+  try {
+    const notFoundPages = [
+      ["/this-page-does-not-exist", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/es/esta-pagina-no-existe", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+      ["/services/not-a-real-service", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/es/servicios/servicio-inexistente", "es", "Página no encontrada | Puna Tech", "Página no encontrada.", 'href="/es"', "Volver al inicio"],
+      ["/case-studies/not-a-real-case", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+      ["/blog/not-a-real-post", "en", "Page not found | Puna Tech", "Page not found.", 'href="/"', "Return home"],
+    ];
+    for (const [path, language, title, heading, homeHref, cta] of notFoundPages) {
+      const { status, html } = await fetchPath(path);
+      if (status !== 404) failures.push(`${path}: expected HTTP 404, got ${status}`);
+      if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${path}: html lang is not ${language}`);
+      const titles = html.match(/<title>[^<]*<\/title>/g) || [];
+      if (titles.length !== 1 || titles[0] !== `<title>${title}</title>`) failures.push(`${path}: title mismatch ${JSON.stringify(titles)}`);
+      if (!html.includes(`<h1>${heading}</h1>`)) failures.push(`${path}: missing heading ${heading}`);
+      if (!html.includes("site-header") || !html.includes("site-footer")) failures.push(`${path}: missing branded header or footer`);
+      if (!html.includes(homeHref) || !html.includes(cta)) failures.push(`${path}: missing home link`);
+      if (html.includes("This page could not be found.")) failures.push(`${path}: default Next 404 copy remains`);
+      if (html.includes('rel="canonical"') || html.includes("rel='canonical'")) failures.push(`${path}: 404 should not declare a canonical`);
+    }
+
+    const sitemap = await fetchPath("/sitemap.xml");
+    if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos"]) {
+      if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
+        failures.push(`sitemap.xml: missing ${path}`);
+      }
+    }
+    if (sitemap.html.includes("this-page-does-not-exist") || sitemap.html.includes("not-a-real-service")) {
+      failures.push("sitemap.xml: includes a 404 URL");
+    }
+  } finally {
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }
 }
 

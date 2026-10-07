@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunctionArgs } from "react-router";
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from "react-router";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 import {
@@ -8,9 +8,11 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useLocation,
   useRouteError,
   useRouteLoaderData,
 } from "react-router";
+import { localeFromPathname, notFoundDocumentMeta } from "./lib/not-found";
 import plusJakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
 import newsreaderItalicLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2";
 import "./index.css";
@@ -31,6 +33,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
   return { locale: pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en", isOperations: pathname === "/ops" || pathname.startsWith("/ops/") };
 }
+
+export const meta: MetaFunction<typeof loader> = ({ error, location }) => {
+  if (!error) return [];
+  const ops = location.pathname === "/ops" || location.pathname.startsWith("/ops/");
+  const locale = ops ? "es" : localeFromPathname(location.pathname);
+  if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(locale);
+  return [
+    { title: locale === "es" ? "Algo salió mal | Puna Tech" : "Something went wrong | Puna Tech" },
+    { name: "robots", content: "noindex, nofollow" },
+  ];
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
@@ -85,13 +98,24 @@ function DeferredAnalytics() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const location = useLocation();
   const notFound = isRouteErrorResponse(error) && error.status === 404;
+  const ops = location.pathname === "/ops" || location.pathname.startsWith("/ops/");
+  const locale = ops ? "es" : localeFromPathname(location.pathname);
+  const home = ops ? "/ops" : (locale === "es" ? "/es" : "/");
+  const heading = notFound
+    ? (locale === "es" ? "Página no encontrada." : "Page not found.")
+    : (locale === "es" ? "Algo salió mal." : "Something went wrong.");
+  const body = notFound
+    ? (locale === "es" ? "La dirección puede haber cambiado o la página puede haber sido retirada." : "The address may have changed, or the page may no longer exist.")
+    : (locale === "es" ? "Volvé a intentar o regresá al inicio." : "Please retry, or return to the homepage.");
+  const cta = ops ? "Volver a operaciones" : (locale === "es" ? "Volver al inicio" : "Return home");
   return (
     <main className="error-page" id="main-content">
       <p className="eyebrow">{notFound ? "404" : "Error"}</p>
-      <h1>{notFound ? "This page could not be found." : "Something went wrong."}</h1>
-      <p>{notFound ? "The URL may have changed. Return to the homepage to continue." : "Please retry or return to the homepage."}</p>
-      <a className="button-primary" href="/">Return home <span aria-hidden="true">→</span></a>
+      <h1>{heading}</h1>
+      <p>{body}</p>
+      <a className="button-primary" href={home}>{cta}</a>
     </main>
   );
 }
