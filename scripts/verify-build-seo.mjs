@@ -132,6 +132,37 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   if (caseLinks.size !== 8) failures.push(`${locale}: expected links to all 8 case studies, found ${caseLinks.size}`);
 }
 
+const legalExpectations = [
+  ["/privacy", "Privacy Policy | Puna Tech", "How Puna Tech handles website and inquiry data.", "https://www.puna-tech.com/privacy", "https://www.puna-tech.com/es/privacidad", "Google Analytics 4"],
+  ["/es/privacidad", "Política de Privacidad | Puna Tech", "Cómo Puna Tech gestiona los datos del sitio y las consultas.", "https://www.puna-tech.com/es/privacidad", "https://www.puna-tech.com/privacy", "Google Analytics 4"],
+  ["/terms", "Terms of Use | Puna Tech", "Terms of use for the Puna Tech website. A discovery call or project brief is not a client agreement until scope, fees, and deliverables are signed in writing.", "https://www.puna-tech.com/terms", "https://www.puna-tech.com/es/terminos", null],
+  ["/es/terminos", "Términos de Uso | Puna Tech", "Términos de uso del sitio de Puna Tech. Una llamada o un brief no son un contrato hasta que un acuerdo firmado fije alcance, honorarios y entregables.", "https://www.puna-tech.com/es/terminos", "https://www.puna-tech.com/terms", null],
+];
+for (const [route, title, description, canonical, alternate, cookiesPhrase] of legalExpectations) {
+  const file = join(root, route.slice(1), "index.html");
+  let html = "";
+  try {
+    html = await readFile(file, "utf8");
+  } catch {
+    failures.push(`${route}: prerendered HTML is missing`);
+    continue;
+  }
+  if (!html.includes(`<title>${title}</title>`)) failures.push(`${route}: title mismatch`);
+  if (!html.includes(`name="description" content="${description}"`) && !html.includes(`content="${description}" name="description"`)) failures.push(`${route}: meta description mismatch`);
+  if (!html.includes(`property="og:description" content="${description}"`)) failures.push(`${route}: og:description mismatch`);
+  if (!html.includes(`rel="canonical" href="${canonical}"`)) failures.push(`${route}: canonical mismatch`);
+  if (!html.includes(`hreflang="es-AR" href="${alternate}"`) && !html.includes(`hrefLang="es-AR" href="${alternate}"`) && !html.includes(`hreflang="en" href="${alternate}"`) && !html.includes(`hrefLang="en" href="${alternate}"`)) {
+    failures.push(`${route}: alternate hreflang mismatch`);
+  }
+  if (cookiesPhrase && !html.includes('id="cookies"')) failures.push(`${route}: cookies section missing`);
+  if (cookiesPhrase && !html.includes(cookiesPhrase)) failures.push(`${route}: cookies disclosure missing`);
+}
+const privacyHtml = await readFile(join(root, "privacy", "index.html"), "utf8").catch(() => "");
+const termsHtml = await readFile(join(root, "terms", "index.html"), "utf8").catch(() => "");
+const privacyDescription = privacyHtml.match(/name="description" content="([^"]*)"/)?.[1];
+const termsDescription = termsHtml.match(/name="description" content="([^"]*)"/)?.[1];
+if (privacyDescription && termsDescription && privacyDescription === termsDescription) failures.push("/terms meta description still duplicates /privacy");
+
 for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
   const source = await readFile(new URL(`../src/routes/${routeFile}`, import.meta.url), "utf8");
   if (!source.includes('timeZone: "America/Argentina/Buenos_Aires"')) {

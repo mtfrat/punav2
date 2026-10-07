@@ -10,16 +10,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return { locale, kind, path: pathname };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => data ? createMeta({ locale: data.locale, title: `${data.kind === "privacy" ? (data.locale === "en" ? "Privacy Policy" : "Política de Privacidad") : (data.locale === "en" ? "Terms of Use" : "Términos de Uso")} | Puna Tech`, description: data.locale === "en" ? "How Puna Tech handles website and inquiry data." : "Cómo Puna Tech gestiona los datos del sitio y las consultas.", path: data.path, alternatePath: data.kind === "privacy" ? (data.locale === "en" ? "/es/privacidad" : "/privacy") : (data.locale === "en" ? "/es/terminos" : "/terms") }) : [];
+const legalDescriptions = {
+  privacy: {
+    en: "How Puna Tech handles website and inquiry data.",
+    es: "Cómo Puna Tech gestiona los datos del sitio y las consultas.",
+  },
+  terms: {
+    en: "Terms of use for the Puna Tech website. A discovery call or project brief is not a client agreement until scope, fees, and deliverables are signed in writing.",
+    es: "Términos de uso del sitio de Puna Tech. Una llamada o un brief no son un contrato hasta que un acuerdo firmado fije alcance, honorarios y entregables.",
+  },
+} as const;
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data) return [];
+  const title = data.kind === "privacy"
+    ? (data.locale === "en" ? "Privacy Policy" : "Política de Privacidad")
+    : (data.locale === "en" ? "Terms of Use" : "Términos de Uso");
+  return createMeta({
+    locale: data.locale,
+    title: `${title} | Puna Tech`,
+    description: legalDescriptions[data.kind][data.locale],
+    path: data.path,
+    alternatePath: data.kind === "privacy"
+      ? (data.locale === "en" ? "/es/privacidad" : "/privacy")
+      : (data.locale === "en" ? "/es/terminos" : "/terms"),
+  });
+};
 
 export default function LegalPage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { locale, kind } = loaderData;
   const privacy = kind === "privacy";
-  return <PageShell locale={locale} includeChat={false}><main id="main-content" className="legal-page"><div className="shell legal-copy"><p className="eyebrow">{locale === "en" ? "Last updated August 25, 2026" : "Última actualización: 25 de agosto de 2026"}</p><h1>{privacy ? (locale === "en" ? "Privacy Policy" : "Política de Privacidad") : (locale === "en" ? "Terms of Use" : "Términos de Uso")}</h1>{privacy ? <Privacy locale={locale} /> : <Terms locale={locale} />}</div></main></PageShell>;
+  const updated = privacy
+    ? (locale === "en" ? "Last updated October 7, 2026" : "Última actualización: 7 de octubre de 2026")
+    : (locale === "en" ? "Last updated August 25, 2026" : "Última actualización: 25 de agosto de 2026");
+  return <PageShell locale={locale} includeChat={false}><main id="main-content" className="legal-page"><div className="shell legal-copy"><p className="eyebrow">{updated}</p><h1>{privacy ? (locale === "en" ? "Privacy Policy" : "Política de Privacidad") : (locale === "en" ? "Terms of Use" : "Términos de Uso")}</h1>{privacy ? <Privacy locale={locale} /> : <Terms locale={locale} />}</div></main></PageShell>;
 }
 
 function Privacy({ locale }: { locale: Locale }) {
-  return locale === "en" ? <><h2>Information we collect</h2><p>We collect information you intentionally submit in a project brief, including your name, work email, company, and project description. Analytics tools may collect device, referral, and interaction information when permitted by your browser and applicable settings.</p><h2>How we use it</h2><p>We use inquiry data only to evaluate and respond to your request. We use aggregated analytics to understand site reliability and improve content and navigation.</p><h2>AI assistant</h2><p>Messages entered in the project assistant are sent to an AI service to produce a reply. They are not added to Puna Tech’s lead database through the assistant.</p><h2>Sharing and retention</h2><p>We use service providers for hosting, analytics, scheduling, databases, and AI processing. We do not sell personal information. Inquiry records are retained only as long as reasonably necessary for communication, security, and business records.</p><h2>Your choices</h2><p>You may request access, correction, or deletion by emailing punatechba@gmail.com. This page is operational guidance and should be reviewed by qualified counsel for the jurisdictions in which Puna Tech operates.</p></> : <><h2>Información que recopilamos</h2><p>Recopilamos los datos que enviás intencionalmente mediante un brief, como nombre, email laboral, empresa y descripción del proyecto. Las herramientas de analítica pueden recopilar información del dispositivo, referencia e interacción cuando lo permiten el navegador y la configuración aplicable.</p><h2>Cómo la usamos</h2><p>Usamos los datos de consultas únicamente para evaluar y responder la solicitud. Usamos analítica agregada para comprender la confiabilidad del sitio y mejorar contenidos y navegación.</p><h2>Asistente de IA</h2><p>Los mensajes ingresados en el asistente se envían a un servicio de IA para generar una respuesta. El asistente no los incorpora a la base de leads de Puna Tech.</p><h2>Proveedores y conservación</h2><p>Usamos proveedores para hosting, analítica, agenda, base de datos y procesamiento de IA. No vendemos información personal. Conservamos las consultas solo durante el tiempo razonablemente necesario para comunicación, seguridad y registros comerciales.</p><h2>Tus opciones</h2><p>Podés solicitar acceso, corrección o eliminación escribiendo a punatechba@gmail.com. Esta página describe prácticas operativas y debe ser revisada por asesoramiento legal calificado para las jurisdicciones donde opera Puna Tech.</p></>;
+  return locale === "en" ? <><h2>Information we collect</h2><p>We collect information you intentionally submit in a project brief, including your name, work email, company, and project description. Analytics tools may collect device, referral, and interaction information when permitted by your browser and applicable settings.</p><h2>How we use it</h2><p>We use inquiry data only to evaluate and respond to your request. We use aggregated analytics to understand site reliability and improve content and navigation.</p><h2 id="cookies">Cookies</h2><p>Browsing this site does not require an account or a session cookie. Google Analytics 4 and Microsoft Clarity may store analytics cookies to measure visits, referrals, and page use, as described above. We do not use those cookies for advertising profiles. You can block or delete cookies in your browser; the site still works. Opening the scheduling calendar loads Cal.com, which may set its own cookies.</p><h2>AI assistant</h2><p>Messages entered in the project assistant are sent to an AI service to produce a reply. They are not added to Puna Tech’s lead database through the assistant.</p><h2>Sharing and retention</h2><p>We use service providers for hosting, analytics, scheduling, databases, and AI processing. We do not sell personal information. Inquiry records are retained only as long as reasonably necessary for communication, security, and business records.</p><h2>Your choices</h2><p>You may request access, correction, or deletion by emailing punatechba@gmail.com. This page is operational guidance and should be reviewed by qualified counsel for the jurisdictions in which Puna Tech operates.</p></> : <><h2>Información que recopilamos</h2><p>Recopilamos los datos que enviás intencionalmente mediante un brief, como nombre, email laboral, empresa y descripción del proyecto. Las herramientas de analítica pueden recopilar información del dispositivo, referencia e interacción cuando lo permiten el navegador y la configuración aplicable.</p><h2>Cómo la usamos</h2><p>Usamos los datos de consultas únicamente para evaluar y responder la solicitud. Usamos analítica agregada para comprender la confiabilidad del sitio y mejorar contenidos y navegación.</p><h2 id="cookies">Cookies</h2><p>Recorrer este sitio no requiere una cuenta ni una cookie de sesión. Google Analytics 4 y Microsoft Clarity pueden guardar cookies de analítica para medir visitas, referencias y el uso de las páginas, como se describe arriba. No usamos esas cookies para perfiles publicitarios. Podés bloquear o borrar cookies en el navegador; el sitio sigue funcionando. Si abrís el calendario, Cal.com puede guardar sus propias cookies.</p><h2>Asistente de IA</h2><p>Los mensajes ingresados en el asistente se envían a un servicio de IA para generar una respuesta. El asistente no los incorpora a la base de leads de Puna Tech.</p><h2>Proveedores y conservación</h2><p>Usamos proveedores para hosting, analítica, agenda, base de datos y procesamiento de IA. No vendemos información personal. Conservamos las consultas solo durante el tiempo razonablemente necesario para comunicación, seguridad y registros comerciales.</p><h2>Tus opciones</h2><p>Podés solicitar acceso, corrección o eliminación escribiendo a punatechba@gmail.com. Esta página describe prácticas operativas y debe ser revisada por asesoramiento legal calificado para las jurisdicciones donde opera Puna Tech.</p></>;
 }
 
 function Terms({ locale }: { locale: Locale }) {
