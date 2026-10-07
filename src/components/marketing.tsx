@@ -216,6 +216,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           <a href="https://www.linkedin.com/company/puna-tech" target="_blank" rel="noreferrer">LinkedIn <ExternalLink aria-hidden="true" size={14} /></a>
           <Link to={locale === "en" ? "/privacy" : "/es/privacidad"}>{locale === "en" ? "Privacy" : "Privacidad"}</Link>
+          <Link to={locale === "en" ? "/privacy#cookies" : "/es/privacidad#cookies"}>Cookies</Link>
           <Link to={locale === "en" ? "/terms" : "/es/terminos"}>{locale === "en" ? "Terms" : "Términos"}</Link>
         </div>
       </div>

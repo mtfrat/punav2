@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunctionArgs } from "react-router";
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from "react-router";
 import type * as React from "react";
 import { useEffect, useState } from "react";
 import {
@@ -8,9 +8,11 @@ import {
   Scripts,
   ScrollRestoration,
   isRouteErrorResponse,
+  useLocation,
   useRouteError,
   useRouteLoaderData,
 } from "react-router";
+import { isSpanishPath, StatusPage, statusDocumentMeta } from "./components/status-page";
 import plusJakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
 import newsreaderItalicLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2";
 import "./index.css";
@@ -31,6 +33,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
   return { locale: pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en", isOperations: pathname === "/ops" || pathname.startsWith("/ops/") };
 }
+
+export const meta: MetaFunction = ({ error, location }) => {
+  if (!error) return [];
+  const notFound = isRouteErrorResponse(error) && error.status === 404;
+  if (location.pathname === "/ops" || location.pathname.startsWith("/ops/")) {
+    return [
+      { title: notFound ? "Página no encontrada | Puna Operations" : "Error | Puna Operations" },
+      { name: "robots", content: "noindex, nofollow, noarchive" },
+    ];
+  }
+  return statusDocumentMeta(location.pathname, notFound);
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
@@ -85,13 +99,17 @@ function DeferredAnalytics() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
+  const { pathname } = useLocation();
   const notFound = isRouteErrorResponse(error) && error.status === 404;
-  return (
-    <main className="error-page" id="main-content">
-      <p className="eyebrow">{notFound ? "404" : "Error"}</p>
-      <h1>{notFound ? "This page could not be found." : "Something went wrong."}</h1>
-      <p>{notFound ? "The URL may have changed. Return to the homepage to continue." : "Please retry or return to the homepage."}</p>
-      <a className="button-primary" href="/">Return home <span aria-hidden="true">→</span></a>
-    </main>
-  );
+  if (pathname === "/ops" || pathname.startsWith("/ops/")) {
+    return (
+      <main className="error-page" id="main-content">
+        <p className="eyebrow">{notFound ? "404" : "Error"}</p>
+        <h1>{notFound ? "Esa pantalla no está acá." : "Algo salió mal."}</h1>
+        <p>{notFound ? "La ruta de operaciones no existe." : "Reintentá o volvé al panel."}</p>
+        <a className="button-primary" href="/ops">Volver a operaciones</a>
+      </main>
+    );
+  }
+  return <StatusPage locale={isSpanishPath(pathname) ? "es" : "en"} notFound={notFound} />;
 }
