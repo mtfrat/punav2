@@ -741,12 +741,18 @@ a.mm-btn {
     border: 1px solid var(--line);
     border-radius: 28px;
     background: #fff;
+    overflow: hidden;
   }
   .mm-home .mm-table.compare-table tbody th,
-  .mm-home .mm-table.compare-table tbody td {
+  .mm-home .mm-table.compare-table tbody td,
+  .mm-home .mm-table.compare-table tbody td:last-child {
+    display: block;
+    width: 100%;
+    max-width: none;
     border: 0;
     border-radius: 0;
     background: transparent;
+    box-shadow: none;
     padding: 0.4rem 0 0.7rem;
   }
   .mm-home .mm-table.compare-table tbody th {
@@ -755,6 +761,9 @@ a.mm-btn {
     font-size: 1.02rem;
     font-weight: 700;
     letter-spacing: -0.03em;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
   }
   .mm-home .mm-table.compare-table td::before {
     content: attr(data-label);
