@@ -40,7 +40,7 @@ function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, pl
   }, [locale, placement, ref]);
 }
 
-export function CalButton({ locale, placement, className = "", compact = false, label }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string }) {
+export function CalButton({ locale, placement, className = "", compact = false, label, dot = false }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean }) {
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLAnchorElement>(null);
   useCtaView(ref, locale, placement);
@@ -75,8 +75,9 @@ export function CalButton({ locale, placement, className = "", compact = false, 
       aria-label={label || copy[locale].book}
       aria-busy={loading}
     >
+      {dot ? <span className="nav-dot" aria-hidden="true" /> : null}
       <span>{loading ? (locale === "en" ? "Opening calendar…" : "Abriendo calendario…") : (label || copy[locale].book)}</span>
-      <ArrowRight aria-hidden="true" size={18} />
+      {dot ? null : <ArrowRight aria-hidden="true" size={18} />}
     </a>
   );
 }
@@ -94,9 +95,11 @@ export function Brand() {
   );
 }
 
-export function SiteHeader({ locale }: { locale: Locale }) {
+export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chrome?: "default" | "editorial" }) {
   const [open, setOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
   const location = useLocation();
+  const editorial = chrome === "editorial";
   const t = copy[locale];
   const home = locale === "en" ? "/" : "/es";
   const servicesAnchor = servicesHubPath(locale);
@@ -111,38 +114,68 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   useEffect(() => setOpen(false), [location.pathname]);
 
-  return (
-    <header className="site-header">
-      <div className="site-nav shell">
-        <Link to={home} className="brand-link"><Brand /></Link>
-        <nav className="desktop-nav" aria-label={locale === "en" ? "Primary navigation" : "Navegación principal"}>
-          <Link to={servicesAnchor}>{t.nav.services}</Link>
-          <Link to={workAnchor}>{t.nav.work}</Link>
-          <Link to={processAnchor}>{t.nav.process}</Link>
-          <Link to={insights}>{t.nav.insights}</Link>
-        </nav>
-        <div className="nav-actions">
-          <Link
-            className="language-link"
-            to={languageHref}
-            hrefLang={locale === "en" ? "es" : "en"}
-            onClick={() => trackEvent("language_switch", { locale, destination_locale: locale === "en" ? "es" : "en" })}
-          >
-            {locale === "en" ? "ES" : "EN"}
-          </Link>
-          <a
-            href={briefAnchor}
-            className="button-ghost-ink button-compact desktop-brief"
-            onClick={() => trackEvent("cta_click", { locale, placement: "navigation", destination: "brief" })}
-          >{t.sendBrief}</a>
-          <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={t.book} />
-          <button className="menu-button" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? (locale === "en" ? "Close menu" : "Cerrar menú") : (locale === "en" ? "Open menu" : "Abrir menú")}>
-            {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
-          </button>
-        </div>
+  useEffect(() => {
+    if (!editorial) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const next = window.scrollY > 28;
+        setCompact((current) => (current === next ? current : next));
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [editorial]);
+
+  const navBar = (
+    <>
+      <Link to={home} className="brand-link"><Brand /></Link>
+      <nav className="desktop-nav" aria-label={locale === "en" ? "Primary navigation" : "Navegación principal"}>
+        <Link to={servicesAnchor}>{t.nav.services}</Link>
+        <Link to={workAnchor}>{t.nav.work}</Link>
+        <Link to={processAnchor}>{t.nav.process}</Link>
+        <Link to={insights}>{t.nav.insights}</Link>
+      </nav>
+      <div className="nav-actions">
+        <Link
+          className="language-link"
+          to={languageHref}
+          hrefLang={locale === "en" ? "es" : "en"}
+          onClick={() => trackEvent("language_switch", { locale, destination_locale: locale === "en" ? "es" : "en" })}
+        >
+          {locale === "en" ? "ES" : "EN"}
+        </Link>
+        <a
+          href={briefAnchor}
+          className={`button-ghost-ink button-compact desktop-brief${editorial ? " editorial-brief" : ""}`}
+          onClick={() => trackEvent("cta_click", { locale, placement: "navigation", destination: "brief" })}
+        >{t.sendBrief}</a>
+        <CalButton locale={locale} placement="navigation" compact className="desktop-cal" label={t.book} dot={editorial} />
+        <button className="menu-button" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? (locale === "en" ? "Close menu" : "Cerrar menú") : (locale === "en" ? "Open menu" : "Abrir menú")}>
+          {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+        </button>
       </div>
+    </>
+  );
+
+  return (
+    <header className={`site-header${editorial ? " site-header-editorial" : ""}${compact ? " is-compact" : ""}`}>
+      {editorial ? (
+        <div className="editorial-pill-scale">
+          <div className="site-nav editorial-pill">{navBar}</div>
+        </div>
+      ) : (
+        <div className="site-nav shell">{navBar}</div>
+      )}
       {open && (
-        <nav id="mobile-navigation" className="mobile-nav" aria-label={locale === "en" ? "Mobile navigation" : "Navegación móvil"}>
+        <nav id="mobile-navigation" className={`mobile-nav${editorial ? " editorial-mobile" : ""}`} aria-label={locale === "en" ? "Mobile navigation" : "Navegación móvil"}>
           <Link to={servicesAnchor}>{t.nav.services}</Link>
           <Link to={workAnchor}>{t.nav.work}</Link>
           <Link to={processAnchor}>{t.nav.process}</Link>
@@ -152,18 +185,36 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             className="button-ghost-ink"
             onClick={() => trackEvent("cta_click", { locale, placement: "mobile_navigation", destination: "brief" })}
           >{t.sendBrief}</a>
-          <CalButton locale={locale} placement="mobile_navigation" label={t.book} />
+          <CalButton locale={locale} placement="mobile_navigation" label={t.book} dot={editorial} />
         </nav>
       )}
     </header>
   );
 }
 
-export function SiteFooter({ locale }: { locale: Locale }) {
+function FooterWave() {
+  return (
+    <div className="footer-wave" aria-hidden="true">
+      <div className="footer-wave-ridge">
+        <svg viewBox="0 0 2880 120" preserveAspectRatio="none">
+          <path fill="#C4623A" d="M0 78 L140 46 L280 86 L430 40 L600 82 L760 48 L940 90 L1100 52 L1260 84 L1440 78 L1580 46 L1720 86 L1870 40 L2040 82 L2200 48 L2380 90 L2540 52 L2700 84 L2880 78 L2880 120 L0 120 Z" />
+          <path fill="#E4C3AE" d="M0 96 L180 70 L340 104 L520 74 L700 108 L880 78 L1060 110 L1240 82 L1440 96 L1620 70 L1780 104 L1960 74 L2140 108 L2320 78 L2500 110 L2680 82 L2880 96 L2880 120 L0 120 Z" />
+        </svg>
+      </div>
+      <svg className="footer-wave-sheet" viewBox="0 0 1440 60" preserveAspectRatio="none">
+        <path fill="var(--paper)" d="M0 32C96 34 192 28 288 22C384 16 480 20 576 26C672 32 768 40 864 42C960 44 1056 40 1152 34C1248 28 1344 20 1392 16L1440 12V0H0Z" />
+      </svg>
+    </div>
+  );
+}
+
+export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chrome?: "default" | "editorial" }) {
   const year = new Date().getFullYear();
   const home = locale === "en" ? "/" : "/es";
+  const editorial = chrome === "editorial";
   return (
-    <footer className="site-footer">
+    <footer className={`site-footer${editorial ? " site-footer-editorial" : ""}`}>
+      {editorial ? <FooterWave /> : null}
       <div className="shell footer-grid">
         <div><Brand /><p>{copy[locale].footerLine}</p></div>
         <div className="footer-links">
@@ -185,13 +236,13 @@ export function SiteFooter({ locale }: { locale: Locale }) {
   );
 }
 
-export function PageShell({ locale, children, includeChat = true }: { locale: Locale; children: React.ReactNode; includeChat?: boolean }) {
+export function PageShell({ locale, children, includeChat = true, chrome = "default" }: { locale: Locale; children: React.ReactNode; includeChat?: boolean; chrome?: "default" | "editorial" }) {
   return (
     <>
       <a className="skip-link" href="#main-content">{locale === "en" ? "Skip to main content" : "Saltar al contenido principal"}</a>
-      <SiteHeader locale={locale} />
+      <SiteHeader locale={locale} chrome={chrome} />
       {children}
-      <SiteFooter locale={locale} />
+      <SiteFooter locale={locale} chrome={chrome} />
       {includeChat ? <Assistant locale={locale} /> : null}
     </>
   );

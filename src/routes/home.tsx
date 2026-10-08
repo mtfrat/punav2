@@ -12,6 +12,7 @@ import {
   ScanSearch,
 } from "lucide-react";
 import { Accordion, CalButton, PageShell, ProjectBrief } from "../components/marketing";
+import { FlowDemo, HomeMotion, HoursCalculator, RidgeField } from "../components/home-editorial";
 import { trackEvent } from "../components/tracking";
 import {
   casePath,
@@ -19,12 +20,12 @@ import {
   copy,
   servicePath,
   services,
-  servicesHubPath,
   type CaseStudyContent,
   type Locale,
 } from "../content/site";
 import { useCases } from "../content/use-cases";
 import { createMeta, organizationSchema } from "../lib/seo";
+import "../home-editorial.css";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale: Locale = new URL(request.url).pathname === "/es" ? "es" : "en";
@@ -78,6 +79,19 @@ function SystemMap({ study, compact = false }: { study: CaseStudyContent; compac
   );
 }
 
+function HeroTitle({ title, italic }: { title: string; italic: string }) {
+  const index = title.indexOf(italic);
+  if (index === -1) return title;
+  const before = title.slice(0, index);
+  const after = title.slice(index + italic.length);
+  return (
+    <>
+      <span className="mm-line"><span className="mm-line-inner">{before}</span></span>
+      <span className="mm-line mm-italic-line"><em className="mm-italic"><span className="mm-line-inner">{italic}{after}</span></em></span>
+    </>
+  );
+}
+
 const slowdownIcons = [ScanSearch, Link2, Layers3];
 
 export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
@@ -87,114 +101,126 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
   const localizedServices = services[locale];
   const slowdownServices = [localizedServices[0], localizedServices[2], localizedServices[1]];
   const latamServices = [localizedServices[1], localizedServices[0], localizedServices[2]];
-
-  const labCases = localizedCases.filter((c) => ["starpress", "viralyt", "videome", "autopost"].includes(c.key));
-  const clientCases = localizedCases.filter((c) => ["lead-router", "linkedin-copilot", "edtech-web3", "gtm-automation"].includes(c.key));
+  const labCases = localizedCases.filter((item) => ["starpress", "viralyt", "videome", "autopost"].includes(item.key));
+  const clientCases = localizedCases.filter((item) => ["lead-router", "linkedin-copilot", "edtech-web3", "gtm-automation"].includes(item.key));
 
   return (
-    <PageShell locale={locale}>
-      <main id="main-content">
-        {/* PILAR 1: HERO editorial asimétrico estilo cover brandsheet */}
-        <section className="bs-cover-hero" aria-label={locale === "en" ? "Puna Tech Cover" : "Portada de Puna Tech"}>
-          <div className="bs-cover-masthead shell">
-            <span>{locale === "en" ? "PUNA TECH / B2B SOFTWARE FACTORY · 2026" : "PUNA TECH / SOFTWARE FACTORY B2B · 2026"}</span>
-            <span>{locale === "en" ? "AUTOMATION · INTEGRATIONS · CUSTOM SYSTEMS" : "AUTOMATIZACIÓN · INTEGRACIONES · SOFTWARE A MEDIDA"}</span>
-          </div>
-          <div className="shell bs-cover-grid">
-            <div className="bs-cover-copy">
-              <p className="eyebrow">{t.heroEyebrow}</p>
-              <h1 className="bs-cover-h1">
-                {(() => {
-                  const title = t.heroTitle;
-                  const italic = t.heroItalic;
-                  const idx = title.indexOf(italic);
-                  if (idx === -1) return title;
-                  return (
-                    <>
-                      {title.slice(0, idx)}
-                      <em className="bs-hero-italic">{italic}</em>
-                      {title.slice(idx + italic.length)}
-                    </>
-                  );
-                })()}
-              </h1>
-              <p className="bs-intro-lead">
-                {t.heroBody}
-              </p>
-              <p className="bs-intro-lead">
-                {t.heroCompare}
-              </p>
-              {/* PILAR 3: CTA Único como objeto de diseño (Primario Terracota + Secundario Ghost Borgoña) */}
-              <div className="cta-group bs-cover-actions">
-                <CalButton
-                  locale={locale}
-                  placement="hero_audit"
-                  label={t.book}
-                  className="button-primary-terracotta"
-                />
-                <a
-                  href="#brief"
-                  className="button-ghost-burgundy"
-                  onClick={() => trackEvent("cta_click", { locale, placement: "hero", destination: "brief" })}
-                >
-                  <span>{t.sendBrief}</span>
-                  <ArrowRight aria-hidden="true" size={16} />
-                </a>
-              </div>
-              <p className="bs-cover-microcopy">
-                <Check aria-hidden="true" size={16} />
-                <span>{t.heroMicrocopy}</span>
-              </p>
+    <PageShell locale={locale} chrome="editorial">
+      <HomeMotion />
+      <main id="main-content" className="mm-home" data-mm-home>
+        <section className="mm-hero" data-mm-hero aria-label={locale === "en" ? "Puna Tech Cover" : "Portada de Puna Tech"}>
+          <div className="shell mm-hero-copy">
+            <p className="mm-mast mm-intro">
+              <span>{locale === "en" ? "PUNA TECH / B2B SOFTWARE FACTORY · 2026" : "PUNA TECH / SOFTWARE FACTORY B2B · 2026"}</span>
+              <span>{locale === "en" ? "AUTOMATION · INTEGRATIONS · CUSTOM SYSTEMS" : "AUTOMATIZACIÓN · INTEGRACIONES · SOFTWARE A MEDIDA"}</span>
+            </p>
+            <p className="eyebrow mm-intro mm-d1">{t.heroEyebrow}</p>
+            <h1 className="mm-display">
+              <HeroTitle title={t.heroTitle} italic={t.heroItalic} />
+            </h1>
+            <div className="mm-hero-lede">
+              <p className="mm-hero-body mm-intro mm-d2">{t.heroBody}</p>
+              <p className="mm-hero-body mm-intro mm-d3">{t.heroCompare}</p>
             </div>
-            <figure className="bs-cover-photo-side">
-              <picture>
-                <source
-                  type="image/avif"
-                  srcSet="/art-direction/workspace-cup-of-couple-480.avif 480w, /art-direction/workspace-cup-of-couple-768.avif 768w, /art-direction/workspace-cup-of-couple-960.avif 960w, /art-direction/workspace-cup-of-couple-1200.avif 1200w"
-                  sizes="(max-width: 960px) 100vw, 520px"
-                />
-                <source
-                  type="image/webp"
-                  srcSet="/art-direction/workspace-cup-of-couple-480.webp 480w, /art-direction/workspace-cup-of-couple-768.webp 768w, /art-direction/workspace-cup-of-couple-960.webp 960w, /art-direction/workspace-cup-of-couple-1200.webp 1200w"
-                  sizes="(max-width: 960px) 100vw, 520px"
-                />
-                <img
-                  src="/art-direction/workspace-cup-of-couple-960.jpg"
-                  alt={locale === "en" ? "Natural light on wooden work desk with laptop and notebook representing intentional engineering." : "Luz natural sobre mesa de trabajo con laptop y cuaderno: trabajo con criterio."}
-                  width={1600}
-                  height={2400}
-                  decoding="async"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </picture>
-              <figcaption>
-                {locale === "en" ? (
-                  <>Repetitive handoffs,<br /><em>into the system.</em></>
-                ) : (
-                  <>Lo repetitivo,<br /><em>al sistema.</em></>
-                )}
-              </figcaption>
-              <span className="bs-cover-photo-badge">
-                {locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}
-              </span>
-            </figure>
+            <div className="cta-group mm-hero-actions mm-intro mm-d4">
+              <CalButton locale={locale} placement="hero_audit" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
+              <a
+                href="#brief"
+                className="button-ghost-burgundy mm-btn mm-btn-ghost"
+                onClick={() => trackEvent("cta_click", { locale, placement: "hero", destination: "brief" })}
+              >
+                <span>{t.sendBrief}</span>
+                <ArrowRight aria-hidden="true" size={16} />
+              </a>
+            </div>
+            <p className="mm-micro mm-intro mm-d5">
+              <Check aria-hidden="true" size={16} />
+              <span>{t.heroMicrocopy}</span>
+            </p>
+            <p className="mm-hero-caption mm-intro mm-d5">
+              <span>{locale === "en" ? <>Repetitive handoffs, <em>into the system.</em></> : <>Lo repetitivo, <em>al sistema.</em></>}</span>
+              <span className="mm-hero-badge">{locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}</span>
+            </p>
+          </div>
+          <RidgeField />
+        </section>
+
+        <section className="mm-proof" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>
+          <div className="shell mm-proof-grid" data-mm-rise>
+            {t.proof.map((item, index) => (
+              <div className="mm-rise-item" key={item}>
+                <div className="mm-card mm-proof-card mm-tilt-inner">
+                  <span>0{index + 1}</span>
+                  <p>{item}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        <section className="proof-strip" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>
-          <div className="shell proof-grid">
-            {t.proof.map((item, index) => <div key={item}><span>0{index + 1}</span><p>{item}</p></div>)}
-          </div>
-        </section>
+        <FlowDemo locale={locale} />
 
-        <section className="section" aria-labelledby="compare-heading">
+        <section id="services" className="mm-section" aria-labelledby="services-heading">
           <div className="shell">
-            <header className="section-heading">
-              <h2 id="compare-heading">{t.compareTitle}</h2>
+            <header className="mm-heading">
+              <p className="eyebrow">{t.slowdownEyebrow}</p>
+              <h2 id="services-heading" className="mm-h2"><span>{t.slowdownTitle}</span></h2>
+              <p className="mm-dek">{t.servicesBody}</p>
             </header>
-            <div className="compare-table-wrap">
-              <table className="compare-table">
+            <div className="mm-card-grid" data-mm-rise>
+              {t.slowdowns.map(([problem, capability, description], index) => {
+                const Icon = slowdownIcons[index];
+                const service = slowdownServices[index];
+                return (
+                  <div className="mm-rise-item" key={problem}>
+                    <Link className="mm-card mm-tilt-inner mm-service" to={servicePath(locale, service.slug)}>
+                      <span className="mm-service-top">
+                        <span className="mm-accent-dot" aria-hidden="true" />
+                        <Icon aria-hidden="true" size={22} />
+                      </span>
+                      <small>{capability}</small>
+                      <strong>{problem}</strong>
+                      <span>{description}</span>
+                      <ChevronRight className="mm-card-link" aria-hidden="true" size={18} />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {locale === "es" && (
+          <section className="mm-section mm-section-deep" aria-labelledby="home-use-cases-heading">
+            <div className="shell">
+              <header className="mm-heading">
+                <h2 id="home-use-cases-heading" className="mm-h2"><span>Problemas del día a día que automatizamos</span></h2>
+              </header>
+              <ol className="mm-usecases mm-card-grid" data-mm-rise>
+                {useCases.map((item, index) => (
+                  <li className="mm-rise-item" key={item.path}>
+                    <Link className="mm-card mm-tilt-inner mm-service" to={item.path}>
+                      <span className="mm-kicker" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <strong>{item.cardTitle}</strong>
+                      <span>{item.cardBlurb}</span>
+                      <ArrowRight className="mm-card-link" aria-hidden="true" size={18} />
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        )}
+
+        <HoursCalculator locale={locale} />
+
+        <section className="mm-section mm-section-deep" aria-labelledby="compare-heading">
+          <div className="shell">
+            <header className="mm-heading">
+              <h2 id="compare-heading" className="mm-h2"><span>{t.compareTitle}</span></h2>
+            </header>
+            <div className="mm-table-wrap">
+              <table className="mm-table compare-table">
                 <thead>
                   <tr>
                     <th scope="col" />
@@ -205,8 +231,8 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                   {t.compareRows.map(([label, standard, custom]) => (
                     <tr key={label}>
                       <th scope="row">{label}</th>
-                      <td>{standard}</td>
-                      <td>{custom}</td>
+                      <td data-label={t.compareColumns[0]}>{standard}</td>
+                      <td data-label={t.compareColumns[1]}>{custom}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -215,72 +241,36 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </div>
         </section>
 
-        <section className="section" aria-labelledby="versus-heading">
+        <section className="mm-section" aria-labelledby="versus-heading">
           <div className="shell">
-            <header className="section-heading">
-              <h2 id="versus-heading">{t.versusTitle}</h2>
+            <header className="mm-heading">
+              <h2 id="versus-heading" className="mm-h2"><span>{t.versusTitle}</span></h2>
             </header>
-            <ol className="versus-list">
+            <ol className="mm-versus" data-mm-rise>
               {t.versus.map(([title, body]) => (
-                <li key={title}><strong>{title}</strong> {body}</li>
+                <li className="mm-rise-item" key={title}>
+                  <article className="mm-card mm-tilt-inner">
+                    <h3>{title}</h3>
+                    <p>{body}</p>
+                  </article>
+                </li>
               ))}
             </ol>
           </div>
         </section>
 
-
-
-        {/* SERVICES: Estructura preservada intacta */}
-        <section id="services" className="section slowdown-section">
-          <div className="shell slowdown-grid">
-            <header className="section-heading sticky-heading"><p className="eyebrow">{t.slowdownEyebrow}</p><h2>{t.slowdownTitle}</h2><p>{t.servicesBody}</p></header>
-            <div className="slowdown-list">
-              {t.slowdowns.map(([problem, capability, description], index) => {
-                const Icon = slowdownIcons[index];
-                const service = slowdownServices[index];
-                return (
-                  <Link className="slowdown-item" key={problem} to={servicePath(locale, service.slug)}>
-                    <span className="slowdown-icon"><Icon aria-hidden="true" /></span>
-                    <span className="slowdown-copy"><small>{capability}</small><strong>{problem}</strong><span>{description}</span></span>
-                    <ChevronRight aria-hidden="true" />
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
         {locale === "es" && (
-          <section className="related-guides" aria-labelledby="home-use-cases-heading">
+          <section className="mm-section mm-section-deep" aria-labelledby="latam-ar-heading">
             <div className="shell">
-              <h2 id="home-use-cases-heading">Problemas del día a día que automatizamos</h2>
-              <ol className="related-guide-list">
-                {useCases.map((item, index) => (
-                  <li key={item.path}>
-                    <Link to={item.path}>
-                      <span className="related-guide-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-                      <span className="related-guide-title">{item.cardTitle}</span>
-                      <ArrowRight aria-hidden="true" size={18} />
-                    </Link>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </section>
-        )}
-
-        {locale === "es" && (
-          <section className="section latam-ar-section" aria-labelledby="latam-ar-heading">
-            <div className="shell latam-ar-grid">
-              <header className="section-heading">
+              <header className="mm-heading">
                 <p className="eyebrow">{t.latamEyebrow}</p>
-                <h2 id="latam-ar-heading">{t.latamTitle}</h2>
-                <p>{t.latamBody}</p>
+                <h2 id="latam-ar-heading" className="mm-h2"><span>{t.latamTitle}</span></h2>
+                <p className="mm-dek">{t.latamBody}</p>
                 <div className="cta-group" style={{ marginTop: "1.5rem" }}>
-                  <CalButton locale={locale} placement="es_latam_block" label={t.book} className="button-primary-terracotta" />
+                  <CalButton locale={locale} placement="es_latam_block" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
                   <a
                     href="#brief"
-                    className="button-ghost-burgundy"
+                    className="button-ghost-burgundy mm-btn mm-btn-ghost"
                     onClick={() => trackEvent("cta_click", { locale, placement: "es_latam_block", destination: "brief" })}
                   >
                     <span>{t.sendBrief}</span>
@@ -288,11 +278,13 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
                   </a>
                 </div>
               </header>
-              <ul className="latam-ar-points">
+              <ul className="mm-latam" data-mm-rise>
                 {t.latamPoints.map(([title, body], index) => (
-                  <li key={title}>
-                    <strong>{latamServices[index] ? <Link to={servicePath(locale, latamServices[index].slug)}>{title}</Link> : title}</strong>
-                    <span>{body}</span>
+                  <li className="mm-rise-item" key={title}>
+                    <article className="mm-card mm-tilt-inner">
+                      <h3>{latamServices[index] ? <Link to={servicePath(locale, latamServices[index].slug)}>{title}</Link> : title}</h3>
+                      <p>{body}</p>
+                    </article>
                   </li>
                 ))}
               </ul>
@@ -300,178 +292,180 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
           </section>
         )}
 
-        {/* INDUSTRY ENTRY: Estructura preservada */}
-        <section className="industry-entry-section" aria-labelledby="software-factory-title">
-          <div className="shell industry-entry-grid">
-            <div className="industry-entry-intro">
+        <section className="mm-section" aria-labelledby="software-factory-title">
+          <div className="shell">
+            <header className="mm-heading">
               <p className="eyebrow">Software factory</p>
-              <h2 id="software-factory-title">{locale === "en" ? "From operational problem to production software." : "Del problema operativo al software en producción."}</h2>
-              <p>{locale === "en" ? "We combine product design, engineering, automation, integrations, and deployment so the complete system remains coherent." : "Combinamos diseño de producto, ingeniería, automatización, integraciones y despliegue para que el sistema completo sea coherente."}</p>
-            </div>
-            <div className="industry-entry-links">
-              <Link className="industry-entry-card" to={servicePath(locale, localizedServices[1].slug)}>
-                <span>01</span>
-                <div><small>{locale === "en" ? "End-to-end delivery" : "Entrega end-to-end"}</small><h3>{locale === "en" ? "One team across product, software, data, and launch." : "Un equipo para producto, software, datos y lanzamiento."}</h3><p>{locale === "en" ? "Start with a focused scope and expand on a maintainable technical foundation." : "Empezá con un alcance enfocado y crecé sobre una base técnica mantenible."}</p></div>
-                <ArrowRight aria-hidden="true" />
-              </Link>
+              <h2 id="software-factory-title" className="mm-h2"><span>{locale === "en" ? "From operational problem to production software." : "Del problema operativo al software en producción."}</span></h2>
+              <p className="mm-dek">{locale === "en" ? "We combine product design, engineering, automation, integrations, and deployment so the complete system remains coherent." : "Combinamos diseño de producto, ingeniería, automatización, integraciones y despliegue para que el sistema completo sea coherente."}</p>
+            </header>
+            <div data-mm-rise>
+              <div className="mm-rise-item">
+                <Link className="mm-card mm-tilt-inner mm-service" to={servicePath(locale, localizedServices[1].slug)}>
+                  <span className="mm-kicker">01</span>
+                  <small>{locale === "en" ? "End-to-end delivery" : "Entrega end-to-end"}</small>
+                  <strong>{locale === "en" ? "One team across product, software, data, and launch." : "Un equipo para producto, software, datos y lanzamiento."}</strong>
+                  <span>{locale === "en" ? "Start with a focused scope and expand on a maintainable technical foundation." : "Empezá con un alcance enfocado y crecé sobre una base técnica mantenible."}</span>
+                  <ArrowRight className="mm-card-link" aria-hidden="true" size={18} />
+                </Link>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* PILAR 2: SELECTED WORK — Dos franjas (Lab demo vs Client delivery) */}
-        <section id="work" className="work-section-v3" aria-label={t.casesTitle}>
-          {/* Franja 2: Client delivery (badge “Client delivery” + outcome operativo) */}
-          <div className="franja-client" aria-labelledby="client-delivery-heading">
-            <div className="shell">
-              <header className="franja-header">
-                <p className="eyebrow">{t.workClientEyebrow}</p>
-                <h2 id="client-delivery-heading">{t.workClientTitle}</h2>
-                <p>{t.workClientSubtitle}</p>
-              </header>
-              <div className="client-delivery-stack">
-                {clientCases.map((study) => (
-                  <article className="client-delivery-row" key={study.slug}>
-                    <div className="client-row-info">
-                      <div className="client-row-meta">
-                        <span className="client-delivery-badge">{t.workClientBadge}</span>
-                        {study.operationalOutcome && !study.operationalOutcomeNeedsConfirm && (
-                          <span className="client-outcome-badge">
-                            {study.operationalOutcome}
-                          </span>
-                        )}
-                      </div>
-                      <p className="client-row-name">{study.displayName}</p>
-                      <h3>{study.title}</h3>
-                      <p>{study.summary}</p>
-                      <ul className="work-outcomes">
-                        {study.impact
-                          .filter((item) => !study.impactNeedsConfirm?.includes(item))
-                          .slice(0, 2)
-                          .map((item) => (
+        <section id="work" className="mm-section mm-section-deep" aria-label={t.casesTitle}>
+          <div className="shell">
+            <header className="mm-heading">
+              <p className="eyebrow">{t.workClientEyebrow}</p>
+              <h2 id="client-delivery-heading" className="mm-h2"><span>{t.workClientTitle}</span></h2>
+              <p className="mm-dek">{t.workClientSubtitle}</p>
+            </header>
+            <div className="mm-client-list" data-mm-rise>
+              {clientCases.map((study) => (
+                <article className="mm-card mm-client mm-rise-item" key={study.slug}>
+                  <div>
+                    <div className="mm-service-top">
+                      <span className="mm-kicker">{t.workClientBadge}</span>
+                      {study.operationalOutcome && !study.operationalOutcomeNeedsConfirm ? <span className="mm-kicker">{study.operationalOutcome}</span> : null}
+                    </div>
+                    <p className="mm-dek">{study.displayName}</p>
+                    <h3>{study.title}</h3>
+                    <p>{study.summary}</p>
+                    <ul className="mm-outcomes">
+                      {study.impact
+                        .filter((item) => !study.impactNeedsConfirm?.includes(item))
+                        .slice(0, 2)
+                        .map((item) => (
                           <li key={item}>
                             <Check aria-hidden="true" size={16} />
                             <span>{item}</span>
                           </li>
                         ))}
-                      </ul>
-                      <div className="client-row-cta">
-                        <Link
-                          className="client-row-link"
-                          to={casePath(locale, study.slug)}
-                          aria-label={locale === "en" ? `View delivery architecture for ${study.displayName}` : `Ver arquitectura de entrega de ${study.displayName}`}
-                        >
-                          <span>{t.viewArchitecture}</span>
-                          <ArrowRight aria-hidden="true" size={18} />
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="client-row-visual">
-                      <SystemMap study={study} compact />
-                    </div>
-                  </article>
-                ))}
-              </div>
+                    </ul>
+                    <Link
+                      className="mm-inline"
+                      to={casePath(locale, study.slug)}
+                      aria-label={locale === "en" ? `View delivery architecture for ${study.displayName}` : `Ver arquitectura de entrega de ${study.displayName}`}
+                    >
+                      {t.viewArchitecture} <ArrowRight aria-hidden="true" size={18} />
+                    </Link>
+                  </div>
+                  <div className="mm-map">
+                    <SystemMap study={study} compact />
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <header className="mm-heading" style={{ marginTop: "4.5rem" }}>
+              <p className="eyebrow">{t.workLabEyebrow}</p>
+              <h2 id="lab-demos-heading" className="mm-h2"><span>{t.workLabTitle}</span></h2>
+              <p className="mm-dek">{t.workLabSubtitle}</p>
+            </header>
+            <div className="mm-lab-grid" data-mm-rise>
+              {labCases.map((study) => (
+                <article className="mm-rise-item" key={study.slug}>
+                <div className="mm-card mm-tilt-inner">
+                  <div className="lab-demo-badge">
+                    <span className="lab-demo-dot" aria-hidden="true" />
+                    <span>{t.workLabBadge}</span>
+                  </div>
+                  <div className="lab-card-title">
+                    <h3>{study.displayName}</h3>
+                    <span className="lab-card-name">{study.sector.split("·")[0]}</span>
+                  </div>
+                  <p>{study.summary}</p>
+                  <p className="lab-card-role">{locale === "en" ? "Internal lab product · execution proof" : "Producto de lab interno · prueba de ejecución"}</p>
+                  <div className="lab-card-actions">
+                    <Link className="mm-inline" to={casePath(locale, study.slug)} aria-label={locale === "en" ? `Open ${study.displayName} case study` : `Abrir caso de ${study.displayName}`}>
+                      {t.openCase} <ArrowRight aria-hidden="true" size={17} />
+                    </Link>
+                    {study.liveDemoUrl ? (
+                      <a
+                        href={study.liveDemoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mm-inline"
+                        aria-label={locale === "en" ? `Open ${study.displayName} live demo` : `Abrir demo en vivo de ${study.displayName}`}
+                      >
+                        {t.liveDemo} <ExternalLink aria-hidden="true" size={14} />
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+                </article>
+              ))}
             </div>
           </div>
-
-          {/* Franja 1: Lab demo (badge “Built by Puna · demo”) */}
-          <div className="franja-lab" aria-labelledby="lab-demos-heading">
-            <div className="shell">
-              <header className="franja-header">
-                <p className="eyebrow">{t.workLabEyebrow}</p>
-                <h2 id="lab-demos-heading">{t.workLabTitle}</h2>
-                <p>{t.workLabSubtitle}</p>
-              </header>
-              <div className="lab-demo-grid">
-                {labCases.map((study) => (
-                  <article className="lab-demo-card" key={study.slug}>
-                    <div>
-                      <div className="lab-demo-badge">
-                        <span className="lab-demo-dot" aria-hidden="true" />
-                        <span>{t.workLabBadge}</span>
-                      </div>
-                      <div className="lab-card-title">
-                        <h3>{study.displayName}</h3>
-                        <span className="lab-card-name">{study.sector.split("·")[0]}</span>
-                      </div>
-                      <p className="lab-card-desc">{study.summary}</p>
-                      <p className="lab-card-role">
-                        {locale === "en" ? "Internal lab product · execution proof" : "Producto de lab interno · prueba de ejecución"}
-                      </p>
-                    </div>
-                    <div className="lab-card-actions">
-                      <Link className="text-link" to={casePath(locale, study.slug)} aria-label={locale === "en" ? `Open ${study.displayName} case study` : `Abrir caso de ${study.displayName}`}>
-                        {t.openCase}
-                        <ArrowRight aria-hidden="true" size={17} />
-                      </Link>
-                      {study.liveDemoUrl && (
-                        <a
-                          href={study.liveDemoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="lab-live-link"
-                          aria-label={locale === "en" ? `Open ${study.displayName} live demo` : `Abrir demo en vivo de ${study.displayName}`}
-                        >
-                          <span>{t.liveDemo}</span>
-                          <ExternalLink aria-hidden="true" size={14} />
-                        </a>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-
         </section>
 
-        {/* PROCESS: Estructura preservada con CTA actualizado */}
-        <section id="process" className="section audit-section">
+        <section id="process" className="mm-section" aria-labelledby="audit-heading">
           <div className="shell">
-            <div className="audit-intro">
-              <div><p className="eyebrow eyebrow-dark">{t.auditEyebrow}</p><h2>{t.auditTitle}</h2></div>
-              <CalButton locale={locale} placement="audit_section" label={t.book} className="button-primary-terracotta" />
-            </div>
-            <ol className="audit-steps">
-              {t.auditSteps.map(([title, description], index) => <li key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{description}</p></li>)}
+            <header className="mm-heading">
+              <p className="eyebrow">{t.auditEyebrow}</p>
+              <h2 id="audit-heading" className="mm-h2"><span>{t.auditTitle}</span></h2>
+              <CalButton locale={locale} placement="audit_section" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
+            </header>
+            <ol className="mm-audit" data-mm-rise>
+              {t.auditSteps.map(([title, description], index) => (
+                <li className="mm-rise-item" key={title}>
+                  <article className="mm-card mm-tilt-inner">
+                    <span className="mm-kicker">0{index + 1}</span>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </article>
+                </li>
+              ))}
             </ol>
-            <div className="delivery-ribbon" aria-label={t.processTitle}>
-              <p>{t.processTitle}</p>
-              <ol>{t.process.map(([title, description], index) => <li key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{title}</strong><small>{description}</small></div></li>)}</ol>
+            <div className="mm-heading" style={{ marginTop: "3.5rem" }}>
+              <h2 className="mm-h2"><span>{t.processTitle}</span></h2>
+            </div>
+            <ol className="mm-process" data-mm-rise aria-label={t.processTitle}>
+              {t.process.map(([title, description], index) => (
+                <li className="mm-rise-item" key={title}>
+                  <article className="mm-card mm-tilt-inner">
+                    <span className="mm-kicker">{String(index + 1).padStart(2, "0")}</span>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                  </article>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <section className="mm-section mm-section-deep mm-faq" id="faq" aria-labelledby="faq-heading">
+          <div className="shell">
+            <header className="mm-heading">
+              <p className="eyebrow">FAQ</p>
+              <h2 id="faq-heading" className="mm-h2"><span>{t.faqTitle}</span></h2>
+              <Compass aria-hidden="true" />
+            </header>
+            <div className="mm-card">
+              <Accordion items={t.faqs as Array<[string, string]>} />
             </div>
           </div>
         </section>
 
-        {/* FAQ: Estructura preservada intacta */}
-        <section className="section faq-section" id="faq">
-          <div className="shell faq-grid">
-            <header className="section-heading"><p className="eyebrow">FAQ</p><h2>{t.faqTitle}</h2><Compass aria-hidden="true" /></header>
-            <Accordion items={t.faqs as Array<[string, string]>} />
-          </div>
-        </section>
-
-        {/* PILAR 3 & 4: FINAL SECTION - CTA único + Prueba social "nota editorial" + Brief form */}
-        <section className="section final-section" id="brief">
-          <div className="shell final-grid">
-            <div className="final-copy">
-              <p className="eyebrow eyebrow-dark">{locale === "en" ? "Start with the bottleneck" : "Empezá por el cuello de botella"}</p>
-              <h2>{t.finalTitle}</h2>
-              <p>{t.finalBody}</p>
-              <div className="cta-group" style={{ marginBottom: "2.5rem" }}>
-                <CalButton locale={locale} placement="final_audit" label={t.book} className="button-primary-terracotta" />
+        <section className="mm-section" id="brief">
+          <div className="shell mm-final">
+            <div>
+              <p className="eyebrow">{locale === "en" ? "Start with the bottleneck" : "Empezá por el cuello de botella"}</p>
+              <h2 className="mm-h2"><span>{t.finalTitle}</span></h2>
+              <p className="mm-dek">{t.finalBody}</p>
+              <div className="cta-group" style={{ marginTop: "1.5rem" }}>
+                <CalButton locale={locale} placement="final_audit" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
                 <a
                   href="#brief-form"
-                  className="button-ghost-burgundy button-ghost-burgundy-light"
+                  className="button-ghost-burgundy mm-btn mm-btn-ghost"
                   onClick={() => trackEvent("cta_click", { locale, placement: "final_cta", destination: "brief" })}
                 >
                   <span>{t.sendBrief}</span>
                   <ArrowRight aria-hidden="true" size={16} />
                 </a>
               </div>
-
             </div>
-
-            <div className="brief-card" id="brief-form">
+            <div className="mm-brief" id="brief-form">
               <p className="eyebrow">{locale === "en" ? "Written route" : "Por escrito"}</p>
               <h3>{t.briefTitle}</h3>
               <p>{t.briefBody}</p>

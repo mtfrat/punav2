@@ -8,7 +8,8 @@ function permitted(request: Request) {
   if (!origin) return true;
   try {
     const host = new URL(origin).hostname;
-    return host === "www.puna-tech.com" || host === "puna-tech.com" || host === "localhost" || host === "127.0.0.1";
+    if (host === "www.puna-tech.com" || host === "puna-tech.com" || host === "localhost" || host === "127.0.0.1") return true;
+    return host.endsWith(".vercel.app") && (host === "punav2.vercel.app" || host.startsWith("punav2-"));
   } catch { return false; }
 }
 
