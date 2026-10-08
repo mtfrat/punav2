@@ -324,19 +324,36 @@ function useAnimatedNumber(value: number) {
 }
 
 export function HoursCalculator({ locale }: { locale: Locale }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [revealed, setRevealed] = useState(false);
   const [hoursText, setHoursText] = useState("6");
   const [rateText, setRateText] = useState("8000");
   const perYear = parseHours(hoursText) * 52;
   const cost = perYear * parseRate(rateText);
-  const shownHours = useAnimatedNumber(perYear);
-  const shownCost = useAnimatedNumber(cost);
+  const shownHours = useAnimatedNumber(revealed ? perYear : 0);
+  const shownCost = useAnimatedNumber(revealed ? cost : 0);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node || reduceMotion()) {
+      setRevealed(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setRevealed(true);
+      observer.disconnect();
+    }, { threshold: 0.45 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
   const numberLocale = locale === "es" ? "es-AR" : "en-US";
   const hoursLabel = new Intl.NumberFormat(numberLocale, { maximumFractionDigits: 0 }).format(Math.round(shownHours));
   const costLabel = new Intl.NumberFormat(numberLocale, { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(Math.round(shownCost));
   const cta = locale === "es" ? "Precio cerrado después de una llamada de 15 min" : "Fixed price after a 15-minute call";
 
   return (
-    <section className="mm-section" id="horas" aria-labelledby="hours-heading">
+    <section className="mm-section" id="horas" aria-labelledby="hours-heading" ref={sectionRef}>
       <div className="shell">
         <header className="mm-heading" data-mm-heading>
           <p className="eyebrow">{locale === "es" ? "Tu tiempo" : "Your time"}</p>

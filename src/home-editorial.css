@@ -1,6 +1,11 @@
 /* Home editorial preview. Scoped so shared pages keep the existing chrome. */
 
-.mm-home { background: var(--paper); }
+.mm-home {
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  background: var(--paper);
+}
 .mm-home section { scroll-margin-top: 6.75rem; }
 
 .mm-section { padding: clamp(5rem, 9vw, 7.5rem) 0; }
@@ -152,7 +157,8 @@ a.mm-btn {
 /* Floating pill navigation */
 .site-header-editorial {
   position: fixed;
-  z-index: 200;
+  z-index: 1000;
+  isolation: isolate;
   top: 0;
   right: 0;
   left: 0;
@@ -161,6 +167,7 @@ a.mm-btn {
   backdrop-filter: none;
   pointer-events: none;
   padding: 16px 0 0;
+  transform: translateZ(0);
 }
 .editorial-pill-scale {
   width: min(1180px, calc(100% - 1.5rem));
