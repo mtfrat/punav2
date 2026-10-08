@@ -23,6 +23,12 @@ export interface ServiceContent {
   finalCtaTitle: string;
   finalCtaBody: string;
   finalCtaMicro?: string;
+  /** Shorter breadcrumb label. Falls back to eyebrow. */
+  breadcrumbName?: string;
+  /** Service JSON-LD overrides. Unset pages keep the shared defaults. */
+  schemaName?: string;
+  schemaServiceType?: string;
+  areaServed?: { "@type": "Country"; name: string } | string[];
 }
 
 export interface CaseStudyContent {
@@ -563,50 +569,61 @@ export const services: Record<Locale, ServiceContent[]> = {
     {
       key: "custom-software", slug: "software-a-medida", alternateSlug: "custom-software",
       eyebrow: "Software B2B a medida · Software factory",
-      title: "Software a medida para operaciones que necesitan un producto propio.",
-      description: "Diseñamos y entregamos plataformas web, herramientas internas y portales alrededor de los flujos, roles y permisos que realmente necesita tu negocio—no otro template genérico. El lab SaaS prueba ejecución; la entrega a clientes es el negocio.",
-      outcome: "Un producto enfocado, con arquitectura mantenible, roles claros y menos soluciones improvisadas—software que tu equipo pueda operar.",
+      title: "Software a medida en Argentina para pymes y empresas",
+      description: "Software a medida es un sistema hecho para cómo trabaja tu empresa: tus reglas, tus roles y tus datos, no un producto genérico al que te tenés que adaptar. Conviene cuando un proceso importante ya no entra en Tango, una planilla o un SaaS, y alguien del equipo lo resuelve a mano todos los días.",
+      outcome: "Un primer proceso en producción, a precio cerrado, con el código en manos de tu equipo.",
       problems: [
-        "Planillas funcionando como sistema crítico",
-        "Experiencias internas y de clientes desconectadas",
-        "Interfaces heredadas que complican tareas simples",
-        "Herramientas estándar que fuerzan workarounds en flujos core",
+        "La operación corre en una planilla que ya nadie se anima a tocar",
+        "Tango o el SaaS cubren lo estándar y el resto se resuelve por mail o WhatsApp",
+        "Zapier o n8n se traban cuando aparece una excepción",
+        "Cada cliente pide algo que el sistema enlatado no deja configurar",
       ],
       deliverables: [
-        "Alcance de producto y diseño de interacción",
-        "Frontend, backend, base de datos y despliegue",
-        "Pruebas, documentación y acompañamiento de lanzamiento",
-        "Propiedad explícita de repos, accesos y traspaso",
+        "Alcance, precio cerrado y fecha por escrito, antes de empezar",
+        "El sistema de ese proceso: pantallas, reglas y datos",
+        "Conexión con lo que ya usás, si se puede hacer de forma segura",
+        "Código, repositorio y accesos a nombre de tu empresa",
       ],
       architecture: ["Experiencia", "Aplicación", "Lógica de negocio", "Modelo de datos", "Despliegue cloud"],
       relatedCase: "plataforma-edtech-web3",
       metaTitle: "Software a medida Argentina | Puna Tech",
-      metaDescription: "Software B2B a medida, herramientas internas y portales para cómo opera tu empresa—con propiedad de tu equipo. Mapeá el cuello de botella en 15 min.",
+      metaDescription: "Software a medida en Argentina para pymes y empresas. Si Tango, la planilla o Zapier ya no alcanzan, agendá una llamada de 15 minutos.",
       hubBlurb: "Plataformas, herramientas internas y portales armados alrededor de tus flujos y permisos.",
+      breadcrumbName: "Software a medida",
+      schemaName: "Software a medida",
+      schemaServiceType: "Desarrollo de software a medida",
+      areaServed: { "@type": "Country", name: "Argentina" },
       commercialSections: [
         {
-          heading: "Para quién es / cuándo contratar",
-          body: "Contratá desarrollo de software a medida / software factory cuando un flujo crítico necesita permisos, reglas de datos o integraciones que las herramientas estándar no resuelven bien—o cuando planillas y portales desconectados ya son el sistema real. Encaja con PyMEs y mid-market B2B que necesitan herramientas internas, portales operativos o un producto para clientes que el stack actual no cubre.",
+          heading: "Cuándo conviene software a medida y cuándo alcanza lo enlatado",
+          body: "Un sistema enlatado alcanza si el proceso cabe en Tango, en un SaaS del rubro o en una planilla que alguien puede mantener. Conviene software a medida cuando la excepción ya es el trabajo: permisos por persona, un flujo que cruza varias herramientas, o una planilla que se rompe si falta quien la arma. Zapier y n8n sirven para conectar pasos simples. Cuando el canvas pasa a ser el sistema, lo contamos en [cuándo dejar Zapier o n8n por software a medida](/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida).",
         },
         {
-          heading: "Qué construimos",
-          body: "Arrancamos por el cuello de botella y el alcance mínimo útil. Entrega tipo factory: avances revisables, decisiones técnicas visibles y una base mantenible.",
+          heading: "Qué sistemas hacemos",
+          body: "Empezamos por el trabajo que hoy hace una persona, no por un catálogo de productos. Estos son ejemplos de todos los días, no clientes nuestros.",
           bullets: [
-            "Herramientas internas y dashboards operativos",
-            "Portales de clientes / partners con permisos reales",
-            "Aplicaciones web B2B armadas alrededor del flujo",
-            "Capas a medida que extienden (no reemplazan a ciegas) el stack actual",
+            "Turnos. Por ejemplo, una clínica o un taller donde los turnos viven en una planilla y se pisan. Un sistema propio cruza la agenda y deja las excepciones a la vista.",
+            "Stock y pedidos. Por ejemplo, una distribuidora que recibe pedidos por WhatsApp y los carga a mano. El pedido se puede armar con el precio y el stock reales. Lo vemos en [pedidos por WhatsApp](/es/automatizaciones/pedidos-por-whatsapp).",
+            "Portal de clientes. Por ejemplo, una empresa que manda el estado de cuenta por mail. Un portal muestra pedidos, facturas y saldos, con un acceso por cliente.",
+            "Cobranzas. Por ejemplo, un comercio que cobra por Mercado Pago y concilia en Excel. Cada pago puede quedar asociado a su factura. Lo vemos en [integrar Mercado Pago](/es/integraciones/mercado-pago).",
+            "Facturas de proveedores. Por ejemplo, una distribuidora que tipea cada PDF en el sistema. Se leen, se validan y se cargan, y el equipo revisa solo las dudosas. Lo vemos en [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores).",
+            "Reportes. Por ejemplo, un equipo que arma el Excel de la semana copiando de tres sistemas. El reporte sale de los datos que ya están.",
+            "Integraciones con lo que ya usás: Mercado Pago, WhatsApp, Tango, planillas o un CRM. Si se puede conectar, no lo reemplazamos.",
           ],
         },
         {
-          heading: "Cómo funciona el engagement",
-          body: "La propiedad del código, la infraestructura y los accesos queda explícita en la propuesta. Sin dependencia oculta.",
+          heading: "Cómo trabajamos y en cuánto tiempo",
+          body: "Puna Tech es una empresa de software a medida en Buenos Aires. La oferta es esta: entregamos un primer proceso en 2 semanas a precio cerrado. Antes de arrancar acordamos por escrito qué entra, qué no, el precio y la fecha. Si tu proceso no entra en 2 semanas, te lo decimos en la primera llamada, en lugar de estirar el proyecto.",
           bullets: [
-            "Descubrir — Flujo, datos, riesgos y resultado de negocio.",
-            "Diseñar — Alcance mínimo útil, arquitectura y experiencia.",
-            "Construir — Avances revisables con QA.",
-            "Lanzar — Despliegue, documentación, adopción y siguiente mejora.",
+            "Llamada de 15 minutos. Nos contás cómo funciona hoy, qué sistemas toca y dónde se traba.",
+            "Propuesta cerrada. Alcance, precio y fecha por escrito. Recién ahí se arranca.",
+            "2 semanas. Construimos ese primer proceso, lo conectamos con lo que ya usás y lo dejamos andando con tu equipo.",
+            "Si hace falta más (un portal, varios flujos, un sistema de stock entero), el plazo va en la propuesta. No prometemos un sistema completo en 2 semanas.",
           ],
+        },
+        {
+          heading: "De quién es el código",
+          body: "El código es de tu empresa. El desarrollo de software a medida termina en un sistema tuyo: el repositorio, dónde está hosteado y quién tiene los accesos quedan escritos en la propuesta. No nos quedamos con una licencia. Si después querés que otro equipo lo mantenga, puede. El repo y la documentación van con la entrega.",
         },
       ],
       proofStrip: [
@@ -615,15 +632,15 @@ export const services: Record<Locale, ServiceContent[]> = {
         { slug: "viralyt-inteligencia-youtube", caption: "Viralyt — inteligencia de outliers en YouTube (Lab · prueba de ejecución)" },
       ],
       faqs: [
-        ["¿Cuándo conviene el software a medida frente a uno estándar?", "Cuando un flujo crítico necesita permisos, reglas de datos o integraciones que las herramientas estándar no resuelven bien. Primero evaluamos conectar o extender el stack actual."],
-        ["¿Reemplazan nuestras herramientas actuales?", "En general, no. Primero conectamos y extendemos. Reemplazo solo cuando la limitación lo vuelve necesario."],
-        ["¿Podemos empezar con un alcance pequeño?", "Sí. El primer proyecto debe demostrar un resultado útil, revelar riesgos de integración y dejar una base de producción."],
-        ["¿Quién es dueño del software y los datos?", "Propiedad, repos, infraestructura, accesos y traspaso quedan explícitos en la propuesta. Sin dependencia oculta."],
-        ["¿Cuánto cuesta un proyecto?", "Discovery o una primera herramienta interna puede empezar por debajo de un producto completo. El alcance y el riesgo definen la inversión; calificamos presupuesto en privado."],
+        ["¿Cuánto cuesta el software a medida?", "El precio es cerrado y te lo pasamos después de una llamada de 15 minutos, cuando ya vimos qué proceso entra. No publicamos rangos: una carga de facturas y un portal de clientes no son el mismo trabajo. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
+        ["¿Cuánto tarda?", "Un primer proceso lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. Si lo que necesitás es más grande, el plazo va en la propuesta. No prometemos un sistema completo en 2 semanas."],
+        ["¿Quién es dueño del código?", "Tu empresa. El repositorio, el código y los accesos se entregan con el sistema y quedan escritos en la propuesta."],
+        ["¿Hay soporte después de la entrega?", "En la entrega dejamos el sistema andando y la documentación para operarlo. Si querés que sigamos (fallas, cambios chicos o una guardia), lo acordamos aparte y por escrito. No está incluido en las 2 semanas salvo que la propuesta lo diga."],
+        ["¿Se integra con lo que ya uso?", "Sí, cuando hay una forma segura de conectarlo: una API, un archivo de importación o la base de datos. Lo hacemos con Tango, planillas, Mercado Pago, WhatsApp, un CRM o un sistema propio. Si no se puede conectar sin un atajo frágil, te lo decimos en la llamada, antes de prometerlo."],
       ],
-      finalCtaTitle: "En 15 minutos mapeamos la restricción y definimos el próximo paso útil.",
-      finalCtaBody: "Software a medida, herramientas internas—o no construir todavía.",
-      finalCtaMicro: "Quince minutos. El cuello de botella, las opciones y el próximo paso útil.",
+      finalCtaTitle: "En 15 minutos vemos si tu proceso entra en 2 semanas.",
+      finalCtaBody: "Contanos cómo lo hacen hoy. Si alcanza con Tango, una planilla o lo que ya tienen, también te lo decimos.",
+      finalCtaMicro: "Quince minutos. El proceso, el alcance y el precio cerrado.",
     },
     {
       key: "data-integrations", slug: "integraciones-de-datos", alternateSlug: "data-integrations",

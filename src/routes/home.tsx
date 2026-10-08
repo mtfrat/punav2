@@ -79,6 +79,18 @@ function SystemMap({ study, compact = false }: { study: CaseStudyContent; compac
   );
 }
 
+function linkPhrase(text: string, phrase: string, to: string) {
+  const index = text.indexOf(phrase);
+  if (index === -1) return text;
+  return (
+    <>
+      {text.slice(0, index)}
+      <Link to={to}>{phrase}</Link>
+      {text.slice(index + phrase.length)}
+    </>
+  );
+}
+
 function HeroTitle({ title, italic }: { title: string; italic: string }) {
   const index = title.indexOf(italic);
   if (index === -1) return title;
@@ -265,7 +277,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               <header className="mm-heading">
                 <p className="eyebrow">{t.latamEyebrow}</p>
                 <h2 id="latam-ar-heading" className="mm-h2"><span>{t.latamTitle}</span></h2>
-                <p className="mm-dek">{t.latamBody}</p>
+                <p className="mm-dek">{locale === "es" ? linkPhrase(t.latamBody, "software a medida", "/es/servicios/software-a-medida") : t.latamBody}</p>
                 <div className="cta-group" style={{ marginTop: "1.5rem" }}>
                   <CalButton locale={locale} placement="es_latam_block" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
                   <a

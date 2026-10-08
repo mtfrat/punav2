@@ -145,7 +145,7 @@ const serviceGuideExpectations = [
     ["/blog/when-to-leave-zapier-n8n-for-custom-software", "When to leave Zapier or n8n for custom software"],
     ["/blog/audit-crm-integration-commercial-follow-up", "How to audit a CRM integration and commercial follow-up workflow"],
   ]],
-  ["/es/servicios/software-a-medida", "Software a medida para operaciones que necesitan un producto propio.", "Guías relacionadas", [
+  ["/es/servicios/software-a-medida", "Software a medida en Argentina para pymes y empresas", "Guías relacionadas", [
     ["/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", "Cuándo dejar Zapier o n8n por software a medida"],
     ["/es/blog/auditar-integracion-crm-seguimiento-comercial", "Cómo auditar una integración CRM y el seguimiento comercial"],
   ]],
@@ -192,6 +192,61 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
 for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!html.includes(`href="${href}"`)) failures.push(`${route}: missing internal link to ${href}`);
+}
+
+{
+  const route = "/es/servicios/software-a-medida";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes("<title>Software a medida Argentina | Puna Tech</title>")) failures.push(`${route}: target-query title missing`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Software a medida en Argentina") || description.length > 155 || !description.includes("agendá")) {
+    failures.push(`${route}: target-query meta description (${description.length})`);
+  }
+  for (const heading of [
+    "Cuándo conviene software a medida y cuándo alcanza lo enlatado",
+    "Qué sistemas hacemos",
+    "Cómo trabajamos y en cuánto tiempo",
+    "De quién es el código",
+  ]) {
+    if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
+  }
+  if (!html.includes("entregamos un primer proceso en 2 semanas a precio cerrado")) failures.push(`${route}: 2-week fixed-price offer missing`);
+  if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: examples are not labeled as examples`);
+  for (const path of [
+    "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida",
+    "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/integraciones/mercado-pago",
+    "/es/automatizaciones/pedidos-por-whatsapp",
+  ]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
+  }
+  if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  for (const question of ["¿Cuánto cuesta el software a medida?", "¿Cuánto tarda?", "¿Quién es dueño del código?", "¿Hay soporte después de la entrega?", "¿Se integra con lo que ya uso?"]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  const costAnswer = (faq?.mainEntity || []).find((item) => item.name === "¿Cuánto cuesta el software a medida?")?.acceptedAnswer?.text || "";
+  if (!/precio cerrado/i.test(costAnswer) || /\$\s?\d|\d+\s*(?:usd|dólares|dolares)/i.test(costAnswer)) failures.push(`${route}: cost FAQ is not a closed price after the call`);
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Desarrollo de software a medida") failures.push(`${route}: Service schema serviceType mismatch`);
+  const area = JSON.stringify(service?.areaServed || {});
+  if (!area.includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  if (!crumbs) failures.push(`${route}: BreadcrumbList JSON-LD missing`);
+  if (!html.includes('rel="canonical" href="https://www.puna-tech.com/es/servicios/software-a-medida"')) failures.push(`${route}: canonical changed`);
+  if (!html.includes('href="https://www.puna-tech.com/services/custom-software"')) failures.push(`${route}: English hreflang target changed`);
+  if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
+}
+
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
+    failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
+  }
 }
 
 for (const route of ["/services/data-integrations", "/es/servicios/integraciones-de-datos"]) {
@@ -386,7 +441,7 @@ else {
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }

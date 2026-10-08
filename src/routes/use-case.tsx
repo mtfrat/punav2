@@ -175,6 +175,9 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
         <section className="related-guides" aria-labelledby="related-solutions-heading">
           <div className="shell">
             <h2 id="related-solutions-heading">Relacionado</h2>
+            <p className="related-guides-note">
+              Si este proceso ya pide pantallas, permisos o reglas que no entran en la herramienta, lo vemos como <Link to="/es/servicios/software-a-medida">software a medida</Link>.
+            </p>
             <ol className="related-guide-list">
               {[
                 ...siblings.map((item) => ({ path: item.path, title: item.cardTitle })),

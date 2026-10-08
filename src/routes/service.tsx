@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
@@ -19,6 +19,21 @@ import { notFoundDocumentMeta, localeFromPathname } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
 export { PublicNotFoundBoundary as ErrorBoundary };
+
+function RichText({ text }: { text: string }) {
+  const nodes: ReactNode[] = [];
+  const pattern = /\[([^\]]+)\]\((\/(?!\/)[^)\s]+)\)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text))) {
+    const index = match.index;
+    if (index > last) nodes.push(text.slice(last, index));
+    nodes.push(<Link key={`${match[2]}-${index}`} to={match[2]}>{match[1]}</Link>);
+    last = index + match[0].length;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return nodes;
+}
 
 const serviceGuides: Record<string, Record<Locale, Array<{ path: string; title: string }>>> = {
   "custom-software": {
@@ -78,11 +93,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     path,
     alternatePath,
     schema: [
-      { "@context": "https://schema.org", "@type": "Service", name: service.eyebrow, serviceType: service.eyebrow, description: service.metaDescription, url: `https://www.puna-tech.com${path}`, inLanguage: locale === "en" ? "en" : "es-AR", provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: ["US", "Latin America", "AR"] },
+      { "@context": "https://schema.org", "@type": "Service", name: service.schemaName || service.eyebrow, serviceType: service.schemaServiceType || service.eyebrow, description: service.metaDescription, url: `https://www.puna-tech.com${path}`, inLanguage: locale === "en" ? "en" : "es-AR", provider: { "@id": "https://www.puna-tech.com/#organization" }, areaServed: service.areaServed || ["US", "Latin America", "AR"] },
       breadcrumbSchema([
         { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
         { name: locale === "en" ? "Services" : "Servicios", path: servicesHubPath(locale) },
-        { name: service.eyebrow, path },
+        { name: service.breadcrumbName || service.eyebrow, path },
       ]),
       faqSchema,
     ],
@@ -141,10 +156,10 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
                 <h2>{section.heading}</h2>
                 {section.bullets && section.bullets.length > 0 ? (
                   <ul className="commercial-bullet-list">
-                    {section.bullets.map((item) => <li key={item}>{item}</li>)}
+                    {section.bullets.map((item) => <li key={item}><RichText text={item} /></li>)}
                   </ul>
                 ) : null}
-                <p>{section.body}</p>
+                <p><RichText text={section.body} /></p>
               </article>
             ))}
           </div>
