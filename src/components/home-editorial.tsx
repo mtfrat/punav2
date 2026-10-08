@@ -25,7 +25,7 @@ export function RidgeField({ caption, badge }: { caption: ReactNode; badge: stri
         </div>
       ))}
       <figcaption className="mm-ridge-caption">
-        {caption}
+        <div className="mm-ridge-words">{caption}</div>
         <span className="mm-ridge-badge">{badge}</span>
       </figcaption>
     </figure>

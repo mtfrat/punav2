@@ -118,8 +118,10 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             <h1 className="mm-display">
               <HeroTitle title={t.heroTitle} italic={t.heroItalic} />
             </h1>
-            <p className="mm-hero-body mm-intro mm-d2">{t.heroBody}</p>
-            <p className="mm-hero-body mm-intro mm-d3">{t.heroCompare}</p>
+            <div className="mm-hero-lede">
+              <p className="mm-hero-body mm-intro mm-d2">{t.heroBody}</p>
+              <p className="mm-hero-body mm-intro mm-d3">{t.heroCompare}</p>
+            </div>
             <div className="cta-group mm-hero-actions mm-intro mm-d4">
               <CalButton locale={locale} placement="hero_audit" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
               <a
