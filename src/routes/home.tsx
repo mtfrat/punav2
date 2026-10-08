@@ -232,7 +232,7 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               <h2 id="compare-heading" className="mm-h2"><span>{t.compareTitle}</span></h2>
             </header>
             <div className="mm-table-wrap">
-              <table className="mm-table compare-table">
+              <table className="mm-table compare-table" aria-labelledby="compare-heading">
                 <thead>
                   <tr>
                     <th scope="col" />
