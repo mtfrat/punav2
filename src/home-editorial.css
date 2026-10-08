@@ -530,28 +530,36 @@ a.mm-btn {
   position: relative;
   background: var(--burgundy);
   color: var(--paper);
-  padding-top: calc(clamp(72px, 9vw, 120px) + 3.25rem);
+  padding-top: calc(clamp(96px, 10vw, 140px) + 3.25rem);
 }
 .footer-wave {
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
-  height: clamp(72px, 9vw, 120px);
+  height: clamp(96px, 10vw, 140px);
+  overflow: hidden;
   pointer-events: none;
 }
 .footer-wave svg {
   position: absolute;
   top: 0;
   display: block;
+  height: calc(100% + 2px);
+}
+.footer-wave svg.footer-wave-sheet {
+  left: -1%;
+  width: 102%;
+}
+.footer-wave .footer-wave-ridge {
+  left: -50%;
+  width: 220%;
+  height: calc(100% + 2px);
+}
+.footer-wave .footer-wave-ridge svg {
   width: 100%;
-  height: calc(100% + 1px);
+  height: 100%;
 }
-.footer-wave-ridge {
-  left: -8%;
-  width: 116%;
-}
-.footer-wave-sheet { left: 0; }
 @media (prefers-reduced-motion: no-preference) {
   .footer-wave-ridge {
     animation: footer-ridge-drift 18s cubic-bezier(0.22, 1, 0.36, 1) infinite alternate;
@@ -559,7 +567,7 @@ a.mm-btn {
 }
 @keyframes footer-ridge-drift {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-3.5%, 0, 0); }
+  to { transform: translate3d(-12%, 0, 0); }
 }
 .site-footer-editorial .brand,
 .site-footer-editorial .brand-name small,
@@ -651,6 +659,10 @@ a.mm-btn {
   .mm-hero-lede { grid-template-columns: 1.15fr 0.85fr; align-items: start; }
 }
 @media (max-width: 720px) {
+  .footer-wave { height: 132px; }
+  .site-footer-editorial { padding-top: calc(132px + 1.25rem); padding-bottom: 1rem; }
+  .site-footer-editorial .footer-grid { gap: 1rem; padding-bottom: 1.25rem; }
+  .site-footer-editorial .footer-grid > div:first-child p { margin-top: 0.55rem; }
   .site-header-editorial .editorial-pill { box-shadow: 0 0 0 6px var(--paper); }
   .mm-home h1.mm-display { font-size: clamp(2.15rem, 9.8vw, 2.85rem); margin-bottom: 0.55rem; }
   .mm-home h2.mm-h2 { font-size: clamp(2.05rem, 9vw, 2.7rem); }
