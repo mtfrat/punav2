@@ -57,6 +57,11 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
             <h1>{hub.title}</h1>
             <p className="hero-lead">{hub.lead}</p>
             <p className="hero-intro">{hub.intro}</p>
+            {locale === "es" ? (
+              <p className="hero-intro">
+                Si Tango, la planilla o un SaaS ya no alcanzan, el camino es <Link to="/es/servicios/software-a-medida">software a medida</Link>.
+              </p>
+            ) : null}
             <div className="cta-group">
               <CalButton locale={locale} placement="services_hub" label={t.book} className="button-primary-terracotta" />
               <a

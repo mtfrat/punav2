@@ -29,6 +29,7 @@
 }
 .mm-h2 > span { display: block; }
 .mm-dek { max-width: 40rem; margin: 1rem 0 0; font-size: 1.05rem; line-height: 1.55; }
+.mm-dek a { font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
 
 .mm-card {
   height: 100%;
