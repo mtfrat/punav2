@@ -192,11 +192,27 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
   );
 }
 
+function FooterWave() {
+  return (
+    <div className="footer-wave" aria-hidden="true">
+      <svg className="footer-wave-ridge" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path fill="#C4623A" d="M0 78 L140 46 L280 86 L430 40 L600 82 L760 48 L940 90 L1100 52 L1260 84 L1440 58 L1440 120 L0 120 Z" />
+        <path fill="#E4C3AE" d="M0 96 L180 70 L340 104 L520 74 L700 108 L880 78 L1060 110 L1240 82 L1440 100 L1440 120 L0 120 Z" />
+      </svg>
+      <svg className="footer-wave-sheet" viewBox="0 0 1440 60" preserveAspectRatio="none">
+        <path fill="var(--paper)" d="M0 60L48 52C96 44 192 28 288 22C384 16 480 20 576 26C672 32 768 40 864 42C960 44 1056 40 1152 34C1248 28 1344 20 1392 16L1440 12V0H1392C1344 0 1248 0 1152 0C1056 0 960 0 864 0C768 0 672 0 576 0C480 0 384 0 288 0C192 0 96 0 48 0H0V60Z" />
+      </svg>
+    </div>
+  );
+}
+
 export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chrome?: "default" | "editorial" }) {
   const year = new Date().getFullYear();
   const home = locale === "en" ? "/" : "/es";
+  const editorial = chrome === "editorial";
   return (
-    <footer className={`site-footer${chrome === "editorial" ? " site-footer-editorial" : ""}`}>
+    <footer className={`site-footer${editorial ? " site-footer-editorial" : ""}`}>
+      {editorial ? <FooterWave /> : null}
       <div className="shell footer-grid">
         <div><Brand /><p>{copy[locale].footerLine}</p></div>
         <div className="footer-links">
