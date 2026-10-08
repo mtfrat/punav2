@@ -632,7 +632,7 @@ export const services: Record<Locale, ServiceContent[]> = {
         { slug: "viralyt-inteligencia-youtube", caption: "Viralyt — inteligencia de outliers en YouTube (Lab · prueba de ejecución)" },
       ],
       faqs: [
-        ["¿Cuánto cuesta el software a medida?", "El precio es cerrado y te lo pasamos después de una llamada de 15 minutos, cuando ya vimos qué proceso entra. No publicamos rangos: una carga de facturas y un portal de clientes no son el mismo trabajo. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
+        ["¿Cuánto cuesta el software a medida?", "Te pasamos un precio cerrado después de una llamada de 15 minutos, cuando ya vimos qué proceso entra. No publicamos rangos: una carga de facturas y un portal de clientes no son el mismo trabajo. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
         ["¿Cuánto tarda?", "Un primer proceso lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. Si lo que necesitás es más grande, el plazo va en la propuesta. No prometemos un sistema completo en 2 semanas."],
         ["¿Quién es dueño del código?", "Tu empresa. El repositorio, el código y los accesos se entregan con el sistema y quedan escritos en la propuesta."],
         ["¿Hay soporte después de la entrega?", "En la entrega dejamos el sistema andando y la documentación para operarlo. Si querés que sigamos (fallas, cambios chicos o una guardia), lo acordamos aparte y por escrito. No está incluido en las 2 semanas salvo que la propuesta lo diga."],
