@@ -137,11 +137,12 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
               <Check aria-hidden="true" size={16} />
               <span>{t.heroMicrocopy}</span>
             </p>
+            <p className="mm-hero-caption mm-intro mm-d5">
+              <span>{locale === "en" ? <>Repetitive handoffs, <em>into the system.</em></> : <>Lo repetitivo, <em>al sistema.</em></>}</span>
+              <span className="mm-hero-badge">{locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}</span>
+            </p>
           </div>
-          <RidgeField
-            badge={locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}
-            caption={locale === "en" ? <>Repetitive handoffs,<br /><em>into the system.</em></> : <>Lo repetitivo,<br /><em>al sistema.</em></>}
-          />
+          <RidgeField />
         </section>
 
         <section className="mm-proof" aria-label={locale === "en" ? "Puna Tech delivery principles" : "Principios de entrega de Puna Tech"}>

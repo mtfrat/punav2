@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { contactPath, type Locale } from "../content/site";
 import { trackEvent } from "./tracking";
@@ -14,20 +14,16 @@ const RIDGES = [
   { depth: "1", fill: "#1A1410", d: "M0 236 L160 204 L300 246 L470 188 L650 236 L830 196 L1000 242 L1160 200 L1320 230 L1440 208 L1440 280 L0 280 Z" },
 ] as const;
 
-export function RidgeField({ caption, badge }: { caption: ReactNode; badge: string }) {
+export function RidgeField() {
   return (
-    <figure className="mm-ridges" data-mm-ridges>
+    <figure className="mm-ridges" data-mm-ridges aria-hidden="true">
       {RIDGES.map((ridge) => (
         <div className="mm-ridge-parallax" data-ridge={ridge.depth} key={ridge.fill}>
-          <svg className="mm-ridge-intro" viewBox="0 0 1440 280" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+          <svg className="mm-ridge-intro" viewBox="0 0 1440 280" preserveAspectRatio="xMidYMax slice">
             <path d={ridge.d} fill={ridge.fill} />
           </svg>
         </div>
       ))}
-      <figcaption className="mm-ridge-caption">
-        <div className="mm-ridge-words">{caption}</div>
-        <span className="mm-ridge-badge">{badge}</span>
-      </figcaption>
     </figure>
   );
 }
