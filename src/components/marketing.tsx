@@ -202,7 +202,7 @@ function FooterWave() {
         </svg>
       </div>
       <svg className="footer-wave-sheet" viewBox="0 0 1440 60" preserveAspectRatio="none">
-        <path fill="var(--paper)" d="M0 60L48 52C96 44 192 28 288 22C384 16 480 20 576 26C672 32 768 40 864 42C960 44 1056 40 1152 34C1248 28 1344 20 1392 16L1440 12V0H1392C1344 0 1248 0 1152 0C1056 0 960 0 864 0C768 0 672 0 576 0C480 0 384 0 288 0C192 0 96 0 48 0H0V60Z" />
+        <path fill="var(--paper)" d="M0 32C96 34 192 28 288 22C384 16 480 20 576 26C672 32 768 40 864 42C960 44 1056 40 1152 34C1248 28 1344 20 1392 16L1440 12V0H0Z" />
       </svg>
     </div>
   );

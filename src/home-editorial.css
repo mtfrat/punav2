@@ -546,12 +546,15 @@ a.mm-btn {
   top: 0;
   display: block;
   height: calc(100% + 2px);
+  max-width: none;
 }
 .footer-wave svg.footer-wave-sheet {
-  left: -1%;
-  width: 102%;
+  left: -16px;
+  width: calc(100% + 32px);
 }
 .footer-wave .footer-wave-ridge {
+  position: absolute;
+  top: 0;
   left: -50%;
   width: 220%;
   height: calc(100% + 2px);
