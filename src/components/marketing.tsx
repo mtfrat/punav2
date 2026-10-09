@@ -3,7 +3,6 @@ import type * as React from "react";
 import { Form, Link, useFetcher, useLocation, useMatches } from "react-router";
 import {
   ArrowRight,
-  Bot,
   Check,
   ChevronDown,
   ExternalLink,
@@ -11,8 +10,9 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { CAL_LINK, CONTACT_EMAIL, casesHubPath, contactPath, copy, servicesHubPath, type Locale } from "../content/site";
+import { CAL_LINK, CONTACT_EMAIL, casesHubPath, chromeCopy, contactPath, servicesHubPath, type Locale } from "../content/chrome";
 import { languageSwitchPath, routeAlternatePath } from "../lib/locale-switch";
+import { afterWindowLoadIdle } from "./defer";
 import { trackEvent } from "./tracking";
 export { trackEvent } from "./tracking";
 
@@ -72,11 +72,11 @@ export function CalButton({ locale, placement, className = "", compact = false, 
       href={`https://cal.com/${CAL_LINK}`}
       onClick={openCal}
       className={`button-primary ${compact ? "button-compact" : ""} ${className}`}
-      aria-label={label || copy[locale].book}
+      aria-label={label || chromeCopy[locale].book}
       aria-busy={loading}
     >
       {dot ? <span className="nav-dot" aria-hidden="true" /> : null}
-      <span>{loading ? (locale === "en" ? "Opening calendar…" : "Abriendo calendario…") : (label || copy[locale].book)}</span>
+      <span>{loading ? (locale === "en" ? "Opening calendar…" : "Abriendo calendario…") : (label || chromeCopy[locale].book)}</span>
       {dot ? null : <ArrowRight aria-hidden="true" size={18} />}
     </a>
   );
@@ -100,7 +100,7 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
   const [compact, setCompact] = useState(false);
   const location = useLocation();
   const editorial = chrome === "editorial";
-  const t = copy[locale];
+  const t = chromeCopy[locale];
   const home = locale === "en" ? "/" : "/es";
   const servicesAnchor = servicesHubPath(locale);
   const workAnchor = casesHubPath(locale);
@@ -216,10 +216,10 @@ export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chr
     <footer className={`site-footer${editorial ? " site-footer-editorial" : ""}`}>
       {editorial ? <FooterWave /> : null}
       <div className="shell footer-grid">
-        <div><Brand /><p>{copy[locale].footerLine}</p></div>
+        <div><Brand /><p>{chromeCopy[locale].footerLine}</p></div>
         <div className="footer-links">
-          <Link to={servicesHubPath(locale)}>{copy[locale].nav.services}</Link>
-          <Link to={casesHubPath(locale)}>{copy[locale].nav.work}</Link>
+          <Link to={servicesHubPath(locale)}>{chromeCopy[locale].nav.services}</Link>
+          <Link to={casesHubPath(locale)}>{chromeCopy[locale].nav.work}</Link>
           <Link to={locale === "en" ? "/services/custom-software" : "/es/servicios/software-a-medida"}>{locale === "en" ? "Custom software" : "Software a medida"}</Link>
           <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
         </div>
@@ -236,6 +236,23 @@ export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chr
   );
 }
 
+function DeferredAssistant({ locale }: { locale: Locale }) {
+  const [AssistantView, setAssistantView] = useState<React.ComponentType<{ locale: Locale }> | null>(null);
+  useEffect(() => {
+    let active = true;
+    const cancel = afterWindowLoadIdle(() => {
+      void import("./assistant").then((mod) => {
+        if (active) setAssistantView(() => mod.Assistant);
+      });
+    });
+    return () => {
+      active = false;
+      cancel();
+    };
+  }, []);
+  return AssistantView ? <AssistantView locale={locale} /> : null;
+}
+
 export function PageShell({ locale, children, includeChat = true, chrome = "default" }: { locale: Locale; children: React.ReactNode; includeChat?: boolean; chrome?: "default" | "editorial" }) {
   return (
     <>
@@ -243,7 +260,7 @@ export function PageShell({ locale, children, includeChat = true, chrome = "defa
       <SiteHeader locale={locale} chrome={chrome} />
       {children}
       <SiteFooter locale={locale} chrome={chrome} />
-      {includeChat ? <Assistant locale={locale} /> : null}
+      {includeChat ? <DeferredAssistant locale={locale} /> : null}
     </>
   );
 }
@@ -304,103 +321,8 @@ export function ProjectBrief({ locale, placement = "final_cta" }: { locale: Loca
       {fieldErrors.consent && <small id="brief-consent-error" className="field-error">{fieldErrors.consent}</small>}
       <Link className="privacy-inline" to={locale === "en" ? "/privacy" : "/es/privacidad"}>{locale === "en" ? "Read the privacy policy" : "Leer la política de privacidad"}</Link>
       {fetcher.data?.error ? <p className="form-error" role="alert">{fetcher.data.error}</p> : null}
-      <button className="button-secondary button-submit" type="submit" disabled={busy}>{busy ? (locale === "en" ? "Sending…" : "Enviando…") : copy[locale].nav.brief}<Send aria-hidden="true" size={17} /></button>
+      <button className="button-secondary button-submit" type="submit" disabled={busy}>{busy ? (locale === "en" ? "Sending…" : "Enviando…") : chromeCopy[locale].nav.brief}<Send aria-hidden="true" size={17} /></button>
     </fetcher.Form>
-  );
-}
-
-type ChatMessage = { role: "user" | "assistant"; content: string };
-
-export function Assistant({ locale }: { locale: Locale }) {
-  const [open, setOpen] = useState(false);
-  const [available, setAvailable] = useState(false);
-  const [consented, setConsented] = useState(false);
-  const [consentChecked, setConsentChecked] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const qualified = useRef(false);
-  const title = locale === "en" ? "Project assistant" : "Asistente de proyectos";
-
-  useEffect(() => {
-    const updateAvailability = () => {
-      if (window.scrollY <= Math.min(620, window.innerHeight * 0.8)) return;
-      setAvailable(true);
-      window.removeEventListener("scroll", updateAvailability);
-    };
-    updateAvailability();
-    window.addEventListener("scroll", updateAvailability, { passive: true });
-    return () => window.removeEventListener("scroll", updateAvailability);
-  }, []);
-
-  useEffect(() => {
-    const userMessages = messages.filter((message) => message.role === "user").length;
-    if (userMessages < 2 || qualified.current) return;
-    qualified.current = true;
-    trackEvent("chat_qualified", { locale, service_interest: "undetermined" });
-  }, [locale, messages]);
-
-  function openAssistant() {
-    setOpen(true);
-    trackEvent("chat_open", { locale });
-  }
-
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    const message = input.trim();
-    if (!message || busy) return;
-    const next = [...messages, { role: "user" as const, content: message }];
-    setMessages(next);
-    setInput("");
-    setBusy(true);
-    setError("");
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ locale, messages: next.slice(-8) }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Request failed");
-      setMessages((current) => [...current, { role: "assistant", content: data.message }]);
-    } catch {
-      setError(locale === "en" ? "The assistant is unavailable. You can still book a call or email us." : "El asistente no está disponible. Podés agendar una llamada o escribirnos.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (!available && !open) return null;
-
-  return (
-    <div className="assistant-wrap">
-      {open ? (
-        <section className="assistant-panel" aria-label={title}>
-          <header><div><Bot aria-hidden="true" size={18} /><strong>{title}</strong></div><button type="button" onClick={() => setOpen(false)} aria-label={locale === "en" ? "Close assistant" : "Cerrar asistente"}><X aria-hidden="true" /></button></header>
-          {!consented ? (
-            <div className="assistant-consent">
-              <p>{locale === "en" ? "Messages are sent to an AI provider to generate a reply. Puna Tech does not add this chat to its lead database." : "Los mensajes se envían a un proveedor de IA para generar la respuesta. Puna Tech no incorpora este chat a su base de leads."}</p>
-              <label className="consent-field"><input type="checkbox" checked={consentChecked} onChange={(event) => setConsentChecked(event.target.checked)} /><span>{locale === "en" ? "I understand and want to continue." : "Entiendo y quiero continuar."}</span></label>
-              <button type="button" className="button-secondary" disabled={!consentChecked} onClick={() => setConsented(true)}>{locale === "en" ? "Start assistant" : "Iniciar asistente"}</button>
-            </div>
-          ) : (
-            <>
-              <div className="assistant-messages" aria-live="polite">
-                <p className="assistant-message assistant-message-bot">{locale === "en" ? "Tell me which workflow or system is creating friction. I can help frame the problem before a call." : "Contame qué flujo o sistema está generando fricción. Puedo ayudarte a ordenar el problema antes de una llamada."}</p>
-                {messages.map((message, index) => <p key={`${message.role}-${index}`} className={`assistant-message ${message.role === "user" ? "assistant-message-user" : "assistant-message-bot"}`}>{message.content}</p>)}
-                {busy ? <p className="assistant-status">{locale === "en" ? "Thinking…" : "Analizando…"}</p> : null}
-                {error ? <p className="form-error" role="alert">{error}</p> : null}
-              </div>
-              {messages.filter((message) => message.role === "user").length >= 2 ? <CalButton locale={locale} placement="chat_qualified" compact className="assistant-cal" /> : null}
-              <Form onSubmit={submit} className="assistant-form"><label className="sr-only" htmlFor="assistant-message">{locale === "en" ? "Message" : "Mensaje"}</label><textarea id="assistant-message" value={input} onChange={(event) => setInput(event.target.value)} rows={2} maxLength={800} placeholder={locale === "en" ? "Describe the bottleneck…" : "Describí el cuello de botella…"} /><button type="submit" disabled={busy || !input.trim()} aria-label={locale === "en" ? "Send message" : "Enviar mensaje"}><Send aria-hidden="true" /></button></Form>
-            </>
-          )}
-        </section>
-      ) : (
-        <button className="assistant-trigger" type="button" onClick={openAssistant} aria-label={locale === "en" ? "Open project assistant" : "Abrir asistente de proyectos"}><Bot aria-hidden="true" /><span>{locale === "en" ? "Ask about a project" : "Consultar un proyecto"}</span></button>
-      )}
-    </div>
   );
 }
 

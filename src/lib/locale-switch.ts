@@ -1,4 +1,4 @@
-import { blogPath, type Locale } from "../content/site.ts";
+import { blogPath, type Locale } from "../content/chrome.ts";
 
 const localeRoutePairs: Record<string, string> = {
   "/": "/es",

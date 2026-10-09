@@ -12,14 +12,12 @@ import {
   useRouteError,
   useRouteLoaderData,
 } from "react-router";
+import { afterWindowLoadIdle } from "./components/defer";
 import { localeFromPathname, notFoundDocumentMeta } from "./lib/not-found";
-import plusJakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2";
 import newsreaderItalicLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-italic.woff2";
 import "./index.css";
 
 export const links: LinksFunction = () => [
-  { rel: "preload", href: plusJakartaLatin, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
-  { rel: "preload", href: newsreaderItalicLatin, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
   { rel: "icon", href: "/favicon.svg?v=20260827", type: "image/svg+xml" },
   { rel: "icon", href: "/favicon-32x32.png?v=20260827", type: "image/png", sizes: "32x32" },
   { rel: "shortcut icon", href: "/favicon-32x32.png?v=20260827", type: "image/png" },
@@ -31,7 +29,14 @@ export const links: LinksFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
-  return { locale: pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en", isOperations: pathname === "/ops" || pathname.startsWith("/ops/") };
+  const normalized = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  return {
+    locale: pathname === "/es" || pathname.startsWith("/es/") ? "es" : "en",
+    isOperations: pathname === "/ops" || pathname.startsWith("/ops/"),
+    // Home paints the LCP line in Plus Jakarta. Newsreader italic is not on that line,
+    // so it is loaded after first paint instead of competing in the critical chain.
+    deferEditorialFont: normalized === "/" || normalized === "/es",
+  };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ error, location }) => {
@@ -56,20 +61,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="theme-color" content="#FBF7F0" />
         <Meta />
         <Links />
-        {!data?.isOperations && (
-          <>
-            <script async src="https://www.googletagmanager.com/gtag/js?id=G-JVV1Y4Y85Y"></script>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', 'G-JVV1Y4Y85Y');
-                `,
-              }}
-            />
-          </>
+        {data?.deferEditorialFont ? null : (
+          <link rel="preload" href={newsreaderItalicLatin} as="font" type="font/woff2" crossOrigin="anonymous" />
         )}
       </head>
       <body>
@@ -90,8 +83,15 @@ function DeferredAnalytics() {
   const [Component, setComponent] = useState<React.ComponentType | null>(null);
   useEffect(() => {
     let active = true;
-    import("./components/analytics").then((module) => { if (active) setComponent(() => module.Analytics); });
-    return () => { active = false; };
+    const cancel = afterWindowLoadIdle(() => {
+      void import("./components/analytics").then((module) => {
+        if (active) setComponent(() => module.Analytics);
+      });
+    });
+    return () => {
+      active = false;
+      cancel();
+    };
   }, []);
   return Component ? <Component /> : null;
 }

@@ -5,6 +5,8 @@
   z-index: 0;
   isolation: isolate;
   background: var(--paper);
+  /* Newsreader is applied from newsreader-italic.css after first paint. */
+  --font-editorial: Georgia, "Times New Roman", serif;
 }
 .mm-home section { scroll-margin-top: 6.75rem; }
 
@@ -156,7 +158,7 @@ a.mm-btn {
 .mm-inline:hover { color: var(--ink); }
 
 /* Floating pill navigation */
-.site-header-editorial {
+.site-header.site-header-editorial {
   position: fixed;
   z-index: 1000;
   isolation: isolate;
@@ -294,6 +296,32 @@ a.mm-btn {
 }
 .mm-line { display: block; overflow: visible; }
 .mm-line-inner { display: block; }
+/* Lock the italic line box so the late Newsreader swap does not move the hero. */
+.mm-italic .mm-line-inner {
+  height: 1.2em;
+  overflow: hidden;
+}
+/* First H1 line is the LCP text. It paints on the first frame: no animation or hidden transform. */
+.mm-home h1.mm-display > .mm-lcp,
+.mm-home h1.mm-display > .mm-lcp .mm-line-inner {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+/* Skip style and layout for sections below the hero until they near the viewport. */
+.mm-home > section:not([data-mm-hero]) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+.mm-proof { contain-intrinsic-size: auto 280px; }
+.mm-home > section#flujo { contain-intrinsic-size: auto 780px; }
+.mm-home > section#work { contain-intrinsic-size: auto 2400px; }
+.mm-home > section#brief { contain-intrinsic-size: auto 760px; }
+.mm-faq { contain-intrinsic-size: auto 640px; }
+.site-footer-editorial {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 560px;
+}
 .mm-italic-line { overflow: hidden; padding: 0 0.08em 0.22em 0; line-height: 1.2; }
 .mm-italic {
   color: var(--terracotta-hover);
