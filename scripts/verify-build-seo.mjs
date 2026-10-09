@@ -145,7 +145,7 @@ const serviceGuideExpectations = [
     ["/blog/when-to-leave-zapier-n8n-for-custom-software", "When to leave Zapier or n8n for custom software"],
     ["/blog/audit-crm-integration-commercial-follow-up", "How to audit a CRM integration and commercial follow-up workflow"],
   ]],
-  ["/es/servicios/software-a-medida", "Software a medida en Argentina para pymes y empresas", "Guías relacionadas", [
+  ["/es/servicios/software-a-medida", "Software a medida para empresas en Argentina", "Guías relacionadas", [
     ["/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", "Cuándo dejar Zapier o n8n por software a medida"],
     ["/es/blog/auditar-integracion-crm-seguimiento-comercial", "Cómo auditar una integración CRM y el seguimiento comercial"],
   ]],
@@ -197,26 +197,30 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
 {
   const route = "/es/servicios/software-a-medida";
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
-  if (!html.includes("<title>Software a medida Argentina | Puna Tech</title>")) failures.push(`${route}: target-query title missing`);
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Software a medida para empresas en Argentina | Puna Tech") failures.push(`${route}: target-query title missing (${title})`);
+  if (title.length > 60) failures.push(`${route}: title is ${title.length} characters`);
   const description = metaDescription(html);
-  if (!description.startsWith("Software a medida en Argentina") || description.length > 155 || !description.includes("agendá")) {
+  if (!description.startsWith("Software a medida para empresas") || description.length > 155 || !description.includes("precio cerrado")) {
     failures.push(`${route}: target-query meta description (${description.length})`);
   }
   for (const heading of [
-    "Cuándo conviene software a medida y cuándo alcanza lo enlatado",
-    "Qué sistemas hacemos",
+    "Qué es el software a medida (y qué no)",
+    "Qué sistemas hacemos para pymes y empresas",
     "Cómo trabajamos y en cuánto tiempo",
+    "Cuándo conviene (y cuándo no)",
     "De quién es el código",
   ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
-  if (!html.includes("entregamos un primer proceso en 2 semanas a precio cerrado")) failures.push(`${route}: 2-week fixed-price offer missing`);
+  if (!html.includes("un primer módulo en 2 semanas a precio cerrado")) failures.push(`${route}: 2-week fixed-price offer missing`);
   if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: examples are not labeled as examples`);
   for (const path of [
     "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida",
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/integraciones/mercado-pago",
     "/es/automatizaciones/pedidos-por-whatsapp",
+    "/es/contacto",
   ]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
   }
@@ -225,7 +229,17 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  for (const question of ["¿Cuánto cuesta el software a medida?", "¿Cuánto tarda?", "¿Quién es dueño del código?", "¿Hay soporte después de la entrega?", "¿Se integra con lo que ya uso?"]) {
+  if (questions.length < 6 || questions.length > 8) failures.push(`${route}: FAQPage should have 6 to 8 questions, found ${questions.length}`);
+  for (const question of [
+    "¿Cuánto cuesta el software a medida?",
+    "¿Cuánto tarda?",
+    "¿Quién es dueño del código?",
+    "¿Hay mantenimiento después de la entrega?",
+    "¿Se integra con lo que ya uso?",
+    "¿Conviene software a medida o alcanza con n8n, Zapier o una planilla?",
+    "¿Puedo empezar por un solo módulo?",
+    "¿Trabajan con pymes en Argentina?",
+  ]) {
     if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
     if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
   }
@@ -233,6 +247,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (!/precio cerrado/i.test(costAnswer) || /\$\s?\d|\d+\s*(?:usd|dólares|dolares)/i.test(costAnswer)) failures.push(`${route}: cost FAQ is not a closed price after the call`);
   const service = nodes.find((node) => node["@type"] === "Service");
   if (service?.serviceType !== "Desarrollo de software a medida") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
   const area = JSON.stringify(service?.areaServed || {});
   if (!area.includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
   const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
@@ -437,6 +452,9 @@ else {
       if (list && list.numberOfItems !== (list.itemListElement || []).length) failures.push(`${path}: ItemList count mismatch`);
       const serviceHref = path === "/blog" ? "/services/ai-automation" : "/es/servicios/automatizacion-ia";
       if (!page.html.includes(`href="${serviceHref}"`)) failures.push(`${path}: blog hub missing link to ${serviceHref}`);
+      if (path === "/es/blog" && !/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(page.html)) {
+        failures.push(`${path}: missing keyword anchor link to /es/servicios/software-a-medida`);
+      }
     }
 
     const sitemap = await fetchPath("/sitemap.xml");
