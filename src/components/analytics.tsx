@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { activateAnalytics, GA_MEASUREMENT_ID } from "./tracking";
 
@@ -17,17 +17,29 @@ function injectScript(src: string, datasetKey: "gtag" | "clarityTag") {
 
 export function Analytics() {
   const location = useLocation();
+  const lastUrl = useRef<string | null>(null);
 
   useEffect(() => {
     if (location.pathname === "/ops" || location.pathname.startsWith("/ops/")) return;
     activateAnalytics();
     injectScript(`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`, "gtag");
     injectScript(`https://www.clarity.ms/tag/${CLARITY_ID}`, "clarityTag");
+
+    // gtag('config') inside activateAnalytics queues the first page_view for this
+    // URL (UTMs stay on dl, document.referrer stays on dr). This effect also runs
+    // on that first mount, so a manual hit here would count the same page twice.
+    const url = window.location.href;
+    if (lastUrl.current === null) {
+      lastUrl.current = url;
+      return;
+    }
+    if (url === lastUrl.current) return;
     window.gtag?.("event", "page_view", {
-      page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
+      page_location: url,
+      page_referrer: lastUrl.current,
       page_title: document.title,
     });
+    lastUrl.current = url;
   }, [location.pathname, location.search]);
 
   return null;
