@@ -1,4 +1,4 @@
-import { SITE_URL, type Locale } from "../content/site.ts";
+import { SITE_URL, type Locale } from "../content/chrome.ts";
 
 type JsonLd = Record<string, unknown> | Array<Record<string, unknown>>;
 

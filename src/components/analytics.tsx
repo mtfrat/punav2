@@ -1,40 +1,33 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router";
-import "./tracking";
+import { activateAnalytics, GA_MEASUREMENT_ID } from "./tracking";
+
+const CLARITY_ID = "wuakxf8xet";
+
+function injectScript(src: string, datasetKey: "gtag" | "clarityTag") {
+  const selector = datasetKey === "gtag" ? "script[data-gtag]" : "script[data-clarity-tag]";
+  if (document.querySelector(selector)) return;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = src;
+  if (datasetKey === "gtag") script.dataset.gtag = "true";
+  else script.dataset.clarityTag = "true";
+  document.head.appendChild(script);
+}
 
 export function Analytics() {
   const location = useLocation();
 
   useEffect(() => {
     if (location.pathname === "/ops" || location.pathname.startsWith("/ops/")) return;
-
-    // Microsoft Clarity
-    if (!document.querySelector("script[data-clarity-tag]")) {
-      ((c: Window, d: Document, tag: string, src: string, id: string) => {
-        c.clarity = c.clarity || ((...args: unknown[]) => {
-          (c.clarity as unknown as { q?: unknown[] }).q = (c.clarity as unknown as { q?: unknown[] }).q || [];
-          (c.clarity as unknown as { q: unknown[] }).q.push(args);
-        });
-        const script = d.createElement(tag) as HTMLScriptElement;
-        script.async = true;
-        script.src = `${src}${id}`;
-        script.dataset.clarityTag = "true";
-        d.head.appendChild(script);
-      })(window, document, "script", "https://www.clarity.ms/tag/", "wuakxf8xet");
-    }
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (location.pathname === "/ops" || location.pathname.startsWith("/ops/")) return;
-
-    // Report client-side SPA route transitions to GA4
-    if (typeof window !== "undefined" && typeof window.gtag === "function") {
-      window.gtag("event", "page_view", {
-        page_location: window.location.href,
-        page_path: `${location.pathname}${location.search}`,
-        page_title: document.title,
-      });
-    }
+    activateAnalytics();
+    injectScript(`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`, "gtag");
+    injectScript(`https://www.clarity.ms/tag/${CLARITY_ID}`, "clarityTag");
+    window.gtag?.("event", "page_view", {
+      page_location: window.location.href,
+      page_path: `${location.pathname}${location.search}`,
+      page_title: document.title,
+    });
   }, [location.pathname, location.search]);
 
   return null;
