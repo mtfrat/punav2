@@ -192,6 +192,7 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
                 <p className="eyebrow">{t.latamEyebrow}</p>
                 <h2 id="latam-ar-heading" className="mm-h2"><span>{t.latamTitle}</span></h2>
                 <p className="mm-dek">{locale === "es" ? linkPhrase(t.latamBody, "software a medida", "/es/servicios/software-a-medida") : t.latamBody}</p>
+                {locale === "es" ? <p className="mm-dek">Si el CRM, el ERP y la planilla no se hablan, lo resolvemos con <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.</p> : null}
                 <div className="cta-group" style={{ marginTop: "1.5rem" }}>
                   <CalButton locale={locale} placement="es_latam_block" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
                   <a

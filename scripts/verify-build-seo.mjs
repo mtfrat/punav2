@@ -155,6 +155,10 @@ const serviceGuideExpectations = [
   ["/es/servicios/automatizacion-ia", "Automatización de procesos con IA para empresas", "Guía relacionada", [
     ["/es/blog/cuando-usar-ia-vs-software-deterministico", "Cuándo usar IA y cuándo conviene software determinístico"],
   ]],
+  ["/es/servicios/integraciones-de-datos", "Integración de sistemas para empresas en Argentina", "Guías relacionadas", [
+    ["/es/blog/auditar-integracion-crm-seguimiento-comercial", "Cómo auditar una integración CRM y el seguimiento comercial"],
+    ["/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", "Cuándo dejar Zapier o n8n por software a medida"],
+  ]],
 ];
 
 for (const [route, heading, label, guides] of serviceGuideExpectations) {
@@ -264,9 +268,98 @@ for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-fact
   }
 }
 
-for (const route of ["/services/data-integrations", "/es/servicios/integraciones-de-datos"]) {
+{
+  const route = "/services/data-integrations";
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (html.includes("related-guides")) failures.push(`${route}: unexpected related guides block`);
+  if (!html.includes("<title>Systems Integration CRM ERP | Puna Tech</title>")) failures.push(`${route}: English title changed`);
+  if (!html.includes("<h1>Make your CRM, ERP, and tools exchange reliable information.</h1>")) failures.push(`${route}: English H1 changed`);
+}
+
+{
+  const route = "/es/servicios/integraciones-de-datos";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  if (h1s.length !== 1) failures.push(`${route}: expected a single H1, found ${h1s.length}`);
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Integración de sistemas para empresas | Puna Tech") failures.push(`${route}: target-query title missing (${title})`);
+  if (title.length > 60) failures.push(`${route}: title is ${title.length} characters`);
+  if (!html.includes("<h1>Integración de sistemas para empresas en Argentina</h1>")) failures.push(`${route}: H1 does not contain the query`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Integración de sistemas") || description.length > 155 || !description.includes("Tienda Nube") || !description.includes("Mercado Pago") || !description.includes("15 min")) {
+    failures.push(`${route}: target-query meta description (${description.length}: ${description})`);
+  }
+  for (const heading of [
+    "Qué es la integración de sistemas (y qué no)",
+    "Qué sistemas conectamos",
+    "Cómo trabajamos y en cuánto tiempo",
+    "Cuándo conviene una integración a medida y cuándo alcanza Zapier o n8n",
+  ]) {
+    if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
+  }
+  if (!html.includes("un proceso en 2 semanas a precio cerrado")) failures.push(`${route}: timeline diverges from the existing 2-week offer`);
+  if (!html.includes("Por ejemplo, ventas carga el cliente")) failures.push(`${route}: examples are not labeled as examples`);
+  for (const path of [
+    "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida",
+    "/es/blog/auditar-integracion-crm-seguimiento-comercial",
+    "/es/integraciones/mercado-pago",
+    "/es/automatizaciones/pedidos-por-whatsapp",
+    "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/contacto",
+    "/es/servicios/software-a-medida",
+  ]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
+  }
+  if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  if (questions.length < 5 || questions.length > 7) failures.push(`${route}: FAQPage should have 5 to 7 questions, found ${questions.length}`);
+  for (const question of [
+    "¿Qué es la integración de sistemas?",
+    "¿Pueden integrar un CRM con un ERP?",
+    "¿Qué es la integración de APIs?",
+    "¿Integran Tienda Nube, Mercado Libre o Mercado Pago?",
+    "¿Cuánto tarda una integración de sistemas?",
+    "¿Cuánto cuesta integrar sistemas?",
+    "¿Conviene una integración a medida o alcanza con Zapier o n8n?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  const costAnswer = (faq?.mainEntity || []).find((item) => item.name === "¿Cuánto cuesta integrar sistemas?")?.acceptedAnswer?.text || "";
+  if (!/precio cerrado/i.test(costAnswer) || /\$\s?\d|\d+\s*(?:usd|dólares|dolares)/i.test(costAnswer)) failures.push(`${route}: cost FAQ publishes a price`);
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Integración de sistemas") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.name !== "Integración de sistemas") failures.push(`${route}: Service schema name mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  const area = JSON.stringify(service?.areaServed || {});
+  if (!area.includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  if (!crumbs) failures.push(`${route}: BreadcrumbList JSON-LD missing`);
+  if (!html.includes('rel="canonical" href="https://www.puna-tech.com/es/servicios/integraciones-de-datos"')) failures.push(`${route}: canonical changed`);
+  if (!html.includes('hreflang="en"') && !html.includes('hrefLang="en"')) failures.push(`${route}: English hreflang missing`);
+  if (!html.includes('hreflang="es-AR"') && !html.includes('hrefLang="es-AR"')) failures.push(`${route}: es-AR hreflang missing`);
+  if (!html.includes('href="https://www.puna-tech.com/services/data-integrations"')) failures.push(`${route}: English hreflang target changed`);
+  if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
+}
+
+const integrationAnchorRoutes = [
+  "/es",
+  "/es/servicios",
+  "/es/casos",
+  "/es/casos/enrutamiento-leads-hubspot",
+  "/es/casos/automatizacion-gtm-b2b",
+  "/es/automatizaciones/carga-de-facturas-proveedores",
+  "/es/integraciones/mercado-pago",
+  "/es/automatizaciones/pedidos-por-whatsapp",
+];
+for (const route of integrationAnchorRoutes) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!/href="\/es\/servicios\/integraciones-de-datos"[^>]*>integración de sistemas<\/a>/.test(html)) {
+    failures.push(`${route}: missing keyword anchor link to /es/servicios/integraciones-de-datos`);
+  }
 }
 
 for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["es", spanishHome, "/es/casos/"]]) {
@@ -455,11 +548,14 @@ else {
       if (path === "/es/blog" && !/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(page.html)) {
         failures.push(`${path}: missing keyword anchor link to /es/servicios/software-a-medida`);
       }
+      if (path === "/es/blog" && !/href="\/es\/servicios\/integraciones-de-datos"[^>]*>integración de sistemas<\/a>/.test(page.html)) {
+        failures.push(`${path}: missing keyword anchor link to /es/servicios/integraciones-de-datos`);
+      }
     }
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }

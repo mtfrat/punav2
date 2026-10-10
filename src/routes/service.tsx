@@ -54,6 +54,13 @@ const serviceGuides: Record<string, Record<Locale, Array<{ path: string; title: 
       { path: "/es/blog/cuando-usar-ia-vs-software-deterministico", title: "Cuándo usar IA y cuándo conviene software determinístico" },
     ],
   },
+  "data-integrations": {
+    en: [],
+    es: [
+      { path: "/es/blog/auditar-integracion-crm-seguimiento-comercial", title: "Cómo auditar una integración CRM y el seguimiento comercial" },
+      { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
+    ],
+  },
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {

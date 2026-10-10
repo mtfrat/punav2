@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import { isRouteErrorResponse } from "react-router";
+import { isRouteErrorResponse, Link } from "react-router";
 import { CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
 import { CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
 import { casePath, getCaseStudy, SITE_URL, type Locale } from "../content/site";
@@ -181,6 +181,14 @@ export default function CaseStudyPage({ loaderData }: { loaderData: Awaited<Retu
             </div>
           </div>
         </section>
+
+        {locale === "es" && study.relatedService === "integraciones-de-datos" ? (
+          <section className="section light-section">
+            <div className="shell">
+              <p>Este trabajo conecta herramientas para que el dato no se copie a mano. El servicio es <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.</p>
+            </div>
+          </section>
+        ) : null}
 
         <section className="detail-cta dark-section">
           <div className="shell">

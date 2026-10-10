@@ -50,6 +50,7 @@ export default function CaseStudiesHub({ loaderData }: { loaderData: Awaited<Ret
             <p className="eyebrow eyebrow-dark">{hub.eyebrow}</p>
             <h1>{hub.title}</h1>
             <p style={{ maxWidth: "46rem" }}>{hub.intro}</p>
+            {locale === "es" ? <p style={{ maxWidth: "46rem" }}>Cuando el caso es que dos sistemas no se hablan, el servicio es <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.</p> : null}
             <div className="cta-group">
               <CalButton locale={locale} placement="cases_hub" label={t.book} className="button-primary-terracotta" />
               <a
