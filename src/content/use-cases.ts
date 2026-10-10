@@ -155,7 +155,7 @@ export const useCases: UseCaseContent[] = [
       ["¿Necesitan acceso a mi cuenta de Mercado Pago?", "Trabajamos con credenciales de una aplicación de Mercado Pago con los permisos mínimos para leer pagos y reportes, no con tu usuario y contraseña. Dónde se guardan y quién tiene acceso queda escrito en la propuesta."],
       costFaq("el volumen de pagos, las reglas de conciliación y cómo se conecta tu sistema de gestión"),
     ],
-    relatedService: { path: "/es/servicios/integraciones-de-datos", title: "Integración de sistemas CRM, ERP y APIs" },
+    relatedService: { path: "/es/servicios/integraciones-de-datos", title: "integración de sistemas" },
     relatedPosts: [
       { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
     ],
