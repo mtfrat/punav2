@@ -1,5 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "react-router",
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/case-studies/autopost-content-infrastructure",
+      "destination": "/case-studies/autopost-b2b-content-studio",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/casos/autopost-infraestructura-contenido",
+      "destination": "/es/casos/autopost-estudio-contenido-b2b",
+      "statusCode": 301
+    }
+  ]
 }
