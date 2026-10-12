@@ -468,8 +468,9 @@ for (const route of ["/es/contacto", "/contact"]) {
   if (titles.length !== 1 || title !== expected.title) failures.push(`${route}: title mismatch ${JSON.stringify(titles)}`);
   if (title.length < 45 || title.length > 60) failures.push(`${route}: title length ${title.length} is outside 45-60`);
   if (!title.endsWith(" | Puna Tech")) failures.push(`${route}: title missing brand suffix`);
+  const titleLower = title.toLowerCase();
   for (const keyword of expected.titleKeywords) {
-    if (!title.includes(keyword)) failures.push(`${route}: title missing ${keyword}`);
+    if (!titleLower.includes(keyword.toLowerCase())) failures.push(`${route}: title missing ${keyword}`);
   }
   const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*>/i)?.[0] || "";
   if (!ogTitle.includes(`content="${title}"`) && !ogTitle.includes(`content='${title}'`)) failures.push(`${route}: og:title mismatch`);
