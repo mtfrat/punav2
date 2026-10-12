@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { blogDocumentTitle, blogIndexSchema, createMeta, normalizeDocumentTitle } from "../src/lib/seo.ts";
 import { languageSwitchPath } from "../src/lib/locale-switch.ts";
 
@@ -90,4 +91,16 @@ for (const [raw, expected] of [
 assert.equal(languageSwitchPath("/es/contacto", "es"), "/contact");
 assert.equal(languageSwitchPath("/contact", "en"), "/es/contacto");
 
-console.log("Verified blog title limits, language-switch paths, and blog hub schema.");
+const vercel = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+const redirects = new Map(vercel.redirects.map((rule) => [rule.source, rule]));
+for (const [source, destination] of [
+  ["/case-studies/autopost-content-infrastructure", "/case-studies/autopost-b2b-content-studio"],
+  ["/es/casos/autopost-infraestructura-contenido", "/es/casos/autopost-estudio-contenido-b2b"],
+]) {
+  const rule = redirects.get(source);
+  assert.ok(rule, `missing redirect for ${source}`);
+  assert.equal(rule.destination, destination);
+  assert.equal(rule.statusCode, 301);
+}
+
+console.log("Verified blog title limits, language-switch paths, blog hub schema, and legacy case-study redirects.");
