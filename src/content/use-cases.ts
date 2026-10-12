@@ -212,6 +212,66 @@ export const useCases: UseCaseContent[] = [
       { path: "/es/blog/auditar-integracion-crm-seguimiento-comercial", title: "Cómo auditar una integración CRM y el seguimiento comercial" },
     ],
   },
+  {
+    key: "collections",
+    path: "/es/automatizaciones/automatizar-cobranzas",
+    section: "automatizaciones",
+    eyebrow: "Automatización · Cobranzas",
+    title: "Automatizar cobranzas para pymes y empresas",
+    lead: "Las facturas vencen y alguien persigue a cada cliente por WhatsApp o por mail, con el saldo anotado en una planilla. Armamos un flujo para automatizar cobranzas: toma los vencimientos de tu sistema, prepara el aviso con el saldo real y lo deja listo para que tu equipo lo confirme antes de enviarlo.",
+    metaTitle: "Automatizar cobranzas para empresas | Puna Tech",
+    metaDescription: "Automatizar cobranzas para pymes en Argentina: avisos de vencimiento y seguimiento de facturas impagas, con revisión humana. Diagnóstico en 15 min.",
+    serviceType: "Automatización de cobranzas para empresas",
+    ogImage: "/og/automatizar-cobranzas.png",
+    ogImageAlt: "Puna Tech: automatizar cobranzas para pymes y empresas en Argentina.",
+    cardTitle: "Automatizar cobranzas",
+    cardBlurb: "Los avisos de facturas vencidas salen del saldo real de tu sistema. Tu equipo confirma antes de enviar.",
+    example: "Por ejemplo, una distribuidora donde cada lunes alguien revisa quién debe, copia el saldo a un mensaje de WhatsApp y anota en una planilla quién prometió pagar. Entre facturas vencidas, pagos parciales y clientes que ya transfirieron, se le va buena parte de la mañana.",
+    before: [
+      "Revisar a mano quién debe y desde cuándo, en el sistema o en una planilla.",
+      "Mandar recordatorios uno por uno por WhatsApp o mail, copiando saldo y vencimiento.",
+      "Pagos que llegan por transferencia y no se imputan, y se le reclama a quien ya pagó.",
+      "Promesas de pago anotadas en un chat que nadie vuelve a mirar.",
+    ],
+    after: [
+      "El flujo lee las facturas vencidas y por vencer desde tu sistema, con cliente, saldo y fecha.",
+      "Arma el recordatorio con esos datos y lo deja para que alguien lo confirme antes de enviarlo.",
+      "Cuando entra un pago, se intenta imputar a la factura. Si no hay certeza, queda en una bandeja para revisar.",
+      "Queda registro de cada aviso y cada pago, para que el seguimiento no dependa de una sola persona.",
+    ],
+    howTitle: "Cómo lo resolvemos",
+    how: [
+      {
+        title: "El saldo sale de tu sistema",
+        body: "Cliente, factura, vencimiento y saldo salen de tu sistema de gestión, no de la IA. La IA redacta el texto del aviso. Las reglas deciden a quién, cuándo y con qué monto. Si el número no cierra, el aviso no sale.",
+      },
+      {
+        title: "Alguien confirma antes de avisar",
+        body: "Al principio, cada recordatorio lo aprueba una persona del equipo. Cuando el flujo demuestra que acierta, definís qué avisos pueden salir solos (por ejemplo, el primer recordatorio de un cliente habitual) y cuáles siguen pasando por vos.",
+      },
+      {
+        title: "Lo cobrado y lo dudoso, separados",
+        body: "Transferencias, cheques o Mercado Pago se cruzan con las facturas pendientes. Lo que no coincide con certeza no se marca como cobrado. Si el problema principal es conciliar Mercado Pago, ese cruce es otro flujo: acá el foco es el seguimiento de lo vencido.",
+      },
+    ],
+    fit: [
+      "Tenés clientes que pagan a plazo y alguien los persigue a mano.",
+      "Los recordatorios salen tarde, o se le reclama a quien ya pagó.",
+      "El seguimiento vive en WhatsApp, mails y una planilla que no cierra con el sistema.",
+    ],
+    faqs: [
+      ["¿Se pueden automatizar las cobranzas de una pyme?", "Sí. Un flujo puede leer las facturas vencidas o por vencer en tu sistema, armar el recordatorio con el saldo real y dejarlo para que alguien lo confirme antes de enviarlo por mail o WhatsApp. Lo que no cierra no se manda solo."],
+      ["¿Qué son las cobranzas automáticas para empresas?", "Es que el seguimiento de facturas impagas deje de depender de que alguien revise una planilla y escriba cada aviso a mano. El sistema propone a quién avisarle y con qué saldo. Una persona confirma los pasos sensibles, como enviar un reclamo o marcar una factura como cobrada."],
+      ["¿El recordatorio se manda solo al cliente?", "No al principio. Cada aviso queda para que alguien del equipo lo revise y lo envíe. Recién cuando el flujo acierta, se puede definir qué recordatorios salen sin esa confirmación (por ejemplo, un primer aviso de un cliente habitual)."],
+      ["¿Funciona si cobrás por transferencia, cheque o Mercado Pago?", "Sí, si el pago puede entrar a tu sistema o a una planilla de forma confiable. El flujo intenta imputarlo a la factura pendiente. Si no hay certeza (un monto parcial, un pago sin referencia), no lo marca como cobrado: queda para revisar. Conciliar el reporte de Mercado Pago es un flujo aparte."],
+      costFaq("cuántos clientes y facturas entran en el seguimiento, por dónde se avisa y cómo se conecta tu sistema"),
+      ["¿Qué necesitamos de nuestro lado?", "Acceso de prueba a las facturas pendientes (o un archivo de export), las reglas de aviso que ya usan (a los cuántos días, con qué tono) y una persona que conozca el proceso para validarlas."],
+    ],
+    relatedService: { path: "/es/servicios/automatizacion-ia", title: "Automatización de procesos con IA" },
+    relatedPosts: [
+      { path: "/es/blog/cuando-usar-ia-vs-software-deterministico", title: "Cuándo usar IA y cuándo conviene software determinístico" },
+    ],
+  },
 ];
 
 export function getUseCaseByPath(path: string) {
