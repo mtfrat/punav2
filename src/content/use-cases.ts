@@ -272,6 +272,66 @@ export const useCases: UseCaseContent[] = [
       { path: "/es/blog/cuando-usar-ia-vs-software-deterministico", title: "Cuándo usar IA y cuándo conviene software determinístico" },
     ],
   },
+  {
+    key: "tienda-nube",
+    path: "/es/integraciones/tienda-nube",
+    section: "integraciones",
+    eyebrow: "Integración · Tienda Nube",
+    title: "Integrar Tienda Nube con tu ERP y el stock",
+    lead: "Vendés por Tienda Nube y el stock vive en el ERP o en una planilla. Conectamos la tienda con tu sistema para que cada pedido descuente el stock real y quede cargado, y lo que no coincide quede marcado para revisar.",
+    metaTitle: "Integrar Tienda Nube con stock y ERP | Puna Tech",
+    metaDescription: "Integrar Tienda Nube con tu ERP y el stock: cada venta descuenta el inventario y carga el pedido. Para pymes en Argentina. Diagnóstico en 15 min.",
+    serviceType: "Integración de Tienda Nube con ERP y stock",
+    ogImage: "/og/integracion-tienda-nube.png",
+    ogImageAlt: "Puna Tech: integrar Tienda Nube con tu ERP y el stock real.",
+    cardTitle: "Integrar Tienda Nube",
+    cardBlurb: "Cada venta de Tienda Nube descuenta el stock real y el pedido queda en tu sistema.",
+    example: "Por ejemplo, una tienda de indumentaria que vende por Tienda Nube y anota el stock en una planilla o en el ERP. Cuando entra un pedido, alguien lo copia al sistema y descuenta a mano. A la tarde, la tienda sigue mostrando un talle que ya no hay.",
+    before: [
+      "Copiar cada pedido de Tienda Nube al ERP o a una planilla, producto por producto.",
+      "El stock de la tienda no coincide con el del depósito.",
+      "Se vende un producto que ya no hay, o se frena una venta que sí había.",
+      "Precios y variantes desactualizados entre la tienda y el sistema.",
+    ],
+    after: [
+      "Cada pedido de Tienda Nube queda en tu sistema, con productos, cantidades y cliente.",
+      "El stock se descuenta en el momento. Si el depósito cambia, la tienda se puede actualizar.",
+      "Si no hay stock o el código no coincide, el pedido no se pisa solo: queda marcado para revisar.",
+      "Queda registro de qué se sincronizó y qué falló.",
+    ],
+    howTitle: "Cómo lo resolvemos",
+    how: [
+      {
+        title: "Conectado a Tienda Nube",
+        body: "Usamos la API de Tienda Nube para leer pedidos, productos y stock, sin bajar planillas. Si tu tienda no puede pasar un dato que necesitás, te lo decimos en la llamada, antes de prometerlo.",
+      },
+      {
+        title: "El stock sale de tu sistema",
+        body: "Precio y stock salen de tu ERP, de Tango, de Bejerman o de una planilla, no de un número cargado a mano en la tienda. Si el dato no cierra, no actualizamos el stock a ciegas.",
+      },
+      {
+        title: "Un primer flujo",
+        body: "Empezamos por pedidos y stock. Si después hace falta facturar, cruzar Mercado Pago o sumar otro canal, cada uno tiene su alcance. No prometemos conectar todo en 2 semanas.",
+      },
+    ],
+    fit: [
+      "Vendés por Tienda Nube y el stock vive en otro sistema.",
+      "Alguien copia pedidos o ajusta el inventario a mano todos los días.",
+      "Ya tuviste ventas de algo que no había, o stock que no coincidía con el depósito.",
+    ],
+    faqs: [
+      ["¿Se puede integrar Tienda Nube con un ERP?", "Sí, si Tienda Nube puede pasar pedidos y productos y tu sistema puede recibirlos: una API, una base o un archivo de importación. El trabajo es que el pedido y el stock viajen solos, y que lo dudoso quede para revisar."],
+      ["¿Cómo conectar Tienda Nube con el stock?", "El stock de referencia sale de tu sistema (ERP, Tango, Bejerman o una planilla). Cada venta en Tienda Nube lo descuenta, y un cambio en el depósito puede volver a la tienda. Si el código del producto no coincide, no se actualiza solo."],
+      ["¿Qué es una integración de Tienda Nube?", "Es que la tienda y tu sistema de gestión dejen de ser dos listas distintas. Un pedido que entra en Tienda Nube queda cargado, y el stock que vendiste deja de figurar como disponible. No es cambiar de tienda ni cargar otra planilla."],
+      ["¿Sirve si también vendés por Mercado Libre o cobrás con Mercado Pago?", "El primer flujo es Tienda Nube con tu stock y tus pedidos. Mercado Libre u otro canal se puede sumar después, si tiene una forma segura de pasar datos. El cruce de cada pago de Mercado Pago con su factura es otro flujo."],
+      costFaq("cuántos productos y depósitos hay, si el stock vive en un ERP o en una planilla, y si también hay que sincronizar precios"),
+      ["¿Qué necesitamos de nuestro lado?", "Acceso de prueba a la tienda (una aplicación de Tienda Nube con permisos para leer pedidos y productos, no tu usuario y contraseña), el listado de productos con sus códigos, y una persona que conozca cómo cuentan el stock hoy."],
+    ],
+    relatedService: { path: "/es/servicios/integraciones-de-datos", title: "integración de sistemas" },
+    relatedPosts: [
+      { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
+    ],
+  },
 ];
 
 export function getUseCaseByPath(path: string) {
