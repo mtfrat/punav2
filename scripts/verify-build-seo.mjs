@@ -446,12 +446,44 @@ for (const route of ["/es/servicios/automatizacion-ia", "/es/servicios/software-
   if (html.includes('href="/es#brief"')) failures.push(`${route}: brief CTA still jumps to /es#brief`);
   if (!html.includes('href="/es/contacto"')) failures.push(`${route}: missing contact page CTA`);
 }
+const contactExpectations = {
+  "/es/contacto": {
+    title: "Contacto | Software a medida Buenos Aires | Puna Tech",
+    titleKeywords: ["software a medida", "Buenos Aires"],
+    descriptionKeywords: ["software a medida", "Buenos Aires"],
+    h1: "Contanos qué proceso te está frenando.",
+  },
+  "/contact": {
+    title: "Contact | Custom Software Buenos Aires | Puna Tech",
+    titleKeywords: ["Custom Software", "Buenos Aires"],
+    descriptionKeywords: ["custom software", "Buenos Aires"],
+    h1: "Tell us which process is slowing you down.",
+  },
+};
 for (const route of ["/es/contacto", "/contact"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const expected = contactExpectations[route];
+  const titles = html.match(/<title>[^<]*<\/title>/g) || [];
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (titles.length !== 1 || title !== expected.title) failures.push(`${route}: title mismatch ${JSON.stringify(titles)}`);
+  if (title.length < 45 || title.length > 60) failures.push(`${route}: title length ${title.length} is outside 45-60`);
+  if (!title.endsWith(" | Puna Tech")) failures.push(`${route}: title missing brand suffix`);
+  const titleLower = title.toLowerCase();
+  for (const keyword of expected.titleKeywords) {
+    if (!titleLower.includes(keyword.toLowerCase())) failures.push(`${route}: title missing ${keyword}`);
+  }
+  const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*>/i)?.[0] || "";
+  if (!ogTitle.includes(`content="${title}"`) && !ogTitle.includes(`content='${title}'`)) failures.push(`${route}: og:title mismatch`);
+  if (!html.includes(`<h1>${expected.h1}</h1>`)) failures.push(`${route}: conversion H1 changed`);
+  const description = metaDescription(html);
+  if (description.length > 155) failures.push(`${route}: meta description longer than 155 (${description.length})`);
+  const descriptionLower = description.toLowerCase();
+  for (const keyword of expected.descriptionKeywords) {
+    if (!descriptionLower.includes(keyword.toLowerCase())) failures.push(`${route}: meta description missing ${keyword}`);
+  }
   if (!html.includes('action="/api/lead"')) failures.push(`${route}: brief form missing`);
   if (!html.includes("mailto:punatechba@gmail.com")) failures.push(`${route}: email missing`);
   if (!html.includes("cal.com/puna-tech-r7xi5x/15min")) failures.push(`${route}: Cal.com link missing`);
-  if (metaDescription(html).length > 155) failures.push(`${route}: meta description longer than 155`);
 }
 for (const [locale, html] of [["en", englishHome], ["es", spanishHome]]) {
   if (html.includes("mfrats-projects.vercel.app")) failures.push(`${locale}: home links to a protected Vercel deployment`);

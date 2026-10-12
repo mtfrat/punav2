@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 const contactCopy = {
   en: {
-    title: "Contact | Puna Tech",
+    title: "Contact | Custom Software Buenos Aires | Puna Tech",
     description: "Contact Puna Tech: book a 15-minute call, send a short brief, or email punatechba@gmail.com. Custom software and automation from Buenos Aires.",
     eyebrow: "Contact",
     h1: "Tell us which process is slowing you down.",
@@ -30,7 +30,7 @@ const contactCopy = {
     location: "Puna Tech · Buenos Aires, Argentina · US & LATAM delivery",
   },
   es: {
-    title: "Contacto | Puna Tech",
+    title: "Contacto | Software a medida Buenos Aires | Puna Tech",
     description: "Contactá a Puna Tech: agendá una llamada de 15 minutos, mandá un brief corto o escribinos a punatechba@gmail.com. Software a medida en Buenos Aires.",
     eyebrow: "Contacto",
     h1: "Contanos qué proceso te está frenando.",
