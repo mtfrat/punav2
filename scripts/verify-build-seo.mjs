@@ -191,6 +191,7 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
   for (const heading of ["Qué es la automatización de procesos con IA (y qué no)", "Qué procesos automatizamos en pymes y empresas argentinas", "Cómo trabajamos y en cuánto tiempo"]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
+  if (!html.includes('href="/es/automatizaciones/automatizar-cobranzas"')) failures.push(`${route}: missing link to automatizar cobranzas`);
 }
 
 for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
@@ -224,6 +225,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/integraciones/mercado-pago",
     "/es/automatizaciones/pedidos-por-whatsapp",
+    "/es/automatizaciones/automatizar-cobranzas",
     "/es/contacto",
   ]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
@@ -261,7 +263,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
 }
 
-for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
@@ -354,6 +356,7 @@ const integrationAnchorRoutes = [
   "/es/automatizaciones/carga-de-facturas-proveedores",
   "/es/integraciones/mercado-pago",
   "/es/automatizaciones/pedidos-por-whatsapp",
+  "/es/automatizaciones/automatizar-cobranzas",
 ];
 for (const route of integrationAnchorRoutes) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
@@ -373,6 +376,7 @@ const useCaseExpectations = [
   ["/es/automatizaciones/carga-de-facturas-proveedores", "Automatizar carga de facturas de proveedores | Puna Tech", "/og/carga-de-facturas-proveedores.png"],
   ["/es/integraciones/mercado-pago", "Integrar Mercado Pago y conciliar pagos | Puna Tech", "/og/integracion-mercado-pago.png"],
   ["/es/automatizaciones/pedidos-por-whatsapp", "Automatizar pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
+  ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
 ];
 for (const [route, title, image] of useCaseExpectations) {
   const file = join(root, route.slice(1), "index.html");
@@ -397,11 +401,44 @@ for (const [route, title, image] of useCaseExpectations) {
   if (!html.includes("Automatizamos un proceso en 2 semanas a precio cerrado.")) failures.push(`${route}: offer missing`);
   if (!html.includes('href="/es/contacto"')) failures.push(`${route}: contact CTA missing`);
   if (!html.includes("button-primary")) failures.push(`${route}: primary CTA missing`);
+  if (/<link\b[^>]*\brel=["']alternate["'][^>]*\bhreflang=["']en["']/i.test(html) || /<link\b[^>]*\bhreflang=["']en["'][^>]*\brel=["']alternate["']/i.test(html)) {
+    failures.push(`${route}: Spanish-only use case declares an English hreflang alternate`);
+  }
   if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
   for (const [linkRoute] of [["/es"], ["/es/servicios"]]) {
     const linking = await readFile(join(root, linkRoute.slice(1), "index.html"), "utf8");
     if (!linking.includes(`href="${route}"`)) failures.push(`${linkRoute}: missing internal link to ${route}`);
   }
+}
+
+{
+  const route = "/es/automatizaciones/automatizar-cobranzas";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes("<h1>Automatizar cobranzas para pymes y empresas</h1>")) failures.push(`${route}: H1 does not answer the query`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Automatizar cobranzas") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min")) {
+    failures.push(`${route}: meta description is not query-led (${description})`);
+  }
+  if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: example is not labeled as an example`);
+  if (!html.includes('href="/es/servicios/automatizacion-ia"')) failures.push(`${route}: missing link to the related service`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  for (const question of [
+    "¿Se pueden automatizar las cobranzas de una pyme?",
+    "¿Qué son las cobranzas automáticas para empresas?",
+    "¿Cuánto tarda y cuánto cuesta?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+  }
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Automatización de cobranzas para empresas") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  if (!JSON.stringify(service?.areaServed || {}).includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
+  if (!crumbNames.includes("Automatizar cobranzas")) failures.push(`${route}: BreadcrumbList missing the use case`);
 }
 
 for (const route of ["/es/servicios/automatizacion-ia", "/es/servicios/software-a-medida", "/es/servicios"]) {
@@ -551,11 +588,14 @@ else {
       if (path === "/es/blog" && !/href="\/es\/servicios\/integraciones-de-datos"[^>]*>integración de sistemas<\/a>/.test(page.html)) {
         failures.push(`${path}: missing keyword anchor link to /es/servicios/integraciones-de-datos`);
       }
+      if (path === "/es/blog" && !page.html.includes('href="/es/automatizaciones/automatizar-cobranzas"')) {
+        failures.push(`${path}: missing link to automatizar cobranzas`);
+      }
     }
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas"]) {
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }
