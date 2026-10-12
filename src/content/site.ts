@@ -11,7 +11,7 @@ export {
   casesHubPath,
   blogPath,
   contactPath,
-} from "./chrome";
+} from "./chrome.ts";
 export type { CaseStudyContent, ServiceContent } from "./catalog";
 export {
   caseStudies,
@@ -21,8 +21,8 @@ export {
   legacyPostRedirects,
   services,
   servicesHubCopy,
-} from "./catalog";
-import { chromeCopy } from "./chrome";
+} from "./catalog.ts";
+import { chromeCopy } from "./chrome.ts";
 
 export const copy = {
   en: {
