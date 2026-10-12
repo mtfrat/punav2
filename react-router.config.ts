@@ -40,6 +40,7 @@ const marketingRoutes = [
   "/es/integraciones/mercado-pago",
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
+  "/es/integraciones/tienda-nube",
 ];
 
 export default {

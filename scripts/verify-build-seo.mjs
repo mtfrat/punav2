@@ -226,6 +226,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "/es/integraciones/mercado-pago",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
+    "/es/integraciones/tienda-nube",
     "/es/contacto",
   ]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
@@ -263,7 +264,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
 }
 
-for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas"]) {
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
@@ -305,6 +306,7 @@ for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-fact
     "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida",
     "/es/blog/auditar-integracion-crm-seguimiento-comercial",
     "/es/integraciones/mercado-pago",
+    "/es/integraciones/tienda-nube",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/contacto",
@@ -357,6 +359,7 @@ const integrationAnchorRoutes = [
   "/es/integraciones/mercado-pago",
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
+  "/es/integraciones/tienda-nube",
 ];
 for (const route of integrationAnchorRoutes) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
@@ -377,6 +380,7 @@ const useCaseExpectations = [
   ["/es/integraciones/mercado-pago", "Integrar Mercado Pago y conciliar pagos | Puna Tech", "/og/integracion-mercado-pago.png"],
   ["/es/automatizaciones/pedidos-por-whatsapp", "Automatizar pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
   ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
+  ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
 ];
 for (const [route, title, image] of useCaseExpectations) {
   const file = join(root, route.slice(1), "index.html");
@@ -439,6 +443,41 @@ for (const [route, title, image] of useCaseExpectations) {
   const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
   const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
   if (!crumbNames.includes("Automatizar cobranzas")) failures.push(`${route}: BreadcrumbList missing the use case`);
+}
+
+{
+  const route = "/es/integraciones/tienda-nube";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  if (h1s.length !== 1 || !html.includes("<h1>Integrar Tienda Nube con tu ERP y el stock</h1>")) failures.push(`${route}: H1 does not answer the query`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Integrar Tienda Nube") || !description.includes("ERP") || !description.includes("stock") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min") || description.length > 155) {
+    failures.push(`${route}: meta description is not query-led (${description.length}: ${description})`);
+  }
+  if (!html.includes("Por ejemplo, una tienda")) failures.push(`${route}: example is not labeled as an example`);
+  for (const path of ["/es/servicios/integraciones-de-datos", "/es/integraciones/mercado-pago", "/es/servicios/software-a-medida", "/es/contacto"]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing related link ${path}`);
+  }
+  if (!html.includes("¿Cómo conectar Tienda Nube con el stock?")) failures.push(`${route}: visible FAQ missing the stock query`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  for (const question of [
+    "¿Se puede integrar Tienda Nube con un ERP?",
+    "¿Cómo conectar Tienda Nube con el stock?",
+    "¿Qué es una integración de Tienda Nube?",
+    "¿Cuánto tarda y cuánto cuesta?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+  }
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Integración de Tienda Nube con ERP y stock") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  if (!JSON.stringify(service?.areaServed || {}).includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
+  if (!crumbNames.includes("Integrar Tienda Nube")) failures.push(`${route}: BreadcrumbList missing the use case`);
 }
 
 for (const route of ["/es/servicios/automatizacion-ia", "/es/servicios/software-a-medida", "/es/servicios"]) {
@@ -623,11 +662,14 @@ else {
       if (path === "/es/blog" && !page.html.includes('href="/es/automatizaciones/automatizar-cobranzas"')) {
         failures.push(`${path}: missing link to automatizar cobranzas`);
       }
+      if (path === "/es/blog" && !page.html.includes('href="/es/integraciones/tienda-nube"')) {
+        failures.push(`${path}: missing link to integrar Tienda Nube`);
+      }
     }
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas"]) {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube"]) {
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }
