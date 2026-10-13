@@ -914,6 +914,10 @@ html[data-hero="c"] .mm-home > section.mm-cta-c-section {
 }
 
 @media (max-width: 720px) {
+  /* Variant C has no in-hero buttons, so the section is shorter than the phone
+     viewport. Below-fold HTML is revealed on the next frame; keep the footer
+     under the fold until then. Ridges stay pinned to the bottom of the hero. */
+  html[data-hero="c"] .mm-hero { min-height: 100dvh; }
   html[data-hero="b"] .mm-hero-slot-b .mm-hero-actions { display: none; }
   html[data-hero="b"] .mm-hero {
     padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
