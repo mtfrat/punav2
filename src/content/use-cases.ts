@@ -57,7 +57,7 @@ export const useCaseHubs: UseCaseHub[] = [
     title: "Automatizaciones para el día a día de tu empresa",
     lead: "Automatizamos procesos que hoy se hacen a mano: la carga de facturas de proveedores, los pedidos por WhatsApp y las cobranzas. Un proceso en 2 semanas a precio cerrado.",
     intro: "Elegí el proceso. Cada página cuenta cómo es hoy, cómo queda y cómo lo resolvemos.",
-    metaTitle: "Automatizaciones para empresas | Puna Tech",
+    metaTitle: "Automatizaciones de procesos para empresas | Puna Tech",
     metaDescription: "Automatizaciones para empresas en Argentina: facturas de proveedores, pedidos por WhatsApp y cobranzas. Un proceso en 2 semanas a precio cerrado.",
   },
   {

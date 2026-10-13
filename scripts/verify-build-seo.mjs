@@ -65,7 +65,7 @@ try {
 
 const englishHome = await readFile(join(root, "index.html"), "utf8");
 const spanishHome = await readFile(join(root, "es", "index.html"), "utf8");
-if (!englishHome.includes("Custom Software &amp; AI Automation | Puna Tech") && !englishHome.includes("Custom Software & AI Automation | Puna Tech")) failures.push("English homepage title did not render");
+if (!englishHome.includes("Custom Software and AI Automation | Puna Tech")) failures.push("English homepage title did not render");
 if (!spanishHome.includes("Software a Medida y Automatización con IA | Puna Tech")) failures.push("Spanish homepage title did not render");
 if (!englishHome.includes("Custom software for operations that ") || !englishHome.includes("outgrew off-the-shelf tools")) failures.push("English homepage H1 changed");
 if (!spanishHome.includes("Software a medida para operaciones que ya superaron las ") || !spanishHome.includes("herramientas estándar")) failures.push("Spanish homepage H1 changed");
@@ -276,7 +276,7 @@ for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integr
   const route = "/services/data-integrations";
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (html.includes("related-guides")) failures.push(`${route}: unexpected related guides block`);
-  if (!html.includes("<title>Systems Integration CRM ERP | Puna Tech</title>")) failures.push(`${route}: English title changed`);
+  if (!html.includes("<title>CRM &amp; ERP Systems Integration for B2B | Puna Tech</title>") && !html.includes("<title>CRM & ERP Systems Integration for B2B | Puna Tech</title>")) failures.push(`${route}: English title changed`);
   if (!html.includes("<h1>Make your CRM, ERP, and tools exchange reliable information.</h1>")) failures.push(`${route}: English H1 changed`);
 }
 
@@ -438,7 +438,7 @@ for (const [route, title, image] of useCaseExpectations) {
 }
 
 const useCaseHubExpectations = [
-  ["/es/automatizaciones", "Automatizaciones para empresas | Puna Tech", "Automatizaciones para el día a día de tu empresa", [
+  ["/es/automatizaciones", "Automatizaciones de procesos para empresas | Puna Tech", "Automatizaciones para el día a día de tu empresa", [
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
@@ -661,11 +661,25 @@ const termsDescription = {
   es: "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante, y una llamada o un brief no son un acuerdo firmado.",
 };
 
-function metaDescription(html) {
-  const match = html.match(/<meta[^>]*name=["']description["'][^>]*>/i);
+function decodeHtml(value) {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function metaContent(html, attribute, name) {
+  const match = html.match(new RegExp(`<meta[^>]*${attribute}=["']${name}["'][^>]*>`, "i"))
+    || html.match(new RegExp(`<meta[^>]*content=["'][^"']*["'][^>]*${attribute}=["']${name}["'][^>]*>`, "i"));
   if (!match) return "";
   const content = match[0].match(/content=["']([^"']*)["']/i);
   return content?.[1] || "";
+}
+
+function metaDescription(html) {
+  return metaContent(html, "name", "description");
 }
 
 const legalPages = [
@@ -807,6 +821,29 @@ else {
     }
     if (sitemap.html.includes("this-page-does-not-exist") || sitemap.html.includes("not-a-real-service")) {
       failures.push("sitemap.xml: includes a 404 URL");
+    }
+    const locs = [...sitemap.html.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+    if (locs.length < 20) failures.push(`sitemap.xml: expected the public page set, found ${locs.length} URLs`);
+    for (const loc of locs) {
+      const path = loc.replace("https://www.puna-tech.com", "") || "/";
+      const page = await fetchPath(path === "" ? "/" : path);
+      if (page.status !== 200) {
+        failures.push(`${path}: sitemap URL returned ${page.status}`);
+        continue;
+      }
+      const title = decodeHtml(page.html.match(/<title>([^<]*)<\/title>/)?.[1] || "");
+      const description = decodeHtml(metaDescription(page.html));
+      if (title.length < 45 || title.length > 60) failures.push(`${path}: title length ${title.length} is outside 45-60 (${title})`);
+      if (!title.endsWith(" | Puna Tech")) failures.push(`${path}: title missing brand suffix (${title})`);
+      if (description.length > 160) failures.push(`${path}: meta description is ${description.length} characters`);
+      const ogTitle = decodeHtml(metaContent(page.html, "property", "og:title"));
+      const twitterTitle = decodeHtml(metaContent(page.html, "name", "twitter:title"));
+      const ogDescription = decodeHtml(metaContent(page.html, "property", "og:description"));
+      const twitterDescription = decodeHtml(metaContent(page.html, "name", "twitter:description"));
+      if (ogTitle !== title) failures.push(`${path}: og:title does not match title`);
+      if (twitterTitle !== title) failures.push(`${path}: twitter:title does not match title`);
+      if (ogDescription !== description) failures.push(`${path}: og:description does not match meta description`);
+      if (twitterDescription !== description) failures.push(`${path}: twitter:description does not match meta description`);
     }
   } finally {
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

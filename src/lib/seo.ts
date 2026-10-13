@@ -32,8 +32,15 @@ export function absoluteUrl(path: string) {
 const BRAND_SUFFIX = " | Puna Tech";
 const BLOG_TITLE_LIMIT = 60;
 
+/** Shorter document titles for guides whose stored meta title cannot fit the brand suffix inside 60 characters. The article H1 stays the stored title. */
+const BLOG_DOCUMENT_TITLES: Record<string, string> = {
+  "when-to-use-ai-vs-deterministic-software": "AI vs deterministic software guide | Puna Tech",
+  "cuando-usar-ia-vs-software-deterministico": "IA vs software determinístico: guía | Puna Tech",
+};
+
 /** Blog document title. Appends the brand only when the full title stays within 60 characters. */
-export function blogDocumentTitle(base: string) {
+export function blogDocumentTitle(base: string, slug?: string) {
+  if (slug && BLOG_DOCUMENT_TITLES[slug]) return BLOG_DOCUMENT_TITLES[slug];
   const title = base.trim();
   if (title.endsWith(BRAND_SUFFIX) || title.length + BRAND_SUFFIX.length > BLOG_TITLE_LIMIT) return title;
   return `${title}${BRAND_SUFFIX}`;

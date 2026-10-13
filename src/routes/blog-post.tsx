@@ -34,7 +34,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
   if (!data) return [];
   const { locale, post, alternatePath } = data;
   const path = blogPath(locale, post.slug);
-  const title = blogDocumentTitle(post.meta_title || post.title);
+  const title = blogDocumentTitle(post.meta_title || post.title, post.slug);
   return createMeta({
     locale, title, description: post.meta_description || post.excerpt || post.title, path, alternatePath, type: "article",
     image: post.hero_image_url || undefined,
