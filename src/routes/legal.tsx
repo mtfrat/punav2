@@ -24,8 +24,8 @@ function legalDescription(kind: "privacy" | "terms", locale: Locale) {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data) return [];
   const title = data.kind === "privacy"
-    ? (data.locale === "en" ? "Privacy Policy | Puna Tech" : "Política de Privacidad | Puna Tech")
-    : (data.locale === "en" ? "Terms of Use | Puna Tech" : "Términos de Uso | Puna Tech");
+    ? (data.locale === "en" ? "Privacy Policy for Website Inquiries | Puna Tech" : "Política de privacidad del sitio web | Puna Tech")
+    : (data.locale === "en" ? "Terms of Use for the Puna Tech Site | Puna Tech" : "Términos de uso del sitio web de Puna | Puna Tech");
   const alternatePath = data.kind === "privacy"
     ? (data.locale === "en" ? "/es/privacidad" : "/privacy")
     : (data.locale === "en" ? "/es/terminos" : "/terms");

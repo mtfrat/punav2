@@ -26,8 +26,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
   const alternatePath = casePath(locale === "en" ? "es" : "en", study.alternateSlug);
   return createMeta({
     locale,
-    title: `${study.title} | Puna Tech`,
-    description: study.summary,
+    title: study.metaTitle,
+    description: study.metaDescription,
     path,
     alternatePath,
     schema: [
