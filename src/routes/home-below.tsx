@@ -121,6 +121,7 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
             <div className="shell">
               <header className="mm-heading">
                 <h2 id="home-use-cases-heading" className="mm-h2"><span>Problemas del día a día que automatizamos</span></h2>
+                <p className="mm-dek">El índice está en <Link to="/es/automatizaciones">automatizaciones</Link> y <Link to="/es/integraciones">integraciones</Link>.</p>
               </header>
               <ol className="mm-usecases mm-card-grid" data-mm-rise>
                 {useCases.map((item, index) => (

@@ -264,7 +264,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
 }
 
-for (const route of ["/es", "/es/servicios", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube"]) {
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
@@ -355,6 +355,8 @@ const integrationAnchorRoutes = [
   "/es/casos",
   "/es/casos/enrutamiento-leads-hubspot",
   "/es/casos/automatizacion-gtm-b2b",
+  "/es/automatizaciones",
+  "/es/integraciones",
   "/es/automatizaciones/carga-de-facturas-proveedores",
   "/es/integraciones/mercado-pago",
   "/es/automatizaciones/pedidos-por-whatsapp",
@@ -377,7 +379,7 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
 
 const useCaseExpectations = [
   ["/es/automatizaciones/carga-de-facturas-proveedores", "Automatizar carga de facturas de proveedores | Puna Tech", "/og/carga-de-facturas-proveedores.png"],
-  ["/es/integraciones/mercado-pago", "Integrar Mercado Pago y conciliar pagos | Puna Tech", "/og/integracion-mercado-pago.png"],
+  ["/es/integraciones/mercado-pago", "Conciliación de pagos con Mercado Pago | Puna Tech", "/og/integracion-mercado-pago.png"],
   ["/es/automatizaciones/pedidos-por-whatsapp", "Automatizar pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
   ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
   ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
@@ -409,9 +411,73 @@ for (const [route, title, image] of useCaseExpectations) {
     failures.push(`${route}: Spanish-only use case declares an English hreflang alternate`);
   }
   if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
+  const hubPath = route.startsWith("/es/automatizaciones/") ? "/es/automatizaciones" : "/es/integraciones";
+  if (!html.includes(`href="${hubPath}"`)) failures.push(`${route}: missing link to parent hub ${hubPath}`);
   for (const [linkRoute] of [["/es"], ["/es/servicios"]]) {
     const linking = await readFile(join(root, linkRoute.slice(1), "index.html"), "utf8");
     if (!linking.includes(`href="${route}"`)) failures.push(`${linkRoute}: missing internal link to ${route}`);
+  }
+}
+
+{
+  const route = "/es/integraciones/mercado-pago";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes("<h1>Conciliación de pagos con Mercado Pago y tu sistema</h1>")) failures.push(`${route}: H1 does not target conciliación de pagos`);
+  const description = metaDescription(html);
+  if (!description.includes("Conciliación de pagos")) failures.push(`${route}: meta description missing conciliación de pagos`);
+  if (!html.includes("¿Qué es la conciliación de pagos con Mercado Pago?")) failures.push(`${route}: visible FAQ missing the payments query`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const questions = (nodes.find((node) => node["@type"] === "FAQPage")?.mainEntity || []).map((item) => item.name);
+  if (!questions.includes("¿Qué es la conciliación de pagos con Mercado Pago?")) failures.push(`${route}: FAQPage missing the payments query`);
+}
+
+const useCaseHubExpectations = [
+  ["/es/automatizaciones", "Automatizaciones para empresas | Puna Tech", "Automatizaciones para el día a día de tu empresa", [
+    "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/automatizaciones/pedidos-por-whatsapp",
+    "/es/automatizaciones/automatizar-cobranzas",
+  ]],
+  ["/es/integraciones", "Integraciones Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Pago y Tienda Nube", [
+    "/es/integraciones/mercado-pago",
+    "/es/integraciones/tienda-nube",
+  ]],
+];
+for (const [route, title, heading, children] of useCaseHubExpectations) {
+  const file = join(root, route.slice(1), "index.html");
+  let html = "";
+  try { html = await readFile(file, "utf8"); } catch { failures.push(`${route}: prerendered HTML is missing`); continue; }
+  const titles = html.match(/<title>[^<]*<\/title>/g) || [];
+  if (titles.length !== 1 || titles[0] !== `<title>${title}</title>`) failures.push(`${route}: title mismatch ${JSON.stringify(titles)}`);
+  if (title.length > 60) failures.push(`${route}: title longer than 60 (${title.length})`);
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  if (h1s.length !== 1 || !html.includes(`<h1>${heading}</h1>`)) failures.push(`${route}: H1 mismatch`);
+  const description = metaDescription(html);
+  if (description.length < 70 || description.length > 155) failures.push(`${route}: meta description length ${description.length}`);
+  if (!html.includes('<html lang="es"')) failures.push(`${route}: html lang is not es`);
+  if (!html.includes(`rel="canonical" href="https://www.puna-tech.com${route}"`)) failures.push(`${route}: canonical mismatch`);
+  if (!html.includes('href="/es/servicios/automatizacion-ia"')) failures.push(`${route}: missing link to automatización de procesos`);
+  if (!html.includes('href="/es/contacto"') || !html.includes("button-primary")) failures.push(`${route}: hub CTA missing`);
+  if (/<link\b[^>]*\brel=["']alternate["'][^>]*\bhreflang=["']en["']/i.test(html) || /<link\b[^>]*\bhreflang=["']en["'][^>]*\brel=["']alternate["']/i.test(html)) {
+    failures.push(`${route}: Spanish-only hub declares an English hreflang alternate`);
+  }
+  for (const child of children) {
+    if (!html.includes(`href="${child}"`)) failures.push(`${route}: missing card link ${child}`);
+  }
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  if (!nodes.find((node) => node["@type"] === "BreadcrumbList")) failures.push(`${route}: BreadcrumbList JSON-LD missing`);
+  const collection = nodes.find((node) => node["@type"] === "CollectionPage");
+  const list = collection?.mainEntity?.["@type"] === "ItemList" ? collection.mainEntity : null;
+  if (!collection || !list) failures.push(`${route}: CollectionPage ItemList JSON-LD missing`);
+  const itemUrls = (list?.itemListElement || []).map((item) => item.url);
+  if (list && list.numberOfItems !== children.length) failures.push(`${route}: ItemList count ${list.numberOfItems}, expected ${children.length}`);
+  for (const child of children) {
+    if (!itemUrls.includes(`https://www.puna-tech.com${child}`)) failures.push(`${route}: ItemList missing ${child}`);
+  }
+  for (const linkRoute of ["/es", "/es/servicios"]) {
+    const linking = await readFile(join(root, linkRoute.slice(1), "index.html"), "utf8");
+    if (!linking.includes(`href="${route}"`)) failures.push(`${linkRoute}: missing internal link to hub ${route}`);
   }
 }
 
@@ -673,6 +739,11 @@ else {
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }
+    }
+    for (const path of ["/es/automatizaciones", "/es/integraciones"]) {
+      const page = await fetchPath(path);
+      if (page.status !== 200) failures.push(`${path}: expected HTTP 200, got ${page.status}`);
+      if (!sitemap.html.includes(`https://www.puna-tech.com${path}</loc>`)) failures.push(`sitemap.xml: missing hub ${path}`);
     }
     if (sitemap.html.includes("this-page-does-not-exist") || sitemap.html.includes("not-a-real-service")) {
       failures.push("sitemap.xml: includes a 404 URL");

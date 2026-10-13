@@ -37,6 +37,41 @@ export const USE_CASE_OFFER = {
   body: "Antes de arrancar acordamos por escrito qué entra, qué no, el precio y la fecha de entrega. Si tu proceso no entra en 2 semanas, te lo decimos en la primera llamada en lugar de estirar el proyecto.",
 };
 
+export interface UseCaseHub {
+  section: UseCaseContent["section"];
+  path: string;
+  eyebrow: string;
+  title: string;
+  lead: string;
+  intro: string;
+  metaTitle: string;
+  metaDescription: string;
+}
+
+/** Spanish index pages for the use-case clusters. No English alternate yet. */
+export const useCaseHubs: UseCaseHub[] = [
+  {
+    section: "automatizaciones",
+    path: "/es/automatizaciones",
+    eyebrow: "Automatizaciones",
+    title: "Automatizaciones para el día a día de tu empresa",
+    lead: "Automatizamos procesos que hoy se hacen a mano: la carga de facturas de proveedores, los pedidos por WhatsApp y las cobranzas. Un proceso en 2 semanas a precio cerrado.",
+    intro: "Elegí el proceso. Cada página cuenta cómo es hoy, cómo queda y cómo lo resolvemos.",
+    metaTitle: "Automatizaciones para empresas | Puna Tech",
+    metaDescription: "Automatizaciones para empresas en Argentina: facturas de proveedores, pedidos por WhatsApp y cobranzas. Un proceso en 2 semanas a precio cerrado.",
+  },
+  {
+    section: "integraciones",
+    path: "/es/integraciones",
+    eyebrow: "Integraciones",
+    title: "Integraciones con Mercado Pago y Tienda Nube",
+    lead: "Conectamos Mercado Pago y Tienda Nube con tu sistema de gestión: conciliación de pagos, stock y pedidos, sin cruzar reportes a mano.",
+    intro: "Elegí la herramienta. Cada página cuenta qué datos viajan, qué queda en tu sistema y qué se marca para revisar.",
+    metaTitle: "Integraciones Mercado Pago y Tienda Nube | Puna Tech",
+    metaDescription: "Integraciones para empresas en Argentina: conciliación de pagos con Mercado Pago y Tienda Nube con tu stock y ERP. Diagnóstico en 15 min.",
+  },
+];
+
 export const USE_CASE_STEPS: { title: string; body: string }[] = [
   {
     title: "Llamada de 15 minutos",
@@ -114,15 +149,15 @@ export const useCases: UseCaseContent[] = [
     path: "/es/integraciones/mercado-pago",
     section: "integraciones",
     eyebrow: "Integración · Mercado Pago",
-    title: "Integrar Mercado Pago con tu sistema y conciliar cada pago con su factura",
-    lead: "Cobrás por Mercado Pago, pero tu sistema no se entera. Conectamos Mercado Pago con tu sistema de gestión o tu planilla para que cada cobro quede asociado a su factura o pedido, con comisiones y retenciones registradas y las diferencias marcadas.",
-    metaTitle: "Integrar Mercado Pago y conciliar pagos | Puna Tech",
-    metaDescription: "Integrá Mercado Pago con tu sistema: conciliación automática de cada pago con su factura, con comisiones y retenciones, y las diferencias marcadas.",
+    title: "Conciliación de pagos con Mercado Pago y tu sistema",
+    lead: "Cobrás por Mercado Pago, pero tu sistema no se entera. La conciliación de pagos asocia cada cobro a su factura o pedido, con comisiones y retenciones registradas y las diferencias marcadas.",
+    metaTitle: "Conciliación de pagos con Mercado Pago | Puna Tech",
+    metaDescription: "Conciliación de pagos con Mercado Pago: cada cobro queda asociado a su factura, con comisiones y retenciones, y las diferencias marcadas.",
     serviceType: "Integración de Mercado Pago y conciliación de pagos",
     ogImage: "/og/integracion-mercado-pago.png",
-    ogImageAlt: "Puna Tech: integrar Mercado Pago con tu sistema y conciliar pagos con facturas.",
-    cardTitle: "Integración y conciliación de Mercado Pago",
-    cardBlurb: "Cada cobro de Mercado Pago queda asociado a su factura, con comisiones y retenciones, y las diferencias marcadas.",
+    ogImageAlt: "Puna Tech: conciliación de pagos con Mercado Pago y tu sistema.",
+    cardTitle: "Conciliación de pagos con Mercado Pago",
+    cardBlurb: "La conciliación de pagos asocia cada cobro de Mercado Pago a su factura, con comisiones, retenciones y las diferencias marcadas.",
     example: "Por ejemplo, un comercio que cobra varias decenas de pagos por día entre link de pago, QR y transferencias. A fin de semana alguien baja el reporte de Mercado Pago, lo pega en Excel y trata de adivinar a qué cliente y a qué factura corresponde cada movimiento, y por qué lo acreditado no coincide con lo vendido.",
     before: [
       "Bajar reportes de Mercado Pago y cruzarlos a mano con las facturas o pedidos.",
@@ -149,7 +184,7 @@ export const useCases: UseCaseContent[] = [
     ],
     faqs: [
       ["¿Se puede integrar Mercado Pago con mi sistema de gestión?", "Sí, si tu sistema tiene una forma de recibir datos: API, base de datos o importación por archivo. Mercado Pago tiene API y notificaciones de pago, así que de ese lado casi siempre está resuelto. Lo que define el trabajo es cómo entra la información en tu sistema."],
-      ["¿Qué es la conciliación automática de Mercado Pago?", "Es cruzar solo, todos los días, cada pago acreditado con la factura o el pedido que corresponde, descontando comisiones y retenciones, y marcar lo que no coincide para que alguien lo revise."],
+      ["¿Qué es la conciliación de pagos con Mercado Pago?", "Es cruzar, todos los días, cada pago acreditado en Mercado Pago con la factura o el pedido que corresponde. Esa conciliación de pago descuenta comisiones y retenciones, y deja marcado lo que no coincide para que alguien lo revise, en lugar de bajar el reporte y cruzarlo a mano."],
       ["¿Qué pasa con los pagos que no tienen referencia?", "Se intentan emparejar por monto, cliente y fecha. Si no hay certeza, el pago no se asigna solo: va a una lista de diferencias con las facturas candidatas para que alguien elija con un clic."],
       ["¿Incluye comisiones, retenciones y contracargos?", "Sí. Los movimientos de Mercado Pago traen el detalle de comisiones e impuestos retenidos. Los registramos por separado para que el neto acreditado cierre con lo facturado. Contracargos y devoluciones también se marcan."],
       ["¿Necesitan acceso a mi cuenta de Mercado Pago?", "Trabajamos con credenciales de una aplicación de Mercado Pago con los permisos mínimos para leer pagos y reportes, no con tu usuario y contraseña. Dónde se guardan y quién tiene acceso queda escrito en la propuesta."],
@@ -336,4 +371,20 @@ export const useCases: UseCaseContent[] = [
 
 export function getUseCaseByPath(path: string) {
   return useCases.find((item) => item.path === path.replace(/\/+$/, ""));
+}
+
+export function getUseCaseHub(path: string) {
+  const normalized = path.replace(/\/+$/, "");
+  return useCaseHubs.find((hub) => hub.path === normalized);
+}
+
+export function getUseCaseHubBySection(section: UseCaseContent["section"]) {
+  const hub = useCaseHubs.find((item) => item.section === section);
+  if (!hub) throw new Error(`Missing use-case hub for ${section}`);
+  return hub;
+}
+
+export function useCasesForHub(section: UseCaseContent["section"]) {
+  const prefix = `/es/${section}/`;
+  return useCases.filter((item) => item.path.startsWith(prefix));
 }
