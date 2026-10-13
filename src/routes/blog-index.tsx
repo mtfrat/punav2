@@ -18,7 +18,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const posts = data?.posts ?? [];
   return createMeta({
     locale,
-    title: locale === "en" ? "Software & Automation Blog | Puna Tech" : "Blog de Software y Automatización | Puna Tech",
+    title: locale === "en" ? "Custom Software & Automation Blog | Puna Tech" : "Blog de Software y Automatización | Puna Tech",
     description: locale === "en" ? "Reviewed guides and implementation lessons about custom software, AI workflows, digital products, and systems integrations." : "Guías revisadas sobre software a medida, flujos con IA, productos digitales e integraciones de sistemas.",
     path: blogPath(locale),
     alternatePath: blogPath(locale === "en" ? "es" : "en"),

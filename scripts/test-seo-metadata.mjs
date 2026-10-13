@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { caseStudies, casesHubCopy, services, servicesHubCopy } from "../src/content/catalog.ts";
+import { useCaseHubs, useCases } from "../src/content/use-cases.ts";
 import { blogDocumentTitle, blogIndexSchema, createMeta, normalizeDocumentTitle } from "../src/lib/seo.ts";
 import { languageSwitchPath } from "../src/lib/locale-switch.ts";
 
@@ -35,6 +37,15 @@ for (const [base, shouldBrand] of cases) {
 
 assert.equal(blogDocumentTitle(`Short note${suffix}`), `Short note${suffix}`);
 assert.equal(blogDocumentTitle(`${"x".repeat(70)}${suffix}`), `${"x".repeat(70)}${suffix}`);
+
+for (const [slug, title] of [
+  ["when-to-use-ai-vs-deterministic-software", "AI vs deterministic software guide | Puna Tech"],
+  ["cuando-usar-ia-vs-software-deterministico", "IA vs software determinístico: guía | Puna Tech"],
+]) {
+  assert.equal(blogDocumentTitle("stored article title", slug), title);
+  assert.ok(title.length >= 45 && title.length <= 60, `${slug} document title is ${title.length}`);
+  assert.ok(title.endsWith(suffix), slug);
+}
 
 assert.equal(
   languageSwitchPath("/blog/when-to-use-ai-vs-deterministic-software", "en", "/es/blog/cuando-usar-ia-vs-software-deterministico"),
@@ -103,4 +114,40 @@ for (const [source, destination] of [
   assert.equal(rule.statusCode, 301);
 }
 
-console.log("Verified blog title limits, language-switch paths, blog hub schema, and legacy case-study redirects.");
+function assertSerpTitle(label, title) {
+  assert.equal(title, title.trim());
+  assert.ok(title.endsWith(suffix), `${label} missing brand suffix: ${title}`);
+  assert.ok(title.length >= 45 && title.length <= 60, `${label} title length ${title.length}: ${title}`);
+}
+
+function assertSerpMeta(label, description) {
+  assert.ok(description.length <= 160, `${label} meta length ${description.length}: ${description}`);
+}
+
+for (const locale of ["en", "es"]) {
+  for (const study of caseStudies[locale]) {
+    const label = `${locale} case ${study.slug}`;
+    assertSerpTitle(label, study.metaTitle);
+    assertSerpMeta(label, study.metaDescription);
+    assert.ok(study.metaDescription.length >= 120 && study.metaDescription.length <= 158, `${label} meta length ${study.metaDescription.length}`);
+    assert.notEqual(study.metaTitle, `${study.title}${suffix}`, `${label} document title still repeats the H1`);
+  }
+  for (const service of services[locale]) {
+    assertSerpTitle(`${locale} service ${service.slug}`, service.metaTitle);
+    assertSerpMeta(`${locale} service ${service.slug}`, service.metaDescription);
+  }
+  assertSerpTitle(`${locale} services hub`, servicesHubCopy[locale].metaTitle);
+  assertSerpMeta(`${locale} services hub`, servicesHubCopy[locale].metaDescription);
+  assertSerpTitle(`${locale} cases hub`, casesHubCopy[locale].metaTitle);
+  assertSerpMeta(`${locale} cases hub`, casesHubCopy[locale].metaDescription);
+}
+for (const hub of useCaseHubs) {
+  assertSerpTitle(hub.path, hub.metaTitle);
+  assertSerpMeta(hub.path, hub.metaDescription);
+}
+for (const useCase of useCases) {
+  assertSerpTitle(useCase.path, useCase.metaTitle);
+  assertSerpMeta(useCase.path, useCase.metaDescription);
+}
+
+console.log("Verified blog title limits, language-switch paths, blog hub schema, legacy case-study redirects, and SERP title/meta lengths.");
