@@ -10,6 +10,7 @@ import {
   Link2,
   ScanSearch,
 } from "lucide-react";
+import { HeroUseCaseCta } from "../components/hero-variants";
 import { Accordion, CalButton, ProjectBrief } from "../components/marketing";
 import { FlowDemo, HoursCalculator } from "../components/home-flow";
 import { trackEvent } from "../components/tracking";
@@ -116,6 +117,8 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
           </div>
         </section>
 
+        {locale === "en" ? <HeroUseCaseCta locale={locale} /> : null}
+
         {locale === "es" && (
           <section className="mm-section mm-section-deep" aria-labelledby="home-use-cases-heading">
             <div className="shell">
@@ -138,6 +141,8 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
             </div>
           </section>
         )}
+
+        {locale === "es" ? <HeroUseCaseCta locale={locale} /> : null}
 
         <HoursCalculator locale={locale} />
 

@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { ArrowRight, Check } from "lucide-react";
+import { HeroStickyBar, HeroVariantRuntime, HeroVariantSlots } from "../components/hero-variants";
 import { CalButton, PageShell } from "../components/marketing";
 import { HomeMotion, RidgeField } from "../components/home-editorial";
 import { trackEvent } from "../components/tracking";
@@ -73,36 +74,41 @@ export default function Home({ loaderData }: { loaderData: Awaited<ReturnType<ty
             <h1 className="mm-display">
               <HeroTitle title={t.heroTitle} italic={t.heroItalic} />
             </h1>
-            <div className="mm-hero-lede">
-              <p className="mm-hero-body mm-intro mm-d2">{t.heroBody}</p>
-              <p className="mm-hero-body mm-intro mm-d3">{t.heroCompare}</p>
+            <div className="mm-hero-default">
+              <div className="mm-hero-lede">
+                <p className="mm-hero-body mm-intro mm-d2">{t.heroBody}</p>
+                <p className="mm-hero-body mm-intro mm-d3">{t.heroCompare}</p>
+              </div>
+              <div className="cta-group mm-hero-actions mm-intro mm-d4">
+                <CalButton locale={locale} placement="hero_audit" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
+                <a
+                  href="#brief"
+                  className="button-ghost-burgundy mm-btn mm-btn-ghost"
+                  onClick={() => trackEvent("cta_click", { locale, placement: "hero", destination: "brief" })}
+                >
+                  <span>{t.sendBrief}</span>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </a>
+              </div>
+              <p className="mm-micro mm-intro mm-d5">
+                <Check aria-hidden="true" size={16} />
+                <span>{t.heroMicrocopy}</span>
+              </p>
+              <p className="mm-hero-caption mm-intro mm-d5">
+                <span>{locale === "en" ? <>Repetitive handoffs, <em>into the system.</em></> : <>Lo repetitivo, <em>al sistema.</em></>}</span>
+                <span className="mm-hero-badge">{locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}</span>
+              </p>
             </div>
-            <div className="cta-group mm-hero-actions mm-intro mm-d4">
-              <CalButton locale={locale} placement="hero_audit" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
-              <a
-                href="#brief"
-                className="button-ghost-burgundy mm-btn mm-btn-ghost"
-                onClick={() => trackEvent("cta_click", { locale, placement: "hero", destination: "brief" })}
-              >
-                <span>{t.sendBrief}</span>
-                <ArrowRight aria-hidden="true" size={16} />
-              </a>
-            </div>
-            <p className="mm-micro mm-intro mm-d5">
-              <Check aria-hidden="true" size={16} />
-              <span>{t.heroMicrocopy}</span>
-            </p>
-            <p className="mm-hero-caption mm-intro mm-d5">
-              <span>{locale === "en" ? <>Repetitive handoffs, <em>into the system.</em></> : <>Lo repetitivo, <em>al sistema.</em></>}</span>
-              <span className="mm-hero-badge">{locale === "en" ? "PUNA TECH · CRAFTED FOR OWNERSHIP" : "PUNA TECH · CONSTRUIDO PARA CONTROL TOTAL"}</span>
-            </p>
+            <HeroVariantSlots locale={locale} />
           </div>
           <RidgeField />
         </section>
+        <HeroVariantRuntime locale={locale} />
         <Suspense fallback={null}>
           <HomeBelow locale={locale} />
         </Suspense>
       </main>
+      <HeroStickyBar locale={locale} />
     </PageShell>
   );
 }

@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { CAL_LINK, CONTACT_EMAIL, casesHubPath, chromeCopy, contactPath, servicesHubPath, type Locale } from "../content/chrome";
+import { heroVariantHref } from "../lib/hero-variant";
 import { languageSwitchPath, routeAlternatePath } from "../lib/locale-switch";
 import { afterWindowLoadIdle } from "./defer";
 import { trackEvent } from "./tracking";
@@ -40,7 +41,7 @@ function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, pl
   }, [locale, placement, ref]);
 }
 
-export function CalButton({ locale, placement, className = "", compact = false, label, dot = false }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean }) {
+export function CalButton({ locale, placement, className = "", compact = false, label, dot = false, variant, ctaId }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean; variant?: string; ctaId?: string }) {
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLAnchorElement>(null);
   useCtaView(ref, locale, placement);
@@ -48,7 +49,13 @@ export function CalButton({ locale, placement, className = "", compact = false, 
   async function openCal(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     if (loading) return;
-    trackEvent("cta_click", { locale, placement, destination: "cal" });
+    trackEvent("cta_click", {
+      locale,
+      placement,
+      destination: "cal",
+      ...(variant ? { variant } : {}),
+      ...(ctaId ? { cta_id: ctaId } : {}),
+    });
     setLoading(true);
     try {
       const { getCalApi } = await import("@calcom/embed-react");
@@ -74,6 +81,9 @@ export function CalButton({ locale, placement, className = "", compact = false, 
       className={`button-primary ${compact ? "button-compact" : ""} ${className}`}
       aria-label={label || chromeCopy[locale].book}
       aria-busy={loading}
+      data-variant={variant}
+      data-cta-id={ctaId}
+      data-placement={placement}
     >
       {dot ? <span className="nav-dot" aria-hidden="true" /> : null}
       <span>{loading ? (locale === "en" ? "Opening calendar…" : "Abriendo calendario…") : (label || chromeCopy[locale].book)}</span>
@@ -104,13 +114,14 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
   const home = locale === "en" ? "/" : "/es";
   const servicesAnchor = servicesHubPath(locale);
   const workAnchor = casesHubPath(locale);
-  const processAnchor = `${home}#process`;
+  const processAnchor = `${heroVariantHref(home, location.search)}#process`;
   const insights = locale === "en" ? "/blog" : "/es/blog";
   // On the home page the brief form is in-page; everywhere else the CTA opens the contact page.
   const briefAnchor = location.pathname === home ? "#brief" : location.pathname === contactPath(locale) ? "#brief-form" : contactPath(locale);
   const matches = useMatches();
   const translatedPath = [...matches].reverse().map((match) => routeAlternatePath(match.data)).find((path): path is string => Boolean(path));
-  const languageHref = languageSwitchPath(location.pathname, locale, translatedPath);
+  const languageHref = heroVariantHref(languageSwitchPath(location.pathname, locale, translatedPath), location.search);
+  const homeHref = heroVariantHref(home, location.search);
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -136,7 +147,7 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
 
   const navBar = (
     <>
-      <Link to={home} className="brand-link"><Brand /></Link>
+      <Link to={homeHref} className="brand-link"><Brand /></Link>
       <nav className="desktop-nav" aria-label={locale === "en" ? "Primary navigation" : "Navegación principal"}>
         <Link to={servicesAnchor}>{t.nav.services}</Link>
         <Link to={workAnchor}>{t.nav.work}</Link>
