@@ -37,7 +37,7 @@ const FLOWS: Record<Locale, Array<{ id: FlowId; label: string; href?: string; li
       id: "collections",
       label: "Cobranzas",
       href: "/es/integraciones/mercado-pago",
-      linkLabel: "Integración y conciliación de Mercado Pago",
+      linkLabel: "Conciliación de pagos con Mercado Pago",
       manual: ["Entra el pago", "Bajan el reporte", "Excel", "Reclamo al que ya pagó"],
       auto: ["Entra el pago", "Se concilia con la factura", "Comisiones aparte", "Diferencias para revisar"],
     },

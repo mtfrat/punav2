@@ -1,5 +1,5 @@
 import { caseStudies, casePath, CONTACT_EMAIL, servicePath, services, SITE_URL } from "../content/site";
-import { useCases } from "../content/use-cases";
+import { useCaseHubs, useCases } from "../content/use-cases";
 import { getPublishedPosts } from "../lib/posts.server";
 
 export async function loader() {
@@ -24,6 +24,7 @@ export async function loader() {
     ...services.es.map((item) => `- [${item.eyebrow}](${SITE_URL}${servicePath("es", item.slug)}): ${item.description}`),
     "",
     "## Use cases (Spanish, Argentina)",
+    ...useCaseHubs.map((hub) => `- [${hub.title}](${SITE_URL}${hub.path}): ${hub.metaDescription}`),
     ...useCases.map((item) => `- [${item.title}](${SITE_URL}${item.path}): ${item.metaDescription}`),
     "",
     "## Case Studies & Proven Workflows",

@@ -1,5 +1,5 @@
 import { caseStudies, casePath, casesHubPath, servicePath, services, servicesHubPath, SITE_URL } from "../content/site";
-import { useCases } from "../content/use-cases";
+import { useCaseHubs, useCases } from "../content/use-cases";
 import { getPublishedPosts } from "../lib/posts.server";
 
 function esc(value: string) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -20,7 +20,8 @@ export async function loader() {
     ...localizedPair("/privacy", "/es/privacidad"),
     ...localizedPair("/terms", "/es/terminos"),
     ...localizedPair("/contact", "/es/contacto"),
-    // Spanish-only use-case landings (no English alternate yet).
+    // Spanish-only use-case hubs and landings (no English alternate yet).
+    ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path })),
     ...useCases.map((item) => ({ path: item.path, en: "", es: item.path })),
   ];
   const [english, spanish] = await Promise.all([getPublishedPosts("en", 200), getPublishedPosts("es", 200)]);

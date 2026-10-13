@@ -100,7 +100,10 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
               <header className="section-heading" style={{ marginBottom: "2rem" }}>
                 <p className="eyebrow">Casos de uso del día a día</p>
                 <h2 id="use-cases-heading">Problemas concretos que automatizamos</h2>
-                <p>Una página por problema: cómo es hoy, cómo queda y cómo lo resolvemos. Automatizamos un proceso en 2 semanas a precio cerrado.</p>
+                <p>
+                  Una página por problema: cómo es hoy, cómo queda y cómo lo resolvemos. Automatizamos un proceso en 2 semanas a precio cerrado.
+                  {" "}El índice está en <Link to="/es/automatizaciones">automatizaciones</Link> y <Link to="/es/integraciones">integraciones</Link>.
+                </p>
               </header>
               <div className="hub-card-grid">
                 {useCases.map((item, index) => (

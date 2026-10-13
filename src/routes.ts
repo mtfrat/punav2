@@ -25,6 +25,8 @@ export default [
   route("es/terminos", "./routes/legal.tsx", { id: "terms-es" }),
   route("contact", "./routes/contact.tsx", { id: "contact-en" }),
   route("es/contacto", "./routes/contact.tsx", { id: "contact-es" }),
+  route("es/automatizaciones", "./routes/use-cases-hub.tsx", { id: "use-cases-hub-automation" }),
+  route("es/integraciones", "./routes/use-cases-hub.tsx", { id: "use-cases-hub-integration" }),
   route("es/automatizaciones/:slug", "./routes/use-case.tsx", { id: "use-case-automation-es" }),
   route("es/integraciones/:slug", "./routes/use-case.tsx", { id: "use-case-integration-es" }),
   route("demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-en" }),

@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
 import { Accordion, CalButton, PageShell, trackEvent } from "../components/marketing";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { contactPath, copy, servicesHubPath, SITE_URL } from "../content/site";
-import { getUseCaseByPath, USE_CASE_OFFER, USE_CASE_STEPS, useCases } from "../content/use-cases";
+import { getUseCaseByPath, getUseCaseHubBySection, USE_CASE_OFFER, USE_CASE_STEPS, useCases } from "../content/use-cases";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
@@ -16,13 +16,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const useCase = getUseCaseByPath(pathname);
   if (!useCase) throw new Response("Not found", { status: 404 });
   const siblings = useCases.filter((item) => item.key !== useCase.key).map(({ path, cardTitle, cardBlurb }) => ({ path, cardTitle, cardBlurb }));
-  return { locale: "es" as const, useCase, siblings };
+  const hub = getUseCaseHubBySection(useCase.section);
+  return { locale: "es" as const, useCase, siblings, hub };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => {
   if (isRouteErrorResponse(error) && error.status === 404) return notFoundDocumentMeta(localeFromPathname(location.pathname));
   if (!data) return [];
-  const { useCase } = data;
+  const { useCase, hub } = data;
   const url = `${SITE_URL}${useCase.path}`;
   return createMeta({
     locale: "es",
@@ -49,6 +50,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
       breadcrumbSchema([
         { name: "Puna Tech", path: "/es" },
         { name: "Servicios", path: servicesHubPath("es") },
+        { name: hub.eyebrow, path: hub.path },
         { name: useCase.cardTitle, path: useCase.path },
       ]),
       {
@@ -78,7 +80,7 @@ function ContactLink({ placement, light = false }: { placement: string; light?: 
 }
 
 export default function UseCasePage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
-  const { useCase, siblings } = loaderData;
+  const { useCase, siblings, hub } = loaderData;
   const t = copy.es;
   useEffect(() => trackEvent("use_case_view", { locale: "es", use_case: useCase.key }), [useCase.key]);
 
@@ -181,6 +183,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
             </p>
             <ol className="related-guide-list">
               {[
+                { path: hub.path, title: hub.eyebrow },
                 ...siblings.map((item) => ({ path: item.path, title: item.cardTitle })),
                 useCase.relatedService,
                 ...useCase.relatedPosts,
