@@ -64,11 +64,11 @@ export const useCaseHubs: UseCaseHub[] = [
     section: "integraciones",
     path: "/es/integraciones",
     eyebrow: "Integraciones",
-    title: "Integraciones con Mercado Pago y Tienda Nube",
-    lead: "Conectamos Mercado Pago y Tienda Nube con tu sistema de gestión: conciliación de pagos, stock y pedidos, sin cruzar reportes a mano.",
+    title: "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube",
+    lead: "Conectamos Mercado Pago, Tienda Nube y Mercado Libre con tu sistema de gestión: conciliación de pagos, stock, pedidos y facturas, sin cruzar reportes a mano.",
     intro: "Elegí la herramienta. Cada página cuenta qué datos viajan, qué queda en tu sistema y qué se marca para revisar.",
     metaTitle: "Integraciones Mercado Pago y Tienda Nube | Puna Tech",
-    metaDescription: "Integraciones para empresas en Argentina: conciliación de pagos con Mercado Pago y Tienda Nube con tu stock y ERP. Diagnóstico en 15 min.",
+    metaDescription: "Integraciones para empresas en Argentina: Mercado Pago, Tienda Nube y Mercado Libre con tu stock y ERP. Diagnóstico en 15 min.",
   },
 ];
 
@@ -175,7 +175,7 @@ export const useCases: UseCaseContent[] = [
     how: [
       { title: "Conectado a la API de Mercado Pago", body: "Usamos las notificaciones de pago, la API y los reportes de Mercado Pago para tener cada movimiento sin bajar archivos a mano." },
       { title: "Reglas de conciliación claras", body: "Definimos con vos cómo se empareja un pago con una factura: referencia del link de pago, monto, CUIT o email del cliente, ventana de fechas. Lo que no coincide con certeza no se marca como cobrado: queda en una bandeja de diferencias." },
-      { title: "Hacia tu sistema de gestión", body: "Registramos el cobro en tu sistema (Tango, Bejerman, Odoo, un ERP propio o una planilla) por API o importación. Si además querés que la factura se emita sola, lo vemos como siguiente paso." },
+      { title: "Hacia tu sistema de gestión", body: "Registramos el cobro en tu sistema (Tango, Bejerman, Odoo, un ERP propio o una planilla) por API o importación. Si además querés que la factura se emita sola, lo vemos como siguiente paso. Si las ventas entran por Mercado Libre, el stock y la factura de ese canal van en [integrar Mercado Libre](/es/integraciones/mercado-libre)." },
     ],
     fit: [
       "Cobrás una parte importante de tus ventas por Mercado Pago.",
@@ -346,7 +346,7 @@ export const useCases: UseCaseContent[] = [
       },
       {
         title: "Un primer flujo",
-        body: "Empezamos por pedidos y stock. Si después hace falta facturar, cruzar Mercado Pago o sumar otro canal, cada uno tiene su alcance. No prometemos conectar todo en 2 semanas.",
+        body: "Empezamos por pedidos y stock. Si también vendés por Mercado Libre, el stock y la factura de ese canal están en [integrar Mercado Libre](/es/integraciones/mercado-libre). El cruce de cada pago de Mercado Pago va en [integrar Mercado Pago](/es/integraciones/mercado-pago). Cada uno tiene su alcance. No prometemos conectar todo en 2 semanas.",
       },
     ],
     fit: [
@@ -358,9 +358,69 @@ export const useCases: UseCaseContent[] = [
       ["¿Se puede integrar Tienda Nube con un ERP?", "Sí, si Tienda Nube puede pasar pedidos y productos y tu sistema puede recibirlos: una API, una base o un archivo de importación. El trabajo es que el pedido y el stock viajen solos, y que lo dudoso quede para revisar."],
       ["¿Cómo conectar Tienda Nube con el stock?", "El stock de referencia sale de tu sistema (ERP, Tango, Bejerman o una planilla). Cada venta en Tienda Nube lo descuenta, y un cambio en el depósito puede volver a la tienda. Si el código del producto no coincide, no se actualiza solo."],
       ["¿Qué es una integración de Tienda Nube?", "Es que la tienda y tu sistema de gestión dejen de ser dos listas distintas. Un pedido que entra en Tienda Nube queda cargado, y el stock que vendiste deja de figurar como disponible. No es cambiar de tienda ni cargar otra planilla."],
-      ["¿Sirve si también vendés por Mercado Libre o cobrás con Mercado Pago?", "El primer flujo es Tienda Nube con tu stock y tus pedidos. Mercado Libre u otro canal se puede sumar después, si tiene una forma segura de pasar datos. El cruce de cada pago de Mercado Pago con su factura es otro flujo."],
+      ["¿Sirve si también vendés por Mercado Libre o cobrás con Mercado Pago?", "El primer flujo es Tienda Nube con tu stock y tus pedidos. Mercado Libre tiene su propio flujo de stock, pedidos y factura electrónica. El cruce de cada pago de Mercado Pago con su factura es otro flujo."],
       costFaq("cuántos productos y depósitos hay, si el stock vive en un ERP o en una planilla, y si también hay que sincronizar precios"),
       ["¿Qué necesitamos de nuestro lado?", "Acceso de prueba a la tienda (una aplicación de Tienda Nube con permisos para leer pedidos y productos, no tu usuario y contraseña), el listado de productos con sus códigos, y una persona que conozca cómo cuentan el stock hoy."],
+    ],
+    relatedService: { path: "/es/servicios/integraciones-de-datos", title: "integración de sistemas" },
+    relatedPosts: [
+      { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
+    ],
+  },
+  {
+    key: "mercado-libre",
+    path: "/es/integraciones/mercado-libre",
+    section: "integraciones",
+    eyebrow: "Integración · Mercado Libre",
+    title: "Integrar Mercado Libre con tu stock y tu ERP",
+    lead: "Vendés por Mercado Libre y el stock vive en Tienda Nube, en el ERP o en una planilla. Conectamos el canal con tu depósito: cada venta descuenta el stock real, el pedido queda cargado y la factura electrónica sale por ARCA cuando los datos cierran.",
+    metaTitle: "Integrar Mercado Libre con stock y ERP | Puna Tech",
+    metaDescription: "Integrar Mercado Libre con tu ERP y el stock: sincronizá Tienda Nube, cargá el pedido y facturá la venta. Para pymes en Argentina. Diagnóstico en 15 min.",
+    serviceType: "Integración de Mercado Libre con ERP y stock",
+    ogImage: "/og/integracion-mercado-libre.png",
+    ogImageAlt: "Puna Tech: integrar Mercado Libre con tu ERP y el stock real.",
+    cardTitle: "Integrar Mercado Libre",
+    cardBlurb: "El stock de Mercado Libre sale de tu depósito. Cada venta queda en el ERP y se puede facturar.",
+    example: "Por ejemplo, un comercio que publica en Mercado Libre y también vende por Tienda Nube. El stock vive en el depósito, anotado en el ERP o en una planilla. Cada venta hay que copiarla, descontarla y facturarla. Mientras tanto, una publicación queda activa sin stock o pausada con mercadería en el estante, y las preguntas de los compradores se juntan en la bandeja.",
+    before: [
+      "El stock de Mercado Libre, el de Tienda Nube y el del depósito no coinciden.",
+      "Publicaciones activas de algo que ya no hay, o pausadas cuando el producto volvió.",
+      "Cada venta se carga en el sistema y se factura a mano.",
+      "Preguntas y mensajes de compradores mezclados con el trabajo de stock y facturación.",
+    ],
+    after: [
+      "Stock y precios salen de tu sistema y se actualizan en Mercado Libre. Si también vendés por Tienda Nube, se actualizan ahí desde el mismo depósito.",
+      "Cada orden queda en el ERP o en la planilla, con productos, cantidades y comprador.",
+      "La factura electrónica de la venta se emite por ARCA cuando los ítems, los importes y la condición fiscal cierran. Si no cierran, no se factura sola.",
+      "Un aviso cuando el stock no coincide, la factura no sale, una publicación se pausa o una pregunta queda sin responder.",
+    ],
+    howTitle: "Cómo lo resolvemos",
+    how: [
+      {
+        title: "Conectado a Mercado Libre",
+        body: "Usamos la API de Mercado Libre para leer órdenes, publicaciones, stock y precios, sin bajar planillas. Si un dato que necesitás no se puede pasar de forma segura, te lo decimos en la llamada, antes de prometerlo.",
+      },
+      {
+        title: "El stock sale de tu depósito",
+        body: "Precio y stock salen de tu ERP, de Tango, de Bejerman o de una planilla. Mercado Libre se actualiza desde ahí. Si también está Tienda Nube, los dos canales leen el mismo número: lo vemos en [integrar Tienda Nube](/es/integraciones/tienda-nube). Si el código del producto no coincide, no actualizamos a ciegas.",
+      },
+      {
+        title: "Orden, factura y alerta",
+        body: "La orden entra al sistema. Si los datos fiscales cierran, emitimos la factura electrónica por el facturador que ya usás con ARCA. Si el stock, el precio, la factura o una pregunta no cierran, queda un aviso para revisar. El cruce de cada pago de Mercado Pago con su factura es otro flujo: [integrar Mercado Pago](/es/integraciones/mercado-pago). No prometemos conectar todo en 2 semanas.",
+      },
+    ],
+    fit: [
+      "Vendés por Mercado Libre y el stock vive en Tienda Nube, en el ERP o en una planilla.",
+      "Alguien copia ventas, pausa publicaciones o factura a mano todos los días.",
+      "Ya vendiste algo que no había, o una publicación quedó pausada con stock en el depósito.",
+    ],
+    faqs: [
+      ["¿Se puede sincronizar el stock de Mercado Libre y Tienda Nube?", "Sí, si Mercado Libre, Tienda Nube y tu sistema pueden pasarse el dato. El stock de referencia sale del depósito: ERP, Tango, Bejerman o una planilla. Cada venta lo descuenta y los dos canales se actualizan desde ahí. Si el código no coincide, ese producto no se actualiza solo."],
+      ["¿Puedo facturar automáticamente las ventas de Mercado Libre?", "Sí, cuando los datos de la venta cierran: ítems, importes y la condición fiscal del comprador. La factura electrónica sale por el facturador que ya usás con ARCA, si ese sistema puede recibir la venta. Si falta un dato, el importe no cierra, o hoy facturás solo en la web de ARCA y no hay forma segura de conectarlo, la venta no se factura sola: queda para revisar, y te lo decimos antes de prometerlo."],
+      ["¿Necesito cambiar de ERP?", "No. Conectamos Mercado Libre con el sistema que ya usás, si hay una forma segura de leer stock y precios y de cargar la orden: API, base o archivo de importación. Si tu ERP no la tiene, te lo decimos en la llamada y no prometemos una carga que no se puede hacer."],
+      ["¿Qué es una integración de Mercado Libre con el ERP?", "Es que una venta en Mercado Libre deje de vivir solo en el canal. El pedido queda en tu ERP o en la planilla, el stock que vendiste deja de figurar en el depósito y, si los datos cierran, sale la factura. No es mudarte de Mercado Libre ni cambiar de sistema."],
+      ["¿Qué pasa con las publicaciones pausadas y con las preguntas?", "Si el stock llega a cero, la publicación se puede pausar para no vender lo que no hay, y volver a activarse cuando el depósito repone. Las preguntas y los mensajes los responde tu equipo. El flujo avisa cuando uno queda sin contestar, para que no se pierda entre las ventas."],
+      costFaq("cuántos productos y depósitos hay, si el stock vive en un ERP o en una planilla, y si la factura electrónica entra en el mismo alcance"),
     ],
     relatedService: { path: "/es/servicios/integraciones-de-datos", title: "integración de sistemas" },
     relatedPosts: [

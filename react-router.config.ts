@@ -43,6 +43,7 @@ const marketingRoutes = [
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
   "/es/integraciones/tienda-nube",
+  "/es/integraciones/mercado-libre",
 ];
 
 export default {

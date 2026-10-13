@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
@@ -66,6 +66,21 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
   });
 };
 
+function RichText({ text }: { text: string }) {
+  const nodes: ReactNode[] = [];
+  const pattern = /\[([^\]]+)\]\((\/(?!\/)[^)\s]+)\)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(text))) {
+    const index = match.index;
+    if (index > last) nodes.push(text.slice(last, index));
+    nodes.push(<Link key={`${match[2]}-${index}`} to={match[2]}>{match[1]}</Link>);
+    last = index + match[0].length;
+  }
+  if (last < text.length) nodes.push(text.slice(last));
+  return nodes;
+}
+
 function ContactLink({ placement, light = false }: { placement: string; light?: boolean }) {
   return (
     <Link
@@ -132,7 +147,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
             {useCase.how.map((item) => (
               <article className="commercial-h2-block" key={item.title}>
                 <h3>{item.title}</h3>
-                <p>{item.body}</p>
+                <p><RichText text={item.body} /></p>
               </article>
             ))}
           </div>
