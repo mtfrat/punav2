@@ -1116,14 +1116,125 @@ export const caseStudies: Record<Locale, CaseStudyContent[]> = {
   ],
 };
 
-export const legacyPostRedirects: Record<string, string> = {
-  "ce50c784-fb5f-4fb0-8366-b509505ad350": "automatizacion-facturacion-logistica",
-  "6a679262-ec4b-4b40-b3d3-2676414ca7cd": "arquitecturas-multi-agente",
-  "2a7d35ed-5d84-47c3-a0fb-610037935b07": "guia-optimizacion-procesos-ia",
-  "20cda72b-8c67-4445-bc36-13705371643f": "automatizacion-facturacion-logistica",
-  "d639a5d5-b6f2-487e-a670-b1284de23f3f": "arquitecturas-multi-agente",
-  "37cd02cf-0cd3-4bc5-bc00-c5844c261963": "guia-optimizacion-procesos-ia",
-};
+/**
+ * Legacy blog identifiers (prototype slugs, archived post ids, and archived slugs)
+ * to a single indexable path. Both `/blog/<id>` and `/es/blog/<id>` use this map.
+ * News posts that do not match a live service or guide go to the Spanish blog hub.
+ */
+const legacyBlogTargets: Array<{ ids: string[]; to: string }> = [
+  {
+    ids: ["automatizacion-facturacion-logistica"],
+    to: "/es/automatizaciones/carga-de-facturas-proveedores",
+  },
+  {
+    ids: ["arquitecturas-multi-agente"],
+    to: "/es/blog/cuando-usar-ia-vs-software-deterministico",
+  },
+  {
+    ids: ["guia-optimizacion-procesos-ia"],
+    to: "/es/servicios/automatizacion-ia",
+  },
+  {
+    // Google brings agentic AI and vibe-coded widgets to Android
+    ids: [
+      "ce50c784-fb5f-4fb0-8366-b509505ad350",
+      "google-brings-agentic-ai-and-vibe-coded-widgets-to-android",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Fabricar 60 máquinas al año… ASML está marcando el ritmo de la IA
+    ids: [
+      "6a679262-ec4b-4b40-b3d3-2676414ca7cd",
+      "fabricar-60-maquinas-al-ano-puede-parecer-poco-en-la-practica-las-de-la-europea-asml-estan-marcando-el-ritmo-de-la-ia",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Meta se ha puesto a la cabeza de la carrera de los agentes de IA adquiriendo Manus
+    ids: [
+      "2a7d35ed-5d84-47c3-a0fb-610037935b07",
+      "meta-se-ha-puesto-a-la-cabeza-de-la-carrera-de-los-agentes-de-ia-adquiriendo-manus-por-2-000-millones-de-dolares",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Pones un podcast en YouTube… son instrucciones para tus agentes IA
+    ids: [
+      "37cd02cf-0cd3-4bc5-bc00-c5844c261963",
+      "pones-un-podcast-en-youtube-y-un-sonido-indetectable-al-oido-humano-comienza-a-sonar-son-instrucciones-para-tus-agentes-ia",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Las empresas de ordenadores… se están forrando con los servidores de IA
+    ids: [
+      "20cda72b-8c67-4445-bc36-13705371643f",
+      "las-empresas-de-ordenadores-no-ganaban-dinero-con-los-ordenadores-lo-que-estan-haciendo-es-forrarse-gracias-a-los-servidores-de-ia",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Salesforce acquires AI customer service platform Fin
+    ids: [
+      "0c923b74-b089-4ab6-a44c-446c6f94d68a",
+      "salesforce-acquires-ai-customer-service-platform-fin-for-3-6b",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Las viviendas de lujo en EEUU se están vendiendo… la IA
+    ids: [
+      "c608f973-9554-4ac5-bdcf-723595ce4c8a",
+      "las-viviendas-de-lujo-en-eeuu-se-estan-vendiendo-como-churros-y-los-expertos-creen-saber-por-que-la-ia",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // El gran tapado de la IA: el gigante de los váteres inteligentes
+    ids: [
+      "6e708b34-3aaf-4fd3-a4bc-ebca52da4936",
+      "el-gran-tapado-de-la-ia-el-gigante-de-los-vateres-inteligentes-japones-gastara-500-millones-en-chips-del-futuro",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // La IA se ha convertido en la coartada perfecta…
+    ids: [
+      "d639a5d5-b6f2-487e-a670-b1284de23f3f",
+      "la-ia-se-ha-convertido-en-la-coartada-perfecta-para-cualquier-cosa-a-las-empresas-les-sirve-tanto-para-recortar-como-para-expandirse",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // CuspAI asegura $450M para descubrimiento de materiales
+    ids: [
+      "b0c65d7e-1b30-4ba0-8f49-aba4693f9681",
+      "cuspai-asegura-450m-para-acelerar-el-descubrimiento-de-materiales-ia-2026",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // Anthropic launches Opus 5
+    ids: [
+      "be1546f6-3387-4392-89f5-8e8379208ea2",
+      "anthropic-launches-opus-5-transforming-b2b-ai-with-advanced-capabilities-2026",
+    ],
+    to: "/es/blog",
+  },
+  {
+    // VentureBeat nombra a Rob Strechay
+    ids: [
+      "c91a6c0c-6ba2-411e-a096-c192e2352574",
+      "venturebeat-nombra-a-rob-strechay-como-primer-analista-principal-2026-para-impulsar-la-investigacion-de-ia-empresarial",
+    ],
+    to: "/es/blog",
+  },
+];
+
+export const legacyPostRedirects: Record<string, string> = Object.fromEntries(
+  legacyBlogTargets.flatMap((item) => item.ids.map((id) => [id, item.to])),
+);
 
 export function getService(locale: Locale, slug: string) {
   return services[locale].find((service) => service.slug === slug);

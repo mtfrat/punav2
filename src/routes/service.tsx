@@ -35,6 +35,14 @@ function RichText({ text }: { text: string }) {
   return nodes;
 }
 
+const aiAutomationUseCases = [
+  { path: "/es/automatizaciones", title: "Automatizaciones" },
+  { path: "/es/automatizaciones/pedidos-por-whatsapp", title: "Pedidos por WhatsApp" },
+  { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
+  { path: "/es/automatizaciones/automatizar-cobranzas", title: "Automatizar cobranzas" },
+  { path: "/es/integraciones", title: "Integraciones" },
+];
+
 const serviceGuides: Record<string, Record<Locale, Array<{ path: string; title: string }>>> = {
   "custom-software": {
     en: [
@@ -225,6 +233,25 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
             </div>
           </div>
         </section>
+
+        {locale === "es" && service.key === "ai-automation" ? (
+          <section className="related-guides" aria-labelledby="service-use-cases-heading">
+            <div className="shell">
+              <h2 id="service-use-cases-heading">Casos de uso</h2>
+              <ol className="related-guide-list related-guide-stack">
+                {aiAutomationUseCases.map((item, index) => (
+                  <li key={item.path}>
+                    <Link to={item.path}>
+                      <span className="related-guide-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="related-guide-title">{item.title}</span>
+                      <ArrowRight aria-hidden="true" size={18} />
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        ) : null}
 
         {guides.length ? (
           <section className="related-guides" aria-labelledby="related-guides-heading">

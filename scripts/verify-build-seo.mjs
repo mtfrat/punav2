@@ -192,6 +192,24 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
   if (!html.includes('href="/es/automatizaciones/automatizar-cobranzas"')) failures.push(`${route}: missing link to automatizar cobranzas`);
+  if (!html.includes('<h2 id="service-use-cases-heading">Casos de uso</h2>')) failures.push(`${route}: Casos de uso heading missing`);
+  for (const path of [
+    "/es/automatizaciones",
+    "/es/automatizaciones/pedidos-por-whatsapp",
+    "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/automatizaciones/automatizar-cobranzas",
+    "/es/integraciones",
+  ]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: Casos de uso missing ${path}`);
+  }
+  const useCasesAt = html.indexOf("service-use-cases-heading");
+  const finalCtaAt = html.indexOf("detail-cta");
+  if (useCasesAt === -1 || finalCtaAt === -1 || useCasesAt > finalCtaAt) failures.push(`${route}: Casos de uso should stay above the final CTA`);
+}
+
+{
+  const englishAutomation = await readFile(join(root, "services/ai-automation/index.html"), "utf8");
+  if (englishAutomation.includes("service-use-cases-heading")) failures.push("/services/ai-automation: Spanish use-case block rendered on the English page");
 }
 
 for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
@@ -784,6 +802,27 @@ else {
       if (twitterTitle !== title) failures.push(`${path}: twitter:title does not match title`);
       if (ogDescription !== description) failures.push(`${path}: og:description does not match meta description`);
       if (twitterDescription !== description) failures.push(`${path}: twitter:description does not match meta description`);
+    }
+
+    const vercel = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
+    const redirectSources = new Set(vercel.redirects.map((rule) => rule.source));
+    const legacyRules = vercel.redirects.filter((rule) => rule.source.startsWith("/blog/") || rule.source.startsWith("/es/blog/"));
+    const editorialPostsInSitemap = /<loc>https:\/\/www\.puna-tech\.com\/(?:es\/)?blog\/[^<]+<\/loc>/.test(sitemap.html);
+    if (!legacyRules.length) failures.push("vercel.json: legacy blog redirects missing");
+    for (const rule of legacyRules) {
+      if (rule.statusCode !== 301) failures.push(`${rule.source}: expected HTTP 301, got ${rule.statusCode}`);
+      if (redirectSources.has(rule.destination)) failures.push(`${rule.source}: ${rule.destination} is another redirect (chain)`);
+      const isBlogArticle = /^\/(?:es\/)?blog\/.+/.test(rule.destination);
+      const inSitemap = sitemap.html.includes(`https://www.puna-tech.com${rule.destination}<`);
+      if (!inSitemap && !(isBlogArticle && !editorialPostsInSitemap)) {
+        failures.push(`${rule.source}: destination ${rule.destination} is not in the sitemap`);
+      }
+      const response = await fetch(`http://127.0.0.1:${port}${rule.source}`, { redirect: "manual" });
+      const location = response.headers.get("location") || "";
+      const pathname = location.startsWith("http") ? new URL(location).pathname : location.split("?")[0];
+      if (response.status !== 301) failures.push(`${rule.source}: app expected one 301, got ${response.status}`);
+      if (pathname !== rule.destination) failures.push(`${rule.source}: app Location ${location} is not ${rule.destination}`);
+      await response.arrayBuffer();
     }
   } finally {
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { caseStudies, casesHubCopy, services, servicesHubCopy } from "../src/content/catalog.ts";
+import { caseStudies, casesHubCopy, legacyPostRedirects, services, servicesHubCopy } from "../src/content/catalog.ts";
 import { useCaseHubs, useCases } from "../src/content/use-cases.ts";
-import { blogDocumentTitle, blogIndexSchema, createMeta, normalizeDocumentTitle } from "../src/lib/seo.ts";
 import { languageSwitchPath } from "../src/lib/locale-switch.ts";
+import { blogDocumentTitle, blogIndexSchema, createMeta, normalizeDocumentTitle } from "../src/lib/seo.ts";
 
 const suffix = " | Puna Tech";
 const cases = [
@@ -150,4 +150,25 @@ for (const useCase of useCases) {
   assertSerpMeta(useCase.path, useCase.metaDescription);
 }
 
-console.log("Verified blog title limits, language-switch paths, blog hub schema, legacy case-study redirects, and SERP title/meta lengths.");
+assert.equal(legacyPostRedirects["automatizacion-facturacion-logistica"], "/es/automatizaciones/carga-de-facturas-proveedores");
+assert.equal(legacyPostRedirects["arquitecturas-multi-agente"], "/es/blog/cuando-usar-ia-vs-software-deterministico");
+assert.equal(legacyPostRedirects["guia-optimizacion-procesos-ia"], "/es/servicios/automatizacion-ia");
+assert.equal(legacyPostRedirects["ce50c784-fb5f-4fb0-8366-b509505ad350"], "/es/blog");
+
+const blogRedirectSources = vercel.redirects.filter((rule) => rule.source.startsWith("/blog/") || rule.source.startsWith("/es/blog/"));
+assert.equal(blogRedirectSources.length, Object.keys(legacyPostRedirects).length * 2);
+for (const [id, destination] of Object.entries(legacyPostRedirects)) {
+  assert.equal(redirects.has(destination), false, `${destination} is itself a redirect`);
+  for (const source of [`/blog/${id}`, `/es/blog/${id}`]) {
+    const rule = redirects.get(source);
+    assert.ok(rule, `missing single-hop redirect for ${source}`);
+    assert.equal(rule.destination, destination);
+    assert.equal(rule.statusCode, 301);
+  }
+}
+for (const rule of blogRedirectSources) {
+  const id = rule.source.replace(/^\/(?:es\/)?blog\//, "");
+  assert.equal(legacyPostRedirects[id], rule.destination, `${rule.source} is not in the legacy map`);
+}
+
+console.log("Verified blog title limits, language-switch paths, blog hub schema, legacy redirects, and SERP title/meta lengths.");
