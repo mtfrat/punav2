@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
 import { CalButton, PageShell } from "../components/marketing";
 import { blogPath, legacyPostRedirects, servicePath, services, SITE_URL, type Locale } from "../content/site";
 import { useCases } from "../content/use-cases";
-import { getLegacyPostRedirect, getPublishedPost, getTranslation, renderPostContent } from "../lib/posts.server";
+import { getPublishedPost, getTranslation, renderPostContent } from "../lib/posts.server";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { blogDocumentTitle, breadcrumbSchema, createMeta } from "../lib/seo";
@@ -15,14 +15,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
   const locale: Locale = pathname.startsWith("/es/") ? "es" : "en";
   const requestedSlug = params.slug || "";
-  if (locale === "en" && legacyPostRedirects[requestedSlug]) throw redirect(`/es/blog/${legacyPostRedirects[requestedSlug]}`, 301);
-  if (locale === "en" && Object.values(legacyPostRedirects).includes(requestedSlug)) throw redirect(`/es/blog/${requestedSlug}`, 301);
+  const legacyTarget = legacyPostRedirects[requestedSlug];
+  if (legacyTarget) throw redirect(legacyTarget, 301);
   const post = await getPublishedPost(locale, requestedSlug);
-  if (!post) {
-    const legacy = await getLegacyPostRedirect(requestedSlug);
-    if (legacy) throw redirect(blogPath(legacy.locale, legacy.slug), 301);
-    throw new Response("Not found", { status: 404 });
-  }
+  if (!post) throw new Response("Not found", { status: 404 });
   const otherLocale: Locale = locale === "en" ? "es" : "en";
   const alternateSlug = await getTranslation(otherLocale, post.translation_group_id);
   const alternatePath = alternateSlug ? blogPath(otherLocale, alternateSlug) : undefined;

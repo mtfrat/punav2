@@ -1,4 +1,4 @@
-export type { Locale } from "./chrome";
+export type { Locale } from "./chrome.ts";
 export {
   SITE_URL,
   CAL_LINK,
@@ -11,8 +11,8 @@ export {
   casesHubPath,
   blogPath,
   contactPath,
-} from "./chrome";
-export type { CaseStudyContent, ServiceContent } from "./catalog";
+} from "./chrome.ts";
+export type { CaseStudyContent, ServiceContent } from "./catalog.ts";
 export {
   caseStudies,
   casesHubCopy,
@@ -21,8 +21,8 @@ export {
   legacyPostRedirects,
   services,
   servicesHubCopy,
-} from "./catalog";
-import { chromeCopy } from "./chrome";
+} from "./catalog.ts";
+import { chromeCopy } from "./chrome.ts";
 
 export const copy = {
   en: {

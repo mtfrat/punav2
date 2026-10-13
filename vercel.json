@@ -12,6 +12,276 @@
       "source": "/es/casos/autopost-infraestructura-contenido",
       "destination": "/es/casos/autopost-estudio-contenido-b2b",
       "statusCode": 301
+    },
+    {
+      "source": "/blog/automatizacion-facturacion-logistica",
+      "destination": "/es/automatizaciones/carga-de-facturas-proveedores",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/automatizacion-facturacion-logistica",
+      "destination": "/es/automatizaciones/carga-de-facturas-proveedores",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/arquitecturas-multi-agente",
+      "destination": "/es/blog/cuando-usar-ia-vs-software-deterministico",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/arquitecturas-multi-agente",
+      "destination": "/es/blog/cuando-usar-ia-vs-software-deterministico",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/guia-optimizacion-procesos-ia",
+      "destination": "/es/servicios/automatizacion-ia",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/guia-optimizacion-procesos-ia",
+      "destination": "/es/servicios/automatizacion-ia",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/ce50c784-fb5f-4fb0-8366-b509505ad350",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/ce50c784-fb5f-4fb0-8366-b509505ad350",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/google-brings-agentic-ai-and-vibe-coded-widgets-to-android",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/google-brings-agentic-ai-and-vibe-coded-widgets-to-android",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/6a679262-ec4b-4b40-b3d3-2676414ca7cd",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/6a679262-ec4b-4b40-b3d3-2676414ca7cd",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/fabricar-60-maquinas-al-ano-puede-parecer-poco-en-la-practica-las-de-la-europea-asml-estan-marcando-el-ritmo-de-la-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/fabricar-60-maquinas-al-ano-puede-parecer-poco-en-la-practica-las-de-la-europea-asml-estan-marcando-el-ritmo-de-la-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/2a7d35ed-5d84-47c3-a0fb-610037935b07",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/2a7d35ed-5d84-47c3-a0fb-610037935b07",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/meta-se-ha-puesto-a-la-cabeza-de-la-carrera-de-los-agentes-de-ia-adquiriendo-manus-por-2-000-millones-de-dolares",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/meta-se-ha-puesto-a-la-cabeza-de-la-carrera-de-los-agentes-de-ia-adquiriendo-manus-por-2-000-millones-de-dolares",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/37cd02cf-0cd3-4bc5-bc00-c5844c261963",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/37cd02cf-0cd3-4bc5-bc00-c5844c261963",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/pones-un-podcast-en-youtube-y-un-sonido-indetectable-al-oido-humano-comienza-a-sonar-son-instrucciones-para-tus-agentes-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/pones-un-podcast-en-youtube-y-un-sonido-indetectable-al-oido-humano-comienza-a-sonar-son-instrucciones-para-tus-agentes-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/20cda72b-8c67-4445-bc36-13705371643f",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/20cda72b-8c67-4445-bc36-13705371643f",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/las-empresas-de-ordenadores-no-ganaban-dinero-con-los-ordenadores-lo-que-estan-haciendo-es-forrarse-gracias-a-los-servidores-de-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/las-empresas-de-ordenadores-no-ganaban-dinero-con-los-ordenadores-lo-que-estan-haciendo-es-forrarse-gracias-a-los-servidores-de-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/0c923b74-b089-4ab6-a44c-446c6f94d68a",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/0c923b74-b089-4ab6-a44c-446c6f94d68a",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/salesforce-acquires-ai-customer-service-platform-fin-for-3-6b",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/salesforce-acquires-ai-customer-service-platform-fin-for-3-6b",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/c608f973-9554-4ac5-bdcf-723595ce4c8a",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/c608f973-9554-4ac5-bdcf-723595ce4c8a",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/las-viviendas-de-lujo-en-eeuu-se-estan-vendiendo-como-churros-y-los-expertos-creen-saber-por-que-la-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/las-viviendas-de-lujo-en-eeuu-se-estan-vendiendo-como-churros-y-los-expertos-creen-saber-por-que-la-ia",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/6e708b34-3aaf-4fd3-a4bc-ebca52da4936",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/6e708b34-3aaf-4fd3-a4bc-ebca52da4936",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/el-gran-tapado-de-la-ia-el-gigante-de-los-vateres-inteligentes-japones-gastara-500-millones-en-chips-del-futuro",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/el-gran-tapado-de-la-ia-el-gigante-de-los-vateres-inteligentes-japones-gastara-500-millones-en-chips-del-futuro",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/d639a5d5-b6f2-487e-a670-b1284de23f3f",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/d639a5d5-b6f2-487e-a670-b1284de23f3f",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/la-ia-se-ha-convertido-en-la-coartada-perfecta-para-cualquier-cosa-a-las-empresas-les-sirve-tanto-para-recortar-como-para-expandirse",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/la-ia-se-ha-convertido-en-la-coartada-perfecta-para-cualquier-cosa-a-las-empresas-les-sirve-tanto-para-recortar-como-para-expandirse",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/b0c65d7e-1b30-4ba0-8f49-aba4693f9681",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/b0c65d7e-1b30-4ba0-8f49-aba4693f9681",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/cuspai-asegura-450m-para-acelerar-el-descubrimiento-de-materiales-ia-2026",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/cuspai-asegura-450m-para-acelerar-el-descubrimiento-de-materiales-ia-2026",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/be1546f6-3387-4392-89f5-8e8379208ea2",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/be1546f6-3387-4392-89f5-8e8379208ea2",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/anthropic-launches-opus-5-transforming-b2b-ai-with-advanced-capabilities-2026",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/anthropic-launches-opus-5-transforming-b2b-ai-with-advanced-capabilities-2026",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/c91a6c0c-6ba2-411e-a096-c192e2352574",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/c91a6c0c-6ba2-411e-a096-c192e2352574",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/venturebeat-nombra-a-rob-strechay-como-primer-analista-principal-2026-para-impulsar-la-investigacion-de-ia-empresarial",
+      "destination": "/es/blog",
+      "statusCode": 301
+    },
+    {
+      "source": "/es/blog/venturebeat-nombra-a-rob-strechay-como-primer-analista-principal-2026-para-impulsar-la-investigacion-de-ia-empresarial",
+      "destination": "/es/blog",
+      "statusCode": 301
     }
   ]
 }
