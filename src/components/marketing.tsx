@@ -11,7 +11,6 @@ import {
   X,
 } from "lucide-react";
 import { CAL_LINK, CONTACT_EMAIL, casesHubPath, chromeCopy, contactPath, servicesHubPath, type Locale } from "../content/chrome";
-import { heroVariantHref } from "../lib/hero-variant";
 import { languageSwitchPath, routeAlternatePath } from "../lib/locale-switch";
 import { afterWindowLoadIdle } from "./defer";
 import { trackEvent } from "./tracking";
@@ -114,14 +113,13 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
   const home = locale === "en" ? "/" : "/es";
   const servicesAnchor = servicesHubPath(locale);
   const workAnchor = casesHubPath(locale);
-  const processAnchor = `${heroVariantHref(home, location.search)}#process`;
+  const processAnchor = `${home}#process`;
   const insights = locale === "en" ? "/blog" : "/es/blog";
   // On the home page the brief form is in-page; everywhere else the CTA opens the contact page.
   const briefAnchor = location.pathname === home ? "#brief" : location.pathname === contactPath(locale) ? "#brief-form" : contactPath(locale);
   const matches = useMatches();
   const translatedPath = [...matches].reverse().map((match) => routeAlternatePath(match.data)).find((path): path is string => Boolean(path));
-  const languageHref = heroVariantHref(languageSwitchPath(location.pathname, locale, translatedPath), location.search);
-  const homeHref = heroVariantHref(home, location.search);
+  const languageHref = languageSwitchPath(location.pathname, locale, translatedPath);
 
   useEffect(() => setOpen(false), [location.pathname]);
 
@@ -147,7 +145,7 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
 
   const navBar = (
     <>
-      <Link to={homeHref} className="brand-link"><Brand /></Link>
+      <Link to={home} className="brand-link"><Brand /></Link>
       <nav className="desktop-nav" aria-label={locale === "en" ? "Primary navigation" : "Navegación principal"}>
         <Link to={servicesAnchor}>{t.nav.services}</Link>
         <Link to={workAnchor}>{t.nav.work}</Link>

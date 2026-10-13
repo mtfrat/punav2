@@ -1,32 +1,24 @@
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { Play, Check } from "lucide-react";
 import { useLocation } from "react-router";
-import { heroVariantCopy } from "../content/hero-variants";
+import { heroCopy } from "../content/hero-variants";
 import type { Locale } from "../content/chrome";
-import { readHeroVariant } from "../lib/hero-variant";
 import { CalButton } from "./marketing";
 import { trackEvent } from "./tracking";
 
+const VARIANT = "b";
 let lastHeroView = "";
 
-/** Re-apply `data-hero` after hydration and on client navigations. Fires `hero_variant_view` once per variant. */
-export function HeroVariantRuntime({ locale }: { locale: Locale }) {
+/** Fires `hero_variant_view` once per home path. Variant B is the home hero. */
+export function HeroVariantView({ locale }: { locale: Locale }) {
   const location = useLocation();
 
-  useLayoutEffect(() => {
-    document.documentElement.dataset.hero = readHeroVariant(location.search);
-    return () => {
-      delete document.documentElement.dataset.hero;
-    };
-  }, [location.search]);
-
   useEffect(() => {
-    const variant = readHeroVariant(location.search);
-    const key = `${location.pathname}:${variant}`;
+    const key = `${location.pathname}:${VARIANT}`;
     if (lastHeroView === key) return;
     lastHeroView = key;
-    trackEvent("hero_variant_view", { variant, locale });
-  }, [locale, location.pathname, location.search]);
+    trackEvent("hero_variant_view", { variant: VARIANT, locale });
+  }, [locale, location.pathname]);
 
   return null;
 }
@@ -40,25 +32,14 @@ function HeroCaption({ before, em, badge }: { before: string; em: string; badge:
   );
 }
 
-function HeroMicro({ children }: { children: string }) {
-  return (
-    <p className="mm-micro">
-      <Check aria-hidden="true" size={16} />
-      <span>{children}</span>
-    </p>
-  );
-}
-
 function HeroActions({
   locale,
-  variant,
   placement,
   primary,
   secondary,
 }: {
   locale: Locale;
-  variant: "a" | "b" | "c";
-  placement: string;
+  placement: "hero_above_fold" | "sticky_mobile";
   primary: string;
   secondary: string;
 }) {
@@ -67,7 +48,7 @@ function HeroActions({
       <CalButton
         locale={locale}
         placement={placement}
-        variant={variant}
+        variant={VARIANT}
         ctaId="diagnosis_15"
         label={primary}
         className="button-primary-terracotta mm-btn mm-btn-accent"
@@ -75,12 +56,12 @@ function HeroActions({
       <a
         href="#flujo"
         className="mm-demo-link"
-        data-variant={variant}
+        data-variant={VARIANT}
         data-cta-id="demo_2min"
         data-placement={placement}
         onClick={() => trackEvent("cta_click", {
           locale,
-          variant,
+          variant: VARIANT,
           cta_id: "demo_2min",
           placement,
           destination: "flow_demo",
@@ -94,63 +75,31 @@ function HeroActions({
   );
 }
 
-export function HeroVariantSlots({ locale }: { locale: Locale }) {
-  const copy = heroVariantCopy[locale];
+export function HeroOffer({ locale }: { locale: Locale }) {
+  const copy = heroCopy[locale];
   return (
-    <>
-      <div className="mm-hero-slot mm-hero-slot-a">
-        <p className="mm-hero-body mm-variant-lede">{copy.a.subtitle}</p>
-        <div className="mm-variant-rule" aria-hidden="true" />
-        <HeroActions locale={locale} variant="a" placement="hero_above_fold" primary={copy.a.primary} secondary={copy.a.secondary} />
-        <HeroMicro>{copy.a.micro}</HeroMicro>
-        <HeroCaption before={copy.a.captionBefore} em={copy.a.captionEm} badge={copy.a.badge} />
-      </div>
-      <div className="mm-hero-slot mm-hero-slot-b">
-        <p className="mm-hero-body mm-variant-lede">{copy.b.subtitle}</p>
-        <div className="mm-variant-rule" aria-hidden="true" />
-        <HeroActions locale={locale} variant="b" placement="hero_above_fold" primary={copy.b.primary} secondary={copy.b.secondary} />
-        <HeroMicro>{copy.b.micro}</HeroMicro>
-        <HeroCaption before={copy.b.captionBefore} em={copy.b.captionEm} badge={copy.b.badge} />
-      </div>
-      <div className="mm-hero-slot mm-hero-slot-c">
-        <p className="mm-hero-body mm-variant-lede">{copy.c.subtitle}</p>
-        <HeroCaption before={copy.c.captionBefore} em={copy.c.captionEm} badge={copy.c.badge} />
-      </div>
-    </>
-  );
-}
-
-/** Mobile-only bar for variant B. Desktop uses the in-hero actions. Hidden for every other variant. */
-export function HeroStickyBar({ locale }: { locale: Locale }) {
-  const copy = heroVariantCopy[locale].b;
-  const label = locale === "en" ? "Diagnosis and demo" : "Diagnóstico y demo";
-  return (
-    <div className="mm-sticky-b" role="region" aria-label={label}>
-      <div className="mm-sticky-b-inner">
-        <HeroActions locale={locale} variant="b" placement="sticky_mobile" primary={copy.primary} secondary={copy.secondary} />
-      </div>
+    <div className="mm-hero-offer">
+      <p className="mm-hero-body mm-variant-lede">{copy.subtitle}</p>
+      <div className="mm-variant-rule" aria-hidden="true" />
+      <HeroActions locale={locale} placement="hero_above_fold" primary={copy.primary} secondary={copy.secondary} />
+      <p className="mm-micro">
+        <Check aria-hidden="true" size={16} />
+        <span>{copy.micro}</span>
+      </p>
+      <HeroCaption before={copy.captionBefore} em={copy.captionEm} badge={copy.badge} />
     </div>
   );
 }
 
-/**
- * Variant C offer, rendered after the concrete examples.
- * English home has no use-case index, so it follows the three starting-point cards.
- * Spanish follows the use-case strip.
- */
-export function HeroUseCaseCta({ locale }: { locale: Locale }) {
-  const copy = heroVariantCopy[locale].c;
-  const label = locale === "en" ? "15-minute diagnosis" : "Diagnóstico de 15 minutos";
+/** Mobile bar. Desktop uses the in-hero pair. */
+export function HeroStickyBar({ locale }: { locale: Locale }) {
+  const copy = heroCopy[locale];
+  const label = locale === "en" ? "Diagnosis and demo" : "Diagnóstico y demo";
   return (
-    <section className="mm-section mm-cta-c-section" aria-label={label}>
-      <div className="shell">
-        <aside className="mm-cta-c">
-          <p className="eyebrow">{copy.kicker}</p>
-          <p className="mm-cta-c-line"><em>{copy.italic}</em></p>
-          <HeroActions locale={locale} variant="c" placement="after_use_case_strip" primary={copy.primary} secondary={copy.secondary} />
-          <HeroMicro>{copy.micro}</HeroMicro>
-        </aside>
+    <div className="mm-sticky-b" role="region" aria-label={label}>
+      <div className="mm-sticky-b-inner">
+        <HeroActions locale={locale} placement="sticky_mobile" primary={copy.primary} secondary={copy.secondary} />
       </div>
-    </section>
+    </div>
   );
 }

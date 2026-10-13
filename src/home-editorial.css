@@ -807,14 +807,7 @@ a.mm-btn {
   }
 }
 
-/* Hero variants (?v=a|b|c). Default slot stays in normal flow. */
-.mm-hero-slot { display: none; }
-html[data-hero="a"] .mm-hero-default,
-html[data-hero="b"] .mm-hero-default,
-html[data-hero="c"] .mm-hero-default { display: none; }
-html[data-hero="a"] .mm-hero-slot-a,
-html[data-hero="b"] .mm-hero-slot-b,
-html[data-hero="c"] .mm-hero-slot-c { display: block; }
+/* Home offer. Desktop shows the pair in the hero. Phones use the sticky bar. */
 .mm-variant-lede {
   max-width: 38rem;
   margin: 0;
@@ -827,11 +820,9 @@ html[data-hero="c"] .mm-hero-slot-c { display: block; }
   margin: 1.05rem 0 0.15rem;
   background: var(--terracotta);
 }
-.mm-hero-slot .mm-hero-actions,
-.mm-cta-c .mm-hero-actions { margin-top: 0.85rem; }
-.mm-hero-slot .mm-btn,
-.mm-sticky-b .mm-btn,
-.mm-cta-c .mm-btn {
+.mm-hero-offer .mm-hero-actions { margin-top: 0.85rem; }
+.mm-hero-offer .mm-btn,
+.mm-sticky-b .mm-btn {
   height: auto;
   line-height: 1.25;
   text-align: center;
@@ -873,56 +864,13 @@ html[data-hero="c"] .mm-hero-slot-c { display: block; }
 .mm-demo-link:active { transform: translateY(1px); }
 
 .mm-sticky-b { display: none; }
-.mm-home > section.mm-cta-c-section {
-  display: none;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 340px;
-  padding-top: 0;
-  padding-bottom: clamp(3rem, 6vw, 5rem);
-}
-html[data-hero="c"] .mm-home > section.mm-cta-c-section {
-  display: block;
-  margin-top: calc(-1 * clamp(2rem, 4vw, 3.5rem));
-}
-.mm-cta-c {
-  max-width: 44rem;
-  padding: clamp(1.35rem, 2.5vw, 2rem) clamp(1.25rem, 2.4vw, 2.15rem);
-  border-left: 3px solid var(--terracotta);
-  border-radius: 32px;
-  background: #fff;
-}
-.mm-cta-c .eyebrow { margin-bottom: 0.55rem; }
-.mm-cta-c-line {
-  max-width: 22em;
-  margin: 0;
-  color: var(--ink);
-  font-size: clamp(1.65rem, 3vw, 2.35rem);
-  font-weight: 520;
-  letter-spacing: -0.04em;
-  line-height: 1.15;
-}
-.mm-cta-c-line em {
-  color: var(--terracotta-hover);
-  font-family: var(--font-editorial);
-  font-style: italic;
-  font-weight: 520;
-}
-.mm-cta-c .mm-micro { margin-top: 0.85rem; }
-
-@media (min-width: 721px) {
-  .mm-cta-c { border-radius: 50px; }
-}
 
 @media (max-width: 720px) {
-  /* Variant C has no in-hero buttons, so the section is shorter than the phone
-     viewport. Below-fold HTML is revealed on the next frame; keep the footer
-     under the fold until then. Ridges stay pinned to the bottom of the hero. */
-  html[data-hero="c"] .mm-hero { min-height: 100dvh; }
-  html[data-hero="b"] .mm-hero-slot-b .mm-hero-actions { display: none; }
-  html[data-hero="b"] .mm-hero {
+  .mm-hero-offer .mm-hero-actions { display: none; }
+  .mm-hero {
     padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
   }
-  html[data-hero="b"] .mm-sticky-b {
+  .mm-sticky-b {
     position: fixed;
     z-index: 80;
     right: 0;
@@ -942,10 +890,10 @@ html[data-hero="c"] .mm-home > section.mm-cta-c-section {
     margin: 0;
   }
   .mm-sticky-b .mm-hero-actions > * { width: 100%; }
-  html[data-hero="b"] .site-footer-editorial {
+  body:has(.mm-sticky-b) .site-footer-editorial {
     padding-bottom: calc(8.5rem + env(safe-area-inset-bottom));
   }
-  html[data-hero="b"] .assistant-wrap {
+  body:has(.mm-sticky-b) .assistant-wrap {
     bottom: calc(8.5rem + env(safe-area-inset-bottom));
   }
 }

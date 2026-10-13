@@ -6,7 +6,6 @@ import type { AppLoadContext, EntryContext } from "react-router";
 import { createReadableStreamFromReadable } from "@react-router/node";
 import { ServerRouter } from "react-router";
 import { isbot } from "isbot";
-import { HERO_VARIANT_BOOT } from "./lib/hero-variant";
 import type { RenderToPipeableStreamOptions } from "react-dom/server";
 import { renderToPipeableStream } from "react-dom/server";
 
@@ -34,14 +33,6 @@ function inlinedFace() {
 }
 
 const homeFace = inlinedFace();
-
-function heroBoot(requestUrl: string) {
-  const path = new URL(requestUrl).pathname.replace(/\/$/, "") || "/";
-  if (path !== "/" && path !== "/es") return "";
-  // Sync, in <head>, before the body. Reads ?v= at runtime so the prerendered
-  // home document can still paint variant a/b/c on the first frame.
-  return `<script>${HERO_VARIANT_BOOT}</script>`;
-}
 
 function fontMarkup(requestUrl: string) {
   const path = new URL(requestUrl).pathname.replace(/\/$/, "") || "/";
@@ -103,7 +94,7 @@ export default function handleRequest(
               callback();
             },
           });
-          const stream = createReadableStreamFromReadable(body.pipe(embedLcpFont(fontMarkup(request.url) + heroBoot(request.url))));
+          const stream = createReadableStreamFromReadable(body.pipe(embedLcpFont(fontMarkup(request.url))));
           responseHeaders.set("Content-Type", "text/html");
           resolve(new Response(stream, { headers: responseHeaders, status: responseStatusCode }));
           pipe(body);
