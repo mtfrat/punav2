@@ -227,6 +227,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
     "/es/integraciones/tienda-nube",
+    "/es/integraciones/mercado-libre",
     "/es/contacto",
   ]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
@@ -264,7 +265,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
 }
 
-for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube"]) {
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
@@ -307,6 +308,7 @@ for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integr
     "/es/blog/auditar-integracion-crm-seguimiento-comercial",
     "/es/integraciones/mercado-pago",
     "/es/integraciones/tienda-nube",
+    "/es/integraciones/mercado-libre",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/contacto",
@@ -362,6 +364,7 @@ const integrationAnchorRoutes = [
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
   "/es/integraciones/tienda-nube",
+  "/es/integraciones/mercado-libre",
 ];
 for (const route of integrationAnchorRoutes) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
@@ -383,6 +386,7 @@ const useCaseExpectations = [
   ["/es/automatizaciones/pedidos-por-whatsapp", "Automatizar pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
   ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
   ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
+  ["/es/integraciones/mercado-libre", "Integrar Mercado Libre con stock y ERP | Puna Tech", "/og/integracion-mercado-libre.png"],
 ];
 for (const [route, title, image] of useCaseExpectations) {
   const file = join(root, route.slice(1), "index.html");
@@ -430,6 +434,7 @@ for (const [route, title, image] of useCaseExpectations) {
   try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
   const questions = (nodes.find((node) => node["@type"] === "FAQPage")?.mainEntity || []).map((item) => item.name);
   if (!questions.includes("¿Qué es la conciliación de pagos con Mercado Pago?")) failures.push(`${route}: FAQPage missing the payments query`);
+  if (!html.includes('href="/es/integraciones/mercado-libre"')) failures.push(`${route}: missing link to integrar Mercado Libre`);
 }
 
 const useCaseHubExpectations = [
@@ -438,9 +443,10 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
   ]],
-  ["/es/integraciones", "Integraciones Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Pago y Tienda Nube", [
+  ["/es/integraciones", "Integraciones Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube", [
     "/es/integraciones/mercado-pago",
     "/es/integraciones/tienda-nube",
+    "/es/integraciones/mercado-libre",
   ]],
 ];
 for (const [route, title, heading, children] of useCaseHubExpectations) {
@@ -521,7 +527,7 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
     failures.push(`${route}: meta description is not query-led (${description.length}: ${description})`);
   }
   if (!html.includes("Por ejemplo, una tienda")) failures.push(`${route}: example is not labeled as an example`);
-  for (const path of ["/es/servicios/integraciones-de-datos", "/es/integraciones/mercado-pago", "/es/servicios/software-a-medida", "/es/contacto"]) {
+  for (const path of ["/es/servicios/integraciones-de-datos", "/es/integraciones/mercado-pago", "/es/integraciones/mercado-libre", "/es/servicios/software-a-medida", "/es/contacto"]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing related link ${path}`);
   }
   if (!html.includes("¿Cómo conectar Tienda Nube con el stock?")) failures.push(`${route}: visible FAQ missing the stock query`);
@@ -544,6 +550,51 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
   const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
   if (!crumbNames.includes("Integrar Tienda Nube")) failures.push(`${route}: BreadcrumbList missing the use case`);
+}
+
+{
+  const route = "/es/integraciones/mercado-libre";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  if (h1s.length !== 1 || !html.includes("<h1>Integrar Mercado Libre con tu stock y tu ERP</h1>")) failures.push(`${route}: H1 does not answer the query`);
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title.length < 45 || title.length > 60 || !title.endsWith(" | Puna Tech")) failures.push(`${route}: title length ${title.length} is outside 45-60`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Integrar Mercado Libre") || !description.includes("ERP") || !description.includes("stock") || !description.includes("Tienda Nube") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min") || description.length < 120 || description.length > 158) {
+    failures.push(`${route}: meta description is not query-led (${description.length}: ${description})`);
+  }
+  if (!html.includes("Por ejemplo, un comercio")) failures.push(`${route}: example is not labeled as an example`);
+  for (const path of ["/es/servicios/integraciones-de-datos", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-pago", "/es/servicios/software-a-medida", "/es/contacto"]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing related link ${path}`);
+  }
+  for (const question of [
+    "¿Se puede sincronizar el stock de Mercado Libre y Tienda Nube?",
+    "¿Puedo facturar automáticamente las ventas de Mercado Libre?",
+    "¿Necesito cambiar de ERP?",
+  ]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  for (const question of [
+    "¿Se puede sincronizar el stock de Mercado Libre y Tienda Nube?",
+    "¿Puedo facturar automáticamente las ventas de Mercado Libre?",
+    "¿Necesito cambiar de ERP?",
+    "¿Qué es una integración de Mercado Libre con el ERP?",
+    "¿Cuánto tarda y cuánto cuesta?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+  }
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Integración de Mercado Libre con ERP y stock") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  if (!JSON.stringify(service?.areaServed || {}).includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
+  if (!crumbNames.includes("Integrar Mercado Libre")) failures.push(`${route}: BreadcrumbList missing the use case`);
 }
 
 for (const route of ["/es/servicios/automatizacion-ia", "/es/servicios/software-a-medida", "/es/servicios"]) {
@@ -731,11 +782,20 @@ else {
       if (path === "/es/blog" && !page.html.includes('href="/es/integraciones/tienda-nube"')) {
         failures.push(`${path}: missing link to integrar Tienda Nube`);
       }
+      if (path === "/es/blog" && !page.html.includes('href="/es/integraciones/mercado-libre"')) {
+        failures.push(`${path}: missing link to integrar Mercado Libre`);
+      }
     }
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube"]) {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
+      if (path === "/es/integraciones/mercado-libre") {
+        const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>"));
+        if (!block || !block.includes('hreflang="es-AR"') || block.includes('hreflang="en"') || block.includes('hreflang="x-default"')) {
+          failures.push("sitemap.xml: Mercado Libre is not ES-only hreflang");
+        }
+      }
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {
         failures.push(`sitemap.xml: missing ${path}`);
       }
