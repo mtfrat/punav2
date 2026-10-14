@@ -482,7 +482,7 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
   ]],
-  ["/es/integraciones", "Integraciones Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube", [
+  ["/es/integraciones", "Integraciones ML, Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube", [
     "/es/integraciones/mercado-pago",
     "/es/integraciones/tienda-nube",
     "/es/integraciones/mercado-libre",
@@ -887,6 +887,21 @@ else {
 
     const vercel = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
     const redirectSources = new Set(vercel.redirects.map((rule) => rule.source));
+    const cobranzasRedirect = vercel.redirects.find((rule) => rule.source === "/es/automatizar-cobranzas");
+    if (!cobranzasRedirect || cobranzasRedirect.statusCode !== 301 || cobranzasRedirect.destination !== "/es/automatizaciones/automatizar-cobranzas") {
+      failures.push("/es/automatizar-cobranzas: expected one 301 to /es/automatizaciones/automatizar-cobranzas");
+    } else if (redirectSources.has(cobranzasRedirect.destination)) {
+      failures.push("/es/automatizar-cobranzas: destination is another redirect (chain)");
+    } else {
+      const response = await fetch(`http://127.0.0.1:${port}/es/automatizar-cobranzas`, { redirect: "manual" });
+      const location = response.headers.get("location") || "";
+      const pathname = location.startsWith("http") ? new URL(location).pathname : location.split("?")[0];
+      if (response.status !== 301) failures.push(`/es/automatizar-cobranzas: app expected one 301, got ${response.status}`);
+      if (pathname !== cobranzasRedirect.destination) failures.push(`/es/automatizar-cobranzas: app Location ${location} is not ${cobranzasRedirect.destination}`);
+      await response.arrayBuffer();
+      const target = await fetchPath(cobranzasRedirect.destination);
+      if (target.status !== 200) failures.push(`${cobranzasRedirect.destination}: redirect target returned ${target.status}`);
+    }
     const legacyRules = vercel.redirects.filter((rule) => rule.source.startsWith("/blog/") || rule.source.startsWith("/es/blog/"));
     const editorialPostsInSitemap = /<loc>https:\/\/www\.puna-tech\.com\/(?:es\/)?blog\/[^<]+<\/loc>/.test(sitemap.html);
     if (!legacyRules.length) failures.push("vercel.json: legacy blog redirects missing");

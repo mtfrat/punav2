@@ -122,6 +122,7 @@ const redirects = new Map(vercel.redirects.map((rule) => [rule.source, rule]));
 for (const [source, destination] of [
   ["/case-studies/autopost-content-infrastructure", "/case-studies/autopost-b2b-content-studio"],
   ["/es/casos/autopost-infraestructura-contenido", "/es/casos/autopost-estudio-contenido-b2b"],
+  ["/es/automatizar-cobranzas", "/es/automatizaciones/automatizar-cobranzas"],
 ]) {
   const rule = redirects.get(source);
   assert.ok(rule, `missing redirect for ${source}`);
