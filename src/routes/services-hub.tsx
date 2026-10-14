@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
@@ -5,6 +6,18 @@ import { CalButton, PageShell, trackEvent } from "../components/marketing";
 import { contactPath, copy, servicePath, services, servicesHubCopy, servicesHubPath, type Locale } from "../content/site";
 import { useCases } from "../content/use-cases";
 import { breadcrumbSchema, collectionPageSchema, createMeta } from "../lib/seo";
+
+function linkPhrase(text: string, phrase: string, to: string): ReactNode {
+  const index = text.indexOf(phrase);
+  if (index === -1) return text;
+  return (
+    <>
+      {text.slice(0, index)}
+      <Link to={to}>{phrase}</Link>
+      {text.slice(index + phrase.length)}
+    </>
+  );
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
@@ -56,7 +69,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
             <p className="eyebrow eyebrow-dark">{hub.eyebrow}</p>
             <h1>{hub.title}</h1>
             <p className="hero-lead">{hub.lead}</p>
-            <p className="hero-intro">{hub.intro}</p>
+            <p className="hero-intro">{locale === "es" ? linkPhrase(hub.intro, "sistemas a medida", "/es/servicios/software-a-medida") : hub.intro}</p>
             {locale === "es" ? (
               <p className="hero-intro">
                 Si Tango, la planilla o un SaaS ya no alcanzan, el camino es <Link to="/es/servicios/software-a-medida">software a medida</Link>.

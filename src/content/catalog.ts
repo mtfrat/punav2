@@ -338,7 +338,7 @@ export const services: Record<Locale, ServiceContent[]> = {
       architecture: ["Experiencia", "Aplicación", "Lógica de negocio", "Modelo de datos", "Despliegue cloud"],
       relatedCase: "plataforma-edtech-web3",
       metaTitle: "Software a medida para empresas en Argentina | Puna Tech",
-      metaDescription: "Software a medida para empresas y pymes en Argentina. Si Tango, n8n o la planilla ya no alcanzan, precio cerrado tras una llamada de 15 min.",
+      metaDescription: "Software a medida para empresas en Argentina: qué lo encarece, cuánto tarda y cuándo gana a Tango, un SaaS o n8n. Precio cerrado tras la llamada.",
       hubBlurb: "Software a medida cuando Tango, la planilla o n8n ya no alcanzan: un primer módulo, a precio cerrado.",
       breadcrumbName: "Software a medida",
       schemaName: "Software a medida",
@@ -347,7 +347,7 @@ export const services: Record<Locale, ServiceContent[]> = {
       commercialSections: [
         {
           heading: "Qué es el software a medida (y qué no)",
-          body: "Es un sistema propio para cómo trabaja tu operación. El desarrollo de software a medida no es adaptar la empresa a un producto genérico, ni un chatbot, ni una cadena de Zapier que alguien tiene que cuidar. Tango, un SaaS del rubro, una planilla, n8n o Zapier alcanzan cuando el proceso cabe y hay alguien que los mantiene. Dejan de alcanzar cuando la excepción es el trabajo de todos los días. Si el canvas de n8n ya es el sistema, lo vemos en [cuándo dejar Zapier o n8n por software a medida](/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida).",
+          body: "Es un sistema propio para cómo trabaja tu operación: lo que una pyme pide como software a la medida o como sistemas a medida. El desarrollo de software a medida no es adaptar la empresa a un producto genérico, ni un chatbot, ni una cadena de Zapier que alguien tiene que cuidar. Tango, un SaaS del rubro, una planilla, n8n o Zapier alcanzan cuando el proceso cabe y hay alguien que los mantiene. Dejan de alcanzar cuando la excepción es el trabajo de todos los días. Si el canvas de n8n ya es el sistema, lo vemos en [cuándo dejar Zapier o n8n por software a medida](/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida).",
         },
         {
           heading: "Qué sistemas hacemos para pymes y empresas",
@@ -365,13 +365,35 @@ export const services: Record<Locale, ServiceContent[]> = {
         },
         {
           heading: "Cómo trabajamos y en cuánto tiempo",
-          body: "Puna Tech hace desarrollo de software a medida desde Buenos Aires. La oferta es un primer módulo en 2 semanas a precio cerrado. Antes de arrancar queda escrito qué entra, qué no, el precio y la fecha. Si tu proceso no entra en 2 semanas, te lo decimos en la llamada, en lugar de estirar el proyecto. Si preferís dejarlo por escrito, está en [contacto](/es/contacto).",
+          body: "Puna Tech hace desarrollo de software a medida desde Buenos Aires. La oferta es un primer módulo en 2 semanas a precio cerrado. Antes de arrancar queda escrito qué entra, qué no, el precio y la fecha. Lo que alarga el plazo es la cantidad de sistemas, la calidad de los datos y cuántas excepciones hay que escribir: eso se ve en la llamada, antes de prometer una fecha. Si tu proceso no entra en 2 semanas, te lo decimos ahí, en lugar de estirar el proyecto. Si preferís dejarlo por escrito, está en [contacto](/es/contacto).",
           bullets: [
             "Diagnóstico. Una llamada de 15 minutos: cómo funciona hoy, qué sistemas toca y dónde se traba.",
             "Precio cerrado. Alcance, precio y fecha por escrito. Recién ahí se arranca.",
             "Entregas por etapas. El primer módulo queda andando con tu equipo. Si hace falta el siguiente, cada etapa tiene su alcance y su fecha.",
             "Si lo que necesitás es un sistema entero, el plazo va en la propuesta. No prometemos un sistema completo en 2 semanas.",
           ],
+        },
+        {
+          heading: "Cuánto cuesta un sistema a medida",
+          bullets: [
+            "Pantallas, roles y permisos. Un flujo de una sola persona no es un portal con un acceso por cliente.",
+            "Reglas y excepciones. Si cada pedido tiene un caso distinto, el alcance crece.",
+            "Sistemas a conectar. Tango, una planilla, Mercado Pago, WhatsApp o un CRM, y si hay una forma segura de conectarlos.",
+            "Estado de los datos. Ordenar o migrar lo que hoy está en planillas entra en el alcance, o queda afuera, y se dice antes de arrancar.",
+            "Un módulo o un sistema entero. El primer módulo entra en 2 semanas a precio cerrado cuando el proceso cabe. Un sistema completo va por etapas, cada una con su precio y su fecha.",
+          ],
+          body: "No publicamos un precio de lista. Una carga de facturas y un portal de clientes no son el mismo trabajo. Después de la llamada de 15 minutos queda escrito qué entra, qué no, el precio cerrado y la fecha. Si preferís dejarlo por escrito, está en [contacto](/es/contacto).",
+        },
+        {
+          heading: "Software a medida frente a Tango, SaaS y no-code",
+          bullets: [
+            "Planilla. Alcanza cuando una persona la mantiene, el volumen es bajo y un error se nota enseguida. Deja de alcanzar cuando el stock, los turnos o los saldos viven ahí y se rompe si falta quien la arma.",
+            "Tango u otro sistema de gestión. Alcanza para facturar, stock y cuenta corriente cuando el proceso es el del producto. Deja de alcanzar cuando cada cliente pide una regla que no se puede configurar y el resto se resuelve por mail o WhatsApp.",
+            "SaaS del rubro. Alcanza cuando el flujo cabe en el producto y hay alguien que lo administra. Deja de alcanzar cuando la excepción es el trabajo de todos los días.",
+            "n8n, Zapier o Make. Alcanzan cuando el paso es simple, el volumen es bajo y hay alguien que mira la cadena. Dejan de alcanzar cuando el conector ya es el sistema: permisos por persona, reglas que no entran, o un error que nadie ve. Lo vemos en [cuándo dejar Zapier o n8n por software a medida](/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida).",
+            "Sistemas a medida. Cuando hacen falta pantallas, roles y reglas propias, y el equipo tiene que operarlas sin depender de una cadena de conectores.",
+          ],
+          body: "Si con Tango, un SaaS, una planilla o n8n alcanza, te lo decimos en la llamada y no construimos.",
         },
         {
           heading: "Cuándo conviene (y cuándo no)",
@@ -388,12 +410,12 @@ export const services: Record<Locale, ServiceContent[]> = {
         { slug: "viralyt-inteligencia-youtube", caption: "Viralyt — inteligencia de outliers en YouTube (Lab · prueba de ejecución)" },
       ],
       faqs: [
-        ["¿Cuánto cuesta el software a medida?", "Te pasamos un precio cerrado después de una llamada de 15 minutos, cuando ya vimos qué módulo entra. No publicamos rangos: una carga de facturas y un portal de clientes no son el mismo trabajo. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
-        ["¿Cuánto tarda?", "Un primer módulo lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. Lo que sigue va por etapas, con alcance y fecha en cada una. No prometemos un sistema completo en 2 semanas."],
+        ["¿Cuánto cuesta el software a medida?", "Te pasamos un precio cerrado después de una llamada de 15 minutos, cuando ya vimos qué módulo entra. No publicamos un precio de lista: lo mueven las pantallas y los roles, las reglas y excepciones, cuántos sistemas hay que conectar y cómo están los datos. Una carga de facturas y un portal de clientes no son el mismo trabajo. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
+        ["¿Cuánto tarda?", "Un primer módulo lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. Lo que sigue va por etapas, con alcance y fecha en cada una. El plazo crece si hay que conectar varios sistemas, ordenar datos o escribir muchas excepciones. No prometemos un sistema completo en 2 semanas."],
         ["¿Quién es dueño del código?", "Tu empresa. El repositorio, el código y los accesos se entregan con el sistema y quedan escritos en la propuesta. Si después querés que otro equipo lo mantenga, puede."],
         ["¿Hay mantenimiento después de la entrega?", "En la entrega dejamos el sistema andando, el repositorio y la documentación para operarlo. El mantenimiento (fallas, cambios chicos o una guardia) se acuerda aparte y por escrito. No está incluido en las 2 semanas salvo que la propuesta lo diga."],
         ["¿Se integra con lo que ya uso?", "Sí, cuando hay una forma segura de conectarlo: una API, un archivo de importación o la base de datos. Lo hacemos con Tango u otro ERP, planillas, Mercado Pago, WhatsApp, un CRM o un sistema propio. Si no se puede conectar sin un atajo frágil, te lo decimos en la llamada, antes de prometerlo."],
-        ["¿Conviene software a medida o alcanza con n8n, Zapier o una planilla?", "n8n, Zapier y una planilla alcanzan cuando el proceso es simple, hay alguien que lo mantiene y las excepciones son pocas. Conviene software a medida cuando el flujo ya es el sistema: permisos por persona, reglas que no entran en la herramienta, o una planilla que se rompe si falta quien la arma. Si con un conector alcanza, te lo decimos en la llamada."],
+        ["¿Conviene software a medida o alcanza con n8n, Zapier o una planilla?", "n8n, Zapier y una planilla alcanzan cuando el proceso es simple, hay alguien que lo mantiene y las excepciones son pocas. Tango o un SaaS del rubro alcanzan cuando el proceso es el del producto. Conviene software a medida cuando el flujo ya es el sistema: permisos por persona, reglas que no entran en la herramienta, o una planilla que se rompe si falta quien la arma. Si con un conector o con Tango alcanza, te lo decimos en la llamada."],
         ["¿Puedo empezar por un solo módulo?", "Sí. La oferta es un primer módulo en 2 semanas a precio cerrado. Si después hace falta el siguiente (un portal, cobranzas u otro flujo), se acuerda aparte, con alcance y fecha."],
         ["¿Trabajan con pymes en Argentina?", "Sí, con pymes y con empresas que tienen un proceso que ya no entra en lo que usan. No hace falta un equipo de sistemas propio. En la llamada de 15 minutos vemos si el primer módulo entra en 2 semanas."],
       ],

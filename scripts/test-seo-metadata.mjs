@@ -99,6 +99,21 @@ for (const [raw, expected] of [
   assert.equal(normalizeDocumentTitle(raw), expected);
   assert.equal(createMeta({ locale: "es", title: raw, description: "x".repeat(60), path: "/es" })[0].title, expected);
 }
+const structured = createMeta({
+  locale: "es",
+  title: "Software a medida para empresas en Argentina | Puna Tech",
+  description: "x".repeat(80),
+  path: "/es/servicios/software-a-medida",
+  schema: [
+    { "@type": "Service", name: "Software a medida" },
+    { "@type": "BreadcrumbList" },
+    { "@type": "FAQPage" },
+  ],
+});
+const ldJson = structured.filter((entry) => entry["script:ld+json"]);
+assert.equal(ldJson.length, 3, "each JSON-LD node needs its own script");
+assert.deepEqual(ldJson.map((entry) => entry["script:ld+json"]["@type"]), ["Service", "BreadcrumbList", "FAQPage"]);
+
 assert.equal(languageSwitchPath("/es/contacto", "es"), "/contact");
 assert.equal(languageSwitchPath("/contact", "en"), "/es/contacto");
 

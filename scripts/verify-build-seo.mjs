@@ -224,18 +224,25 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (title !== "Software a medida para empresas en Argentina | Puna Tech") failures.push(`${route}: target-query title missing (${title})`);
   if (title.length > 60) failures.push(`${route}: title is ${title.length} characters`);
   const description = metaDescription(html);
-  if (!description.startsWith("Software a medida para empresas") || description.length > 155 || !description.includes("precio cerrado")) {
-    failures.push(`${route}: target-query meta description (${description.length})`);
+  const expectedDescription = "Software a medida para empresas en Argentina: qué lo encarece, cuánto tarda y cuándo gana a Tango, un SaaS o n8n. Precio cerrado tras la llamada.";
+  if (description !== expectedDescription || description.length > 155 || !/precio cerrado/i.test(description)) {
+    failures.push(`${route}: target-query meta description (${description.length}: ${description})`);
   }
   for (const heading of [
     "Qué es el software a medida (y qué no)",
     "Qué sistemas hacemos para pymes y empresas",
     "Cómo trabajamos y en cuánto tiempo",
+    "Cuánto cuesta un sistema a medida",
+    "Software a medida frente a Tango, SaaS y no-code",
     "Cuándo conviene (y cuándo no)",
     "De quién es el código",
   ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
+  for (const phrase of ["software a la medida", "sistemas a medida", "desarrollo de software a medida", "n8n", "Zapier", "Tango"]) {
+    if (!html.includes(phrase)) failures.push(`${route}: missing phrase ${phrase}`);
+  }
+  if (!html.includes("No publicamos un precio de lista")) failures.push(`${route}: cost factors section missing`);
   if (!html.includes("un primer módulo en 2 semanas a precio cerrado")) failures.push(`${route}: 2-week fixed-price offer missing`);
   if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: examples are not labeled as examples`);
   for (const path of [
@@ -251,8 +258,19 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
   }
   if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
+  let blocks = [];
   let nodes = [];
-  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  try {
+    blocks = jsonLdBlocks(html);
+    nodes = blocks.flatMap((block) => Array.isArray(block) ? block : [block]);
+  } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const blockTypes = blocks.map((block) => block?.["@type"]);
+  if (blocks.length < 3 || blocks.some((block) => Array.isArray(block))) {
+    failures.push(`${route}: expected separate JSON-LD scripts, found ${blocks.length}`);
+  }
+  for (const type of ["Service", "BreadcrumbList", "FAQPage"]) {
+    if (!blockTypes.includes(type)) failures.push(`${route}: JSON-LD script missing ${type}`);
+  }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
   if (questions.length < 6 || questions.length > 8) failures.push(`${route}: FAQPage should have 6 to 8 questions, found ${questions.length}`);
@@ -287,6 +305,9 @@ for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integr
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
+  }
+  if (!/href="\/es\/servicios\/software-a-medida"[^>]*>sistemas a medida<\/a>/.test(html)) {
+    failures.push(`${route}: missing sistemas a medida anchor to /es/servicios/software-a-medida`);
   }
 }
 

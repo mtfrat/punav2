@@ -52,6 +52,7 @@ export default function UseCasesHub({ loaderData }: { loaderData: Awaited<Return
             <p className="hero-intro">{hub.intro}</p>
             <p className="hero-intro">
               Si el proceso pide pantallas, permisos o reglas propias, el camino es <Link to="/es/servicios/software-a-medida">software a medida</Link>.
+              {" "}A un sistema propio, con roles y pantallas, lo llamamos <Link to="/es/servicios/software-a-medida">sistemas a medida</Link>.
               {" "}Si dos sistemas no se pasan los datos, el camino es <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.
               {" "}Cuando hace falta un flujo con revisión humana, lo vemos en <Link to="/es/servicios/automatizacion-ia">automatización de procesos con IA</Link>.
             </p>
