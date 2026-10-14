@@ -42,6 +42,7 @@ const marketingRoutes = [
   "/es/integraciones/mercado-pago",
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
+  "/es/automatizaciones/facturacion-electronica-arca",
   "/es/integraciones/tienda-nube",
   "/es/integraciones/mercado-libre",
 ];

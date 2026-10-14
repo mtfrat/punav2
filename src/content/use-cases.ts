@@ -55,10 +55,10 @@ export const useCaseHubs: UseCaseHub[] = [
     path: "/es/automatizaciones",
     eyebrow: "Automatizaciones",
     title: "Automatizaciones para el día a día de tu empresa",
-    lead: "Automatizamos procesos que hoy se hacen a mano: la carga de facturas de proveedores, los pedidos por WhatsApp y las cobranzas. Un proceso en 2 semanas a precio cerrado.",
+    lead: "Automatizamos procesos que hoy se hacen a mano: la facturación electrónica ARCA, la carga de facturas de proveedores, los pedidos por WhatsApp y las cobranzas. Un proceso en 2 semanas a precio cerrado.",
     intro: "Elegí el proceso. Cada página cuenta cómo es hoy, cómo queda y cómo lo resolvemos.",
     metaTitle: "Automatizaciones de procesos para empresas | Puna Tech",
-    metaDescription: "Automatizaciones para empresas en Argentina: facturas de proveedores, pedidos por WhatsApp y cobranzas. Un proceso en 2 semanas a precio cerrado.",
+    metaDescription: "Automatizaciones para empresas en Argentina: facturación electrónica ARCA, proveedores, pedidos y cobranzas. 2 semanas a precio cerrado.",
   },
   {
     section: "integraciones",
@@ -123,7 +123,7 @@ export const useCases: UseCaseContent[] = [
     howTitle: "Cómo lo resolvemos",
     how: [
       { title: "Lectura con IA, control con reglas", body: "La IA lee el PDF aunque cada proveedor use un formato distinto. Lo que tiene que ser exacto (importes, CUIT, alícuotas) lo verifican reglas, no la IA. Si algo no cierra, no se carga: se marca." },
-      { title: "Conectado a tu sistema de gestión", body: "Cargamos en Tango, Bejerman, un ERP propio o una planilla, según lo que uses. Si tu sistema tiene API o importación por archivo, usamos eso. Si no, lo vemos juntos en la llamada antes de prometer nada." },
+      { title: "Conectado a tu sistema de gestión", body: "Cargamos en Tango, Bejerman, un ERP propio o una planilla, según lo que uses. Si tu sistema tiene API o importación por archivo, usamos eso. Si no, lo vemos juntos en la llamada antes de prometer nada. Emitir tus propios comprobantes A, B o C es otro flujo: [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca)." },
       { title: "Tu equipo sigue al mando", body: "La administrativa pasa de tipear a revisar excepciones. Las reglas de aprobación (montos, proveedores nuevos, diferencias) las definís vos." },
     ],
     fit: [
@@ -286,7 +286,7 @@ export const useCases: UseCaseContent[] = [
       },
       {
         title: "Lo cobrado y lo dudoso, separados",
-        body: "Transferencias, cheques o Mercado Pago se cruzan con las facturas pendientes. Lo que no coincide con certeza no se marca como cobrado. Si el problema principal es conciliar Mercado Pago, ese cruce es otro flujo: acá el foco es el seguimiento de lo vencido.",
+        body: "Transferencias, cheques o Mercado Pago se cruzan con las facturas pendientes. Lo que no coincide con certeza no se marca como cobrado. Si el problema principal es conciliar Mercado Pago, ese cruce es otro flujo: acá el foco es el seguimiento de lo vencido. Si la factura de la venta todavía hay que emitirla, el comprobante está en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca).",
       },
     ],
     fit: [
@@ -301,6 +301,66 @@ export const useCases: UseCaseContent[] = [
       ["¿Funciona si cobrás por transferencia, cheque o Mercado Pago?", "Sí, si el pago puede entrar a tu sistema o a una planilla de forma confiable. El flujo intenta imputarlo a la factura pendiente. Si no hay certeza (un monto parcial, un pago sin referencia), no lo marca como cobrado: queda para revisar. Conciliar el reporte de Mercado Pago es un flujo aparte."],
       costFaq("cuántos clientes y facturas entran en el seguimiento, por dónde se avisa y cómo se conecta tu sistema"),
       ["¿Qué necesitamos de nuestro lado?", "Acceso de prueba a las facturas pendientes (o un archivo de export), las reglas de aviso que ya usan (a los cuántos días, con qué tono) y una persona que conozca el proceso para validarlas."],
+    ],
+    relatedService: { path: "/es/servicios/automatizacion-ia", title: "Automatización de procesos con IA" },
+    relatedPosts: [
+      { path: "/es/blog/cuando-usar-ia-vs-software-deterministico", title: "Cuándo usar IA y cuándo conviene software determinístico" },
+    ],
+  },
+  {
+    key: "arca-invoicing",
+    path: "/es/automatizaciones/facturacion-electronica-arca",
+    section: "automatizaciones",
+    eyebrow: "Automatización · Facturación electrónica",
+    title: "Automatizar la facturación electrónica ARCA",
+    lead: "Las ventas ya están en el ERP o en una planilla, y alguien entra al facturador de ARCA (ex AFIP) a emitir cada comprobante. Armamos un flujo que toma esa venta, valida el CUIT y la condición fiscal, emite el comprobante A, B o C y lo vuelve a dejar en tu sistema. Si un dato no cierra, no se factura solo.",
+    metaTitle: "Automatizar facturación electrónica ARCA | Puna Tech",
+    metaDescription: "Facturación electrónica ARCA: comprobantes A, B y C con CUIT, sincronizados al ERP y al stock. Para pymes en Argentina. Diagnóstico en 15 min.",
+    serviceType: "Automatización de facturación electrónica ARCA",
+    ogImage: "/og/facturacion-electronica-arca.png",
+    ogImageAlt: "Puna Tech: automatizar la facturación electrónica ARCA para pymes.",
+    cardTitle: "Facturación electrónica ARCA",
+    cardBlurb: "Cada venta emite el comprobante A, B o C cuando el CUIT y el importe cierran. El número vuelve al ERP.",
+    example: "Por ejemplo, una distribuidora que factura a la tarde lo que vendió en el mostrador y por Mercado Libre. Alguien abre el facturador, busca el CUIT, elige A, B o C y vuelve a tipear ítems que ya estaban en el pedido. Un consumidor final con factura A, o una venta descontada del stock y sin comprobante, aparece recién cuando cierra el mes.",
+    before: [
+      "Abrir ARCA o el facturador y cargar cada venta a mano.",
+      "Elegir de memoria si corresponde comprobante A, B o C.",
+      "Un CUIT mal tipeado, un punto de venta equivocado o un total que no coincide con el pedido.",
+      "Stock que ya se movió y una factura que sigue pendiente.",
+    ],
+    after: [
+      "La venta sale del ERP o de la planilla, con ítems, cantidades e importes.",
+      "El flujo valida CUIT y condición fiscal, y define A, B o C con la regla que acordamos.",
+      "Si cierra, el comprobante se emite por el facturador que ya usás con ARCA y el número vuelve a la venta.",
+      "Si falta el CUIT, no cierra el IVA o la condición no está clara, queda en una bandeja. No se factura solo.",
+    ],
+    howTitle: "Cómo lo resolvemos",
+    how: [
+      {
+        title: "La factura sale de la venta",
+        body: "Ítems, cantidades, precio e impuestos salen del pedido que ya está en tu sistema. El importe no lo pone la IA: si el neto, el IVA y el total no cierran, el comprobante no se emite.",
+      },
+      {
+        title: "A, B o C según la condición fiscal",
+        body: "Un responsable inscripto emite A a otro responsable inscripto, y B a un monotributista, exento o consumidor final. Un monotributista emite C. El CUIT se valida contra el padrón que ya usás. Si no hay certeza, no se elige un tipo a ciegas.",
+      },
+      {
+        title: "Vuelto al ERP y al stock",
+        body: "El número de comprobante queda en la venta, y el stock de esos ítems queda atado a esa misma operación. Si la venta entró por Mercado Libre, el canal está en [integrar Mercado Libre](/es/integraciones/mercado-libre). Las facturas de proveedores que te llegan en PDF son [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores). Lo que quedó impago se sigue en [automatizar cobranzas](/es/automatizaciones/automatizar-cobranzas).",
+      },
+    ],
+    fit: [
+      "Emitís comprobantes todos los días y alguien los carga a mano.",
+      "Las ventas ya están en Tango, Bejerman, otro ERP o una planilla.",
+      "Ya salió una factura con el tipo equivocado, un CUIT mal cargado o una venta sin facturar.",
+    ],
+    faqs: [
+      ["¿Se puede automatizar la facturación electrónica de ARCA?", "Sí. Un flujo puede tomar la venta de tu ERP o de una planilla, validar el CUIT y la condición fiscal, y emitir el comprobante A, B o C por el facturador que ya usás con ARCA (ex AFIP). Si un dato no cierra, la factura no sale sola. No reemplazamos a ARCA ni te pedimos la clave fiscal."],
+      ["¿Cómo integrar la facturación electrónica con un ERP en Argentina?", "La venta que ya está en el ERP dispara el comprobante, y el número vuelve a esa venta. El stock de los ítems queda atado a la misma operación. No es cambiar de facturador ni tipear cada ticket en la web de ARCA. Si tu sistema no tiene una vía segura para recibir el comprobante, te lo decimos antes de prometerlo."],
+      ["¿Qué comprobante corresponde, A, B o C?", "Depende de quién factura y de quién compra. Un responsable inscripto emite A a otro responsable inscripto, y B a un monotributista, exento o consumidor final. Un monotributista emite C. Si el padrón no alcanza para decidir, el comprobante queda para revisar. Factura E o M entra solo si forma parte del mismo alcance, y lo vemos en la llamada."],
+      ["¿Funciona si hoy facturás en la web de ARCA?", "Solo si hay una forma segura de emitir desde afuera de esa pantalla: el facturador de tu ERP, una API o un archivo que el sistema importa. Si la única vía es tipear en la web de ARCA, te lo decimos en la llamada y no prometemos una emisión que no se puede conectar."],
+      costFaq("el volumen de comprobantes, si tu facturador ya se conecta con ARCA y cómo vuelve el número al ERP"),
+      ["¿Qué necesitamos de nuestro lado?", "Un lote de ventas reales (anonimizadas si preferís), acceso de prueba al facturador o a su importación, y una persona que sepa qué tipo de comprobante corresponde en cada caso."],
     ],
     relatedService: { path: "/es/servicios/automatizacion-ia", title: "Automatización de procesos con IA" },
     relatedPosts: [
@@ -406,7 +466,7 @@ export const useCases: UseCaseContent[] = [
       },
       {
         title: "Orden, factura y alerta",
-        body: "La orden entra al sistema. Si los datos fiscales cierran, emitimos la factura electrónica por el facturador que ya usás con ARCA. Si el stock, el precio, la factura o una pregunta no cierran, queda un aviso para revisar. El cruce de cada pago de Mercado Pago con su factura es otro flujo: [integrar Mercado Pago](/es/integraciones/mercado-pago). No prometemos conectar todo en 2 semanas.",
+        body: "La orden entra al sistema. Si los datos fiscales cierran, emitimos la factura electrónica por el facturador que ya usás con ARCA: el comprobante A, B o C y el vuelco al ERP están en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca). Si el stock, el precio, la factura o una pregunta no cierran, queda un aviso para revisar. El cruce de cada pago de Mercado Pago con su factura es otro flujo: [integrar Mercado Pago](/es/integraciones/mercado-pago). No prometemos conectar todo en 2 semanas.",
       },
     ],
     fit: [
