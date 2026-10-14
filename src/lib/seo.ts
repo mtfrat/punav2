@@ -129,7 +129,14 @@ export function createMeta({
     if (article.section) entries.push({ property: "article:section", content: article.section });
     if (article.author) entries.push({ property: "article:author", content: article.author });
   }
-  if (schema) entries.push({ "script:ld+json": schema });
+  if (schema) {
+    // One script per node. Passing the array as a single descriptor renders one
+    // ld+json tag, so Service, BreadcrumbList and FAQPage never show up as separate blocks.
+    const blocks = Array.isArray(schema) ? schema : [schema];
+    for (const block of blocks) {
+      if (block && typeof block === "object") entries.push({ "script:ld+json": block });
+    }
+  }
   return entries;
 }
 
