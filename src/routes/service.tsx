@@ -39,6 +39,7 @@ const aiAutomationUseCases = [
   { path: "/es/automatizaciones", title: "Automatizaciones" },
   { path: "/es/automatizaciones/pedidos-por-whatsapp", title: "Pedidos por WhatsApp" },
   { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
+  { path: "/es/automatizaciones/facturacion-electronica-arca", title: "Facturación electrónica ARCA" },
   { path: "/es/automatizaciones/automatizar-cobranzas", title: "Automatizar cobranzas" },
   { path: "/es/integraciones", title: "Integraciones" },
 ];

@@ -380,7 +380,7 @@ export const services: Record<Locale, ServiceContent[]> = {
           bullets: [
             "Stock. Por ejemplo, una distribuidora que anota el stock en una planilla y se entera tarde de lo que falta. Un sistema propio muestra qué hay, qué se reservó y qué hay que reponer.",
             "Turnos. Por ejemplo, una clínica o un taller donde los turnos viven en una planilla y se pisan. El sistema cruza la agenda y deja las excepciones a la vista.",
-            "Facturación. Por ejemplo, una empresa que tipea cada factura de proveedor. Se leen, se validan y se cargan, y el equipo revisa solo las dudosas. Lo vemos en [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores).",
+            "Facturación. Por ejemplo, una empresa que tipea cada factura de proveedor. Se leen, se validan y se cargan, y el equipo revisa solo las dudosas. Lo vemos en [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores). Si lo que hay que emitir es el comprobante de la venta, lo vemos en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca).",
             "Cobranzas. Por ejemplo, un comercio que cobra por Mercado Pago y concilia en Excel. Cada pago puede quedar asociado a su factura. Lo vemos en [integrar Mercado Pago](/es/integraciones/mercado-pago). Si el trabajo es perseguir facturas vencidas, lo vemos en [automatizar cobranzas](/es/automatizaciones/automatizar-cobranzas).",
             "Pedidos. Por ejemplo, un mayorista que recibe el pedido por WhatsApp y lo carga a mano. Se puede armar con el precio y el stock reales. Lo vemos en [pedidos por WhatsApp](/es/automatizaciones/pedidos-por-whatsapp).",
             "Paneles y reportes. Por ejemplo, un equipo que arma el Excel de la semana copiando de tres sistemas. El panel sale de los datos que ya están.",
@@ -489,7 +489,7 @@ export const services: Record<Locale, ServiceContent[]> = {
             "Mercado Pago y contabilidad. Por ejemplo, un comercio cobra por link, QR o checkout y a fin de semana cruza el reporte con las facturas en Excel. Cada pago puede quedar asociado a su factura. Lo vemos en [integrar Mercado Pago](/es/integraciones/mercado-pago).",
             "WhatsApp y CRM. Por ejemplo, los pedidos llegan al chat y alguien los copia al CRM. El mensaje puede crear el contacto y el pedido para que el vendedor lo confirme. Lo vemos en [pedidos por WhatsApp](/es/automatizaciones/pedidos-por-whatsapp).",
             "Planillas y sistema. Por ejemplo, el equipo exporta un Excel, lo corrige y lo vuelve a subir. La planilla puede leer y escribir el sistema sin ese ida y vuelta.",
-            "Facturas y sistema de gestión. Por ejemplo, las facturas de proveedores se tipean a mano. Se pueden leer y cargar, y el equipo revisa solo las dudosas. Lo vemos en [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores).",
+            "Facturas y sistema de gestión. Por ejemplo, las facturas de proveedores se tipean a mano. Se pueden leer y cargar, y el equipo revisa solo las dudosas. Lo vemos en [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores). Emitir el comprobante de una venta ya cargada es [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca).",
           ],
         },
         {

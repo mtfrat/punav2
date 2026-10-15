@@ -243,6 +243,7 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
     "/es/automatizaciones",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/automatizaciones/facturacion-electronica-arca",
     "/es/automatizaciones/automatizar-cobranzas",
     "/es/integraciones",
   ]) {
@@ -305,6 +306,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "/es/integraciones/mercado-pago",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
+    "/es/automatizaciones/facturacion-electronica-arca",
     "/es/integraciones/tienda-nube",
     "/es/integraciones/mercado-libre",
     "/es/contacto",
@@ -355,7 +357,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
 }
 
-for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
@@ -456,6 +458,7 @@ const integrationAnchorRoutes = [
   "/es/integraciones/mercado-pago",
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
+  "/es/automatizaciones/facturacion-electronica-arca",
   "/es/integraciones/tienda-nube",
   "/es/integraciones/mercado-libre",
 ];
@@ -480,6 +483,7 @@ const useCaseExpectations = [
   ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
   ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
   ["/es/integraciones/mercado-libre", "Integrar Mercado Libre con stock y ERP | Puna Tech", "/og/integracion-mercado-libre.png"],
+  ["/es/automatizaciones/facturacion-electronica-arca", "Automatizar facturación electrónica ARCA | Puna Tech", "/og/facturacion-electronica-arca.png"],
 ];
 for (const [route, title, image] of useCaseExpectations) {
   const file = join(root, route.slice(1), "index.html");
@@ -535,6 +539,7 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
+    "/es/automatizaciones/facturacion-electronica-arca",
   ]],
   ["/es/integraciones", "Integraciones ML, Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube", [
     "/es/integraciones/mercado-pago",
@@ -688,6 +693,73 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
   const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
   if (!crumbNames.includes("Integrar Mercado Libre")) failures.push(`${route}: BreadcrumbList missing the use case`);
+}
+
+{
+  const route = "/es/automatizaciones/facturacion-electronica-arca";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  if (h1s.length !== 1 || !html.includes("<h1>Automatizar la facturación electrónica ARCA</h1>")) failures.push(`${route}: H1 does not answer the query`);
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Automatizar facturación electrónica ARCA | Puna Tech") failures.push(`${route}: title mismatch (${title})`);
+  if (title.length < 45 || title.length > 60 || !title.endsWith(" | Puna Tech")) failures.push(`${route}: title length ${title.length} is outside 45-60`);
+  const description = metaDescription(html);
+  if (!description.includes("CUIT") || !description.includes("A, B y C") || !description.includes("ERP") || !description.includes("stock") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min") || description.length < 120 || description.length > 160) {
+    failures.push(`${route}: meta description is not query-led (${description.length}: ${description})`);
+  }
+  const ogTitle = metaContent(html, "property", "og:title");
+  const ogDescription = metaContent(html, "property", "og:description");
+  if (ogTitle !== title) failures.push(`${route}: og:title mismatch`);
+  if (ogDescription !== description) failures.push(`${route}: og:description mismatch`);
+  if (!html.includes('property="og:image" content="https://www.puna-tech.com/og/facturacion-electronica-arca.png"')) failures.push(`${route}: og:image missing`);
+  if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: example is not labeled as an example`);
+  for (const path of ["/es/integraciones/mercado-libre", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/automatizaciones/automatizar-cobranzas", "/es/servicios/automatizacion-ia", "/es/contacto"]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing related link ${path}`);
+  }
+  for (const question of [
+    "¿Se puede automatizar la facturación electrónica de ARCA?",
+    "¿Cómo integrar la facturación electrónica con un ERP en Argentina?",
+    "¿Qué comprobante corresponde, A, B o C?",
+  ]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  let blocks = [];
+  let nodes = [];
+  try {
+    blocks = jsonLdBlocks(html);
+    nodes = blocks.flatMap((block) => Array.isArray(block) ? block : [block]);
+  } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const blockTypes = blocks.map((block) => block?.["@type"]);
+  for (const type of ["Service", "BreadcrumbList", "FAQPage"]) {
+    if (!blockTypes.includes(type)) failures.push(`${route}: JSON-LD script missing ${type}`);
+  }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  for (const question of [
+    "¿Se puede automatizar la facturación electrónica de ARCA?",
+    "¿Cómo integrar la facturación electrónica con un ERP en Argentina?",
+    "¿Qué comprobante corresponde, A, B o C?",
+    "¿Cuánto tarda y cuánto cuesta?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+  }
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Automatización de facturación electrónica ARCA") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  if (!JSON.stringify(service?.areaServed || {}).includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
+  if (!crumbNames.includes("Facturación electrónica ARCA")) failures.push(`${route}: BreadcrumbList missing the use case`);
+  for (const source of [
+    "/es/automatizaciones",
+    "/es/automatizaciones/automatizar-cobranzas",
+    "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/integraciones/mercado-libre",
+  ]) {
+    const sourceHtml = await readFile(join(root, source.slice(1), "index.html"), "utf8");
+    if (!sourceHtml.includes(`href="${route}"`)) failures.push(`${source}: missing link to ${route}`);
+  }
 }
 
 for (const route of ["/es/servicios/automatizacion-ia", "/es/servicios/software-a-medida", "/es/servicios"]) {
@@ -896,11 +968,11 @@ else {
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
-      if (path === "/es/integraciones/mercado-libre") {
-        const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>"));
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
+      if (path === "/es/integraciones/mercado-libre" || path === "/es/automatizaciones/facturacion-electronica-arca") {
+        const block = sitemap.html.split("<url>").find((part) => part.includes(`https://www.puna-tech.com${path}</loc>`));
         if (!block || !block.includes('hreflang="es-AR"') || block.includes('hreflang="en"') || block.includes('hreflang="x-default"')) {
-          failures.push("sitemap.xml: Mercado Libre is not ES-only hreflang");
+          failures.push(`sitemap.xml: ${path} is not ES-only hreflang`);
         }
       }
       if (!sitemap.html.includes(`https://www.puna-tech.com${path}<`) && !sitemap.html.includes(`https://www.puna-tech.com${path}`)) {

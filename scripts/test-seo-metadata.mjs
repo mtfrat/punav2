@@ -166,6 +166,18 @@ for (const useCase of useCases) {
   assertSerpMeta(useCase.path, useCase.metaDescription);
 }
 
+const arca = useCases.find((item) => item.path === "/es/automatizaciones/facturacion-electronica-arca");
+assert.ok(arca, "missing facturación electrónica ARCA use case");
+assert.equal(arca.metaTitle, "Automatizar facturación electrónica ARCA | Puna Tech");
+assert.ok(arca.metaTitle.length >= 45 && arca.metaTitle.length <= 60);
+assert.ok(arca.metaDescription.length <= 160);
+assert.match(arca.metaDescription, /CUIT/);
+assert.match(arca.metaDescription, /A, B y C/);
+assert.match(arca.metaDescription, /ERP/);
+assert.match(arca.metaDescription, /stock/);
+assert.equal(arca.faqs.length >= 5 && arca.faqs.length <= 6, true);
+assert.ok(arca.faqs.some(([question]) => question.includes("facturación electrónica")));
+
 assert.equal(legacyPostRedirects["automatizacion-facturacion-logistica"], "/es/automatizaciones/carga-de-facturas-proveedores");
 assert.equal(legacyPostRedirects["arquitecturas-multi-agente"], "/es/blog/cuando-usar-ia-vs-software-deterministico");
 assert.equal(legacyPostRedirects["guia-optimizacion-procesos-ia"], "/es/servicios/automatizacion-ia");
