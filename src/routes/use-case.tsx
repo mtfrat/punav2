@@ -196,6 +196,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
               Si este proceso ya pide pantallas, permisos o reglas que no entran en la herramienta, lo vemos como <Link to="/es/servicios/software-a-medida">software a medida</Link>.
               {" "}Cuando el trabajo ya es un sistema, con roles y pantallas, lo llamamos <Link to="/es/servicios/software-a-medida">sistemas a medida</Link>.
               {" "}Si lo que falta es que dos sistemas se pasen los datos solos, lo vemos como <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.
+              {" "}Si el trabajo es un flujo que se repite y una persona tiene que aprobar lo sensible, lo vemos como <Link to="/es/servicios/automatizacion-ia">automatización de procesos</Link>.
             </p>
             <ol className="related-guide-list">
               {[
