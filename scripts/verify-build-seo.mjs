@@ -245,6 +245,7 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
     "/es/automatizaciones/carga-de-facturas-proveedores",
     "/es/automatizaciones/facturacion-electronica-arca",
     "/es/automatizaciones/automatizar-cobranzas",
+    "/es/automatizaciones/conciliacion-bancaria",
     "/es/integraciones",
   ]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: Casos de uso missing ${path}`);
@@ -307,6 +308,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
     "/es/automatizaciones/facturacion-electronica-arca",
+    "/es/automatizaciones/conciliacion-bancaria",
     "/es/integraciones/tienda-nube",
     "/es/integraciones/mercado-libre",
     "/es/contacto",
@@ -357,7 +359,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
 }
 
-for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
+for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/automatizaciones/conciliacion-bancaria", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
   if (!/href="\/es\/servicios\/software-a-medida"[^>]*>software a medida<\/a>/.test(html)) {
     failures.push(`${route}: missing keyword anchor link to /es/servicios/software-a-medida`);
@@ -459,6 +461,7 @@ const integrationAnchorRoutes = [
   "/es/automatizaciones/pedidos-por-whatsapp",
   "/es/automatizaciones/automatizar-cobranzas",
   "/es/automatizaciones/facturacion-electronica-arca",
+  "/es/automatizaciones/conciliacion-bancaria",
   "/es/integraciones/tienda-nube",
   "/es/integraciones/mercado-libre",
 ];
@@ -484,6 +487,7 @@ const useCaseExpectations = [
   ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
   ["/es/integraciones/mercado-libre", "Integrar Mercado Libre con stock y ERP | Puna Tech", "/og/integracion-mercado-libre.png"],
   ["/es/automatizaciones/facturacion-electronica-arca", "Automatizar facturación electrónica ARCA | Puna Tech", "/og/facturacion-electronica-arca.png"],
+  ["/es/automatizaciones/conciliacion-bancaria", "Conciliación bancaria automática para pymes | Puna Tech", "/og/conciliacion-bancaria.png"],
 ];
 for (const [route, title, image] of useCaseExpectations) {
   const file = join(root, route.slice(1), "index.html");
@@ -540,6 +544,7 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/pedidos-por-whatsapp",
     "/es/automatizaciones/automatizar-cobranzas",
     "/es/automatizaciones/facturacion-electronica-arca",
+    "/es/automatizaciones/conciliacion-bancaria",
   ]],
   ["/es/integraciones", "Integraciones ML, Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube", [
     "/es/integraciones/mercado-pago",
@@ -713,7 +718,7 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   if (ogDescription !== description) failures.push(`${route}: og:description mismatch`);
   if (!html.includes('property="og:image" content="https://www.puna-tech.com/og/facturacion-electronica-arca.png"')) failures.push(`${route}: og:image missing`);
   if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: example is not labeled as an example`);
-  for (const path of ["/es/integraciones/mercado-libre", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/automatizaciones/automatizar-cobranzas", "/es/servicios/automatizacion-ia", "/es/contacto"]) {
+  for (const path of ["/es/integraciones/mercado-libre", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/conciliacion-bancaria", "/es/servicios/automatizacion-ia", "/es/contacto"]) {
     if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing related link ${path}`);
   }
   for (const question of [
@@ -755,10 +760,101 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
     "/es/automatizaciones",
     "/es/automatizaciones/automatizar-cobranzas",
     "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/automatizaciones/conciliacion-bancaria",
     "/es/integraciones/mercado-libre",
   ]) {
     const sourceHtml = await readFile(join(root, source.slice(1), "index.html"), "utf8");
     if (!sourceHtml.includes(`href="${route}"`)) failures.push(`${source}: missing link to ${route}`);
+  }
+}
+
+{
+  const route = "/es/automatizaciones/conciliacion-bancaria";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const h1s = html.match(/<h1[\s>]/g) || [];
+  if (h1s.length !== 1 || !html.includes("<h1>Conciliación bancaria automática para pymes y empresas</h1>")) failures.push(`${route}: H1 does not answer the query`);
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Conciliación bancaria automática para pymes | Puna Tech") failures.push(`${route}: title mismatch (${title})`);
+  if (title.length < 45 || title.length > 60 || !title.endsWith(" | Puna Tech")) failures.push(`${route}: title length ${title.length} is outside 45-60`);
+  const description = metaDescription(html);
+  if (!description.startsWith("Conciliación bancaria automática") || !description.includes("Mercado Pago") || !description.includes("facturas") || !description.includes("ERP") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min") || description.length < 120 || description.length > 155) {
+    failures.push(`${route}: meta description is not query-led (${description.length}: ${description})`);
+  }
+  const ogTitle = metaContent(html, "property", "og:title");
+  const ogDescription = metaContent(html, "property", "og:description");
+  if (ogTitle !== title) failures.push(`${route}: og:title mismatch`);
+  if (ogDescription !== description) failures.push(`${route}: og:description mismatch`);
+  if (!html.includes('property="og:image" content="https://www.puna-tech.com/og/conciliacion-bancaria.png"')) failures.push(`${route}: og:image missing`);
+  if (!html.includes("Por ejemplo, un comercio")) failures.push(`${route}: example is not labeled as an example`);
+  for (const path of ["/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-pago", "/es/servicios/automatizacion-ia", "/es/contacto"]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing related link ${path}`);
+  }
+  for (const question of [
+    "¿Se puede automatizar la conciliación bancaria?",
+    "¿Qué es la conciliación bancaria automática?",
+    "¿Funciona con el banco y con Mercado Pago?",
+  ]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  let blocks = [];
+  let nodes = [];
+  try {
+    blocks = jsonLdBlocks(html);
+    nodes = blocks.flatMap((block) => Array.isArray(block) ? block : [block]);
+  } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const blockTypes = blocks.map((block) => block?.["@type"]);
+  for (const type of ["Service", "BreadcrumbList", "FAQPage"]) {
+    if (!blockTypes.includes(type)) failures.push(`${route}: JSON-LD script missing ${type}`);
+  }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  for (const question of [
+    "¿Se puede automatizar la conciliación bancaria?",
+    "¿Qué es la conciliación bancaria automática?",
+    "¿Funciona con el banco y con Mercado Pago?",
+    "¿Cuánto tarda y cuánto cuesta?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+  }
+  const service = nodes.find((node) => node["@type"] === "Service");
+  if (service?.serviceType !== "Conciliación bancaria automática para pymes") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  if (!JSON.stringify(service?.areaServed || {}).includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  const crumbs = nodes.find((node) => node["@type"] === "BreadcrumbList");
+  const crumbNames = (crumbs?.itemListElement || []).map((item) => item.name);
+  if (!crumbNames.includes("Conciliación bancaria")) failures.push(`${route}: BreadcrumbList missing the use case`);
+  if (/US\$\s?\d|\$\s?\d{2,}|testimonio|cliente real/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
+  for (const source of [
+    "/es/automatizaciones",
+    "/es/automatizaciones/automatizar-cobranzas",
+    "/es/automatizaciones/facturacion-electronica-arca",
+    "/es/integraciones/mercado-pago",
+  ]) {
+    const sourceHtml = await readFile(join(root, source.slice(1), "index.html"), "utf8");
+    if (!sourceHtml.includes(`href="${route}"`)) failures.push(`${source}: missing link to ${route}`);
+  }
+}
+
+{
+  const casesHubExpectations = [
+    ["/es/casos", "Casos de software y automatización en Argentina | Puna Tech", "Casos de software a medida y automatización para pymes en Argentina: sistemas internos, cobranzas, facturas e integraciones que hoy se hacen a mano.", "Casos de software a medida y automatización en Argentina."],
+    ["/case-studies", "Custom software and automation case studies | Puna Tech", "Custom software and automation case studies for businesses: internal systems, integrations, and processes that used to be done by hand.", "Custom software and automation case studies."],
+  ];
+  for (const [route, title, description, heading] of casesHubExpectations) {
+    const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+    const renderedTitle = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+    if (renderedTitle !== title || title.length > 60) failures.push(`${route}: title mismatch (${renderedTitle.length}: ${renderedTitle})`);
+    const renderedDescription = metaDescription(html);
+    if (renderedDescription !== description || description.length > 155) failures.push(`${route}: meta description mismatch (${renderedDescription.length}: ${renderedDescription})`);
+    if (/[—–]|el Lab|demos de lab|prueban arquitectura/i.test(`${title} ${description} ${heading}`)) failures.push(`${route}: SERP copy still uses jargon or a dash`);
+    const h1s = html.match(/<h1[\s>]/g) || [];
+    if (h1s.length !== 1 || !html.includes(`<h1>${heading}</h1>`)) failures.push(`${route}: H1 mismatch`);
+  }
+  const automationHub = await readFile(join(root, "es/automatizaciones/index.html"), "utf8");
+  const automationDescription = metaDescription(automationHub);
+  if (automationDescription.length > 155 || !automationDescription.includes("facturación electrónica ARCA") || !automationDescription.includes("conciliación") || !automationDescription.includes("2 semanas a precio cerrado")) {
+    failures.push(`/es/automatizaciones: meta description (${automationDescription.length}: ${automationDescription})`);
   }
 }
 
@@ -968,8 +1064,8 @@ else {
 
     const sitemap = await fetchPath("/sitemap.xml");
     if (sitemap.status !== 200) failures.push(`sitemap.xml: expected HTTP 200, got ${sitemap.status}`);
-    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
-      if (path === "/es/integraciones/mercado-libre" || path === "/es/automatizaciones/facturacion-electronica-arca") {
+    for (const path of ["/privacy", "/terms", "/es/privacidad", "/es/terminos", "/contact", "/es/contacto", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/automatizaciones/conciliacion-bancaria", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
+      if (path === "/es/integraciones/mercado-libre" || path === "/es/automatizaciones/facturacion-electronica-arca" || path === "/es/automatizaciones/conciliacion-bancaria") {
         const block = sitemap.html.split("<url>").find((part) => part.includes(`https://www.puna-tech.com${path}</loc>`));
         if (!block || !block.includes('hreflang="es-AR"') || block.includes('hreflang="en"') || block.includes('hreflang="x-default"')) {
           failures.push(`sitemap.xml: ${path} is not ES-only hreflang`);
