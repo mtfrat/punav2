@@ -182,10 +182,19 @@ export default function CaseStudyPage({ loaderData }: { loaderData: Awaited<Retu
           </div>
         </section>
 
-        {locale === "es" && study.relatedService === "integraciones-de-datos" ? (
+        {locale === "es" && (study.relatedService === "integraciones-de-datos" || study.relatedService === "automatizacion-ia") ? (
           <section className="section light-section">
             <div className="shell">
-              <p>Este trabajo conecta herramientas para que el dato no se copie a mano. El servicio es <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.</p>
+              {study.relatedService === "integraciones-de-datos" ? (
+                <p>
+                  Este trabajo conecta herramientas para que el dato no se copie a mano. El servicio es <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.
+                  {study.key === "gtm-automation" || study.key === "lead-router" ? (
+                    <> Cuando el flujo también clasifica o enruta y una persona queda en el medio, está en <Link to="/es/servicios/automatizacion-ia">automatización de procesos</Link>.</>
+                  ) : null}
+                </p>
+              ) : (
+                <p>Este trabajo automatiza un flujo y deja la revisión en una persona. El servicio es <Link to="/es/servicios/automatizacion-ia">automatización de procesos</Link>.</p>
+              )}
             </div>
           </section>
         ) : null}

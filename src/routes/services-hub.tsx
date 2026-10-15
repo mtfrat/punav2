@@ -74,6 +74,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
               <p className="hero-intro">
                 Si Tango, la planilla o un SaaS ya no alcanzan, el camino es <Link to="/es/servicios/software-a-medida">software a medida</Link>.
                 {" "}Si el CRM y el ERP no se pasan los datos, el camino es <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.
+                {" "}Si cobranzas, facturas o pedidos por WhatsApp se hacen a mano, el camino es <Link to="/es/servicios/automatizacion-ia">automatización de procesos</Link>.
               </p>
             ) : null}
             <div className="cta-group">

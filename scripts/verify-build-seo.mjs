@@ -179,19 +179,65 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
 {
   const route = "/es/servicios/automatizacion-ia";
   const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
-  if (!html.includes("<title>Automatización de procesos con IA para empresas | Puna Tech</title>")) failures.push(`${route}: target-query title missing`);
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Automatización de procesos con IA para empresas | Puna Tech") failures.push(`${route}: target-query title missing (${title})`);
+  if (title.length > 60) failures.push(`${route}: title is ${title.length} characters`);
+  if (!html.includes("<h1>Automatización de procesos con IA para empresas</h1>")) failures.push(`${route}: H1 changed`);
   const description = metaDescription(html);
-  if (!description.startsWith("Automatización de procesos con IA") || description.length > 155) failures.push(`${route}: target-query meta description (${description.length})`);
+  const expectedDescription = "Automatización de procesos con IA para pymes en Argentina: cobranzas, facturas, WhatsApp al CRM y reportes, con revisión humana. Diagnóstico en 15 min.";
+  if (description !== expectedDescription || description.length > 155) failures.push(`${route}: target-query meta description (${description.length}: ${description})`);
   let nodes = [];
   try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
-  if (!faq || (faq.mainEntity || []).length < 5) failures.push(`${route}: FAQPage JSON-LD missing or too short`);
+  const questions = (faq?.mainEntity || []).map((item) => item.name);
+  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  for (const question of [
+    "¿Qué es la automatización de procesos para una empresa?",
+    "¿Qué procesos se pueden automatizar en una pyme argentina?",
+    "¿Cuánto tarda automatizar un proceso?",
+    "¿Cuánto cuesta automatizar un proceso?",
+    "¿Conviene automatización a medida o alcanza con Make, n8n o Zapier?",
+    "¿Qué pasa si la IA se equivoca?",
+  ]) {
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  const costAnswer = (faq?.mainEntity || []).find((item) => item.name === "¿Cuánto cuesta automatizar un proceso?")?.acceptedAnswer?.text || "";
+  if (!/precio cerrado/i.test(costAnswer) || /\$\s?\d|\d+\s*(?:usd|dólares|dolares)/i.test(costAnswer)) failures.push(`${route}: cost FAQ publishes a price`);
   const service = nodes.find((node) => node["@type"] === "Service");
   if (service?.name !== "Automatización de procesos con IA") failures.push(`${route}: Service schema name is not the target query`);
-  for (const heading of ["Qué es la automatización de procesos con IA (y qué no)", "Qué procesos automatizamos en pymes y empresas argentinas", "Cómo trabajamos y en cuánto tiempo"]) {
+  if (service?.serviceType !== "Automatización de procesos") failures.push(`${route}: Service schema serviceType mismatch`);
+  if (service?.inLanguage !== "es-AR") failures.push(`${route}: Service schema inLanguage is not es-AR`);
+  if (!JSON.stringify(service?.areaServed || {}).includes("Argentina")) failures.push(`${route}: Service schema areaServed is not Argentina`);
+  for (const heading of [
+    "Qué es la automatización de procesos con IA (y qué no)",
+    "Qué procesos automatizamos en pymes y empresas argentinas",
+    "Cómo trabajamos y en cuánto tiempo",
+    "Cuándo conviene a medida y cuándo alcanza Make, n8n o Zapier",
+    "Qué hace subir el costo de automatizar un proceso",
+    "Cuándo conviene (y cuándo todavía no)",
+  ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
-  if (!html.includes('href="/es/automatizaciones/automatizar-cobranzas"')) failures.push(`${route}: missing link to automatizar cobranzas`);
+  if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: examples are not labeled as examples`);
+  if (!html.includes("un proceso en 2 semanas a precio cerrado")) failures.push(`${route}: timeline diverges from the existing 2-week offer`);
+  if (!html.includes("No publicamos un precio de lista")) failures.push(`${route}: cost factors section missing`);
+  if (!html.includes("Make, n8n o Zapier")) failures.push(`${route}: no-code comparison missing`);
+  for (const path of [
+    "/es/automatizaciones/automatizar-cobranzas",
+    "/es/automatizaciones/carga-de-facturas-proveedores",
+    "/es/automatizaciones/pedidos-por-whatsapp",
+    "/es/integraciones/mercado-pago",
+    "/es/servicios/software-a-medida",
+    "/es/servicios/integraciones-de-datos",
+    "/es/casos/automatizacion-gtm-b2b",
+    "/es/casos/enrutamiento-leads-hubspot",
+    "/es/casos/copiloto-linkedin-ia-hitl",
+    "/es/contacto",
+  ]) {
+    if (!html.includes(`href="${path}"`)) failures.push(`${route}: missing contextual link ${path}`);
+  }
+  if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
   if (!html.includes('<h2 id="service-use-cases-heading">Casos de uso</h2>')) failures.push(`${route}: Casos de uso heading missing`);
   for (const path of [
     "/es/automatizaciones",
@@ -205,6 +251,14 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
   const useCasesAt = html.indexOf("service-use-cases-heading");
   const finalCtaAt = html.indexOf("detail-cta");
   if (useCasesAt === -1 || finalCtaAt === -1 || useCasesAt > finalCtaAt) failures.push(`${route}: Casos de uso should stay above the final CTA`);
+  if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
+}
+
+for (const route of ["/es", "/es/servicios", "/es/servicios/software-a-medida", "/es/servicios/integraciones-de-datos", "/es/integraciones/mercado-pago", "/es/casos/automatizacion-gtm-b2b", "/es/casos/enrutamiento-leads-hubspot", "/es/casos/copiloto-linkedin-ia-hitl"]) {
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!/href="\/es\/servicios\/automatizacion-ia"[^>]*>automatización de procesos<\/a>/.test(html)) {
+    failures.push(`${route}: missing keyword anchor link to /es/servicios/automatizacion-ia`);
+  }
 }
 
 {

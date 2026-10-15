@@ -195,6 +195,7 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
                 <p className="mm-dek">{locale === "es" ? linkPhrase(t.latamBody, "software a medida", "/es/servicios/software-a-medida") : t.latamBody}</p>
                 {locale === "es" ? <p className="mm-dek">Si el CRM, el ERP y la planilla no se hablan, lo resolvemos con <Link to="/es/servicios/integraciones-de-datos">integración de sistemas</Link>.</p> : null}
                 {locale === "es" ? <p className="mm-dek">Si hace falta un sistema con roles, pantallas y reglas que no entran en Tango ni en una planilla, lo armamos como <Link to="/es/servicios/software-a-medida">sistemas a medida</Link>.</p> : null}
+                {locale === "es" ? <p className="mm-dek">Si el trabajo de todos los días es perseguir cobranzas, cargar facturas o pasar pedidos de WhatsApp al CRM, lo vemos como <Link to="/es/servicios/automatizacion-ia">automatización de procesos</Link>.</p> : null}
                 <div className="cta-group" style={{ marginTop: "1.5rem" }}>
                   <CalButton locale={locale} placement="es_latam_block" label={t.book} className="button-primary-terracotta mm-btn mm-btn-accent" />
                   <a
