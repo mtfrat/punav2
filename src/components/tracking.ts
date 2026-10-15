@@ -12,6 +12,7 @@ export type AnalyticsEvent =
   | "cta_view"
   | "cta_primary_view"
   | "cta_click"
+  | "hero_variant_view"
   | "cal_open"
   | "cal_booked"
   | "case_study_view"
