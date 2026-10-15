@@ -67,7 +67,7 @@ export const useCaseHubs: UseCaseHub[] = [
     title: "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube",
     lead: "Conectamos Mercado Pago, Tienda Nube y Mercado Libre con tu sistema de gestión: conciliación de pagos, stock, pedidos y facturas, sin cruzar reportes a mano.",
     intro: "Elegí la herramienta. Cada página cuenta qué datos viajan, qué queda en tu sistema y qué se marca para revisar.",
-    metaTitle: "Integraciones Mercado Pago y Tienda Nube | Puna Tech",
+    metaTitle: "Integraciones ML, Mercado Pago y Tienda Nube | Puna Tech",
     metaDescription: "Integraciones para empresas en Argentina: Mercado Pago, Tienda Nube y Mercado Libre con tu stock y ERP. Diagnóstico en 15 min.",
   },
 ];

@@ -14,6 +14,11 @@
       "statusCode": 301
     },
     {
+      "source": "/es/automatizar-cobranzas",
+      "destination": "/es/automatizaciones/automatizar-cobranzas",
+      "statusCode": 301
+    },
+    {
       "source": "/blog/automatizacion-facturacion-logistica",
       "destination": "/es/automatizaciones/carga-de-facturas-proveedores",
       "statusCode": 301
