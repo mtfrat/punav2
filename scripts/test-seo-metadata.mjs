@@ -178,6 +178,40 @@ assert.match(arca.metaDescription, /stock/);
 assert.equal(arca.faqs.length >= 5 && arca.faqs.length <= 6, true);
 assert.ok(arca.faqs.some(([question]) => question.includes("facturación electrónica")));
 
+assert.equal(casesHubCopy.es.metaTitle, "Casos de software y automatización en Argentina | Puna Tech");
+assert.equal(casesHubCopy.en.metaTitle, "Custom software and automation case studies | Puna Tech");
+assert.ok(casesHubCopy.es.metaDescription.length <= 155);
+assert.ok(casesHubCopy.en.metaDescription.length <= 155);
+assert.equal(casesHubCopy.es.title, "Casos de software a medida y automatización en Argentina.");
+assert.equal(casesHubCopy.en.title, "Custom software and automation case studies.");
+assert.doesNotMatch(`${casesHubCopy.es.metaTitle} ${casesHubCopy.es.metaDescription} ${casesHubCopy.es.title}`, /[—–]|el Lab|demos de lab/i);
+assert.doesNotMatch(`${casesHubCopy.en.metaTitle} ${casesHubCopy.en.metaDescription} ${casesHubCopy.en.title}`, /[—–]|\bLab\b/i);
+
+const automationHub = useCaseHubs.find((item) => item.path === "/es/automatizaciones");
+assert.ok(automationHub.metaDescription.length <= 155);
+assert.match(automationHub.metaDescription, /facturación electrónica ARCA/);
+assert.match(automationHub.metaDescription, /conciliación/);
+assert.match(automationHub.metaDescription, /2 semanas a precio cerrado/);
+assert.match(automationHub.lead, /conciliación bancaria/);
+assert.match(automationHub.lead, /2 semanas a precio cerrado/);
+
+const bank = useCases.find((item) => item.path === "/es/automatizaciones/conciliacion-bancaria");
+assert.ok(bank, "missing conciliación bancaria use case");
+assert.equal(bank.metaTitle, "Conciliación bancaria automática para pymes | Puna Tech");
+assert.ok(bank.metaTitle.length >= 45 && bank.metaTitle.length <= 60);
+assert.ok(bank.metaDescription.length >= 120 && bank.metaDescription.length <= 155);
+assert.match(bank.metaDescription, /Mercado Pago/);
+assert.match(bank.metaDescription, /ERP/);
+assert.match(bank.title, /conciliación bancaria automática/i);
+assert.equal(bank.faqs.length >= 5 && bank.faqs.length <= 6, true);
+assert.ok(bank.faqs.some(([question]) => question.includes("conciliación bancaria")));
+assert.ok(bank.how.some((step) => step.body.includes("/es/automatizaciones/automatizar-cobranzas")));
+assert.ok(bank.how.some((step) => step.body.includes("/es/automatizaciones/facturacion-electronica-arca")));
+const collections = useCases.find((item) => item.path === "/es/automatizaciones/automatizar-cobranzas");
+const arcaBody = arca.how.map((step) => step.body).join(" ");
+assert.match(collections.how.map((step) => step.body).join(" "), /\/es\/automatizaciones\/conciliacion-bancaria/);
+assert.match(arcaBody, /\/es\/automatizaciones\/conciliacion-bancaria/);
+
 assert.equal(legacyPostRedirects["automatizacion-facturacion-logistica"], "/es/automatizaciones/carga-de-facturas-proveedores");
 assert.equal(legacyPostRedirects["arquitecturas-multi-agente"], "/es/blog/cuando-usar-ia-vs-software-deterministico");
 assert.equal(legacyPostRedirects["guia-optimizacion-procesos-ia"], "/es/servicios/automatizacion-ia");

@@ -41,6 +41,7 @@ const aiAutomationUseCases = [
   { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
   { path: "/es/automatizaciones/facturacion-electronica-arca", title: "Facturación electrónica ARCA" },
   { path: "/es/automatizaciones/automatizar-cobranzas", title: "Automatizar cobranzas" },
+  { path: "/es/automatizaciones/conciliacion-bancaria", title: "Conciliación bancaria" },
   { path: "/es/integraciones", title: "Integraciones" },
 ];
 

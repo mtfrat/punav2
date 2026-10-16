@@ -55,10 +55,10 @@ export const useCaseHubs: UseCaseHub[] = [
     path: "/es/automatizaciones",
     eyebrow: "Automatizaciones",
     title: "Automatizaciones para el día a día de tu empresa",
-    lead: "Automatizamos procesos que hoy se hacen a mano: la facturación electrónica ARCA, la carga de facturas de proveedores, los pedidos por WhatsApp y las cobranzas. Un proceso en 2 semanas a precio cerrado.",
+    lead: "Automatizamos procesos que hoy se hacen a mano: facturas de proveedores, pedidos por WhatsApp, cobranzas, facturación electrónica ARCA y conciliación bancaria. Un proceso en 2 semanas a precio cerrado.",
     intro: "Elegí el proceso. Cada página cuenta cómo es hoy, cómo queda y cómo lo resolvemos.",
     metaTitle: "Automatizaciones de procesos para empresas | Puna Tech",
-    metaDescription: "Automatizaciones para empresas en Argentina: facturación electrónica ARCA, proveedores, pedidos y cobranzas. 2 semanas a precio cerrado.",
+    metaDescription: "Automatizaciones para empresas en Argentina: facturación electrónica ARCA, facturas, WhatsApp, cobranzas y conciliación. 2 semanas a precio cerrado.",
   },
   {
     section: "integraciones",
@@ -175,7 +175,7 @@ export const useCases: UseCaseContent[] = [
     how: [
       { title: "Conectado a la API de Mercado Pago", body: "Usamos las notificaciones de pago, la API y los reportes de Mercado Pago para tener cada movimiento sin bajar archivos a mano." },
       { title: "Reglas de conciliación claras", body: "Definimos con vos cómo se empareja un pago con una factura: referencia del link de pago, monto, CUIT o email del cliente, ventana de fechas. Lo que no coincide con certeza no se marca como cobrado: queda en una bandeja de diferencias." },
-      { title: "Hacia tu sistema de gestión", body: "Registramos el cobro en tu sistema (Tango, Bejerman, Odoo, un ERP propio o una planilla) por API o importación. Si además querés que la factura se emita sola, lo vemos como siguiente paso. Si las ventas entran por Mercado Libre, el stock y la factura de ese canal van en [integrar Mercado Libre](/es/integraciones/mercado-libre)." },
+      { title: "Hacia tu sistema de gestión", body: "Registramos el cobro en tu sistema (Tango, Bejerman, Odoo, un ERP propio o una planilla) por API o importación. Si además querés que la factura se emita sola, lo vemos como siguiente paso. Si el cruce también incluye el extracto del banco, está en [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria). Si las ventas entran por Mercado Libre, el stock y la factura de ese canal van en [integrar Mercado Libre](/es/integraciones/mercado-libre)." },
     ],
     fit: [
       "Cobrás una parte importante de tus ventas por Mercado Pago.",
@@ -286,7 +286,7 @@ export const useCases: UseCaseContent[] = [
       },
       {
         title: "Lo cobrado y lo dudoso, separados",
-        body: "Transferencias, cheques o Mercado Pago se cruzan con las facturas pendientes. Lo que no coincide con certeza no se marca como cobrado. Si el problema principal es conciliar Mercado Pago, ese cruce es otro flujo: acá el foco es el seguimiento de lo vencido. Si la factura de la venta todavía hay que emitirla, el comprobante está en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca).",
+        body: "Transferencias, cheques o Mercado Pago se cruzan con las facturas pendientes. Lo que no coincide con certeza no se marca como cobrado. Si el problema principal es cruzar el extracto del banco o Mercado Pago con las facturas, ese cruce es [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria). Acá el foco es el seguimiento de lo vencido. Si la factura de la venta todavía hay que emitirla, el comprobante está en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca).",
       },
     ],
     fit: [
@@ -298,7 +298,7 @@ export const useCases: UseCaseContent[] = [
       ["¿Se pueden automatizar las cobranzas de una pyme?", "Sí. Un flujo puede leer las facturas vencidas o por vencer en tu sistema, armar el recordatorio con el saldo real y dejarlo para que alguien lo confirme antes de enviarlo por mail o WhatsApp. Lo que no cierra no se manda solo."],
       ["¿Qué son las cobranzas automáticas para empresas?", "Es que el seguimiento de facturas impagas deje de depender de que alguien revise una planilla y escriba cada aviso a mano. El sistema propone a quién avisarle y con qué saldo. Una persona confirma los pasos sensibles, como enviar un reclamo o marcar una factura como cobrada."],
       ["¿El recordatorio se manda solo al cliente?", "No al principio. Cada aviso queda para que alguien del equipo lo revise y lo envíe. Recién cuando el flujo acierta, se puede definir qué recordatorios salen sin esa confirmación (por ejemplo, un primer aviso de un cliente habitual)."],
-      ["¿Funciona si cobrás por transferencia, cheque o Mercado Pago?", "Sí, si el pago puede entrar a tu sistema o a una planilla de forma confiable. El flujo intenta imputarlo a la factura pendiente. Si no hay certeza (un monto parcial, un pago sin referencia), no lo marca como cobrado: queda para revisar. Conciliar el reporte de Mercado Pago es un flujo aparte."],
+      ["¿Funciona si cobrás por transferencia, cheque o Mercado Pago?", "Sí, si el pago puede entrar a tu sistema o a una planilla de forma confiable. El flujo intenta imputarlo a la factura pendiente. Si no hay certeza (un monto parcial, un pago sin referencia), no lo marca como cobrado: queda para revisar. Cruzar el extracto del banco o Mercado Pago con las facturas es la conciliación bancaria, un flujo aparte."],
       costFaq("cuántos clientes y facturas entran en el seguimiento, por dónde se avisa y cómo se conecta tu sistema"),
       ["¿Qué necesitamos de nuestro lado?", "Acceso de prueba a las facturas pendientes (o un archivo de export), las reglas de aviso que ya usan (a los cuántos días, con qué tono) y una persona que conozca el proceso para validarlas."],
     ],
@@ -346,7 +346,7 @@ export const useCases: UseCaseContent[] = [
       },
       {
         title: "Vuelto al ERP y al stock",
-        body: "El número de comprobante queda en la venta, y el stock de esos ítems queda atado a esa misma operación. Si la venta entró por Mercado Libre, el canal está en [integrar Mercado Libre](/es/integraciones/mercado-libre). Las facturas de proveedores que te llegan en PDF son [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores). Lo que quedó impago se sigue en [automatizar cobranzas](/es/automatizaciones/automatizar-cobranzas).",
+        body: "El número de comprobante queda en la venta, y el stock de esos ítems queda atado a esa misma operación. Si la venta entró por Mercado Libre, el canal está en [integrar Mercado Libre](/es/integraciones/mercado-libre). Las facturas de proveedores que te llegan en PDF son [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores). Lo que quedó impago se sigue en [automatizar cobranzas](/es/automatizaciones/automatizar-cobranzas). Lo que el banco o Mercado Pago ya acreditó y hay que cruzar con la factura está en [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria).",
       },
     ],
     fit: [
@@ -361,6 +361,66 @@ export const useCases: UseCaseContent[] = [
       ["¿Funciona si hoy facturás en la web de ARCA?", "Solo si hay una forma segura de emitir desde afuera de esa pantalla: el facturador de tu ERP, una API o un archivo que el sistema importa. Si la única vía es tipear en la web de ARCA, te lo decimos en la llamada y no prometemos una emisión que no se puede conectar."],
       costFaq("el volumen de comprobantes, si tu facturador ya se conecta con ARCA y cómo vuelve el número al ERP"),
       ["¿Qué necesitamos de nuestro lado?", "Un lote de ventas reales (anonimizadas si preferís), acceso de prueba al facturador o a su importación, y una persona que sepa qué tipo de comprobante corresponde en cada caso."],
+    ],
+    relatedService: { path: "/es/servicios/automatizacion-ia", title: "Automatización de procesos con IA" },
+    relatedPosts: [
+      { path: "/es/blog/cuando-usar-ia-vs-software-deterministico", title: "Cuándo usar IA y cuándo conviene software determinístico" },
+    ],
+  },
+  {
+    key: "bank-reconciliation",
+    path: "/es/automatizaciones/conciliacion-bancaria",
+    section: "automatizaciones",
+    eyebrow: "Automatización · Conciliación bancaria",
+    title: "Conciliación bancaria automática para pymes y empresas",
+    lead: "El extracto del banco y Mercado Pago no cierran con las facturas. Alguien baja el archivo, lo pega en Excel y trata de ver qué cobro corresponde a cada comprobante. Armamos una conciliación bancaria automática: cruza cada movimiento con las facturas y las cobranzas de tu ERP o de tu planilla, y deja marcado lo que no coincide para que una persona lo revise.",
+    metaTitle: "Conciliación bancaria automática para pymes | Puna Tech",
+    metaDescription: "Conciliación bancaria automática: banco y Mercado Pago contra facturas y cobranzas del ERP. Para pymes en Argentina. Diagnóstico en 15 min.",
+    serviceType: "Conciliación bancaria automática para pymes",
+    ogImage: "/og/conciliacion-bancaria.png",
+    ogImageAlt: "Puna Tech: conciliación bancaria automática para pymes en Argentina.",
+    cardTitle: "Conciliación bancaria",
+    cardBlurb: "Los movimientos del banco y de Mercado Pago se cruzan con las facturas y las cobranzas. Lo que no coincide queda para revisar.",
+    example: "Por ejemplo, un comercio que cobra por transferencia y por Mercado Pago. Cada mañana alguien baja el extracto, lo pega en una planilla y busca a qué factura corresponde cada importe. Un pago parcial, una comisión o un movimiento sin referencia queda sin cruzar, y a fin de mes el saldo del banco no cierra con el sistema.",
+    before: [
+      "Bajar el extracto del banco y el reporte de Mercado Pago y cruzarlos a mano con las facturas.",
+      "Movimientos sin referencia: no se sabe de qué cliente ni de qué factura son.",
+      "Pagos parciales, comisiones o transferencias que no coinciden con el importe de la factura.",
+      "Facturas que siguen impagas aunque el dinero ya entró, o un mismo cobro marcado dos veces.",
+    ],
+    after: [
+      "Cada movimiento del banco y de Mercado Pago se lee solo, con fecha, importe y referencia.",
+      "Se cruza con las facturas y las cobranzas pendientes del ERP o de la planilla, por referencia, monto, cliente y fecha.",
+      "Lo que coincide con certeza queda asociado a su factura. Lo que no, queda en una lista para que alguien lo revise.",
+      "Queda registro de qué se concilió y qué quedó pendiente.",
+    ],
+    howTitle: "Cómo lo resolvemos",
+    how: [
+      {
+        title: "El extracto y Mercado Pago, sin bajar archivos a mano",
+        body: "Leemos los movimientos del banco por el archivo que ya exportás, o por la conexión que tu banco ofrezca, y los de Mercado Pago por su API. Si una vía no se puede conectar de forma segura, te lo decimos en la llamada, antes de prometerla.",
+      },
+      {
+        title: "Reglas de cruce, no adivinanzas",
+        body: "Definimos con vos cómo se empareja un movimiento con una factura o una cobranza: referencia, importe, CUIT o cliente, y una ventana de fechas. Lo que no coincide con certeza no se marca como cobrado: queda para revisar. El aviso al cliente por lo vencido está en [automatizar cobranzas](/es/automatizaciones/automatizar-cobranzas).",
+      },
+      {
+        title: "Hacia tu ERP o tu planilla",
+        body: "Registramos el cruce en Tango, Bejerman, un ERP propio o una planilla, por API o por archivo de importación. Si la factura todavía hay que emitirla, el comprobante está en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca). Si el trabajo es solo la conciliación de comisiones y retenciones de Mercado Pago, lo vemos en [integrar Mercado Pago](/es/integraciones/mercado-pago).",
+      },
+    ],
+    fit: [
+      "Cobrás por transferencia, depósito o Mercado Pago y alguien concilia a mano.",
+      "El extracto del banco no cierra con las facturas del ERP o de la planilla.",
+      "Ya le reclamaste a un cliente que había pagado, o un cobro quedó sin asociar a su factura.",
+    ],
+    faqs: [
+      ["¿Se puede automatizar la conciliación bancaria?", "Sí. Un flujo puede leer los movimientos del banco y de Mercado Pago, cruzarlos con las facturas y las cobranzas de tu ERP o de tu planilla, y asociar los que coinciden. Lo que no cierra no se marca como cobrado: queda para que una persona lo revise."],
+      ["¿Qué es la conciliación bancaria automática?", "Es cruzar, todos los días, cada movimiento del extracto y de Mercado Pago con la factura o la cobranza que corresponde. En lugar de bajar el archivo y buscarlo en Excel, el sistema propone el cruce y deja marcada la diferencia."],
+      ["¿Funciona con el banco y con Mercado Pago?", "Sí, si el movimiento puede entrar de forma confiable: el archivo que ya exportás del home banking, o la API de Mercado Pago. Si tu banco no deja leer los movimientos de forma segura, te lo decimos en la llamada y no prometemos una conexión que no existe."],
+      ["¿Qué pasa con los movimientos que no coinciden?", "Un pago parcial, una comisión o un importe sin referencia no se asocia solo. Queda en una lista, con las facturas candidatas, para que alguien elija. Recién entonces se marca como cobrado."],
+      costFaq("cuántas cuentas y medios de cobro entran, las reglas de cruce y cómo se conecta tu ERP o tu planilla"),
+      ["¿Qué necesitamos de nuestro lado?", "Un extracto real y un lote de facturas o cobranzas (anonimizados si preferís), la forma en que hoy exportan el banco, y una persona que sepa cómo asocian un pago cuando el importe no coincide."],
     ],
     relatedService: { path: "/es/servicios/automatizacion-ia", title: "Automatización de procesos con IA" },
     relatedPosts: [
