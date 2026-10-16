@@ -482,7 +482,7 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
 const useCaseExpectations = [
   ["/es/automatizaciones/carga-de-facturas-proveedores", "Automatizar carga de facturas de proveedores | Puna Tech", "/og/carga-de-facturas-proveedores.png"],
   ["/es/integraciones/mercado-pago", "Conciliación de pagos con Mercado Pago | Puna Tech", "/og/integracion-mercado-pago.png"],
-  ["/es/automatizaciones/pedidos-por-whatsapp", "Automatizar pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
+  ["/es/automatizaciones/pedidos-por-whatsapp", "Sistema de pedidos por WhatsApp para empresas | Puna Tech", "/og/pedidos-por-whatsapp.png"],
   ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
   ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
   ["/es/integraciones/mercado-libre", "Integrar Mercado Libre con stock y ERP | Puna Tech", "/og/integracion-mercado-libre.png"],
