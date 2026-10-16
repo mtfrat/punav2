@@ -379,9 +379,9 @@ export const useCases: UseCaseContent[] = [
     section: "automatizaciones",
     eyebrow: "Automatización · Conciliación bancaria",
     title: "Conciliación bancaria automática para pymes y empresas",
-    lead: "El extracto del banco y Mercado Pago no cierran con las facturas. Alguien baja el archivo, lo pega en Excel y trata de ver qué cobro corresponde a cada comprobante. Armamos una conciliación bancaria automática: cruza cada movimiento con las facturas y las cobranzas de tu ERP o de tu planilla, y deja marcado lo que no coincide para que una persona lo revise.",
+    lead: "El extracto del banco y Mercado Pago no cierran con las facturas. Alguien baja el archivo, lo pega en Excel y trata de ver qué cobro corresponde a cada comprobante. Armamos una conciliación bancaria y de pagos automática: cruza cada movimiento con las facturas y las cobranzas de tu ERP o de tu planilla, y deja marcado lo que no coincide para que una persona lo revise.",
     metaTitle: "Conciliación bancaria automática para pymes | Puna Tech",
-    metaDescription: "Conciliación bancaria automática: banco y Mercado Pago contra facturas y cobranzas del ERP. Para pymes en Argentina. Diagnóstico en 15 min.",
+    metaDescription: "Conciliación bancaria y de pagos automática: banco y Mercado Pago contra facturas y cobranzas del ERP. Para pymes en Argentina. Diagnóstico en 15 min.",
     serviceType: "Conciliación bancaria automática para pymes",
     ogImage: "/og/conciliacion-bancaria.png",
     ogImageAlt: "Puna Tech: conciliación bancaria automática para pymes en Argentina.",
@@ -398,7 +398,7 @@ export const useCases: UseCaseContent[] = [
       "Cada movimiento del banco y de Mercado Pago se lee solo, con fecha, importe y referencia.",
       "Se cruza con las facturas y las cobranzas pendientes del ERP o de la planilla, por referencia, monto, cliente y fecha.",
       "Lo que coincide con certeza queda asociado a su factura. Lo que no, queda en una lista para que alguien lo revise.",
-      "Queda registro de qué se concilió y qué quedó pendiente.",
+      "Queda registro de qué se concilió y qué quedó pendiente: la conciliación de pagos deja de depender de una planilla.",
     ],
     howTitle: "Cómo lo resolvemos",
     how: [
@@ -423,6 +423,7 @@ export const useCases: UseCaseContent[] = [
     faqs: [
       ["¿Se puede automatizar la conciliación bancaria?", "Sí. Un flujo puede leer los movimientos del banco y de Mercado Pago, cruzarlos con las facturas y las cobranzas de tu ERP o de tu planilla, y asociar los que coinciden. Lo que no cierra no se marca como cobrado: queda para que una persona lo revise."],
       ["¿Qué es la conciliación bancaria automática?", "Es cruzar, todos los días, cada movimiento del extracto y de Mercado Pago con la factura o la cobranza que corresponde. En lugar de bajar el archivo y buscarlo en Excel, el sistema propone el cruce y deja marcada la diferencia."],
+      ["¿Cuál es la diferencia entre conciliación bancaria y conciliación de pagos?", "La conciliación bancaria cruza el extracto del banco con tus registros. La conciliación de pagos cruza cada cobro (transferencia, Mercado Pago, tarjeta) con la factura o el pedido que corresponde. En la práctica se hacen juntas: el mismo flujo lee el banco y Mercado Pago y asocia cada pago a su factura."],
       ["¿Funciona con el banco y con Mercado Pago?", "Sí, si el movimiento puede entrar de forma confiable: el archivo que ya exportás del home banking, o la API de Mercado Pago. Si tu banco no deja leer los movimientos de forma segura, te lo decimos en la llamada y no prometemos una conexión que no existe."],
       ["¿Qué pasa con los movimientos que no coinciden?", "Un pago parcial, una comisión o un importe sin referencia no se asocia solo. Queda en una lista, con las facturas candidatas, para que alguien elija. Recién entonces se marca como cobrado."],
       costFaq("cuántas cuentas y medios de cobro entran, las reglas de cruce y cómo se conecta tu ERP o tu planilla"),
