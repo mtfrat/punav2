@@ -1085,12 +1085,28 @@ else {
     }
     const locs = [...sitemap.html.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
     if (locs.length < 20) failures.push(`sitemap.xml: expected the public page set, found ${locs.length} URLs`);
+    // Every sitemap URL carries a <lastmod> date.
+    for (const block of sitemap.html.split("<url>").slice(1)) {
+      const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1] || "?";
+      if (!/<lastmod>\d{4}-\d{2}-\d{2}[^<]*<\/lastmod>/.test(block)) failures.push(`sitemap.xml: ${loc} has no <lastmod>`);
+    }
+    // Spanish solution pages: crawlable from every Spanish page through the server-rendered footer.
+    const solutionPaths = locs.map((loc) => loc.replace("https://www.puna-tech.com", "")).filter((path) => /^\/es\/(automatizaciones|integraciones)(\/|$)/.test(path));
+    if (solutionPaths.length < 10) failures.push(`sitemap.xml: expected Spanish hubs and use cases, found ${solutionPaths.length}`);
     for (const loc of locs) {
       const path = loc.replace("https://www.puna-tech.com", "") || "/";
       const page = await fetchPath(path === "" ? "/" : path);
       if (page.status !== 200) {
         failures.push(`${path}: sitemap URL returned ${page.status}`);
         continue;
+      }
+      if (path === "/es" || path.startsWith("/es/")) {
+        const footer = page.html.slice(page.html.lastIndexOf("<footer"));
+        for (const target of solutionPaths) {
+          if (!footer.includes(`href="${target}"`)) failures.push(`${path}: footer missing link to ${target}`);
+        }
+      } else if (/href="\/es\/(automatizaciones|integraciones)/.test(page.html.slice(page.html.lastIndexOf("<footer")))) {
+        failures.push(`${path}: English footer links Spanish solution pages`);
       }
       const title = decodeHtml(page.html.match(/<title>([^<]*)<\/title>/)?.[1] || "");
       const description = decodeHtml(metaDescription(page.html));

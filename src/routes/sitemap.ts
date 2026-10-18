@@ -9,22 +9,43 @@ function localizedPair(en: string, es: string, lastmod?: string): SitemapItem[] 
   return [{ path: en, en, es, lastmod }, { path: es, en, es, lastmod }];
 }
 
+/**
+ * <lastmod> for the static marketing pages: the last significant change to each page family's
+ * main copy (YYYY-MM-DD). Header/footer/navigation edits don't count. Bump the family when its copy changes.
+ * Use-case pages and hubs carry their own `updatedAt` in content/use-cases.ts; blog posts use `updated_at`.
+ */
+export const STATIC_LASTMOD = {
+  home: "2026-10-15",
+  servicesHub: "2026-10-15",
+  service: "2026-10-16",
+  casesHub: "2026-10-16",
+  caseStudy: "2026-10-15",
+  blogHub: "2026-10-13",
+  legal: "2026-10-13",
+  contact: "2026-10-13",
+} as const;
+
+function latest(...dates: (string | undefined)[]) {
+  return dates.filter((date): date is string => !!date).map((date) => date.slice(0, 10)).sort().at(-1);
+}
+
 export async function loader() {
-  const staticItems: SitemapItem[] = [
-    ...localizedPair("/", "/es"),
-    ...localizedPair(servicesHubPath("en"), servicesHubPath("es")),
-    ...services.en.flatMap((service, index) => localizedPair(servicePath("en", service.slug), servicePath("es", services.es[index].slug))),
-    ...localizedPair(casesHubPath("en"), casesHubPath("es")),
-    ...caseStudies.en.flatMap((study, index) => localizedPair(casePath("en", study.slug), casePath("es", caseStudies.es[index].slug))),
-    ...localizedPair("/blog", "/es/blog"),
-    ...localizedPair("/privacy", "/es/privacidad"),
-    ...localizedPair("/terms", "/es/terminos"),
-    ...localizedPair("/contact", "/es/contacto"),
-    // Spanish-only use-case hubs and landings (no English alternate yet).
-    ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path })),
-    ...useCases.map((item) => ({ path: item.path, en: "", es: item.path })),
-  ];
   const [english, spanish] = await Promise.all([getPublishedPosts("en", 200), getPublishedPosts("es", 200)]);
+  const blogHubLastmod = latest(STATIC_LASTMOD.blogHub, ...english.map((post) => post.updated_at), ...spanish.map((post) => post.updated_at));
+  const staticItems: SitemapItem[] = [
+    ...localizedPair("/", "/es", STATIC_LASTMOD.home),
+    ...localizedPair(servicesHubPath("en"), servicesHubPath("es"), STATIC_LASTMOD.servicesHub),
+    ...services.en.flatMap((service, index) => localizedPair(servicePath("en", service.slug), servicePath("es", services.es[index].slug), STATIC_LASTMOD.service)),
+    ...localizedPair(casesHubPath("en"), casesHubPath("es"), STATIC_LASTMOD.casesHub),
+    ...caseStudies.en.flatMap((study, index) => localizedPair(casePath("en", study.slug), casePath("es", caseStudies.es[index].slug), STATIC_LASTMOD.caseStudy)),
+    ...localizedPair("/blog", "/es/blog", blogHubLastmod),
+    ...localizedPair("/privacy", "/es/privacidad", STATIC_LASTMOD.legal),
+    ...localizedPair("/terms", "/es/terminos", STATIC_LASTMOD.legal),
+    ...localizedPair("/contact", "/es/contacto", STATIC_LASTMOD.contact),
+    // Spanish-only use-case hubs and landings (no English alternate yet).
+    ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path, lastmod: hub.updatedAt })),
+    ...useCases.map((item) => ({ path: item.path, en: "", es: item.path, lastmod: item.updatedAt })),
+  ];
   const spanishByGroup = new Map(spanish.map((post) => [post.translation_group_id, post]));
   const blogItems: SitemapItem[] = [];
   for (const post of english) {
