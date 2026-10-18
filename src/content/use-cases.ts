@@ -8,6 +8,8 @@ export interface UseCaseContent {
   key: string;
   /** Full path, Spanish only. */
   path: string;
+  /** Sitemap <lastmod>: last significant change to this page's copy (YYYY-MM-DD). Bump it when the copy changes. */
+  updatedAt: string;
   section: "automatizaciones" | "integraciones";
   eyebrow: string;
   title: string;
@@ -40,6 +42,8 @@ export const USE_CASE_OFFER = {
 export interface UseCaseHub {
   section: UseCaseContent["section"];
   path: string;
+  /** Sitemap <lastmod>: last significant change to the hub copy (YYYY-MM-DD). */
+  updatedAt: string;
   eyebrow: string;
   title: string;
   lead: string;
@@ -53,6 +57,7 @@ export const useCaseHubs: UseCaseHub[] = [
   {
     section: "automatizaciones",
     path: "/es/automatizaciones",
+    updatedAt: "2026-10-16",
     eyebrow: "Automatizaciones",
     title: "Automatizaciones para el día a día de tu empresa",
     lead: "Automatizamos procesos que hoy se hacen a mano: facturas de proveedores, pedidos por WhatsApp, cobranzas, facturación electrónica ARCA y conciliación bancaria. Un proceso en 2 semanas a precio cerrado.",
@@ -63,6 +68,7 @@ export const useCaseHubs: UseCaseHub[] = [
   {
     section: "integraciones",
     path: "/es/integraciones",
+    updatedAt: "2026-10-15",
     eyebrow: "Integraciones",
     title: "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube",
     lead: "Conectamos Mercado Pago, Tienda Nube y Mercado Libre con tu sistema de gestión: conciliación de pagos, stock, pedidos y facturas, sin cruzar reportes a mano.",
@@ -96,6 +102,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "supplier-invoices",
     path: "/es/automatizaciones/carga-de-facturas-proveedores",
+    updatedAt: "2026-10-15",
     section: "automatizaciones",
     eyebrow: "Automatización · Facturas de proveedores",
     title: "Automatizar la carga de facturas de proveedores",
@@ -147,6 +154,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "mercado-pago",
     path: "/es/integraciones/mercado-pago",
+    updatedAt: "2026-10-16",
     section: "integraciones",
     eyebrow: "Integración · Mercado Pago",
     title: "Conciliación de pagos con Mercado Pago y tu sistema",
@@ -198,6 +206,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "whatsapp-orders",
     path: "/es/automatizaciones/pedidos-por-whatsapp",
+    updatedAt: "2026-10-17",
     section: "automatizaciones",
     eyebrow: "Automatización · Pedidos por WhatsApp",
     title: "Sistema de pedidos por WhatsApp para empresas",
@@ -256,6 +265,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "collections",
     path: "/es/automatizaciones/automatizar-cobranzas",
+    updatedAt: "2026-10-16",
     section: "automatizaciones",
     eyebrow: "Automatización · Cobranzas",
     title: "Automatizar cobranzas para pymes y empresas",
@@ -316,6 +326,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "arca-invoicing",
     path: "/es/automatizaciones/facturacion-electronica-arca",
+    updatedAt: "2026-10-16",
     section: "automatizaciones",
     eyebrow: "Automatización · Facturación electrónica",
     title: "Automatizar la facturación electrónica ARCA",
@@ -376,6 +387,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "bank-reconciliation",
     path: "/es/automatizaciones/conciliacion-bancaria",
+    updatedAt: "2026-10-17",
     section: "automatizaciones",
     eyebrow: "Automatización · Conciliación bancaria",
     title: "Conciliación bancaria automática para pymes y empresas",
@@ -436,6 +448,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "tienda-nube",
     path: "/es/integraciones/tienda-nube",
+    updatedAt: "2026-10-13",
     section: "integraciones",
     eyebrow: "Integración · Tienda Nube",
     title: "Integrar Tienda Nube con tu ERP y el stock",
@@ -496,6 +509,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "mercado-libre",
     path: "/es/integraciones/mercado-libre",
+    updatedAt: "2026-10-15",
     section: "integraciones",
     eyebrow: "Integración · Mercado Libre",
     title: "Integrar Mercado Libre con tu stock y tu ERP",

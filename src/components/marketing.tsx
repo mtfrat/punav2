@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import { CAL_LINK, CONTACT_EMAIL, casesHubPath, chromeCopy, contactPath, servicesHubPath, type Locale } from "../content/chrome";
+import { useCaseHubs, useCases } from "../content/use-cases";
 import { languageSwitchPath, routeAlternatePath } from "../lib/locale-switch";
 import { afterWindowLoadIdle } from "./defer";
 import { trackEvent } from "./tracking";
@@ -215,8 +216,14 @@ export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chr
   return (
     <footer className={`site-footer${editorial ? " site-footer-editorial" : ""}`}>
       {editorial ? <FooterWave /> : null}
-      <div className="shell footer-grid">
+      <div className={`shell footer-grid${locale === "es" ? " footer-grid-solutions" : ""}`}>
         <div><Brand /><p>{chromeCopy[locale].footerLine}</p></div>
+        {locale === "es" ? useCaseHubs.map((hub) => (
+          <nav className="footer-links footer-solutions" key={hub.path} aria-label={hub.eyebrow}>
+            <Link className="footer-solutions-hub" to={hub.path}>{hub.eyebrow}</Link>
+            {useCases.filter((item) => item.section === hub.section).map((item) => <Link key={item.path} to={item.path}>{item.cardTitle}</Link>)}
+          </nav>
+        )) : null}
         <div className="footer-links">
           <Link to={servicesHubPath(locale)}>{chromeCopy[locale].nav.services}</Link>
           <Link to={casesHubPath(locale)}>{chromeCopy[locale].nav.work}</Link>
