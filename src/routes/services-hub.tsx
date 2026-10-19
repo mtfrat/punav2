@@ -116,7 +116,7 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
                 <h2 id="use-cases-heading">Problemas concretos que automatizamos</h2>
                 <p>
                   Una página por problema: cómo es hoy, cómo queda y cómo lo resolvemos. Automatizamos un proceso en 2 semanas a precio cerrado.
-                  {" "}El índice está en <Link to="/es/automatizaciones">automatizaciones</Link> y <Link to="/es/integraciones">integraciones</Link>.
+                  {" "}El índice está en <Link to="/es/automatizaciones">automatizaciones</Link> y en cómo <Link to="/es/integraciones">integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema</Link>.
                 </p>
               </header>
               <div className="hub-card-grid">

@@ -1,9 +1,10 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
 import { Accordion, CalButton, PageShell, trackEvent } from "../components/marketing";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
+import { RichText } from "../components/rich-text";
 import { contactPath, copy, servicesHubPath, SITE_URL } from "../content/site";
 import { getUseCaseByPath, getUseCaseHubBySection, USE_CASE_OFFER, USE_CASE_STEPS, useCases } from "../content/use-cases";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
@@ -65,21 +66,6 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     ],
   });
 };
-
-function RichText({ text }: { text: string }) {
-  const nodes: ReactNode[] = [];
-  const pattern = /\[([^\]]+)\]\((\/(?!\/)[^)\s]+)\)/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  while ((match = pattern.exec(text))) {
-    const index = match.index;
-    if (index > last) nodes.push(text.slice(last, index));
-    nodes.push(<Link key={`${match[2]}-${index}`} to={match[2]}>{match[1]}</Link>);
-    last = index + match[0].length;
-  }
-  if (last < text.length) nodes.push(text.slice(last));
-  return nodes;
-}
 
 function ContactLink({ placement, light = false }: { placement: string; light?: boolean }) {
   return (
