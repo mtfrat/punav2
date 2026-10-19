@@ -50,7 +50,17 @@ export interface UseCaseHub {
   intro: string;
   metaTitle: string;
   metaDescription: string;
+  /** Optional guide that answers the hub query on the page itself. Bodies accept [texto](/es/ruta) links. */
+  guideTitle?: string;
+  guide?: { title: string; body: string }[];
+  /** Optional FAQ, rendered and emitted as FAQPage JSON-LD. Plain text answers. */
+  faqs?: [string, string][];
 }
+
+const costFaq = (detail: string): [string, string] => [
+  "¿Cuánto tarda y cuánto cuesta?",
+  `La propuesta es automatizar un proceso en 2 semanas a precio cerrado. El precio depende de ${detail}. Lo acordamos por escrito antes de empezar, después de una llamada de 15 minutos. No publicamos precios en la web porque cada proceso es distinto.`,
+];
 
 /** Spanish index pages for the use-case clusters. No English alternate yet. */
 export const useCaseHubs: UseCaseHub[] = [
@@ -68,13 +78,52 @@ export const useCaseHubs: UseCaseHub[] = [
   {
     section: "integraciones",
     path: "/es/integraciones",
-    updatedAt: "2026-10-15",
+    updatedAt: "2026-10-19",
     eyebrow: "Integraciones",
-    title: "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube",
-    lead: "Conectamos Mercado Pago, Tienda Nube y Mercado Libre con tu sistema de gestión: conciliación de pagos, stock, pedidos y facturas, sin cruzar reportes a mano.",
-    intro: "Elegí la herramienta. Cada página cuenta qué datos viajan, qué queda en tu sistema y qué se marca para revisar.",
-    metaTitle: "Integraciones ML, Mercado Pago y Tienda Nube | Puna Tech",
-    metaDescription: "Integraciones para empresas en Argentina: Mercado Pago, Tienda Nube y Mercado Libre con tu stock y ERP. Diagnóstico en 15 min.",
+    title: "Integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema de gestión",
+    lead: "Si vendés en Mercado Libre y Tienda Nube y cobrás con Mercado Pago, cada canal tiene su stock, sus pedidos y sus pagos. Los conectamos con tu sistema de gestión para que el stock sea uno solo, los pedidos entren solos y cada cobro quede cruzado con su venta.",
+    intro: "Abajo está cómo se hace y por dónde empezar. Cada página cuenta qué datos viajan, qué queda en tu sistema y qué se marca para revisar.",
+    metaTitle: "Integrar Mercado Libre y Tienda Nube con tu ERP | Puna Tech",
+    metaDescription: "Cómo integrar Mercado Libre, Tienda Nube y Mercado Pago con tu ERP o planilla: stock único, pedidos, factura ARCA y pagos cruzados. Diagnóstico en 15 min.",
+    guideTitle: "Cómo se integran Mercado Libre, Tienda Nube y Mercado Pago con tu sistema",
+    guide: [
+      {
+        title: "Qué datos viajan",
+        body: "Mercado Libre, Tienda Nube y Mercado Pago tienen API oficial y avisan con una notificación automática (webhook) cuando entra una venta, cambia una orden o se acredita un pago. Con eso viajan cuatro cosas: el stock y el precio, de tu sistema a los canales; los pedidos, de los canales a tu sistema; la factura que emitís con ARCA; y el pago que acreditó Mercado Pago, con sus comisiones y retenciones.",
+      },
+      {
+        title: "Por dónde empezar",
+        body: "Casi siempre por el stock, porque es lo que genera ventas sin mercadería, cancelaciones y reclamos. Después, que los pedidos entren solos a tu sistema y que la factura salga sola. El cruce de pagos va al final, o primero si es lo que hoy le lleva más horas a tu equipo.",
+      },
+      {
+        title: "Un solo stock para Mercado Libre y Tienda Nube",
+        body: "El error más caro de vender en dos canales es vender dos veces la última unidad. La regla es que el stock salga de un solo lugar (tu ERP, Tango, Bejerman o una planilla) y que Mercado Libre y Tienda Nube lean ese número. El cruce es por SKU: si el código de una publicación no coincide con el de tu sistema, no se actualiza a ciegas, queda marcado. El detalle de cada canal está en [integrar Mercado Libre](/es/integraciones/mercado-libre) y en [integrar Tienda Nube](/es/integraciones/tienda-nube).",
+      },
+      {
+        title: "Pedidos y factura en tu sistema",
+        body: "Cada venta entra a tu sistema como pedido, con cliente, ítems y envío, sin copiarla a mano. Si los datos fiscales cierran, la factura sale por el facturador que ya usás con ARCA y el comprobante queda atado a la venta: lo vemos en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca).",
+      },
+      {
+        title: "Pagos cruzados con cada venta",
+        body: "Lo que Mercado Pago acredita no coincide peso a peso con la venta: hay comisiones, retenciones, cuotas y devoluciones. El cruce de cada pago con su venta y su factura está en [integrar Mercado Pago](/es/integraciones/mercado-pago). Si además hay que cruzar el extracto del banco, es [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria).",
+      },
+      {
+        title: "Conector listo o integración a medida",
+        body: "Si vendés en un solo canal, con pocos productos y sin un sistema de gestión, una app de la tienda de aplicaciones de Tienda Nube o un conector estándar suele alcanzar, y te lo decimos en la llamada. A medida conviene cuando el stock sale de Tango, Bejerman o un ERP propio, cuando hay varios depósitos, combos o listas de precio por canal, o reglas que el conector no deja configurar. Si lo que no se habla es el CRM con el ERP o con las planillas, es [integración de sistemas](/es/servicios/integraciones-de-datos).",
+      },
+      {
+        title: "Qué necesitamos para arrancar",
+        body: "Que autorices la aplicación desde tu cuenta de Mercado Libre, Tienda Nube o Mercado Pago (no nos pasás la contraseña), la lista de productos con su SKU, la forma de leer y cargar datos en tu sistema (API, importación por archivo o planilla) y una persona que conozca el proceso para validar las reglas.",
+      },
+    ],
+    faqs: [
+      ["¿Se puede sincronizar el stock entre Mercado Libre y Tienda Nube?", "Sí. El stock sale de una sola fuente (tu sistema de gestión o una planilla) y los dos canales se actualizan desde ahí cuando hay una venta o un cambio. El cruce es por SKU. Si un código no coincide, no se actualiza a ciegas: queda marcado para revisar."],
+      ["¿Qué pasa si se vende la última unidad en los dos canales a la vez?", "Puede pasar si las dos ventas entran casi al mismo tiempo. Se reduce actualizando el stock apenas llega el aviso de la venta y, si querés, dejando un stock de seguridad por canal en los productos con pocas unidades. No prometemos que nunca ocurra: prometemos que quede a la vista para resolverlo."],
+      ["¿Funciona con Tango, Bejerman o un ERP propio?", "Trabajamos con lo que ya usás. Si tu sistema tiene API o importación por archivo, usamos eso. Si el stock vive en una planilla, también se puede. Lo confirmamos en la llamada antes de prometer nada."],
+      ["¿Tengo que cambiar de sistema de gestión o de plataforma?", "No. La integración conecta lo que ya tenés: tus cuentas de Mercado Libre, Tienda Nube y Mercado Pago con tu sistema actual."],
+      ["¿Necesitan mi contraseña de Mercado Libre o de Tienda Nube?", "No. Vos autorizás la aplicación desde tu cuenta, con los permisos que necesita, y podés revocar ese acceso cuando quieras."],
+      costFaq("cuántos canales y productos hay, qué datos tienen que viajar y cómo se conecta tu sistema"),
+    ],
   },
 ];
 
@@ -93,10 +142,6 @@ export const USE_CASE_STEPS: { title: string; body: string }[] = [
   },
 ];
 
-const costFaq = (detail: string): [string, string] => [
-  "¿Cuánto tarda y cuánto cuesta?",
-  `La propuesta es automatizar un proceso en 2 semanas a precio cerrado. El precio depende de ${detail}. Lo acordamos por escrito antes de empezar, después de una llamada de 15 minutos. No publicamos precios en la web porque cada proceso es distinto.`,
-];
 
 export const useCases: UseCaseContent[] = [
   {

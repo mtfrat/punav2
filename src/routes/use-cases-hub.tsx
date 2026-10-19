@@ -1,7 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
-import { ArrowRight } from "lucide-react";
-import { CalButton, PageShell, trackEvent } from "../components/marketing";
+import { ArrowRight, Compass } from "lucide-react";
+import { Accordion, CalButton, PageShell, trackEvent } from "../components/marketing";
+import { RichText } from "../components/rich-text";
 import { contactPath, copy } from "../content/site";
 import { getUseCaseHub, useCasesForHub } from "../content/use-cases";
 import { breadcrumbSchema, collectionPageSchema, createMeta } from "../lib/seo";
@@ -32,6 +33,17 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
         path: hub.path,
         items: items.map((item) => ({ name: item.cardTitle, path: item.path })),
       }),
+      ...(hub.faqs?.length
+        ? [{
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: hub.faqs.map(([question, answer]) => ({
+              "@type": "Question",
+              name: question,
+              acceptedAnswer: { "@type": "Answer", text: answer },
+            })),
+          }]
+        : []),
     ],
   });
 };
@@ -92,6 +104,33 @@ export default function UseCasesHub({ loaderData }: { loaderData: Awaited<Return
             </div>
           </div>
         </section>
+
+        {hub.guide?.length ? (
+          <section className="section soft-section" aria-labelledby="use-case-hub-guide-heading">
+            <div className="shell commercial-expand-stack">
+              <h2 id="use-case-hub-guide-heading">{hub.guideTitle}</h2>
+              {hub.guide.map((item) => (
+                <article className="commercial-h2-block" key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p><RichText text={item.body} /></p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {hub.faqs?.length ? (
+          <section className="section faq-section" id="faq">
+            <div className="shell faq-grid">
+              <header className="section-heading">
+                <p className="eyebrow">FAQ</p>
+                <h2>Preguntas frecuentes</h2>
+                <Compass aria-hidden="true" />
+              </header>
+              <Accordion items={hub.faqs} />
+            </div>
+          </section>
+        ) : null}
 
         <section className="detail-cta dark-section">
           <div className="shell">

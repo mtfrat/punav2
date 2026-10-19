@@ -546,7 +546,7 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/facturacion-electronica-arca",
     "/es/automatizaciones/conciliacion-bancaria",
   ]],
-  ["/es/integraciones", "Integraciones ML, Mercado Pago y Tienda Nube | Puna Tech", "Integraciones con Mercado Libre, Mercado Pago y Tienda Nube", [
+  ["/es/integraciones", "Integrar Mercado Libre y Tienda Nube con tu ERP | Puna Tech", "Integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema de gestión", [
     "/es/integraciones/mercado-pago",
     "/es/integraciones/tienda-nube",
     "/es/integraciones/mercado-libre",
@@ -587,6 +587,30 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   for (const linkRoute of ["/es", "/es/servicios"]) {
     const linking = await readFile(join(root, linkRoute.slice(1), "index.html"), "utf8");
     if (!linking.includes(`href="${route}"`)) failures.push(`${linkRoute}: missing internal link to hub ${route}`);
+  }
+}
+
+{
+  // 19/10: el hub de integraciones responde "integrar Mercado Libre y Tienda Nube con tu sistema" en la página.
+  const route = "/es/integraciones";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]).flatMap((node) => node["@graph"] || [node]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  if (!faq || (faq.mainEntity || []).length < 5) failures.push(`${route}: FAQPage JSON-LD missing or short`);
+  for (const q of faq?.mainEntity || []) {
+    if (!html.includes(q.name.replace(/&/g, "&amp;"))) failures.push(`${route}: FAQ question not visible: ${q.name}`);
+  }
+  for (const href of ["/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-pago", "/es/automatizaciones/facturacion-electronica-arca", "/es/servicios/integraciones-de-datos"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide missing link ${href}`);
+  }
+  if (!html.includes("Un solo stock para Mercado Libre y Tienda Nube")) failures.push(`${route}: stock guide block missing`);
+  const main = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ");
+  const words = main.split(/\s+/).filter(Boolean).length;
+  if (words < 900) failures.push(`${route}: hub copy too thin (${words} words)`);
+  for (const linkRoute of ["/es", "/es/servicios"]) {
+    const linking = await readFile(join(root, linkRoute.slice(1), "index.html"), "utf8");
+    if (!linking.includes('href="/es/integraciones" data-discover="true">integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema</a>')) failures.push(`${linkRoute}: descriptive anchor to /es/integraciones missing`);
   }
 }
 
