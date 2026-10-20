@@ -12,7 +12,7 @@ function localizedPair(en: string, es: string, lastmod?: string): SitemapItem[] 
 /**
  * <lastmod> for the static marketing pages: the last significant change to each page family's
  * main copy (YYYY-MM-DD). Header/footer/navigation edits don't count. Bump the family when its copy changes.
- * Use-case pages and hubs carry their own `updatedAt` in content/use-cases.ts; blog posts use `updated_at`.
+ * Use-case pages and hubs carry their own `updatedAt` in content/use-cases.ts; a service page can set `updatedAt` in content/catalog.ts (per locale); blog posts use `updated_at`.
  */
 export const STATIC_LASTMOD = {
   home: "2026-10-15",
@@ -35,7 +35,15 @@ export async function loader() {
   const staticItems: SitemapItem[] = [
     ...localizedPair("/", "/es", STATIC_LASTMOD.home),
     ...localizedPair(servicesHubPath("en"), servicesHubPath("es"), STATIC_LASTMOD.servicesHub),
-    ...services.en.flatMap((service, index) => localizedPair(servicePath("en", service.slug), servicePath("es", services.es[index].slug), STATIC_LASTMOD.service)),
+    // Each locale carries its own updatedAt when its copy changed alone (e.g. the ES page on 2026-10-20).
+    ...services.en.flatMap((service, index) => {
+      const en = servicePath("en", service.slug);
+      const es = servicePath("es", services.es[index].slug);
+      return [
+        { path: en, en, es, lastmod: latest(STATIC_LASTMOD.service, service.updatedAt) },
+        { path: es, en, es, lastmod: latest(STATIC_LASTMOD.service, services.es[index].updatedAt) },
+      ];
+    }),
     ...localizedPair(casesHubPath("en"), casesHubPath("es"), STATIC_LASTMOD.casesHub),
     ...caseStudies.en.flatMap((study, index) => localizedPair(casePath("en", study.slug), casePath("es", caseStudies.es[index].slug), STATIC_LASTMOD.caseStudy)),
     ...localizedPair("/blog", "/es/blog", blogHubLastmod),

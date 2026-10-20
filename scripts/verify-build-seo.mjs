@@ -145,7 +145,7 @@ const serviceGuideExpectations = [
     ["/blog/when-to-leave-zapier-n8n-for-custom-software", "When to leave Zapier or n8n for custom software"],
     ["/blog/audit-crm-integration-commercial-follow-up", "How to audit a CRM integration and commercial follow-up workflow"],
   ]],
-  ["/es/servicios/software-a-medida", "Software a medida para empresas en Argentina", "Guías relacionadas", [
+  ["/es/servicios/software-a-medida", "Desarrollo de software a medida para empresas en Argentina", "Guías relacionadas", [
     ["/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", "Cuándo dejar Zapier o n8n por software a medida"],
     ["/es/blog/auditar-integracion-crm-seguimiento-comercial", "Cómo auditar una integración CRM y el seguimiento comercial"],
   ]],
@@ -280,7 +280,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (title !== "Software a medida para empresas en Argentina | Puna Tech") failures.push(`${route}: target-query title missing (${title})`);
   if (title.length > 60) failures.push(`${route}: title is ${title.length} characters`);
   const description = metaDescription(html);
-  const expectedDescription = "Software a medida para empresas en Argentina: qué lo encarece, cuánto tarda y cuándo gana a Tango, un SaaS o n8n. Precio cerrado tras la llamada.";
+  const expectedDescription = "Software y sistemas a medida para empresas en Argentina: cuándo gana a n8n o un SaaS, cómo es el proceso y qué define costo y plazo. Precio cerrado.";
   if (description !== expectedDescription || description.length > 155 || !/precio cerrado/i.test(description)) {
     failures.push(`${route}: target-query meta description (${description.length}: ${description})`);
   }
@@ -291,7 +291,8 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "Cuánto cuesta un sistema a medida",
     "Software a medida frente a Tango, SaaS y no-code",
     "Cuándo conviene (y cuándo no)",
-    "De quién es el código",
+    "Integración con lo que ya usás",
+    "Qué recibís: código, documentación y soporte",
   ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
@@ -331,8 +332,10 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  if (questions.length < 6 || questions.length > 8) failures.push(`${route}: FAQPage should have 6 to 8 questions, found ${questions.length}`);
+  if (questions.length < 9 || questions.length > 10) failures.push(`${route}: FAQPage should have 9 or 10 questions, found ${questions.length}`);
   for (const question of [
+    "¿Qué es el desarrollo de software a medida?",
+    "¿Cómo es el proceso: diagnóstico, MVP e iteraciones?",
     "¿Cuánto cuesta el software a medida?",
     "¿Cuánto tarda?",
     "¿Quién es dueño del código?",
@@ -357,6 +360,28 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   if (!html.includes('rel="canonical" href="https://www.puna-tech.com/es/servicios/software-a-medida"')) failures.push(`${route}: canonical changed`);
   if (!html.includes('href="https://www.puna-tech.com/services/custom-software"')) failures.push(`${route}: English hreflang target changed`);
   if (JSON.stringify(nodes).match(/aggregateRating|"review"|"offers"|"price"/i)) failures.push(`${route}: JSON-LD includes invented commercial fields`);
+  // 20/10: la página responde "desarrollo de software a medida" como lo pregunta quien compra.
+  if (!html.includes("<h1>Desarrollo de software a medida para empresas en Argentina</h1>")) failures.push(`${route}: H1 is not the target query`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push(`${route}: expected a single H1`);
+  for (const stage of ["Diagnóstico (discovery).", "Propuesta a precio cerrado.", "Primer módulo (MVP).", "Puesta en producción.", "Iteraciones por etapas."]) {
+    if (!html.includes(stage)) failures.push(`${route}: process stage missing: ${stage}`);
+  }
+  for (const href of ["/es/integraciones", "/es/servicios/integraciones-de-datos", "/es/automatizaciones", "/es/blog/auditar-integracion-crm-seguimiento-comercial"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: integration section missing link ${href}`);
+  }
+  if (!html.includes('href="/es/integraciones" data-discover="true">integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema</a>')) failures.push(`${route}: descriptive anchor to /es/integraciones missing`);
+  for (const phrase of ["Documentación.", "Soporte y mantenimiento.", "Código y repositorio."]) {
+    if (!html.includes(phrase)) failures.push(`${route}: deliverables block missing ${phrase}`);
+  }
+  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 2300) failures.push(`${route}: page copy too thin (${words} words)`);
+  const english = await readFile(join(root, "services/custom-software/index.html"), "utf8");
+  for (const [page, label] of [[html, route], [english, "/services/custom-software"]]) {
+    for (const [lang, href] of [["es-AR", "https://www.puna-tech.com/es/servicios/software-a-medida"], ["en", "https://www.puna-tech.com/services/custom-software"], ["x-default", "https://www.puna-tech.com/services/custom-software"]]) {
+      if (!page.includes(`<link rel="alternate" hrefLang="${lang}" href="${href}"/>`)) failures.push(`${label}: hreflang ${lang} -> ${href} missing`);
+    }
+  }
+  if (!english.includes('rel="canonical" href="https://www.puna-tech.com/services/custom-software"')) failures.push("/services/custom-software: canonical changed");
 }
 
 for (const route of ["/es", "/es/servicios", "/es/automatizaciones", "/es/integraciones", "/es/automatizaciones/carga-de-facturas-proveedores", "/es/integraciones/mercado-pago", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/automatizar-cobranzas", "/es/automatizaciones/facturacion-electronica-arca", "/es/automatizaciones/conciliacion-bancaria", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-libre"]) {
@@ -1109,6 +1134,12 @@ else {
     }
     const locs = [...sitemap.html.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
     if (locs.length < 20) failures.push(`sitemap.xml: expected the public page set, found ${locs.length} URLs`);
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/servicios/software-a-medida</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-10-20");
+      const english = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/services/custom-software</loc>")) || "";
+      if (english.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod moved without an English copy change");
+    }
     // Every sitemap URL carries a <lastmod> date.
     for (const block of sitemap.html.split("<url>").slice(1)) {
       const loc = block.match(/<loc>([^<]+)<\/loc>/)?.[1] || "?";
