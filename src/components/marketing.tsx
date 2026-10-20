@@ -41,7 +41,7 @@ function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, pl
   }, [locale, placement, ref]);
 }
 
-export function CalButton({ locale, placement, className = "", compact = false, label, dot = false }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean }) {
+export function CalButton({ locale, placement, className = "", compact = false, label, dot = false, variant, ctaId }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean; variant?: string; ctaId?: string }) {
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLAnchorElement>(null);
   useCtaView(ref, locale, placement);
@@ -49,7 +49,13 @@ export function CalButton({ locale, placement, className = "", compact = false, 
   async function openCal(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     if (loading) return;
-    trackEvent("cta_click", { locale, placement, destination: "cal" });
+    trackEvent("cta_click", {
+      locale,
+      placement,
+      destination: "cal",
+      ...(variant ? { variant } : {}),
+      ...(ctaId ? { cta_id: ctaId } : {}),
+    });
     setLoading(true);
     try {
       const { getCalApi } = await import("@calcom/embed-react");
@@ -75,6 +81,9 @@ export function CalButton({ locale, placement, className = "", compact = false, 
       className={`button-primary ${compact ? "button-compact" : ""} ${className}`}
       aria-label={label || chromeCopy[locale].book}
       aria-busy={loading}
+      data-variant={variant}
+      data-cta-id={ctaId}
+      data-placement={placement}
     >
       {dot ? <span className="nav-dot" aria-hidden="true" /> : null}
       <span>{loading ? (locale === "en" ? "Opening calendar…" : "Abriendo calendario…") : (label || chromeCopy[locale].book)}</span>
