@@ -29,6 +29,8 @@ export interface ServiceContent {
   schemaName?: string;
   schemaServiceType?: string;
   areaServed?: { "@type": "Country"; name: string } | string[];
+  /** Last significant copy change of this page (YYYY-MM-DD), for the sitemap. Falls back to STATIC_LASTMOD.service. */
+  updatedAt?: string;
 }
 
 export interface CaseStudyContent {
@@ -345,7 +347,7 @@ export const services: Record<Locale, ServiceContent[]> = {
     {
       key: "custom-software", slug: "software-a-medida", alternateSlug: "custom-software",
       eyebrow: "Software B2B a medida · Software factory",
-      title: "Software a medida para empresas en Argentina",
+      title: "Desarrollo de software a medida para empresas en Argentina",
       description: "Software a medida es un sistema con las reglas, los roles y los datos de tu empresa, no un producto genérico. Para pymes y empresas en Argentina, le gana a Tango, a un SaaS, a una planilla y a n8n o Zapier cuando un proceso importante ya no entra ahí y alguien lo resuelve a mano todos los días.",
       outcome: "Un primer módulo en producción, a precio cerrado, con el código en manos de tu equipo.",
       problems: [
@@ -363,7 +365,8 @@ export const services: Record<Locale, ServiceContent[]> = {
       architecture: ["Experiencia", "Aplicación", "Lógica de negocio", "Modelo de datos", "Despliegue cloud"],
       relatedCase: "plataforma-edtech-web3",
       metaTitle: "Software a medida para empresas en Argentina | Puna Tech",
-      metaDescription: "Software a medida para empresas en Argentina: qué lo encarece, cuánto tarda y cuándo gana a Tango, un SaaS o n8n. Precio cerrado tras la llamada.",
+      metaDescription: "Software y sistemas a medida para empresas en Argentina: cuándo gana a n8n o un SaaS, cómo es el proceso y qué define costo y plazo. Precio cerrado.",
+      updatedAt: "2026-10-20",
       hubBlurb: "Software a medida cuando Tango, la planilla o n8n ya no alcanzan: un primer módulo, a precio cerrado.",
       breadcrumbName: "Software a medida",
       schemaName: "Software a medida",
@@ -392,10 +395,22 @@ export const services: Record<Locale, ServiceContent[]> = {
           heading: "Cómo trabajamos y en cuánto tiempo",
           body: "Puna Tech hace desarrollo de software a medida desde Buenos Aires. La oferta es un primer módulo en 2 semanas a precio cerrado. Antes de arrancar queda escrito qué entra, qué no, el precio y la fecha. Lo que alarga el plazo es la cantidad de sistemas, la calidad de los datos y cuántas excepciones hay que escribir: eso se ve en la llamada, antes de prometer una fecha. Si tu proceso no entra en 2 semanas, te lo decimos ahí, en lugar de estirar el proyecto. Si preferís dejarlo por escrito, está en [contacto](/es/contacto).",
           bullets: [
-            "Diagnóstico. Una llamada de 15 minutos: cómo funciona hoy, qué sistemas toca y dónde se traba.",
-            "Precio cerrado. Alcance, precio y fecha por escrito. Recién ahí se arranca.",
-            "Entregas por etapas. El primer módulo queda andando con tu equipo. Si hace falta el siguiente, cada etapa tiene su alcance y su fecha.",
-            "Si lo que necesitás es un sistema entero, el plazo va en la propuesta. No prometemos un sistema completo en 2 semanas.",
+            "Diagnóstico (discovery). Una llamada de 15 minutos: cómo funciona hoy, qué sistemas toca, dónde se traba y qué resultado importa. Si alcanza con lo que ya usás, te lo decimos acá.",
+            "Propuesta a precio cerrado. El alcance más chico que ya sirve, qué entra y qué no, el precio y la fecha, por escrito. Recién ahí se arranca.",
+            "Primer módulo (MVP). Pantallas, reglas y datos de ese proceso, con lo justo para que tu equipo lo use de verdad. Se construye en entregas que se pueden revisar y probar, no en una caja negra.",
+            "Puesta en producción. Queda andando con tu equipo, conectado con lo que ya usás si hay una forma segura, con el repositorio y la documentación para operarlo.",
+            "Iteraciones por etapas. Con el módulo en uso se ve qué sigue: otro flujo, un portal o más reglas. Cada etapa tiene su alcance, su precio y su fecha. Si lo que necesitás es un sistema entero, el plazo va en la propuesta. No prometemos un sistema completo en 2 semanas.",
+          ],
+        },
+        {
+          heading: "Integración con lo que ya usás",
+          body: "Un sistema a medida casi nunca vive solo. Primero vemos qué se puede conectar y recién después qué hay que construir: si una herramienta ya resuelve su parte, no la reemplazamos. La conexión se hace por una API, un archivo de importación o la base de datos, cuando hay una forma segura. Si no la hay, te lo decimos antes de prometerla. Si lo único que falta es que dos sistemas se pasen un dato, sin pantallas nuevas, no hace falta un sistema: lo vemos como [integración de sistemas](/es/servicios/integraciones-de-datos).",
+          bullets: [
+            "Tango u otro ERP o sistema de gestión. El sistema a medida lee y escribe clientes, productos, stock o comprobantes donde ya están, en lugar de duplicarlos.",
+            "Mercado Libre, Tienda Nube y Mercado Pago. Stock único, pedidos que entran solos y pagos asociados a su venta. Cómo se hace está en [integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema](/es/integraciones).",
+            "Facturación y bancos. La emisión del comprobante está en [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca) y el cruce de pagos con el extracto en [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria).",
+            "WhatsApp, mail y planillas. El pedido o el aviso que hoy alguien copia a mano puede entrar solo al sistema. Los procesos que ya automatizamos están en [automatizaciones para empresas](/es/automatizaciones).",
+            "CRM. Si el seguimiento comercial ya pasa por un CRM conectado, primero conviene revisarlo: está en [cómo auditar una integración CRM](/es/blog/auditar-integracion-crm-seguimiento-comercial).",
           ],
         },
         {
@@ -425,8 +440,15 @@ export const services: Record<Locale, ServiceContent[]> = {
           body: "Conviene cuando un proceso se repite todas las semanas, cruza varias herramientas y hoy depende de que alguien copie, revise o reenvíe a mano. También cuando ya probaste n8n, Zapier o una planilla y los permisos, las excepciones o el volumen te quedaron chicos. No conviene si el proceso cabe en Tango o en un SaaS del rubro, si cambia todas las semanas, o si nadie es dueño de él. En esos casos lo decimos en la llamada y no construimos. Si el trabajo es repetir cobranzas, facturas o pedidos y no hace falta un sistema con pantallas, lo vemos como [automatización de procesos](/es/servicios/automatizacion-ia).",
         },
         {
-          heading: "De quién es el código",
-          body: "El código es de tu empresa. El desarrollo de software a medida termina en un sistema tuyo: el repositorio, dónde está hosteado y quién tiene los accesos quedan escritos en la propuesta. No nos quedamos con una licencia. Si después querés que otro equipo lo mantenga, puede. El repo y la documentación van con la entrega.",
+          heading: "Qué recibís: código, documentación y soporte",
+          body: "El código es de tu empresa. El desarrollo de software a medida termina en un sistema tuyo, no en una licencia nuestra. Si después querés que otro equipo lo mantenga, puede.",
+          bullets: [
+            "Código y repositorio. A nombre de tu empresa. No nos quedamos con una licencia.",
+            "Hosting y accesos. Dónde está hosteado y quién tiene cada acceso queda escrito en la propuesta.",
+            "Documentación. La necesaria para operarlo y para que otro equipo lo pueda mantener. Va con la entrega.",
+            "Sistema andando. El módulo queda en producción con tu equipo usándolo, no en una demo.",
+            "Soporte y mantenimiento. Fallas, cambios chicos o una guardia se acuerdan aparte y por escrito. No están incluidos en las 2 semanas salvo que la propuesta lo diga.",
+          ],
         },
       ],
       proofStrip: [
@@ -435,6 +457,8 @@ export const services: Record<Locale, ServiceContent[]> = {
         { slug: "viralyt-inteligencia-youtube", caption: "Viralyt — inteligencia de outliers en YouTube (Lab · prueba de ejecución)" },
       ],
       faqs: [
+        ["¿Qué es el desarrollo de software a medida?", "Es construir un sistema con las reglas, los roles y los datos de tu empresa, en lugar de adaptar la operación a un producto genérico. Puede ser un primer módulo (stock, turnos, pedidos, cobranzas o un portal de clientes) conectado con lo que ya usás. El código queda a nombre de tu empresa."],
+        ["¿Cómo es el proceso: diagnóstico, MVP e iteraciones?", "Primero una llamada de 15 minutos para ver cómo funciona hoy y dónde se traba. Después, una propuesta por escrito con alcance, precio cerrado y fecha. El primer módulo (el MVP) se construye en entregas que se pueden revisar y queda en producción con tu equipo. Lo que sigue va por etapas, cada una con su alcance, su precio y su fecha."],
         ["¿Cuánto cuesta el software a medida?", "Te pasamos un precio cerrado después de una llamada de 15 minutos, cuando ya vimos qué módulo entra. No publicamos un precio de lista: lo mueven las pantallas y los roles, las reglas y excepciones, cuántos sistemas hay que conectar y cómo están los datos. Una carga de facturas y un portal de clientes no son el mismo trabajo. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
         ["¿Cuánto tarda?", "Un primer módulo lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. Lo que sigue va por etapas, con alcance y fecha en cada una. El plazo crece si hay que conectar varios sistemas, ordenar datos o escribir muchas excepciones. No prometemos un sistema completo en 2 semanas."],
         ["¿Quién es dueño del código?", "Tu empresa. El repositorio, el código y los accesos se entregan con el sistema y quedan escritos en la propuesta. Si después querés que otro equipo lo mantenga, puede."],
