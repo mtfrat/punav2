@@ -504,6 +504,40 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
 }
 
 
+// "automatizar carga de facturas": step-by-step guide + 8 FAQ on the supplier-invoice page only.
+{
+  const route = "/es/automatizaciones/carga-de-facturas-proveedores";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Automatizar carga de facturas de proveedores | Puna Tech") failures.push(`${route}: title changed (${title})`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push(`${route}: expected exactly one h1`);
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo funciona la carga automática de facturas, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. Por dónde llegan las facturas",
+    "2. Qué datos se leen de cada factura",
+    "3. Validaciones antes de cargar",
+    "4. Bandeja de revisión para las dudosas",
+    "5. Carga en tu sistema de gestión",
+    "6. IA para leer, reglas para decidir",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
+  }
+  for (const href of ["/es/automatizaciones/conciliacion-bancaria", "/es/blog/cuando-usar-ia-vs-software-deterministico"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
+  }
+  for (const question of ["¿Es lo mismo que un OCR de facturas?", "¿Se puede automatizar la carga de facturas en Excel o Google Sheets?"]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+  }
+  const faq = jsonLdBlocks(html).find((block) => block["@type"] === "FAQPage");
+  if (!faq || faq.mainEntity?.length !== 8) failures.push(`${route}: FAQPage should have 8 questions (${faq?.mainEntity?.length})`);
+  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 1400) failures.push(`${route}: page copy too thin (${words} words)`);
+  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/mercado-pago"]) {
+    const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
+    if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+  }
+}
+
 const useCaseExpectations = [
   ["/es/automatizaciones/carga-de-facturas-proveedores", "Automatizar carga de facturas de proveedores | Puna Tech", "/og/carga-de-facturas-proveedores.png"],
   ["/es/integraciones/mercado-pago", "Conciliación de pagos con Mercado Pago | Puna Tech", "/og/integracion-mercado-pago.png"],
@@ -1139,6 +1173,10 @@ else {
       if (!block.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-10-20");
       const english = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/services/custom-software</loc>")) || "";
       if (english.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod moved without an English copy change");
+    }
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-21</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-21");
     }
     // Every sitemap URL carries a <lastmod> date.
     for (const block of sitemap.html.split("<url>").slice(1)) {

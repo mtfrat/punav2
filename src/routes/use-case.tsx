@@ -139,7 +139,22 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className="section light-section">
+        {useCase.guide?.length ? (
+          <section className="section light-section" aria-labelledby="use-case-guide-heading">
+            <div className="shell commercial-expand-stack">
+              <h2 id="use-case-guide-heading">{useCase.guideTitle}</h2>
+              {useCase.guideIntro ? <p>{useCase.guideIntro}</p> : null}
+              {useCase.guide.map((item) => (
+                <article className="commercial-h2-block" key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p><RichText text={item.body} /></p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className={useCase.guide?.length ? "section soft-section" : "section light-section"}>
           <div className="shell two-column">
             <header className="section-heading">
               <p className="eyebrow">Cómo trabajamos</p>
@@ -154,7 +169,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className="section soft-section">
+        <section className={useCase.guide?.length ? "section light-section" : "section soft-section"}>
           <div className="shell two-column">
             <header className="section-heading">
               <p className="eyebrow">¿Es para vos?</p>
