@@ -27,6 +27,10 @@ export interface UseCaseContent {
   after: string[];
   howTitle: string;
   how: { title: string; body: string }[];
+  /** Optional step-by-step guide rendered after "how". Bodies accept [texto](/es/ruta) links. Only claims already on the page. */
+  guideTitle?: string;
+  guideIntro?: string;
+  guide?: { title: string; body: string }[];
   fit: string[];
   faqs: [string, string][];
   relatedService: { path: string; title: string };
@@ -147,7 +151,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "supplier-invoices",
     path: "/es/automatizaciones/carga-de-facturas-proveedores",
-    updatedAt: "2026-10-15",
+    updatedAt: "2026-10-21",
     section: "automatizaciones",
     eyebrow: "Automatización · Facturas de proveedores",
     title: "Automatizar la carga de facturas de proveedores",
@@ -178,6 +182,16 @@ export const useCases: UseCaseContent[] = [
       { title: "Conectado a tu sistema de gestión", body: "Cargamos en Tango, Bejerman, un ERP propio o una planilla, según lo que uses. Si tu sistema tiene API o importación por archivo, usamos eso. Si no, lo vemos juntos en la llamada antes de prometer nada. Emitir tus propios comprobantes A, B o C es otro flujo: [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca)." },
       { title: "Tu equipo sigue al mando", body: "La administrativa pasa de tipear a revisar excepciones. Las reglas de aprobación (montos, proveedores nuevos, diferencias) las definís vos." },
     ],
+    guideTitle: "Cómo funciona la carga automática de facturas, paso a paso",
+    guideIntro: "Automatizar la carga de facturas no es solo leer un PDF. Es todo el recorrido: desde que la factura llega hasta que queda registrada en tu sistema, con los controles en el medio.",
+    guide: [
+      { title: "1. Por dónde llegan las facturas", body: "El flujo toma las facturas de donde ya llegan hoy: una casilla de mail, una carpeta compartida o WhatsApp. No le pedís a tus proveedores que cambien nada ni que usen un portal nuevo." },
+      { title: "2. Qué datos se leen de cada factura", body: "De cada comprobante se extraen proveedor, CUIT, tipo (A, B o C), punto de venta y número, fecha, neto, IVA por alícuota, percepciones y total. Si el PDF trae el CAE, se lee como un dato más. La IA lee aunque cada proveedor use un diseño distinto." },
+      { title: "3. Validaciones antes de cargar", body: "Antes de tocar tu sistema, cada factura pasa controles con reglas: el CUIT tiene que estar en tu padrón de proveedores, neto más IVA más percepciones tiene que dar el total, la misma combinación de CUIT, tipo y número no puede estar cargada dos veces y, si la tenés, se compara contra la orden de compra o el remito." },
+      { title: "4. Bandeja de revisión para las dudosas", body: "Lo que no pasa un control no se carga solo: va a una bandeja donde alguien lo mira y lo aprueba con un clic. Las reglas de qué se revisa (montos, proveedores nuevos, diferencias) las definís vos, y queda registro de qué se leyó, qué se validó y quién aprobó." },
+      { title: "5. Carga en tu sistema de gestión", body: "Lo aprobado queda cargado en Tango, Bejerman, un ERP propio o una planilla, por API o por archivo de importación, según lo que permita tu sistema. Si después hay que cruzar el pago con esa factura, sigue en [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria)." },
+      { title: "6. IA para leer, reglas para decidir", body: "La IA resuelve la parte variable: entender cada formato de factura. Lo que tiene que ser exacto lo deciden reglas, no la IA. Por qué separamos las dos cosas está en [cuándo usar IA y cuándo software determinístico](/es/blog/cuando-usar-ia-vs-software-deterministico)." },
+    ],
     fit: [
       "Recibís decenas o cientos de facturas de proveedores por mes.",
       "La carga hoy es manual y la hacen una o dos personas.",
@@ -188,6 +202,8 @@ export const useCases: UseCaseContent[] = [
       ["¿Funciona con Tango u otro sistema de gestión?", "Trabajamos con lo que ya usás. Si el sistema tiene API o permite importar archivos, cargamos ahí directamente. Si no, buscamos la vía más segura (por ejemplo, un archivo de importación que alguien sube) y te lo decimos antes de arrancar."],
       ["¿Qué pasa si la IA lee mal un dato?", "Cada factura se valida antes de cargarse: CUIT contra tu padrón, sumas de neto, IVA y total, duplicados y, si la tenés, la orden de compra. Si algo no cierra, la factura no se carga sola: va a una bandeja de revisión."],
       ["¿Sirve si cada proveedor manda un formato distinto?", "Sí. Esa es justamente la parte donde la IA ayuda: no depende de una plantilla fija por proveedor. Igual probamos con facturas reales tuyas antes de ponerlo en producción."],
+      ["¿Es lo mismo que un OCR de facturas?", "No del todo. Un OCR clásico pasa la imagen a texto y suele necesitar una plantilla por proveedor para saber dónde está cada dato. Acá la IA entiende la factura aunque cambie el formato, y después reglas validan CUIT, sumas y duplicados antes de cargar. Lo que no cierra queda para revisión humana."],
+      ["¿Se puede automatizar la carga de facturas en Excel o Google Sheets?", "Sí. Si hoy llevás las compras en una planilla, el flujo puede dejar cada factura validada como una fila nueva, con los mismos controles y la misma bandeja de revisión. Si más adelante pasás a un sistema de gestión, se cambia el destino y el resto del flujo sigue igual."],
       costFaq("el volumen de facturas, cuántas validaciones hacen falta y cómo se conecta tu sistema"),
       ["¿Qué necesitamos de nuestro lado?", "Un lote de facturas reales (anonimizadas si preferís), acceso de prueba a tu sistema o a su importación, y una persona que conozca el proceso para validar las reglas."],
     ],
