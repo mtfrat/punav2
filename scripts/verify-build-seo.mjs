@@ -538,6 +538,34 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   }
 }
 
+// "integrar Mercado Libre con ERP": step-by-step guide on the Mercado Libre page (22/10).
+{
+  const route = "/es/integraciones/mercado-libre";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Integrar Mercado Libre con stock y ERP | Puna Tech") failures.push(`${route}: title changed (${title})`);
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo se integra Mercado Libre con tu ERP, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. Conectar la cuenta de vendedor",
+    "2. El código de producto une los dos lados",
+    "3. El stock sale de tu depósito",
+    "4. Cada orden entra a tu sistema",
+    "5. Factura electrónica de la venta",
+    "6. El cobro, la comisión y el envío",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
+  }
+  for (const href of ["/es/integraciones/tienda-nube", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-pago", "/es/automatizaciones/conciliacion-bancaria"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
+  }
+  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 1600) failures.push(`${route}: page copy too thin (${words} words)`);
+  for (const other of ["/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/facturacion-electronica-arca"]) {
+    const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
+    if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+  }
+}
+
 const useCaseExpectations = [
   ["/es/automatizaciones/carga-de-facturas-proveedores", "Automatizar carga de facturas de proveedores | Puna Tech", "/og/carga-de-facturas-proveedores.png"],
   ["/es/integraciones/mercado-pago", "Conciliación de pagos con Mercado Pago | Puna Tech", "/og/integracion-mercado-pago.png"],
@@ -764,14 +792,17 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  if (questions.length !== 8) failures.push(`${route}: FAQPage should have 8 questions, found ${questions.length}`);
   for (const question of [
     "¿Se puede sincronizar el stock de Mercado Libre y Tienda Nube?",
     "¿Puedo facturar automáticamente las ventas de Mercado Libre?",
     "¿Necesito cambiar de ERP?",
     "¿Qué es una integración de Mercado Libre con el ERP?",
+    "¿Se puede integrar Mercado Libre con Tango?",
+    "¿Qué pasa con las publicaciones con variantes o con stock en Full?",
     "¿Cuánto tarda y cuánto cuesta?",
   ]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
     if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
   }
   const service = nodes.find((node) => node["@type"] === "Service");
@@ -1177,6 +1208,10 @@ else {
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
       if (!block.includes("<lastmod>2026-10-21</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-21");
+    }
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-22</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-libre lastmod is not 2026-10-22");
     }
     // Every sitemap URL carries a <lastmod> date.
     for (const block of sitemap.html.split("<url>").slice(1)) {
