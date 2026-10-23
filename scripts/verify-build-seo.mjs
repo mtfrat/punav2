@@ -560,9 +560,41 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 1600) failures.push(`${route}: page copy too thin (${words} words)`);
-  for (const other of ["/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/facturacion-electronica-arca"]) {
+  for (const other of ["/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/facturacion-electronica-arca"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+  }
+}
+
+// "integrar Tienda Nube con ERP": step-by-step guide on the Tienda Nube page (23/10).
+{
+  const route = "/es/integraciones/tienda-nube";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Integrar Tienda Nube con stock y ERP | Puna Tech") failures.push(`${route}: title changed (${title})`);
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo se integra Tienda Nube con tu ERP, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. Autorizar la aplicación en tu tienda",
+    "2. El SKU une la tienda con tu sistema",
+    "3. El stock sale de tu depósito",
+    "4. Cada pedido entra a tu sistema",
+    "5. Precios desde tu lista",
+    "6. Factura y cobro",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
+  }
+  for (const href of ["/es/integraciones/mercado-libre", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-pago"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
+  }
+  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 1500) failures.push(`${route}: page copy too thin (${words} words)`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const questions = (nodes.find((node) => node["@type"] === "FAQPage")?.mainEntity || []).map((item) => item.name);
+  if (questions.length !== 8) failures.push(`${route}: FAQPage should have 8 questions, found ${questions.length}`);
+  for (const question of ["¿Se puede integrar Tienda Nube con Tango?", "¿Qué pasa con las variantes, los combos y los cupones?"]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
   }
 }
 
@@ -1208,6 +1240,10 @@ else {
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
       if (!block.includes("<lastmod>2026-10-21</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-21");
+    }
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/tienda-nube</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-23</lastmod>")) failures.push("sitemap.xml: /es/integraciones/tienda-nube lastmod is not 2026-10-23");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>")) || "";
