@@ -664,6 +664,77 @@ export const useCases: UseCaseContent[] = [
       { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
     ],
   },
+  {
+    key: "catalog-loading",
+    path: "/es/integraciones/carga-de-catalogo",
+    updatedAt: "2026-10-24",
+    section: "integraciones",
+    eyebrow: "Integración · Carga de catálogo",
+    title: "Carga masiva de productos a Tienda Nube, Shopify y Mercado Libre",
+    lead: "Nos pasás la lista de precios del proveedor (Excel o PDF) y las fotos. Te devolvemos el archivo listo para importar en tu tienda: títulos prolijos, SKU, precio con tu margen, stock, categorías, variantes y cada foto asociada a su producto.",
+    metaTitle: "Carga masiva de productos Tienda Nube y Shopify | Puna Tech",
+    metaDescription: "Carga masiva de productos a Tienda Nube, Shopify o Mercado Libre desde la lista del proveedor: títulos, SKU, precio con margen, stock y fotos. Argentina.",
+    serviceType: "Carga masiva de catálogo de productos a Tienda Nube, Shopify y Mercado Libre",
+    ogImage: "/og/carga-de-catalogo.png",
+    ogImageAlt: "Puna Tech: carga masiva de productos a Tienda Nube, Shopify y Mercado Libre.",
+    cardTitle: "Carga de catálogo",
+    cardBlurb: "De la lista del proveedor y las fotos a la tienda cargada, sin tipear producto por producto.",
+    example: "Por ejemplo, una tienda de bazar que recibe todos los meses la lista del proveedor en Excel, con descripciones en mayúsculas como \"SARTEN ANTIADH. 24CM C/MANGO\", precios sin IVA y fotos con nombres sueltos. Alguien copia producto por producto a la tienda, calcula el precio con calculadora y busca la foto que corresponde.",
+    before: [
+      "Copiar a mano cada producto de la lista del proveedor a la tienda.",
+      "Títulos en mayúsculas y con abreviaturas que nadie busca en Google.",
+      "Calcular el precio de venta uno por uno: IVA, margen y redondeo.",
+      "Fotos con nombres sueltos que hay que asociar a mano a cada producto.",
+    ],
+    after: [
+      "Un archivo de importación listo para Tienda Nube o Shopify, con una fila por producto o variante.",
+      "Títulos legibles, con tildes, unidades y marca, y la URL de cada producto armada.",
+      "El precio sale de una regla que acordás una vez: costo, IVA, margen y redondeo.",
+      "Cada foto asociada a su producto por código. Lo que no tiene foto, precio o stock queda en una lista para revisar.",
+    ],
+    howTitle: "Cómo lo resolvemos",
+    how: [
+      {
+        title: "Partimos de tu lista",
+        body: "Leemos la lista tal como la manda el proveedor, en Excel, CSV o PDF, con sus encabezados, rubros y formatos de precio. No te pedimos que la reordenes antes.",
+      },
+      {
+        title: "Reglas que acordás una vez",
+        body: "Definimos juntos el margen, el redondeo, cómo se arman los títulos, las categorías de tu tienda y cómo se detectan las variantes (talle, color). Con esas reglas, la próxima lista del proveedor se procesa igual.",
+      },
+      {
+        title: "Revisás antes de importar",
+        body: "Te entregamos el archivo y un reporte: duplicados, productos sin precio, sin foto o con stock dudoso. Lo que no cierra no se publica solo: sale oculto o como borrador. Si después querés que el stock y los precios se actualicen solos desde tu sistema, es [integrar Tienda Nube](/es/integraciones/tienda-nube) o [integrar Mercado Libre](/es/integraciones/mercado-libre).",
+      },
+    ],
+    guideTitle: "Cómo se hace una carga masiva de productos, paso a paso",
+    guideIntro: "Una carga masiva no es pegar la lista del proveedor en la plantilla de la tienda. Es pasar cada dato por una regla (título, precio, stock, categoría, variante, foto) para que el archivo entre sin errores y la tienda quede prolija.",
+    guide: [
+      { title: "1. Encontrar los datos en la lista", body: "Cada proveedor arma su lista distinto: código, descripción, rubro, precio de lista, stock y a veces código de barras. Primero se identifican esas columnas y se descartan los títulos, separadores y notas que no son productos." },
+      { title: "2. Títulos que se entienden y se encuentran", body: "\"SARTEN ANTIADH. 24CM C/MANGO\" pasa a \"Sartén Antiadherente 24 cm con Mango\" más la marca. Se expanden las abreviaturas, se ponen las tildes y las unidades, y con el título se arma la URL del producto (sin tildes ni eñes, como pide Tienda Nube)." },
+      { title: "3. El precio sale de una regla", body: "Si la lista viene sin IVA, se suma el IVA, después tu margen, y se redondea como prefieras (por ejemplo, a múltiplos de 100 o terminado en 99). Se acepta el formato que use el proveedor: \"$ 1.234,50\", \"18.990\" o un número suelto." },
+      { title: "4. Variantes en un solo producto", body: "Los productos que el proveedor lista por separado (el mismo tupper en rojo, verde y azul, o guantes en talle S, M y L) se agrupan en un producto con variantes, cada una con su SKU y su stock." },
+      { title: "5. Fotos asociadas por código", body: "Las fotos se cruzan con cada producto por su código, aunque el archivo se llame distinto (\"bz1002.JPG\" o \"tabla bambu BZ-1004.png\"), y se renombran con la URL del producto. En Shopify las fotos entran en el mismo archivo por URL. En Tienda Nube el archivo de productos no lleva fotos y se suben aparte, ya ordenadas." },
+      { title: "6. Importar y revisar", body: "En Tienda Nube se importa desde Productos > Importar y exportar; en Shopify, desde Productos > Importar. Antes, el reporte marca duplicados, productos sin precio o sin foto, para que nada salga publicado con un dato inventado." },
+    ],
+    fit: [
+      "Vendés por Tienda Nube, Shopify o Mercado Libre y cargás productos de una lista de proveedor.",
+      "Tenés cientos de productos para subir, o la lista cambia todos los meses.",
+      "Los títulos, precios o fotos de tu tienda quedaron desprolijos de cargas anteriores.",
+    ],
+    faqs: [
+      ["¿Se pueden cargar productos de forma masiva en Tienda Nube?", "Sí. Tienda Nube permite importar un archivo CSV desde Productos > Importar y exportar, con una fila por producto o variante. El archivo de productos no lleva fotos: se suben aparte. Nosotros armamos ese archivo desde la lista del proveedor y te dejamos las fotos ordenadas."],
+      ["¿Y en Shopify o Mercado Libre?", "Shopify importa un CSV con su plantilla oficial y puede traer las fotos por URL en el mismo archivo. Mercado Libre usa una planilla de carga masiva por categoría que se descarga desde tu cuenta; la completamos con los mismos datos normalizados."],
+      ["¿Qué necesitan de mi lado?", "La lista de precios del proveedor tal como llega (Excel, CSV o PDF), las fotos que tengas, tu margen y cómo querés redondear, y las categorías de tu tienda. No necesitamos tu usuario ni tu contraseña: el archivo lo importás vos, o nos das un acceso de colaborador si preferís que lo hagamos nosotros."],
+      ["¿Qué pasa con los productos sin foto o sin precio?", "No se inventan datos. Un producto sin precio sale oculto o como borrador, y todo lo que falta queda en un reporte para que decidas qué hacer."],
+      ["¿Puedo usarlo cada vez que el proveedor manda una lista nueva?", "Sí. Las reglas (margen, redondeo, títulos, categorías) quedan armadas, así la lista del mes siguiente se procesa igual. Si querés que el precio y el stock se actualicen solos desde tu sistema, eso es una integración, no una carga."],
+      ["¿Cuánto tarda y cuánto cuesta?", "Depende de cuántos productos y variantes son, de cómo viene la lista y de si hay fotos. Lo cerramos por escrito antes de empezar, después de ver una muestra de tu lista. No publicamos precios en la web porque cada catálogo es distinto."],
+    ],
+    relatedService: { path: "/es/servicios/integraciones-de-datos", title: "integración de sistemas" },
+    relatedPosts: [
+      { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
+    ],
+  },
 ];
 
 export function getUseCaseByPath(path: string) {

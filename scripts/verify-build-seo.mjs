@@ -637,6 +637,7 @@ const useCaseExpectations = [
   ["/es/automatizaciones/automatizar-cobranzas", "Automatizar cobranzas para empresas | Puna Tech", "/og/automatizar-cobranzas.png"],
   ["/es/integraciones/tienda-nube", "Integrar Tienda Nube con stock y ERP | Puna Tech", "/og/integracion-tienda-nube.png"],
   ["/es/integraciones/mercado-libre", "Integrar Mercado Libre con stock y ERP | Puna Tech", "/og/integracion-mercado-libre.png"],
+  ["/es/integraciones/carga-de-catalogo", "Carga masiva de productos Tienda Nube y Shopify | Puna Tech", "/og/carga-de-catalogo.png"],
   ["/es/automatizaciones/facturacion-electronica-arca", "Automatizar facturación electrónica ARCA | Puna Tech", "/og/facturacion-electronica-arca.png"],
   ["/es/automatizaciones/conciliacion-bancaria", "Conciliación bancaria automática para pymes | Puna Tech", "/og/conciliacion-bancaria.png"],
 ];
@@ -701,6 +702,7 @@ const useCaseHubExpectations = [
     "/es/integraciones/mercado-pago",
     "/es/integraciones/tienda-nube",
     "/es/integraciones/mercado-libre",
+    "/es/integraciones/carga-de-catalogo",
   ]],
 ];
 for (const [route, title, heading, children] of useCaseHubExpectations) {
