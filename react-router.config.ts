@@ -46,6 +46,7 @@ const marketingRoutes = [
   "/es/automatizaciones/conciliacion-bancaria",
   "/es/integraciones/tienda-nube",
   "/es/integraciones/mercado-libre",
+  "/es/integraciones/carga-de-catalogo",
 ];
 
 export default {
