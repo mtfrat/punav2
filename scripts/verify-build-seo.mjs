@@ -532,7 +532,7 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   if (!faq || faq.mainEntity?.length !== 8) failures.push(`${route}: FAQPage should have 8 questions (${faq?.mainEntity?.length})`);
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 1400) failures.push(`${route}: page copy too thin (${words} words)`);
-  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/automatizar-cobranzas", "/es/integraciones/mercado-pago"]) {
+  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/automatizar-cobranzas"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
   }
@@ -563,6 +563,38 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   for (const other of ["/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/facturacion-electronica-arca"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+  }
+}
+
+// "conciliación de pagos Mercado Pago": step-by-step guide on the Mercado Pago page (24/10).
+{
+  const route = "/es/integraciones/mercado-pago";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Conciliación de pagos con Mercado Pago | Puna Tech") failures.push(`${route}: title changed (${title})`);
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo se concilian los pagos de Mercado Pago con tus facturas, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. Conectar la cuenta sin compartir tu contraseña",
+    "2. Cada cobro llega solo",
+    "3. Bruto, comisiones, retenciones y neto",
+    "4. Cada pago con su factura o pedido",
+    "5. Fecha de cobro y fecha de acreditación",
+    "6. Devoluciones, contracargos y tu sistema",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
+  }
+  for (const href of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
+  }
+  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 1550) failures.push(`${route}: page copy too thin (${words} words)`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  const questions = (nodes.find((node) => node["@type"] === "FAQPage")?.mainEntity || []).map((item) => item.name);
+  if (questions.length !== 8) failures.push(`${route}: FAQPage should have 8 questions, found ${questions.length}`);
+  for (const question of ["¿Por qué lo que acredita Mercado Pago no coincide con lo que vendí?", "¿Se puede conciliar Mercado Pago con Tango?"]) {
+    if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
+    if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
   }
 }
 
@@ -1248,6 +1280,10 @@ else {
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>")) || "";
       if (!block.includes("<lastmod>2026-10-22</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-libre lastmod is not 2026-10-22");
+    }
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-pago</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-24</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-pago lastmod is not 2026-10-24");
     }
     // Every sitemap URL carries a <lastmod> date.
     for (const block of sitemap.html.split("<url>").slice(1)) {
