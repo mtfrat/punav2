@@ -1320,3 +1320,8 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .article-aside-solutions ul { margin: 0.4rem 0 0; padding-left: 1rem; display: grid; gap: 0.4rem; font-size: 0.85rem; }
 .article-aside-solutions a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 @media (max-width: 560px) { .site-header .desktop-brief { display: none; } }
+
+/* /es/servicios — cómo elegir + cómo trabajamos (2026-10-25) */
+.services-hub-guide-intro { margin: 0; max-width: 52rem; color: var(--ink-soft); line-height: 1.55; }
+.services-hub-steps { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.9rem; max-width: 52rem; color: var(--ink-soft); line-height: 1.55; }
+.services-hub-steps strong { color: var(--ink); }

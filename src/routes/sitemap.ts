@@ -1,4 +1,4 @@
-import { caseStudies, casePath, casesHubPath, servicePath, services, servicesHubPath, SITE_URL } from "../content/site";
+import { caseStudies, casePath, casesHubPath, servicePath, services, servicesHubGuideEs, servicesHubPath, SITE_URL } from "../content/site";
 import { useCaseHubs, useCases } from "../content/use-cases";
 import { getPublishedPosts } from "../lib/posts.server";
 
@@ -34,7 +34,9 @@ export async function loader() {
   const blogHubLastmod = latest(STATIC_LASTMOD.blogHub, ...english.map((post) => post.updated_at), ...spanish.map((post) => post.updated_at));
   const staticItems: SitemapItem[] = [
     ...localizedPair("/", "/es", STATIC_LASTMOD.home),
-    ...localizedPair(servicesHubPath("en"), servicesHubPath("es"), STATIC_LASTMOD.servicesHub),
+    // The ES hub carries its own updatedAt (2026-10-25: cómo elegir + cómo trabajamos + FAQ); EN unchanged.
+    { path: servicesHubPath("en"), en: servicesHubPath("en"), es: servicesHubPath("es"), lastmod: STATIC_LASTMOD.servicesHub },
+    { path: servicesHubPath("es"), en: servicesHubPath("en"), es: servicesHubPath("es"), lastmod: latest(STATIC_LASTMOD.servicesHub, servicesHubGuideEs.updatedAt) },
     // Each locale carries its own updatedAt when its copy changed alone (e.g. the ES page on 2026-10-20).
     ...services.en.flatMap((service, index) => {
       const en = servicePath("en", service.slug);

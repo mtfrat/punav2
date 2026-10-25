@@ -140,6 +140,30 @@ for (const [route, heading, lead, items] of serviceHubExpectations) {
     failures.push(`${route}: ItemList includes invented commercial fields`);
   }
 }
+// /es/servicios (2026-10-25): "cómo elegir" guide (4 blocks), "cómo trabajamos" (4 steps), FAQ 6 visible + FAQPage JSON-LD; EN hub without FAQ.
+{
+  const html = await readFile(join(root, "es/servicios", "index.html"), "utf8");
+  if (!html.includes("Software a medida, automatización o integración: cómo elegir")) failures.push("/es/servicios: cómo elegir heading missing");
+  if (!html.includes("Cómo trabajamos en los tres servicios")) failures.push("/es/servicios: cómo trabajamos heading missing");
+  const h3 = (html.match(/<article class="commercial-h2-block"><h3>/g) || []).length;
+  if (h3 !== 4) failures.push(`/es/servicios: expected 4 cómo elegir blocks, found ${h3}`);
+  const steps = (html.split('class="services-hub-steps"')[1] || "").split("</ol>")[0].match(/<li>/g) || [];
+  if (steps.length !== 4) failures.push(`/es/servicios: expected 4 steps, found ${steps.length}`);
+  for (const href of ["/es/servicios/integraciones-de-datos", "/es/servicios/automatizacion-ia", "/es/servicios/software-a-medida", "/es/integraciones", "/es/automatizaciones", "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`/es/servicios: missing internal link ${href}`);
+  }
+  const nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]);
+  const faq = nodes.find((node) => node["@type"] === "FAQPage");
+  if (!faq || faq.mainEntity?.length !== 6) failures.push(`/es/servicios: expected FAQPage with 6 questions, found ${faq?.mainEntity?.length ?? 0}`);
+  for (const question of faq?.mainEntity || []) {
+    const visible = question.name.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    if (!html.includes(visible)) failures.push(`/es/servicios: FAQ question not visible: ${question.name}`);
+  }
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push("/es/servicios: expected exactly one H1");
+  if (JSON.stringify(faq || {}).match(/\$\s?\d|USD|ARS|clientes satisfechos|%/)) failures.push("/es/servicios: FAQ includes prices or metrics");
+  const en = await readFile(join(root, "services", "index.html"), "utf8");
+  if (en.includes('"FAQPage"')) failures.push("/services: EN hub should not carry the ES FAQ");
+}
 const serviceGuideExpectations = [
   ["/services/custom-software", "Custom software for operations that need their own product.", "Related guides", [
     ["/blog/when-to-leave-zapier-n8n-for-custom-software", "When to leave Zapier or n8n for custom software"],
@@ -1284,6 +1308,12 @@ else {
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-pago</loc>")) || "";
       if (!block.includes("<lastmod>2026-10-24</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-pago lastmod is not 2026-10-24");
+    }
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/servicios</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-25</lastmod>")) failures.push("sitemap.xml: /es/servicios lastmod is not 2026-10-25");
+      const en = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/services</loc>")) || "";
+      if (en.includes("<lastmod>2026-10-25</lastmod>")) failures.push("sitemap.xml: /services lastmod should stay unchanged");
     }
     // Every sitemap URL carries a <lastmod> date.
     for (const block of sitemap.html.split("<url>").slice(1)) {
