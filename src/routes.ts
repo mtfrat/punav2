@@ -37,6 +37,7 @@ export default [
   route("sitemap.xml", "./routes/sitemap.ts"),
   route("llms.txt", "./routes/llms.ts"),
   route("llms-full.txt", "./routes/llms-full.ts"),
+  route("puna.md", "./routes/puna-md.ts"),
   route("api/lead", "./routes/api-lead.ts"),
   route("api/chat", "./routes/api-chat.ts"),
   route("api/webhooks/cloudinary/reel-render", "./routes/api-cloudinary-reel-webhook.ts"),

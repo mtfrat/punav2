@@ -24,7 +24,8 @@
     "nightshift": "node nightshift/runner.mjs",
     "nightshift:dry-run": "node nightshift/runner.mjs --dry-run",
     "test:nightshift": "node nightshift/tests/test-nightshift.mjs",
-    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run test:art-variety && npm run test:editorial && npm run test:seo-metadata && npm run build && npm run test:worker-bundle && npm run test:seo"
+    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run test:art-variety && npm run test:editorial && npm run test:seo-metadata && npm run test:llms && npm run build && npm run test:worker-bundle && npm run test:seo",
+    "test:llms": "node --experimental-strip-types scripts/test-llms.mjs"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

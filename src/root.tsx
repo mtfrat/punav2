@@ -25,6 +25,7 @@ export const links: LinksFunction = () => [
   { rel: "manifest", href: "/site.webmanifest?v=20260827" },
   { rel: "author", type: "text/markdown", title: "LLMs Text Protocol", href: "/llms.txt" },
   { rel: "alternate", type: "text/markdown", title: "Full LLMs Technical Specification", href: "/llms-full.txt" },
+  { rel: "alternate", type: "text/markdown", title: "Puna Tech for AI assistants", href: "/puna.md" },
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
