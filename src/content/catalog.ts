@@ -568,8 +568,8 @@ export const servicesHubCopy = {
     } as Record<string, string>,
   },
   es: {
-    metaTitle: "Software, automatización e integraciones | Puna Tech",
-    metaDescription: "Software a medida, automatización de procesos e integración de sistemas para operaciones B2B—entrega factory que tu equipo pueda operar.",
+    metaTitle: "Software a medida, automatización e integración | Puna Tech",
+    metaDescription: "Software a medida, automatización de procesos o integración de sistemas: cuál necesita tu pyme, cuánto tarda y cómo trabajamos. Diagnóstico en 15 min.",
     eyebrow: "Tres capacidades enfocadas",
     title: "Software a medida, automatización e integraciones para operaciones B2B.",
     lead: "Empezamos por el cuello de botella, no por la tecnología.",
@@ -1314,3 +1314,65 @@ export function getService(locale: Locale, slug: string) {
 export function getCaseStudy(locale: Locale, slug: string) {
   return caseStudies[locale].find((study) => study.slug === slug);
 }
+
+/**
+ * /es/servicios — answer "¿software a medida, automatización o integración: qué necesita mi empresa?" (2026-10-25).
+ * Only claims already made on the service pages (2 semanas a precio cerrado, llamada de 15 min, código de tu empresa, sin precio de lista).
+ */
+export const servicesHubGuideEs = {
+  updatedAt: "2026-10-25",
+  chooseTitle: "Software a medida, automatización o integración: cómo elegir",
+  chooseIntro:
+    "Los tres servicios resuelven problemas distintos. La forma rápida de elegir es mirar qué se hace a mano hoy y dónde se traba. Si no está claro, lo vemos en la llamada de 15 minutos y te decimos cuál conviene, o si alcanza con lo que ya usás.",
+  choose: [
+    {
+      title: "Si el mismo dato se carga dos veces: integración de sistemas",
+      body: "El cliente está en el CRM y hay que volver a cargarlo en el ERP. El pedido de la tienda no descuenta el stock solo. El pago de Mercado Pago hay que buscarlo a mano para asociarlo a la factura. Ahí no hace falta un sistema nuevo: hace falta que los que ya tenés se pasen el dato. Es [integración de sistemas](/es/servicios/integraciones-de-datos), y los casos más comunes están en cómo [integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema](/es/integraciones).",
+    },
+    {
+      title: "Si alguien repite la misma tarea todas las semanas: automatización de procesos",
+      body: "Cargar facturas de proveedores, pasar pedidos de WhatsApp al sistema, perseguir cobranzas, cruzar el extracto del banco con las facturas o armar el mismo reporte cada lunes. El trabajo ya está definido; lo que sobra es la persona copiando y pegando. Es [automatización de procesos](/es/servicios/automatizacion-ia): reglas para lo que tiene que ser exacto, IA donde hay que leer un PDF o un mensaje, y aprobación humana en los pasos sensibles. Los procesos que más automatizamos están en [automatizaciones](/es/automatizaciones).",
+    },
+    {
+      title: "Si la planilla, Tango o el SaaS ya no alcanzan: software a medida",
+      body: "Hace falta una pantalla para el equipo, roles y permisos por persona, un portal para clientes o reglas propias del negocio que ningún producto genérico tiene. Ahí conviene construir un primer módulo conectado con lo que ya usás. Es [software a medida](/es/servicios/software-a-medida), y el código queda a nombre de tu empresa. Si hoy todo vive en un canvas de n8n o Zapier que alguien tiene que cuidar, el criterio está en [cuándo dejar Zapier o n8n por software a medida](/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida).",
+    },
+    {
+      title: "Si son las tres cosas a la vez: se empieza por una",
+      body: "Es lo más común: datos duplicados, tareas repetidas y una planilla que ya no da más. No se resuelve todo junto. Se elige el proceso que más horas o errores cuesta, se resuelve ese primero y lo que sigue va por etapas, cada una con su alcance, su precio y su fecha.",
+    },
+  ],
+  processTitle: "Cómo trabajamos en los tres servicios",
+  process: [
+    "Diagnóstico. Una llamada de 15 minutos: cómo funciona hoy, qué sistemas toca, dónde se traba y qué conviene resolver primero. Si alcanza con lo que ya usás, te lo decimos ahí.",
+    "Propuesta por escrito. Qué entra, qué no, el precio cerrado y la fecha, antes de arrancar. No publicamos un precio de lista porque cada proceso es distinto.",
+    "Primer entregable en 2 semanas. Un proceso automatizado, una integración o un primer módulo, si entra en ese alcance, con datos reales tuyos. Si no entra en 2 semanas, te lo decimos en la llamada en lugar de estirar el proyecto.",
+    "Lo que sigue, por etapas. Con lo primero en uso se ve qué conviene después. Cada etapa tiene su alcance, su precio y su fecha. El sistema, el repositorio y la documentación quedan en manos de tu equipo.",
+  ],
+  faqs: [
+    [
+      "¿Qué diferencia hay entre software a medida, automatización de procesos e integración de sistemas?",
+      "La integración hace que los sistemas que ya usás se pasen el dato solos (CRM con ERP, tienda con stock, Mercado Pago con facturas). La automatización hace que una tarea repetida, como cargar facturas o pasar pedidos de WhatsApp, se haga sola con reglas y revisión humana. El software a medida es construir pantallas, roles y reglas propias cuando la planilla, Tango o un SaaS ya no alcanzan.",
+    ],
+    [
+      "¿Cuál conviene hacer primero?",
+      "El proceso que más horas o errores le cuesta hoy a tu equipo. Muchas veces es una integración o una automatización chica antes que un sistema nuevo. En la llamada de 15 minutos vemos cuál conviene y si alcanza con lo que ya usás.",
+    ],
+    [
+      "¿Cuánto tarda?",
+      "Un proceso, una integración o un primer módulo acotado lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. Si hay que conectar varios sistemas o los datos están desordenados, te lo decimos en la llamada y lo partimos en etapas. No prometemos resolver toda la operación en 2 semanas.",
+    ],
+    [
+      "¿Cuánto cuesta?",
+      "Te pasamos un precio cerrado después de la llamada de 15 minutos, cuando ya vimos qué entra. No publicamos un precio de lista ni un rango: lo mueven la cantidad de sistemas, las excepciones y cómo están los datos. Antes de arrancar queda escrito qué entra, qué no y cuánto sale.",
+    ],
+    [
+      "Ya uso Zapier, n8n o Make. ¿Me sirve igual?",
+      "Si el paso es simple y alguien mira la cadena, muchas veces alcanza con eso y te lo decimos. Conviene pasar a una automatización con reglas o a software a medida cuando el dato se pierde, se duplica, hay excepciones o el volumen ya no entra.",
+    ],
+    [
+      "¿Trabajan con pymes en Argentina? ¿Quién es dueño del código?",
+      "Sí, trabajamos desde Buenos Aires con pymes y empresas que tienen un proceso que ya no entra en lo que usan, sin necesidad de un equipo de sistemas propio. El código, el repositorio y los accesos son de tu empresa y quedan escritos en la propuesta.",
+    ],
+  ] as Array<[string, string]>,
+};

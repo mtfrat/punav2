@@ -21,6 +21,7 @@ export {
   legacyPostRedirects,
   services,
   servicesHubCopy,
+  servicesHubGuideEs,
 } from "./catalog.ts";
 import { chromeCopy } from "./chrome.ts";
 
