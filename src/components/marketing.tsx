@@ -290,7 +290,10 @@ interface LeadActionData { ok?: boolean; error?: string; fieldErrors?: Record<st
 
 export function ProjectBrief({ locale, placement = "final_cta" }: { locale: Locale; placement?: string }) {
   const fetcher = useFetcher<LeadActionData>();
+  const location = useLocation();
   const started = useRef(false);
+  const [startedAt, setStartedAt] = useState("");
+  useEffect(() => { setStartedAt(String(Date.now())); }, []);
   const busy = fetcher.state !== "idle";
   const success = fetcher.data?.ok;
   const fieldErrors = fetcher.data?.fieldErrors || {};
@@ -316,6 +319,9 @@ export function ProjectBrief({ locale, placement = "final_cta" }: { locale: Loca
   return (
     <fetcher.Form method="post" action="/api/lead" className="brief-form" onFocus={recordStart}>
       <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="page" value={location.pathname} />
+      <input type="hidden" name="placement" value={placement} />
+      <input type="hidden" name="started_at" value={startedAt} />
       <div className="honeypot" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <div className="field-grid">
         <label><span>{locale === "en" ? "Name" : "Nombre"}</span><input name="name" autoComplete="name" required maxLength={80} aria-invalid={!!fieldErrors.name} aria-describedby={fieldErrors.name ? "brief-name-error" : undefined} />{fieldErrors.name && <small id="brief-name-error" className="field-error">{fieldErrors.name}</small>}</label>
