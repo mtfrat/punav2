@@ -175,7 +175,8 @@ assert.match(arca.metaDescription, /CUIT/);
 assert.match(arca.metaDescription, /A, B y C/);
 assert.match(arca.metaDescription, /ERP/);
 assert.match(arca.metaDescription, /stock/);
-assert.equal(arca.faqs.length >= 5 && arca.faqs.length <= 6, true);
+assert.equal(arca.faqs.length, 8);
+assert.match(arca.metaDescription, /CAE/);
 assert.ok(arca.faqs.some(([question]) => question.includes("facturación electrónica")));
 
 assert.equal(casesHubCopy.es.metaTitle, "Casos de software y automatización en Argentina | Puna Tech");

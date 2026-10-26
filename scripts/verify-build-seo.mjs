@@ -584,10 +584,33 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 1600) failures.push(`${route}: page copy too thin (${words} words)`);
-  for (const other of ["/es/automatizaciones/pedidos-por-whatsapp", "/es/automatizaciones/facturacion-electronica-arca"]) {
+  for (const other of ["/es/automatizaciones/pedidos-por-whatsapp"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
   }
+}
+
+// "automatizar facturación electrónica ARCA": step-by-step guide on the ARCA page (26/10).
+{
+  const route = "/es/automatizaciones/facturacion-electronica-arca";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo se automatiza la facturación electrónica de ARCA, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. La venta que dispara la factura",
+    "2. CUIT y condición frente al IVA",
+    "3. Tipo de comprobante y punto de venta",
+    "4. Neto, IVA y total que cierran",
+    "5. Emisión y CAE",
+    "6. El número vuelve a la venta",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
+  }
+  for (const href of ["/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/integraciones/mercado-pago", "/es/automatizaciones/conciliacion-bancaria", "/es/blog/cuando-usar-ia-vs-software-deterministico"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
+  }
+  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 1600) failures.push(`${route}: page copy too thin (${words} words)`);
+  if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
 }
 
 // "conciliación de pagos Mercado Pago": step-by-step guide on the Mercado Pago page (24/10).
@@ -911,7 +934,7 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   if (title !== "Automatizar facturación electrónica ARCA | Puna Tech") failures.push(`${route}: title mismatch (${title})`);
   if (title.length < 45 || title.length > 60 || !title.endsWith(" | Puna Tech")) failures.push(`${route}: title length ${title.length} is outside 45-60`);
   const description = metaDescription(html);
-  if (!description.includes("CUIT") || !description.includes("A, B y C") || !description.includes("ERP") || !description.includes("stock") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min") || description.length < 120 || description.length > 160) {
+  if (!description.includes("CUIT") || !description.includes("CAE") || !description.includes("A, B y C") || !description.includes("ERP") || !description.includes("stock") || !description.includes("pymes") || !description.includes("Argentina") || !description.includes("15 min") || description.length < 120 || description.length > 160) {
     failures.push(`${route}: meta description is not query-led (${description.length}: ${description})`);
   }
   const ogTitle = metaContent(html, "property", "og:title");
@@ -942,8 +965,10 @@ for (const [route, title, heading, children] of useCaseHubExpectations) {
   }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  if (questions.length !== 8) failures.push(`${route}: FAQPage should have 8 questions, found ${questions.length}`);
   for (const question of [
+    "¿Qué es el CAE de una factura electrónica?",
+    "¿Cómo se anula una factura electrónica emitida por error?",
     "¿Se puede automatizar la facturación electrónica de ARCA?",
     "¿Cómo integrar la facturación electrónica con un ERP en Argentina?",
     "¿Qué comprobante corresponde, A, B o C?",
@@ -1304,6 +1329,10 @@ else {
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>")) || "";
       if (!block.includes("<lastmod>2026-10-22</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-libre lastmod is not 2026-10-22");
+    }
+    {
+      const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/facturacion-electronica-arca</loc>")) || "";
+      if (!block.includes("<lastmod>2026-10-26</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/facturacion-electronica-arca lastmod is not 2026-10-26");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-pago</loc>")) || "";
