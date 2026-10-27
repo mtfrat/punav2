@@ -3,6 +3,8 @@
  * Pure orchestration with injected storage and alert so it can be unit tested.
  */
 
+import { matchBlocklist, type BlocklistReason } from "./lead-spam.ts";
+
 export const LEAD_LIMITS = {
   nameMax: 80,
   emailMax: 160,
@@ -41,7 +43,7 @@ export interface LeadRecord {
   consented_at: string;
 }
 
-export type SpamReason = "honeypot" | "too_fast" | "too_many_links";
+export type SpamReason = "honeypot" | "too_fast" | "too_many_links" | BlocklistReason;
 
 export interface LeadSubmissionDeps {
   /** Returns "stored", "unconfigured" (no DB credentials) or "error". */
@@ -49,6 +51,8 @@ export interface LeadSubmissionDeps {
   /** Must never throw; result is ignored by the form response. */
   sendAlert: (lead: LeadFields & { stored: boolean; receivedAt: Date }) => Promise<unknown>;
   now?: () => Date;
+  /** Overrides process.env for LEAD_SPAM_DOMAINS (tests). */
+  spamEnv?: { LEAD_SPAM_DOMAINS?: string };
   referer?: string | null;
   logger?: Pick<Console, "info" | "warn" | "error">;
 }
@@ -74,7 +78,7 @@ function cleanPath(value: string): string {
   }
 }
 
-export function detectSpam(form: FormData, now: Date, fields: Pick<LeadFields, "name" | "company" | "problem">): SpamReason | null {
+export function detectSpam(form: FormData, now: Date, fields: Pick<LeadFields, "name" | "company" | "problem"> & { email?: string }, env?: { LEAD_SPAM_DOMAINS?: string }): SpamReason | null {
   if (String(form.get("website") || "").length > 0) return "honeypot";
   const startedAt = Number(form.get("started_at"));
   // Only enforced when the client-side timestamp is present and sane (JS ran); a missing value never blocks a lead.
@@ -83,6 +87,8 @@ export function detectSpam(form: FormData, now: Date, fields: Pick<LeadFields, "
     if (elapsed >= 0 && elapsed < LEAD_LIMITS.minFillMs) return "too_fast";
   }
   if (countLinks(fields.name, fields.company, fields.problem) > LEAD_LIMITS.maxLinks) return "too_many_links";
+  const blocked = matchBlocklist({ name: fields.name, email: fields.email ?? "", company: fields.company, problem: fields.problem }, env);
+  if (blocked) return blocked;
   return null;
 }
 
@@ -100,7 +106,7 @@ export async function handleLeadSubmission(form: FormData, deps: LeadSubmissionD
   const placement = String(form.get("placement") || "").replace(/[^a-z0-9_-]/gi, "").slice(0, LEAD_LIMITS.placementMax);
 
   // Bots get a fake success and nothing is stored or sent.
-  const spam = detectSpam(form, now, { name, company, problem });
+  const spam = detectSpam(form, now, { name, email, company, problem }, deps.spamEnv);
   if (spam) {
     logger.warn(`lead dropped as spam: ${spam}`);
     return { status: 200, body: { ok: true }, spam };

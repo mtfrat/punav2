@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { buildLeadAlertEmail, DEFAULT_LEAD_ALERT_FROM, DEFAULT_LEAD_ALERT_TO, escapeHtml, formatArt, RESEND_ENDPOINT, sendLeadAlert } from "../src/lib/lead-alert.ts";
+import { matchBlocklist, parseDomainList, SPAM_EMAIL_DOMAINS, SPAM_TEXT_PATTERNS } from "../src/lib/lead-spam.ts";
 import { countLinks, handleLeadSubmission, LEAD_LIMITS } from "../src/lib/lead-form.ts";
 
 const NOW = new Date("2026-10-25T23:30:00.000Z"); // 20:30 ART
@@ -230,6 +231,64 @@ test("end to end: no key → form still succeeds and alert is skipped", async ()
   assert.deepEqual(result.body, { ok: true });
   assert.equal(calls.stored.length, 1);
   assert.deepEqual(logs, ["lead alert skipped: no key"]);
+});
+
+async function assertSpam(overrides, reason, spamEnv) {
+  const { deps, calls } = makeDeps(spamEnv ? { spamEnv } : {});
+  const result = await handleLeadSubmission(makeForm(overrides), deps);
+  assert.equal(result.status, 200, JSON.stringify(overrides));
+  assert.deepEqual(result.body, { ok: true });
+  assert.equal(result.spam, reason, JSON.stringify(overrides));
+  assert.equal(calls.stored.length + calls.alerts.length, 0, "spam must not be stored or alerted");
+}
+
+test("blocklist: sender domain search-puna-tech.com, its subdomains and exact address", async () => {
+  await assertSpam({ email: "domains@search-puna-tech.com" }, "blocked_sender_address");
+  await assertSpam({ email: "Domains@Search-Puna-Tech.com" }, "blocked_sender_address");
+  await assertSpam({ email: "anyone@search-puna-tech.com" }, "blocked_sender_domain");
+  await assertSpam({ email: "x@mail.search-puna-tech.com" }, "blocked_sender_domain");
+});
+
+test("blocklist: lookalike sender domains that are not blocked still pass", async () => {
+  for (const email of ["a@puna-tech.com", "a@notsearch-puna-tech.com", "a@search-puna-tech.com.ar", "a@gmail.com"]) {
+    const { deps, calls } = makeDeps();
+    const result = await handleLeadSubmission(makeForm({ email }), deps);
+    assert.equal(result.spam, undefined, email);
+    assert.equal(calls.stored.length, 1, email);
+  }
+});
+
+test("blocklist: searchregister.pro mentions in name/company/message (any form)", async () => {
+  await assertSpam({ problem: "Registre su sitio en searchregister.pro para aparecer en Google ahora." }, "blocked_domain_mention");
+  await assertSpam({ problem: "Visit https://www.searchregister.pro/invoice for details of the listing." }, "blocked_domain_mention");
+  await assertSpam({ company: "SearchRegister.PRO" }, "blocked_domain_mention");
+  await assertSpam({ name: "admin@searchregister.pro" }, "blocked_domain_mention");
+  await assertSpam({ problem: "Escribinos a contacto@search-puna-tech.com para renovar el dominio ya." }, "blocked_domain_mention");
+});
+
+test("blocklist: 'Search Index' pattern, case-insensitive, in name/company/message", async () => {
+  await assertSpam({ problem: "Your listing in the Web Search Index expires soon, please renew." }, "blocked_text_pattern");
+  await assertSpam({ problem: "inscripcion en el SEARCH INDEX anual para su empresa, gracias" }, "blocked_text_pattern");
+  await assertSpam({ company: "Web search-index Ltd" }, "blocked_text_pattern");
+  await assertSpam({ name: "Search Index Team" }, "blocked_text_pattern");
+});
+
+test("blocklist: LEAD_SPAM_DOMAINS env extends sender and mention matching", async () => {
+  assert.deepEqual(parseDomainList(" Bad.com, @evil.net ,,"), ["bad.com", "evil.net"]);
+  const env = { LEAD_SPAM_DOMAINS: "bad.com, evil.net" };
+  await assertSpam({ email: "x@bad.com" }, "blocked_sender_domain", env);
+  await assertSpam({ email: "x@sub.evil.net" }, "blocked_sender_domain", env);
+  await assertSpam({ problem: "Mirá evil.net para ver una oferta muy buena de dominios." }, "blocked_domain_mention", env);
+  // Without the env, the same lead is fine.
+  const { deps, calls } = makeDeps({ spamEnv: {} });
+  assert.equal((await handleLeadSubmission(makeForm({ email: "x@bad.com" }), deps)).status, 200);
+  assert.equal(calls.stored.length, 1);
+});
+
+test("blocklist: exports are plain arrays and a normal lead matches nothing", () => {
+  assert.ok(Array.isArray(SPAM_EMAIL_DOMAINS) && SPAM_EMAIL_DOMAINS.includes("search-puna-tech.com"));
+  assert.ok(Array.isArray(SPAM_TEXT_PATTERNS) && SPAM_TEXT_PATTERNS.every((p) => p instanceof RegExp));
+  assert.equal(matchBlocklist({ name: "Ana", email: "ana@empresa.com", company: "Empresa SA", problem: "Necesitamos automatizar la conciliación bancaria de Mercado Pago." }, {}), null);
 });
 
 let failed = 0;
