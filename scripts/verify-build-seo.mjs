@@ -214,8 +214,10 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
   try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  if (questions.length < 5 || questions.length > 6) failures.push(`${route}: FAQPage should have 5 or 6 questions, found ${questions.length}`);
+  if (questions.length !== 8) failures.push(`${route}: FAQPage should have 8 questions, found ${questions.length}`);
   for (const question of [
+    "¿Qué proceso conviene automatizar primero?",
+    "¿Hay que cambiar de sistema para automatizar un proceso?",
     "¿Qué es la automatización de procesos para una empresa?",
     "¿Qué procesos se pueden automatizar en una pyme argentina?",
     "¿Cuánto tarda automatizar un proceso?",
@@ -240,8 +242,19 @@ for (const [route, heading, label, guides] of serviceGuideExpectations) {
     "Cuándo conviene a medida y cuándo alcanza Make, n8n o Zapier",
     "Qué hace subir el costo de automatizar un proceso",
     "Cuándo conviene (y cuándo todavía no)",
+    "Qué proceso conviene automatizar primero",
+    "Cómo funciona un proceso automatizado, paso a paso",
   ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
+  }
+  // 27/10: "qué proceso automatizar primero" + flujo paso a paso (entrada → lectura → validación → revisión → registro → aviso).
+  for (const step of ["1. Entrada.", "2. Lectura.", "3. Validación con reglas.", "4. Revisión humana.", "5. Registro.", "6. Aviso si algo falla."]) {
+    if (!html.includes(step)) failures.push(`${route}: missing flow step ${step}`);
+  }
+  {
+    const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+    if (words < 2400) failures.push(`${route}: page copy too thin (${words} words)`);
+    if (/US\$\s?\d|\$\s?\d{2,}|testimonio/i.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price or testimonial text found`);
   }
   if (!html.includes("Por ejemplo, una distribuidora")) failures.push(`${route}: examples are not labeled as examples`);
   if (!html.includes("un proceso en 2 semanas a precio cerrado")) failures.push(`${route}: timeline diverges from the existing 2-week offer`);
