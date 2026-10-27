@@ -272,6 +272,7 @@ export const services: Record<Locale, ServiceContent[]> = {
       breadcrumbName: "Automatización de procesos",
       schemaName: "Automatización de procesos con IA",
       schemaServiceType: "Automatización de procesos",
+      updatedAt: "2026-10-27",
       areaServed: { "@type": "Country", name: "Argentina" },
       commercialSections: [
         {
@@ -288,6 +289,29 @@ export const services: Record<Locale, ServiceContent[]> = {
             "Conciliación. Por ejemplo, un comercio que cobra por Mercado Pago o por transferencia y cruza el extracto con las facturas en Excel. Cada movimiento puede quedar asociado a su factura, y lo que no coincide queda marcado. Lo vemos en [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria). El detalle de comisiones y retenciones de Mercado Pago está en [conciliación de pagos con Mercado Pago](/es/integraciones/mercado-pago).",
             "Reportes. Por ejemplo, un equipo que arma el Excel de la semana copiando de tres sistemas. El resumen sale de los datos que ya están, sin copiar y pegar.",
             "Leads al CRM. Por ejemplo, consultas que llegan por formulario, Instagram o mail y alguien las carga a mano. Se califican y se avisa al vendedor. Un recorrido de ese tipo está en [enrutamiento de leads a HubSpot](/es/casos/enrutamiento-leads-hubspot) y en [operaciones GTM de investigación a outreach](/es/casos/automatizacion-gtm-b2b).",
+          ],
+        },
+        {
+          heading: "Qué proceso conviene automatizar primero",
+          body: "El primer proceso no es el más grande: es el que se repite, tiene reglas claras y hoy depende de alguien copiando. Un buen candidato cumple la mayoría de estas condiciones. Si no cumple ninguna, probablemente todavía no conviene automatizarlo, y te lo decimos en la llamada.",
+          bullets: [
+            "Se repite. Pasa todos los días o todas las semanas, siempre de la misma forma: cada factura que llega, cada pedido, cada cobranza del lunes.",
+            "Tiene reglas que se pueden escribir. Se puede decir qué es correcto: el CUIT existe, el importe cierra con el pedido, el cliente tiene saldo vencido. Si cada caso se decide a criterio, primero hay que ordenar el proceso.",
+            "Un error cuesta. Un pago mal imputado, una factura cargada dos veces o un pedido que se pierde. Ahí la validación y el aviso valen más que la velocidad.",
+            "El dato ya existe. Llega por mail, WhatsApp, un formulario, un extracto o un sistema. Si hoy vive solo en la cabeza de alguien, no hay qué automatizar todavía.",
+            "Tiene un dueño. Alguien del equipo sabe cómo debería funcionar y puede revisar lo dudoso. Sin dueño, la automatización se rompe en silencio.",
+          ],
+        },
+        {
+          heading: "Cómo funciona un proceso automatizado, paso a paso",
+          body: "Así queda casi cualquier proceso que automatizamos, sea una factura de proveedor, un pedido de WhatsApp o un cobro. La IA solo entra en el paso que pide interpretar. El resto son reglas que se pueden revisar, como explicamos en [cuándo usar IA y cuándo conviene software determinístico](/es/blog/cuando-usar-ia-vs-software-deterministico).",
+          bullets: [
+            "1. Entrada. El dato llega como llega hoy: un PDF en el mail, un mensaje de WhatsApp, un formulario, el extracto del banco o un movimiento de Mercado Pago. No hace falta cambiar cómo te escriben los clientes o los proveedores.",
+            "2. Lectura. Si el dato viene en texto libre o en un PDF, la IA lo lee y lo pasa a campos: proveedor, CUIT, importes, productos, cantidades. Si ya viene estructurado, este paso no lleva IA.",
+            "3. Validación con reglas. Se controla lo que tiene que ser exacto: que el CUIT y los importes cierren, que no esté duplicado, que el producto y el stock existan, que el pago corresponda a una factura. En [carga de facturas de proveedores](/es/automatizaciones/carga-de-facturas-proveedores) está el caso de las facturas.",
+            "4. Revisión humana. Lo que pasa las validaciones sigue. Lo dudoso o sensible (un importe que no cierra, un cliente nuevo, un mensaje que va a salir a un cliente) queda para que una persona lo apruebe.",
+            "5. Registro. El dato queda en el sistema que ya usás: Tango u otro ERP, el CRM o la planilla. En [pedidos por WhatsApp](/es/automatizaciones/pedidos-por-whatsapp) está cómo un mensaje se convierte en pedido.",
+            "6. Aviso si algo falla. Si un paso no puede completarse, alguien del equipo recibe el aviso, con el motivo. Lo que no cierra no sigue en silencio.",
           ],
         },
         {
@@ -338,6 +362,8 @@ export const services: Record<Locale, ServiceContent[]> = {
         ["¿Cuánto tarda automatizar un proceso?", "Un proceso acotado lo entregamos en 2 semanas a precio cerrado, si entra en ese alcance. El camino es diagnóstico, piloto y producción. Si hay que conectar varios sistemas o los datos están desordenados, te lo decimos en la llamada y lo partimos en etapas. No prometemos automatizar toda la operación en 2 semanas."],
         ["¿Cuánto cuesta automatizar un proceso?", "Te pasamos un precio cerrado después de una llamada de 15 minutos, cuando ya vimos qué proceso entra. No publicamos un precio de lista ni un rango: lo mueven la cantidad de sistemas, si hay que leer documentos, las excepciones y cómo están los datos. Antes de arrancar queda escrito qué entra, qué no y cuánto sale."],
         ["¿Conviene automatización a medida o alcanza con Make, n8n o Zapier?", "Make, n8n y Zapier alcanzan cuando el paso es simple, hay alguien que los mantiene y un error se nota enseguida. Conviene a medida cuando el dato no puede perderse, hay que interpretar un PDF o un mensaje, o la cadena se rompe en silencio. Si el flujo ya pide pantallas y permisos, el camino es software a medida. Si con un conector alcanza, te lo decimos en la llamada."],
+        ["¿Qué proceso conviene automatizar primero?", "El que se repite todas las semanas, tiene reglas que se pueden escribir, cuesta caro cuando sale mal y ya tiene el dato en algún lado (un mail, un WhatsApp, un extracto). Suele ser la carga de facturas, los pedidos por WhatsApp, las cobranzas o la conciliación de pagos. En la llamada de 15 minutos vemos cuál conviene primero en tu caso, o si todavía no conviene ninguno."],
+        ["¿Hay que cambiar de sistema para automatizar un proceso?", "No. La automatización se conecta con lo que ya usás (Tango u otro ERP, el CRM, Mercado Pago, WhatsApp o una planilla) por una API, un archivo de importación o la base de datos, cuando hay una forma segura. Si no la hay, te lo decimos en la llamada, antes de prometerlo."],
         ["¿Qué pasa si la IA se equivoca?", "El error tiene que verse y no llegar al cliente. Lo que no pasa las validaciones (un importe, un CUIT, un pago sin referencia) no se carga ni se envía: queda para que alguien lo revise. La automatización no reemplaza al equipo. Saca la copia y el tipeo, y las personas conservan el criterio."],
       ],
       finalCtaTitle: "En 15 minutos vemos qué proceso conviene automatizar primero.",
