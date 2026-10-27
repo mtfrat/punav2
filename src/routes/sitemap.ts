@@ -1,5 +1,6 @@
 import { caseStudies, casePath, casesHubPath, servicePath, services, servicesHubGuideEs, servicesHubPath, SITE_URL } from "../content/site";
 import { useCaseHubs, useCases } from "../content/use-cases";
+import { demoDefinitions, demoPath, demosHubPath } from "../content/demos";
 import { getPublishedPosts } from "../lib/posts.server";
 
 function esc(value: string) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -23,6 +24,7 @@ export const STATIC_LASTMOD = {
   blogHub: "2026-10-13",
   legal: "2026-10-13",
   contact: "2026-10-13",
+  demos: "2026-10-27",
 } as const;
 
 function latest(...dates: (string | undefined)[]) {
@@ -52,6 +54,8 @@ export async function loader() {
     ...localizedPair("/privacy", "/es/privacidad", STATIC_LASTMOD.legal),
     ...localizedPair("/terms", "/es/terminos", STATIC_LASTMOD.legal),
     ...localizedPair("/contact", "/es/contacto", STATIC_LASTMOD.contact),
+    ...localizedPair(demosHubPath("en"), demosHubPath("es"), STATIC_LASTMOD.demos),
+    ...demoDefinitions.flatMap((demo) => localizedPair(demoPath("en", demo.slug.en), demoPath("es", demo.slug.es), STATIC_LASTMOD.demos)),
     // Spanish-only use-case hubs and landings (no English alternate yet).
     ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path, lastmod: hub.updatedAt })),
     ...useCases.map((item) => ({ path: item.path, en: "", es: item.path, lastmod: item.updatedAt })),
