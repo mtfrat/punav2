@@ -24,7 +24,7 @@ export const STATIC_LASTMOD = {
   blogHub: "2026-10-13",
   legal: "2026-10-13",
   contact: "2026-10-13",
-  demos: "2026-10-27",
+  demos: "2026-10-28",
 } as const;
 
 function latest(...dates: (string | undefined)[]) {

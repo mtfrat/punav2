@@ -15,13 +15,14 @@ INK, ORANGE, CREAM = (24, 20, 16), (255, 107, 0), (239, 235, 219)
 W, H = 1200, 630
 
 DEMOS = {
-    "hub": {"es": ("Probalo antes de contratarlo", "6 demos interactivas de automatización"), "en": ("Try it before you hire it", "6 interactive automation demos")},
+    "hub": {"es": ("Probalo antes de contratarlo", "7 demos de automatización"), "en": ("Try it before you hire it", "7 automation demos")},
     "collections": {"es": ("Cobranzas automáticas", "El agente prepara, vos aprobás"), "en": ("Automatic collections", "The agent prepares, you approve")},
     "stock-sync": {"es": ("Sync de stock con proveedores", "CSV del proveedor vs tu tienda"), "en": ("Supplier stock sync", "Supplier CSV vs your store")},
     "payroll": {"es": ("Control de horas y pagos", "Anomalías y liquidación para aprobar"), "en": ("Hours and payroll control", "Anomalies and payroll to approve")},
     "lead-scoring": {"es": ("Leads calificados con IA", "Puntaje con reglas que podés leer"), "en": ("AI lead qualification", "A score with rules you can read")},
     "wholesale-quotes": {"es": ("Cotizador mayorista", "Escalas por volumen y WhatsApp"), "en": ("Wholesale quote builder", "Volume tiers and WhatsApp")},
     "store-dashboard": {"es": ("Panel para tu comercio", "Ventas, stock y caja en una pantalla"), "en": ("Store dashboard", "Sales, stock and cash on one screen")},
+    "convenio-multilateral": {"es": ("Convenio Multilateral / DDJJ SIFERE", "Video de 34 segundos para estudios contables"), "en": ("Multilateral Agreement / SIFERE", "34-second video for accounting firms")},
 }
 SAMPLE = {"es": "DATOS DE EJEMPLO", "en": "SAMPLE DATA"}
 

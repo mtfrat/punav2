@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
-import { ArrowRight, BadgeDollarSign, BarChart3, CalendarClock, ClipboardList, FileText, Users } from "lucide-react";
+import { ArrowRight, BadgeDollarSign, BarChart3, CalendarClock, ClipboardList, FileText, Landmark, Users } from "lucide-react";
 import "../demos.css";
 import { CalButton, PageShell } from "../components/marketing";
 import { DemoHeading, ExampleBadge } from "../components/demos/shared";
@@ -36,7 +36,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
-const ICONS = { collections: BadgeDollarSign, "stock-sync": ClipboardList, payroll: CalendarClock, "lead-scoring": Users, "wholesale-quotes": FileText, "store-dashboard": BarChart3 } as const;
+const ICONS = { collections: BadgeDollarSign, "stock-sync": ClipboardList, payroll: CalendarClock, "lead-scoring": Users, "wholesale-quotes": FileText, "store-dashboard": BarChart3, "convenio-multilateral": Landmark } as const;
 
 export default function DemosHub({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { locale } = loaderData;
