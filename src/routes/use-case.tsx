@@ -83,6 +83,8 @@ function ContactLink({ placement, light = false }: { placement: string; light?: 
 export default function UseCasePage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { useCase, siblings, hub } = loaderData;
   const t = copy.es;
+  // Optional blocks between "how" and "Cómo trabajamos" (guide, cases): keeps the light/soft alternation.
+  const extraSections = (useCase.guide?.length ? 1 : 0) + (useCase.cases?.length ? 1 : 0);
   useEffect(() => trackEvent("use_case_view", { locale: "es", use_case: useCase.key }), [useCase.key]);
 
   return (
@@ -154,7 +156,22 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </section>
         ) : null}
 
-        <section className={useCase.guide?.length ? "section soft-section" : "section light-section"}>
+        {useCase.cases?.length ? (
+          <section className={useCase.guide?.length ? "section soft-section" : "section light-section"} aria-labelledby="use-case-cases-heading">
+            <div className="shell commercial-expand-stack">
+              <h2 id="use-case-cases-heading">{useCase.casesTitle}</h2>
+              {useCase.casesIntro ? <p>{useCase.casesIntro}</p> : null}
+              {useCase.cases.map((item) => (
+                <article className="commercial-h2-block" key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p><RichText text={item.body} /></p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className={extraSections % 2 === 1 ? "section soft-section" : "section light-section"}>
           <div className="shell two-column">
             <header className="section-heading">
               <p className="eyebrow">Cómo trabajamos</p>
@@ -169,7 +186,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className={useCase.guide?.length ? "section light-section" : "section soft-section"}>
+        <section className={extraSections % 2 === 1 ? "section light-section" : "section soft-section"}>
           <div className="shell two-column">
             <header className="section-heading">
               <p className="eyebrow">¿Es para vos?</p>

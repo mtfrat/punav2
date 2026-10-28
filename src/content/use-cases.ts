@@ -31,6 +31,10 @@ export interface UseCaseContent {
   guideTitle?: string;
   guideIntro?: string;
   guide?: { title: string; body: string }[];
+  /** Optional "casos que complican" block rendered after the guide. Bodies accept [texto](/es/ruta) links. Only claims already on the page. */
+  casesTitle?: string;
+  casesIntro?: string;
+  cases?: { title: string; body: string }[];
   fit: string[];
   faqs: [string, string][];
   relatedService: { path: string; title: string };
@@ -151,7 +155,7 @@ export const useCases: UseCaseContent[] = [
   {
     key: "supplier-invoices",
     path: "/es/automatizaciones/carga-de-facturas-proveedores",
-    updatedAt: "2026-10-21",
+    updatedAt: "2026-10-28",
     section: "automatizaciones",
     eyebrow: "Automatización · Facturas de proveedores",
     title: "Automatizar la carga de facturas de proveedores",
@@ -192,6 +196,17 @@ export const useCases: UseCaseContent[] = [
       { title: "5. Carga en tu sistema de gestión", body: "Lo aprobado queda cargado en Tango, Bejerman, un ERP propio o una planilla, por API o por archivo de importación, según lo que permita tu sistema. Si después hay que cruzar el pago con esa factura, sigue en [conciliación bancaria](/es/automatizaciones/conciliacion-bancaria)." },
       { title: "6. IA para leer, reglas para decidir", body: "La IA resuelve la parte variable: entender cada formato de factura. Lo que tiene que ser exacto lo deciden reglas, no la IA. Por qué separamos las dos cosas está en [cuándo usar IA y cuándo software determinístico](/es/blog/cuando-usar-ia-vs-software-deterministico)." },
     ],
+    casesTitle: "Las facturas que complican la carga automática (y qué hace el flujo con cada una)",
+    casesIntro: "La mayoría de las facturas de proveedores son iguales entre sí y se cargan sin vueltas. El trabajo de automatizar la carga de facturas está en las que no: notas de crédito, percepciones, facturas C, comprobantes en dólares o en papel. Así se trata cada caso, antes de que llegue a tu sistema.",
+    cases: [
+      { title: "Notas de crédito y de débito", body: "Una nota de crédito no es una factura más: resta. El flujo la reconoce por el tipo de comprobante (NC A, B o C), la carga con signo contrario y, si trae el número de la factura que corrige, la asocia a esa factura. Si no lo trae, o el proveedor no tiene facturas abiertas por ese monto, queda en la bandeja para que alguien elija contra qué se aplica." },
+      { title: "Percepciones de IVA e Ingresos Brutos", body: "Muchas facturas traen percepciones de IVA o de Ingresos Brutos, a veces de más de una jurisdicción. Se leen por separado del neto y del IVA, cada una con su importe y su jurisdicción, para que vayan a la cuenta que corresponde y la suma siga cerrando con el total. Si una percepción no está en las que tu empresa espera de ese proveedor, se marca." },
+      { title: "Facturas C de monotributistas", body: "Una factura C no discrimina IVA: el total es el importe completo y no hay crédito fiscal para tomar. El flujo no le busca un IVA que no existe. Valida que el tipo C corresponda a un proveedor monotributista de tu padrón y la carga sin alícuotas." },
+      { title: "Facturas en dólares", body: "Si el comprobante está en dólares, se lee la moneda y la cotización que figura en la factura, y se carga con esa cotización y no con una del día. Si la factura no informa cotización, o tu sistema lleva otra regla de conversión, no se carga sola: queda para revisar." },
+      { title: "Fotos, papel y tickets", body: "Una factura en papel fotografiada con el celular se puede leer, pero con más margen de error que un PDF. Por eso todo lo que entra como foto pasa por la bandeja de revisión, aunque los controles den bien." },
+      { title: "A qué cuenta y centro de costo va cada factura", body: "Además de cargarla, cada factura tiene que ir a una cuenta contable o a un centro de costo. El flujo propone la imputación con las reglas que definís por proveedor (por ejemplo, el flete a una cuenta y la mercadería a otra). Si un proveedor es nuevo o la factura mezcla conceptos, la imputación la confirma una persona." },
+      { title: "Cruce con ARCA antes de cerrar el mes", body: "El CAE de cada factura se puede verificar con el servicio de constatación de comprobantes de ARCA, que confirma que el comprobante existe con ese emisor, número e importe. Y el listado de comprobantes recibidos de Mis Comprobantes se puede cruzar contra lo cargado: lo que ARCA tiene y tu sistema no (una factura que nunca llegó por mail) o al revés aparece antes de cerrar el período y de presentar el Libro IVA Digital. Si lo que necesitás es emitir tus propios comprobantes, es [facturación electrónica ARCA](/es/automatizaciones/facturacion-electronica-arca)." },
+    ],
     fit: [
       "Recibís decenas o cientos de facturas de proveedores por mes.",
       "La carga hoy es manual y la hacen una o dos personas.",
@@ -204,6 +219,8 @@ export const useCases: UseCaseContent[] = [
       ["¿Sirve si cada proveedor manda un formato distinto?", "Sí. Esa es justamente la parte donde la IA ayuda: no depende de una plantilla fija por proveedor. Igual probamos con facturas reales tuyas antes de ponerlo en producción."],
       ["¿Es lo mismo que un OCR de facturas?", "No del todo. Un OCR clásico pasa la imagen a texto y suele necesitar una plantilla por proveedor para saber dónde está cada dato. Acá la IA entiende la factura aunque cambie el formato, y después reglas validan CUIT, sumas y duplicados antes de cargar. Lo que no cierra queda para revisión humana."],
       ["¿Se puede automatizar la carga de facturas en Excel o Google Sheets?", "Sí. Si hoy llevás las compras en una planilla, el flujo puede dejar cada factura validada como una fila nueva, con los mismos controles y la misma bandeja de revisión. Si más adelante pasás a un sistema de gestión, se cambia el destino y el resto del flujo sigue igual."],
+      ["¿Cómo se cargan las notas de crédito de proveedores?", "Se reconocen por el tipo de comprobante y se cargan restando, asociadas a la factura que corrigen si el número viene en la nota. Si no viene, o no hay una factura abierta de ese proveedor que coincida, la nota queda en la bandeja de revisión para que alguien elija contra qué se aplica."],
+      ["¿Se puede verificar en ARCA que la factura del proveedor sea válida?", "Sí. ARCA tiene un servicio de constatación de comprobantes que confirma si el CAE corresponde a ese emisor, número e importe. El flujo puede hacer esa consulta antes de cargar, y además cruzar lo cargado con los comprobantes recibidos de Mis Comprobantes para encontrar facturas que faltan antes de cerrar el mes."],
       costFaq("el volumen de facturas, cuántas validaciones hacen falta y cómo se conecta tu sistema"),
       ["¿Qué necesitamos de nuestro lado?", "Un lote de facturas reales (anonimizadas si preferís), acceso de prueba a tu sistema o a su importación, y una persona que conozca el proceso para validar las reglas."],
     ],
