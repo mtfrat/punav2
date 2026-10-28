@@ -562,16 +562,42 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   for (const href of ["/es/automatizaciones/conciliacion-bancaria", "/es/blog/cuando-usar-ia-vs-software-deterministico"]) {
     if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
   }
-  for (const question of ["¿Es lo mismo que un OCR de facturas?", "¿Se puede automatizar la carga de facturas en Excel o Google Sheets?"]) {
+  for (const question of [
+    "¿Es lo mismo que un OCR de facturas?",
+    "¿Se puede automatizar la carga de facturas en Excel o Google Sheets?",
+    "¿Cómo se cargan las notas de crédito de proveedores?",
+    "¿Se puede verificar en ARCA que la factura del proveedor sea válida?",
+  ]) {
     if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
   }
   const faq = jsonLdBlocks(html).find((block) => block["@type"] === "FAQPage");
-  if (!faq || faq.mainEntity?.length !== 8) failures.push(`${route}: FAQPage should have 8 questions (${faq?.mainEntity?.length})`);
-  const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-  if (words < 1400) failures.push(`${route}: page copy too thin (${words} words)`);
+  if (!faq || faq.mainEntity?.length !== 10) failures.push(`${route}: FAQPage should have 10 questions (${faq?.mainEntity?.length})`);
+  // 28/10: "facturas que complican la carga" block (7 cases) after the guide.
+  if (!html.includes('<h2 id="use-case-cases-heading">Las facturas que complican la carga automática (y qué hace el flujo con cada una)</h2>')) failures.push(`${route}: cases heading missing`);
+  for (const heading of [
+    "Notas de crédito y de débito",
+    "Percepciones de IVA e Ingresos Brutos",
+    "Facturas C de monotributistas",
+    "Facturas en dólares",
+    "Fotos, papel y tickets",
+    "A qué cuenta y centro de costo va cada factura",
+    "Cruce con ARCA antes de cerrar el mes",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing case ${heading}`);
+  }
+  if (html.indexOf("use-case-guide-heading") > html.indexOf("use-case-cases-heading")) failures.push(`${route}: cases block should come after the guide`);
+  if (!html.includes('href="/es/automatizaciones/facturacion-electronica-arca"')) failures.push(`${route}: ARCA link missing`);
+  const main = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0];
+  if (/\$\s?\d|USD\s?\d|testimonio|clientes como/i.test(main.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price/testimonial-like text found`);
+  const words = main.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 2000) failures.push(`${route}: page copy too thin (${words} words)`);
   for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/automatizar-cobranzas"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+  }
+  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-pago", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+    const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
+    if (otherHtml.includes("use-case-cases-heading")) failures.push(`${other}: cases block rendered on a page without cases copy`);
   }
 }
 
@@ -1333,7 +1359,7 @@ else {
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-21</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-21");
+      if (!block.includes("<lastmod>2026-10-28</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-28");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/tienda-nube</loc>")) || "";
