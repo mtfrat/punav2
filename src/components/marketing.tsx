@@ -229,6 +229,7 @@ export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chr
           <Link to={casesHubPath(locale)}>{chromeCopy[locale].nav.work}</Link>
           <Link to={locale === "en" ? "/services/custom-software" : "/es/servicios/software-a-medida"}>{locale === "en" ? "Custom software" : "Software a medida"}</Link>
           <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
+          <Link to={locale === "en" ? "/demos" : "/es/demos"}>{locale === "en" ? "Interactive demos" : "Demos interactivas"}</Link>
         </div>
         <div className="footer-links">
           <Link to={contactPath(locale)}>{locale === "en" ? "Contact" : "Contacto"}</Link>

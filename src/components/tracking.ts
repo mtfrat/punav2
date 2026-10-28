@@ -23,7 +23,9 @@ export type AnalyticsEvent =
   | "generate_lead"
   | "chat_open"
   | "chat_qualified"
-  | "language_switch";
+  | "language_switch"
+  | "demo_view"
+  | "demo_action";
 
 type QueuedEvent = {
   event: AnalyticsEvent;
