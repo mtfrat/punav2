@@ -1,6 +1,6 @@
 import type { Locale } from "./chrome";
 
-export type DemoId = "collections" | "stock-sync" | "payroll" | "lead-scoring" | "wholesale-quotes" | "store-dashboard";
+export type DemoId = "collections" | "stock-sync" | "payroll" | "lead-scoring" | "wholesale-quotes" | "store-dashboard" | "convenio-multilateral";
 
 export interface DemoCopy {
   /** Short card / nav title. */
@@ -20,6 +20,19 @@ export interface DemoCopy {
   result: string;
   /** Where this comes from, e.g. a community pain we heard. */
   origin?: string;
+  /** Extra copy for video-only demos. */
+  video?: {
+    /** Visible heading above the player. */
+    heading: string;
+    /** Alt text / aria-label for the video (what is on screen). */
+    alt: string;
+    /** Short note under the player (language, no data). */
+    note: string;
+    /** Chapters shown below the player. */
+    chapters: [string, string][];
+    /** Music credit line. */
+    credit: string;
+  };
 }
 
 export interface DemoDefinition {
@@ -226,16 +239,62 @@ export const demoDefinitions: DemoDefinition[] = [
       },
     },
   },
+  {
+    id: "convenio-multilateral",
+    slug: { es: "convenio-multilateral", en: "multilateral-agreement" },
+    copy: {
+      es: {
+        title: "Convenio Multilateral / DDJJ SIFERE",
+        blurb: "Cartera de clientes, retenciones conciliadas, reparto por jurisdicción y archivos listos para SIFERE WEB. Video de 34 segundos.",
+        metaTitle: "Demo Convenio Multilateral y DDJJ SIFERE | Puna Tech",
+        metaDescription: "Video de 34 s: un estudio contable arma las DDJJ de Convenio Multilateral con retenciones conciliadas y archivos para SIFERE WEB. Datos de ejemplo.",
+        h1: "Las DDJJ de Convenio Multilateral, sin armar planillas a mano",
+        mark: "sin armar planillas a mano",
+        lead: "Mirá en 34 segundos cómo un estudio contable carga las ventas, concilia las retenciones, reparte por jurisdicción y deja listo el archivo para SIFERE WEB.",
+        problem: "Cada cliente de Convenio Multilateral lleva horas: pasar ventas y retenciones a planillas, cruzarlas con lo que informan los agentes, calcular cada jurisdicción y recién después armar la presentación.",
+        how: "El sistema lee la planilla de ventas, cruza las retenciones, aplica el coeficiente unificado jurisdicción por jurisdicción y avisa los errores antes de presentar. Genera el XML o Excel para SIFERE WEB y el papel de trabajo para firmar. Vos revisás y presentás.",
+        result: "Una cartera con el estado de cada cliente, alertas a la vista y una estimación de las horas que vuelven al estudio: 12,1 h por mes en el ejemplo (25 clientes, 4 jurisdicciones, 60 min por cliente hoy).",
+        origin: "Es la base de un sistema que se adapta a cómo trabaja cada estudio. El video usa datos de ejemplo, ningún dato de un cliente real.",
+        video: {
+          heading: "Video del recorrido",
+          alt: "Recorrido en video de un panel para Convenio Multilateral: cartera de clientes, conciliación de ventas y retenciones, reparto por jurisdicción, alertas, archivos para SIFERE WEB y ahorro de horas. Datos de ejemplo.",
+          note: "Video sin voz, con subtítulos en pantalla en español. Datos de ejemplo.",
+          chapters: [["0:00", "Cartera de clientes"], ["0:05", "Ventas y retenciones, conciliadas"], ["0:12", "Distribución por jurisdicción"], ["0:20", "Alertas antes de presentar"], ["0:23", "Archivos para SIFERE WEB"], ["0:27", "Horas que vuelven al estudio"]],
+          credit: "Música: “Wholesome” de Kevin MacLeod (incompetech.com), licencia Creative Commons Atribución 4.0.",
+        },
+      },
+      en: {
+        title: "Multilateral Agreement / SIFERE returns",
+        blurb: "Client portfolio, reconciled withholdings, split by province and files ready for SIFERE WEB. 34-second video.",
+        metaTitle: "Convenio Multilateral and SIFERE demo | Puna Tech",
+        metaDescription: "34-second video: an accounting firm prepares Convenio Multilateral returns with reconciled withholdings and SIFERE WEB files. Sample data.",
+        h1: "Multilateral Agreement tax returns without building spreadsheets by hand",
+        mark: "without building spreadsheets by hand",
+        lead: "Watch in 34 seconds how an accounting firm loads sales, reconciles withholdings, splits by province and gets the file ready for SIFERE WEB.",
+        problem: "Every Convenio Multilateral client takes hours: moving sales and withholdings into spreadsheets, matching them with what withholding agents report, calculating each province and only then building the filing.",
+        how: "The system reads the sales sheet, matches withholdings, applies the unified coefficient province by province and flags errors before filing. It produces the XML or Excel for SIFERE WEB and a work paper to sign. You review and file.",
+        result: "A portfolio with each client's status, alerts in plain sight and an estimate of the hours that come back to the firm: 12.1 h per month in the example (25 clients, 4 provinces, 60 min per client today).",
+        origin: "This is the base of a system that adapts to how each firm works. The video uses sample data, nothing from a real client.",
+        video: {
+          heading: "Walkthrough video",
+          alt: "Video walkthrough of a Convenio Multilateral dashboard: client portfolio, sales and withholdings reconciliation, split by province, alerts, files for SIFERE WEB and hours saved. Sample data.",
+          note: "No voiceover. On-screen captions are in Spanish. Sample data.",
+          chapters: [["0:00", "Client portfolio"], ["0:05", "Sales and withholdings, reconciled"], ["0:12", "Split by province"], ["0:20", "Alerts before filing"], ["0:23", "Files for SIFERE WEB"], ["0:27", "Hours back to the firm"]],
+          credit: "Music: “Wholesome” by Kevin MacLeod (incompetech.com), Creative Commons Attribution 4.0.",
+        },
+      },
+    },
+  },
 ];
 
 export const demosHubCopy = {
   es: {
     metaTitle: "Demos interactivas de automatización para pymes | Puna Tech",
-    metaDescription: "Probá 6 demos de automatización para pymes: cobranzas, stock, horas y sueldos, leads con IA, cotizador y panel de comercio.",
+    metaDescription: "Probá 7 demos de automatización: cobranzas, stock, horas y sueldos, leads con IA, cotizador, panel de comercio y DDJJ de Convenio Multilateral.",
     eyebrow: "Demos interactivas",
     h1: "Probalo antes de contratarlo",
     mark: "Probalo",
-    lead: "Seis casos reales de automatización para pymes argentinas, funcionando en tu navegador. En todos pasa lo mismo: el agente prepara, vos aprobás.",
+    lead: "Siete casos reales de automatización para pymes y estudios argentinos: seis funcionan en tu navegador y uno es un video. En todos pasa lo mismo: el agente prepara, vos aprobás.",
     exampleNote: "Todas las demos usan datos de ejemplo y no envían nada a nadie.",
     open: "Abrir la demo",
     patternTitle: "El patrón de todas las demos",
@@ -247,11 +306,11 @@ export const demosHubCopy = {
   },
   en: {
     metaTitle: "Interactive automation demos for small business | Puna Tech",
-    metaDescription: "Try 6 automation demos for small businesses: collections, stock, hours and payroll, AI leads, wholesale quotes and a shop dashboard.",
+    metaDescription: "Try 7 automation demos: collections, stock, hours and payroll, AI leads, wholesale quotes, a shop dashboard and Convenio Multilateral tax returns.",
     eyebrow: "Interactive demos",
     h1: "Try it before you hire it",
     mark: "Try it",
-    lead: "Six real automation cases for Argentine small businesses, running in your browser. They all follow the same rule: the agent prepares, you approve.",
+    lead: "Seven real automation cases for Argentine small businesses and firms: six run in your browser and one is a video. They all follow the same rule: the agent prepares, you approve.",
     exampleNote: "Every demo uses sample data and sends nothing to anyone.",
     open: "Open the demo",
     patternTitle: "The pattern behind every demo",

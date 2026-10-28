@@ -8,6 +8,7 @@ import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { demoComponents } from "../components/demos/registry";
 import { DemoCta, DemoHeading, ExampleBadge } from "../components/demos/shared";
 import { GumroadKitBox } from "../components/demos/dashboard-demo";
+import { VIDEO_BASE } from "../components/demos/video-demo";
 import { demoDefinitions, demoOgPath, demoPath, demosHubCopy, demosHubPath, findDemoBySlug } from "../content/demos";
 import { SITE_URL, type Locale } from "../content/chrome";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
@@ -37,24 +38,40 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     path,
     alternatePath: data.alternatePath,
     image: demoOgPath(locale, id),
-    imageAlt: locale === "es" ? `Demo interactiva: ${c.title}. Datos de ejemplo.` : `Interactive demo: ${c.title}. Sample data.`,
+    imageAlt: id === "convenio-multilateral"
+      ? (locale === "es" ? `Demo en video: ${c.title}. Datos de ejemplo.` : `Video demo: ${c.title}. Sample data.`)
+      : (locale === "es" ? `Demo interactiva: ${c.title}. Datos de ejemplo.` : `Interactive demo: ${c.title}. Sample data.`),
     imageWidth: 1200,
     imageHeight: 630,
     imageType: "image/png",
     schema: [
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        name: c.title,
-        description: c.metaDescription,
-        url: `${SITE_URL}${path}`,
-        applicationCategory: "BusinessApplication",
-        operatingSystem: "Any",
-        browserRequirements: "Requires JavaScript",
-        isAccessibleForFree: true,
-        inLanguage: locale === "en" ? "en" : "es-AR",
-        publisher: { "@id": `${SITE_URL}/#organization` },
-      },
+      id === "convenio-multilateral"
+        ? {
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            name: c.title,
+            description: c.metaDescription,
+            thumbnailUrl: [`${SITE_URL}${VIDEO_BASE}-16x9.webp`],
+            contentUrl: `${SITE_URL}${VIDEO_BASE}-16x9.mp4`,
+            uploadDate: "2026-10-28",
+            duration: "PT34S",
+            inLanguage: "es-AR",
+            isAccessibleForFree: true,
+            publisher: { "@id": `${SITE_URL}/#organization` },
+          }
+        : {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            name: c.title,
+            description: c.metaDescription,
+            url: `${SITE_URL}${path}`,
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Any",
+            browserRequirements: "Requires JavaScript",
+            isAccessibleForFree: true,
+            inLanguage: locale === "en" ? "en" : "es-AR",
+            publisher: { "@id": `${SITE_URL}/#organization` },
+          },
       breadcrumbSchema([
         { name: "Puna Tech", path: locale === "en" ? "/" : "/es" },
         { name: demosHubCopy[locale].breadcrumb, path: demosHubPath(locale) },
