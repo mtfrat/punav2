@@ -4,6 +4,8 @@ import { Link } from "react-router";
 import { ArrowRight, Check, FlaskConical, Loader2, RotateCcw } from "lucide-react";
 import { CalButton, trackEvent } from "../marketing";
 import { contactPath, type Locale } from "../../content/chrome";
+import { demoDefinitions } from "../../content/demos";
+import { wantThisHref, wantThisLabel } from "../../content/demo-cta";
 
 export type Loc = Locale;
 
@@ -170,6 +172,10 @@ const ctaCopy = {
 
 export function DemoCta({ loc, demo, extra }: { loc: Loc; demo: string; extra?: React.ReactNode }) {
   const t = ctaCopy[loc];
+  // Standalone demo page: the demo's first vertical is its "home" rubro (see DemoDefinition.verticals).
+  const def = demoDefinitions.find((d) => d.id === demo);
+  const rubro = def?.verticals[0] ?? "commerce";
+  const params = { rubro, demo_slug: def?.slug[loc] ?? demo };
   return (
     <section className="dm-cta" aria-labelledby={`cta-${demo}`}>
       <div>
@@ -178,12 +184,13 @@ export function DemoCta({ loc, demo, extra }: { loc: Loc; demo: string; extra?: 
         <small>{t.note}</small>
       </div>
       <div className="dm-cta-actions">
-        <CalButton locale={loc} placement={`demo_${demo}`} />
+        <CalButton locale={loc} placement={`demo_${demo}`} params={params} />
         <Link
-          to={`${contactPath(loc)}#brief-form`}
+          to={wantThisHref(contactPath(loc), "demo", demo)}
           className="dm-btn dm-btn-ink"
-          onClick={() => trackEvent("cta_click", { locale: loc, placement: `demo_${demo}`, destination: "brief" })}
-        >{t.brief}<ArrowRight aria-hidden="true" size={16} /></Link>
+          data-cta="want-this"
+          onClick={() => trackEvent("cta_click", { locale: loc, placement: `demo_${demo}`, destination: "brief", cta: "want_this", ...params })}
+        >{wantThisLabel(loc, rubro)}<ArrowRight aria-hidden="true" size={16} /></Link>
         {extra}
       </div>
     </section>
