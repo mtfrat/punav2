@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type * as React from "react";
 import { Link } from "react-router";
-import { ArrowRight, Check, FlaskConical, Loader2, RotateCcw } from "lucide-react";
+import { ArrowRight, Check, Loader2, RotateCcw } from "lucide-react";
 import { CalButton, trackEvent } from "../marketing";
 import { contactPath, type Locale } from "../../content/chrome";
 import { demoDefinitions } from "../../content/demos";
@@ -94,11 +94,8 @@ export function ActionLog({ entries, loc }: { entries: LogEntry[]; loc: Loc }) {
 }
 
 /* ---------- Building blocks ---------- */
-export function ExampleBadge({ loc }: { loc: Loc }) {
-  return (
-    <span className="dm-badge"><FlaskConical aria-hidden="true" size={14} />{loc === "es" ? "Datos de ejemplo" : "Sample data"}</span>
-  );
-}
+/** Único aviso de datos ficticios de cada demo. Discreto pero legible. */
+export const FICTION_NOTE = { es: "Datos ficticios con fines de demostración.", en: "Fictional data for demonstration purposes." } as const;
 
 const frameCopy = {
   es: { steps: ["El agente prepara", "Vos revisás", "Vos aprobás"], reset: "Reiniciar demo", note: "Todo corre en tu navegador. No se envía nada a nadie y no se guardan datos." },
@@ -113,14 +110,13 @@ export function DemoFrame({ loc, label, onReset, children }: { loc: Loc; label: 
         <div className="dm-stage-title">
           <span className="dm-dot" aria-hidden="true" />
           <strong>{label}</strong>
-          <ExampleBadge loc={loc} />
         </div>
         <ol className="dm-pattern" aria-label={loc === "es" ? "Cómo funciona" : "How it works"}>
           {t.steps.map((step, index) => <li key={step}><span>{index + 1}</span>{step}</li>)}
         </ol>
         <button type="button" className="dm-btn dm-btn-ghost dm-btn-sm" onClick={onReset}><RotateCcw aria-hidden="true" size={14} />{t.reset}</button>
       </div>
-      <p className="dm-stage-note">{t.note}</p>
+      <p className="dm-stage-note">{FICTION_NOTE[loc]} {t.note}</p>
       <div className="dm-stage-body">{children}</div>
     </section>
   );

@@ -34,8 +34,6 @@
 .dm-crumbs a { color: var(--dm-cream); text-decoration: underline; text-underline-offset: 3px; }
 .dm-crumbs [aria-current] { color: #cbbfb1; }
 
-.dm-badge { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--dm-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; background: var(--dm-orange); color: var(--dm-ink); padding: 0.3rem 0.65rem; border-radius: 999px; }
-
 /* ---------- sections ---------- */
 .dm-section { padding: clamp(2.5rem, 5vw, 4.5rem) 0; }
 .dm-section-tight { padding-bottom: 0; }
@@ -102,7 +100,7 @@
 .dm-pattern li { display: inline-flex; align-items: center; gap: 0.35rem; }
 .dm-pattern span { display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 50%; background: var(--dm-orange); color: var(--dm-ink); font-weight: 700; font-size: 0.7rem; }
 .dm-stage-head .dm-btn-ghost { color: var(--dm-cream); border-color: #cbbfb1; }
-.dm-stage-note { margin: 0; padding: 0.55rem 1rem; font-size: 0.8rem; background: #f3eddc; border-bottom: 1px solid var(--dm-line); }
+.dm-stage-note { margin: 0; padding: 0.55rem 1rem; font-size: 0.82rem; background: #f3eddc; border-bottom: 1px solid var(--dm-line); }
 .dm-stage-body { padding: clamp(0.8rem, 2vw, 1.25rem); display: grid; gap: 1rem; min-width: 0; }
 
 .dm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.75rem; }

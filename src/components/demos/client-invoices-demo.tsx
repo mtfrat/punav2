@@ -9,7 +9,7 @@ type Edit = Partial<Pick<PurchaseInvoice, "cuit" | "cae" | "perc" | "total">>;
 const T = {
   es: {
     label: "Facturas de compra de tus clientes",
-    client: "Cliente de ejemplo · Responsable Inscripto",
+    client: "Ferretería San Martín S.A. · Responsable Inscripto",
     uploaded: (n: number) => `El cliente subió ${n} comprobantes del mes (PDF y fotos).`,
     idle: "El agente todavía no los leyó. Tocá el botón y los pasa a la planilla del estudio con los controles hechos.",
     read: "Que el agente los lea", reading: "Leyendo comprobantes…", doneRead: (n: number) => `Leyó ${n} comprobantes y los controló uno por uno.`,
@@ -50,7 +50,7 @@ const T = {
   },
   en: {
     label: "Your clients' purchase invoices",
-    client: "Sample client · VAT registered",
+    client: "Ferretería San Martín S.A. · VAT registered",
     uploaded: (n: number) => `The client uploaded ${n} documents for the month (PDFs and photos).`,
     idle: "The agent hasn't read them yet. Press the button and they land in the firm's spreadsheet with every check done.",
     read: "Let the agent read them", reading: "Reading documents…", doneRead: (n: number) => `It read ${n} documents and checked each one.`,
@@ -152,7 +152,7 @@ export default function ClientInvoicesDemo({ loc }: { loc: Loc }) {
     const blob = new Blob(["\uFEFF" + toCsv(loadedRows)], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "planilla-del-estudio-ejemplo.csv"; a.click();
+    a.href = url; a.download = "planilla-del-estudio.csv"; a.click();
     URL.revokeObjectURL(url);
     push(t.logCsv, "info");
   }

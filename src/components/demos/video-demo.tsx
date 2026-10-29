@@ -1,5 +1,5 @@
 import { demoDefinitions, type DemoId } from "../../content/demos";
-import { ExampleBadge, type Loc } from "./shared";
+import { type Loc } from "./shared";
 
 export const VIDEO_DEMO_ID: DemoId = "convenio-multilateral";
 export const VIDEO_BASE = "/media/demos/convenio-multilateral";
@@ -14,7 +14,6 @@ export default function VideoDemo({ loc }: { loc: Loc }) {
         <div className="dm-stage-title">
           <span className="dm-dot" aria-hidden="true" />
           <strong>{v.heading}</strong>
-          <ExampleBadge loc={loc} />
         </div>
       </div>
       <p className="dm-stage-note">{v.note}</p>

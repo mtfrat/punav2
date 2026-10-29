@@ -6,7 +6,7 @@ import "../demos.css";
 import { PageShell, trackEvent } from "../components/marketing";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { demoComponents } from "../components/demos/registry";
-import { DemoCta, DemoHeading, ExampleBadge } from "../components/demos/shared";
+import { DemoCta, DemoHeading } from "../components/demos/shared";
 import { GumroadKitBox } from "../components/demos/dashboard-demo";
 import { VIDEO_BASE } from "../components/demos/video-demo";
 import { demoDefinitions, demoOgPath, demoPath, demosHubCopy, demosHubPath, findDemoBySlug } from "../content/demos";
@@ -40,8 +40,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     alternatePath: data.alternatePath,
     image: demoOgPath(locale, id),
     imageAlt: id === "convenio-multilateral"
-      ? (locale === "es" ? `Demo en video: ${c.title}. Datos de ejemplo.` : `Video demo: ${c.title}. Sample data.`)
-      : (locale === "es" ? `Demo interactiva: ${c.title}. Datos de ejemplo.` : `Interactive demo: ${c.title}. Sample data.`),
+      ? (locale === "es" ? `Demo en video: ${c.title}. Datos ficticios.` : `Video demo: ${c.title}. Fictional data.`)
+      : (locale === "es" ? `Demo interactiva: ${c.title}. Datos ficticios.` : `Interactive demo: ${c.title}. Fictional data.`),
     imageWidth: 1200,
     imageHeight: 630,
     imageType: "image/png",
@@ -111,7 +111,6 @@ export default function DemoDetail({ loaderData }: { loaderData: Awaited<ReturnT
             <p className="dm-kicker">{hub.eyebrow}</p>
             <h1 className="dm-h1"><DemoHeading text={c.h1} mark={c.mark} /></h1>
             <p className="dm-lead">{c.lead}</p>
-            <p><ExampleBadge loc={locale} /></p>
           </div>
         </section>
 
