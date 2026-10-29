@@ -71,12 +71,27 @@ test("too-fast submission gets fake success, nothing stored or sent", async () =
   assert.equal(calls.stored.length + calls.alerts.length, 0);
 });
 
-test("missing or garbage started_at never blocks a real lead", async () => {
-  for (const started_at of [undefined, "", "abc", String(NOW.getTime() + 60_000)]) {
+test("missing or garbage started_at is dropped as spam; a future timestamp (clock skew) is not", async () => {
+  for (const started_at of [undefined, "", "abc", "0", "-5", "NaN"]) {
     const { deps, calls } = makeDeps();
     const result = await handleLeadSubmission(makeForm({ started_at }), deps);
     assert.equal(result.status, 200, `started_at=${started_at}`);
-    assert.equal(calls.stored.length, 1);
+    assert.deepEqual(result.body, { ok: true });
+    assert.equal(result.spam, "missing_timestamp", `started_at=${started_at}`);
+    assert.equal(calls.stored.length + calls.alerts.length, 0);
+  }
+  const { deps, calls } = makeDeps();
+  const result = await handleLeadSubmission(makeForm({ started_at: String(NOW.getTime() + 60_000) }), deps);
+  assert.equal(result.spam, undefined);
+  assert.equal(calls.stored.length, 1);
+});
+
+test("fill time boundary: just under 3s is dropped, 3s and a normal fill are kept", async () => {
+  for (const [ms, dropped] of [[0, true], [2999, true], [3000, false], [45_000, false]]) {
+    const { deps, calls } = makeDeps();
+    const result = await handleLeadSubmission(makeForm({ started_at: String(NOW.getTime() - ms) }), deps);
+    assert.equal(result.spam === "too_fast", dropped, `elapsed=${ms}`);
+    assert.equal(calls.stored.length, dropped ? 0 : 1);
   }
 });
 
@@ -289,6 +304,59 @@ test("blocklist: exports are plain arrays and a normal lead matches nothing", ()
   assert.ok(Array.isArray(SPAM_EMAIL_DOMAINS) && SPAM_EMAIL_DOMAINS.includes("search-puna-tech.com"));
   assert.ok(Array.isArray(SPAM_TEXT_PATTERNS) && SPAM_TEXT_PATTERNS.every((p) => p instanceof RegExp));
   assert.equal(matchBlocklist({ name: "Ana", email: "ana@empresa.com", company: "Empresa SA", problem: "Necesitamos automatizar la conciliación bancaria de Mercado Pago." }, {}), null);
+});
+
+const REAL_LEADS = [
+  "Necesitamos automatizar la conciliación bancaria de Mercado Pago, hoy lo hacemos a mano.",
+  "Somos una inmobiliaria y queremos un listing de propiedades que se actualice solo desde nuestra planilla.",
+  "Quiero mejorar el SEO de mi sitio y aparecer en Google cuando buscan estudio contable en Córdoba.",
+  "Mi página no está indexada en Google todavía, ¿ustedes pueden ayudarme con eso y con el sitio nuevo?",
+  "We need a website for our clinic and an agent that registers appointments from WhatsApp.",
+  "Mi dominio vence el mes que viene, necesito migrar el sitio y automatizar los avisos a clientes.",
+  "We want to submit invoices to our accountant automatically every month, without retyping.",
+  "Queremos registrar las pólizas de nuestros clientes y avisarles de las renovaciones por mail.",
+  "Buscamos un índice de clientes con su deuda y vencimientos, hoy está en varias planillas.",
+  "Our search for a vendor that does document intake ended here; we need a quote for the pipeline.",
+  "Necesito que el sistema indexe los PDF de cada causa para encontrar escritos rápido en el estudio.",
+];
+
+test("real leads in ES/EN that mention SEO, listing, index, domain or register are not dropped", async () => {
+  for (const problem of REAL_LEADS) {
+    const { deps, calls } = makeDeps();
+    const result = await handleLeadSubmission(makeForm({ problem }), deps);
+    assert.equal(result.spam, undefined, problem);
+    assert.equal(calls.stored.length, 1, problem);
+  }
+});
+
+const SPAM_TEXTS = [
+  "Your listing in the Web Search Index expires soon, please renew.",
+  "Submit your website to the search engine index today for only $29.",
+  "Search engine submission service: get your site listed now.",
+  "Google index submission for your company, limited time fee.",
+  "Register your domain in our directory before it is too late, final notice.",
+  "Renew your domain registration: your domain expires in 3 days.",
+  "Your website listing registration fee is due, see invoice.",
+  "SEO submission package for 500 directories, results guaranteed.",
+  "We guarantee first page ranking on Google within 30 days.",
+  "Registre su dominio en el índice de búsqueda web antes de que venza.",
+  "Inscripción en el índice de búsqueda de Google para su sitio, aviso final.",
+  "Renueve su dominio ahora: su dominio expira en 48 horas.",
+  "Le garantizamos la primera página de Google en pocas semanas.",
+  "INDICE DE BUSQUEDA WEB: confirme su inscripcion.",
+];
+
+test("spam without links ('Web Search Index' family, ES/EN) is accepted and dropped before storage", async () => {
+  for (const problem of SPAM_TEXTS) {
+    await assertSpam({ problem }, "blocked_text_pattern");
+  }
+  await assertSpam({ company: "Search Engine Submission Ltd" }, "blocked_text_pattern");
+  await assertSpam({ name: "Web Search Index Admin" }, "blocked_text_pattern");
+});
+
+test("a bot that skips JS (no started_at) and sends a clean-looking lead is dropped; honeypot beats everything", async () => {
+  await assertSpam({ started_at: undefined }, "missing_timestamp");
+  await assertSpam({ website: "x", started_at: undefined }, "honeypot");
 });
 
 let failed = 0;

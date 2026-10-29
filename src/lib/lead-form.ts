@@ -43,7 +43,7 @@ export interface LeadRecord {
   consented_at: string;
 }
 
-export type SpamReason = "honeypot" | "too_fast" | "too_many_links" | BlocklistReason;
+export type SpamReason = "honeypot" | "too_fast" | "missing_timestamp" | "too_many_links" | BlocklistReason;
 
 export interface LeadSubmissionDeps {
   /** Returns "stored", "unconfigured" (no DB credentials) or "error". */
@@ -80,12 +80,12 @@ function cleanPath(value: string): string {
 
 export function detectSpam(form: FormData, now: Date, fields: Pick<LeadFields, "name" | "company" | "problem"> & { email?: string }, env?: { LEAD_SPAM_DOMAINS?: string }): SpamReason | null {
   if (String(form.get("website") || "").length > 0) return "honeypot";
+  // The form always sends started_at (set on mount). A post without it, or with garbage, never came from the form.
   const startedAt = Number(form.get("started_at"));
-  // Only enforced when the client-side timestamp is present and sane (JS ran); a missing value never blocks a lead.
-  if (Number.isFinite(startedAt) && startedAt > 0) {
-    const elapsed = now.getTime() - startedAt;
-    if (elapsed >= 0 && elapsed < LEAD_LIMITS.minFillMs) return "too_fast";
-  }
+  if (!Number.isFinite(startedAt) || startedAt <= 0) return "missing_timestamp";
+  // A timestamp in the future is tolerated (client clock skew); only a measurable fast fill is dropped.
+  const elapsed = now.getTime() - startedAt;
+  if (elapsed >= 0 && elapsed < LEAD_LIMITS.minFillMs) return "too_fast";
   if (countLinks(fields.name, fields.company, fields.problem) > LEAD_LIMITS.maxLinks) return "too_many_links";
   const blocked = matchBlocklist({ name: fields.name, email: fields.email ?? "", company: fields.company, problem: fields.problem }, env);
   if (blocked) return blocked;
