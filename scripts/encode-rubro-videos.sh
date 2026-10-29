@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Re-encodes the rubro demo videos (rendered elsewhere) into the light web assets under public/media/demos/.
-# Usage: scripts/encode-rubro-videos.sh [source-dir]   (default: /workspace/campaigns/demos-video)
+# Usage: [SLUGS="slug1 slug2"] [CM_SRC=dir] scripts/encode-rubro-videos.sh [source-dir]   (default: /workspace/campaigns/demos-video)
 # Needs ffmpeg with libvpx-vp9, libx264, libopus, libwebp. It never renders anything: it only compresses the given masters.
 set -euo pipefail
 SRC="${1:-/workspace/campaigns/demos-video}"
 OUT="$(cd "$(dirname "$0")/.." && pwd)/public/media/demos"
 mkdir -p "$OUT"
-for slug in estudios-contables estudios-juridicos productores-de-seguros inmobiliarias clinicas-y-consultorios; do
+SLUGS="${SLUGS:-estudios-contables estudios-juridicos productores-de-seguros inmobiliarias clinicas-y-consultorios}"
+for slug in $SLUGS; do
   # Poster frame (seconds): a frame with the demo UI. The clinics master opens on the old headline, so it uses a later one.
   POSTER_AT=6; [ "$slug" = clinicas-y-consultorios ] && POSTER_AT=12
   for shape in 16x9 9x16; do
@@ -25,6 +26,7 @@ ls -l "$OUT" | grep rubro-
 # Convenio Multilateral walkthrough (the CM demo page and the accounting page): already 1280x720 / 720x1280 masters in
 # $CM_SRC (default /workspace/guidara-app/video/site). Posters are shipped with the masters (copied as they are).
 CM_SRC="${CM_SRC:-/workspace/guidara-app/video/site}"
+[ -d "$CM_SRC" ] || { echo "CM source $CM_SRC not found: skipping the Convenio Multilateral files"; exit 0; }
 for shape in 16x9 9x16; do
   in="$CM_SRC/convenio-multilateral-$shape.mp4"
   base="$OUT/convenio-multilateral-$shape"

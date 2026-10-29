@@ -79,6 +79,20 @@ for (const locale of locales) {
   }
 }
 
+// Media cache headers: filenames are not content-hashed, so no immutable; long CDN cache, short browser cache.
+const vercel = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+const mediaRule = (vercel.headers ?? []).find((h) => h.source === "/media/demos/(.*)");
+assert.ok(mediaRule, "vercel.json needs a headers rule for /media/demos/*");
+const cc = mediaRule.headers.find((h) => h.key.toLowerCase() === "cache-control")?.value ?? "";
+assert.ok(/public/.test(cc) && /s-maxage=\d+/.test(cc) && /stale-while-revalidate/.test(cc) && !/immutable/.test(cc), `cache-control: ${cc}`);
+assert.ok(vercel.redirects.length >= 57, "the existing redirects must stay");
+
+// Demo labels say "de prueba", not "de ejemplo" (prose such as "por ejemplo" is fine).
+for (const f of ["lead-scoring-demo", "payroll-demo", "client-invoices-demo", "stock-sync-demo"]) {
+  const src = readFileSync(new URL(`../src/components/demos/${f}.tsx`, import.meta.url), "utf8");
+  assert.ok(!/de ejemplo|Cargar ejemplo|Cargá un ejemplo|Load an example|Example rules|load a sample/i.test(src), `${f}: label still says ejemplo/example`);
+}
+
 // The layout never autoplays and always defers loading.
 const layout = readFileSync(new URL("../src/components/demos/rubro-layout.tsx", import.meta.url), "utf8");
 assert.ok(!/autoPlay|autoplay/i.test(layout), "videos must not autoplay");

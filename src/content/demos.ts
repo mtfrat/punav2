@@ -267,7 +267,7 @@ export const demoDefinitions: DemoDefinition[] = [
         lead: "Mirá en 34 segundos cómo un estudio contable carga las ventas, concilia las retenciones, reparte por jurisdicción y deja listo el archivo para SIFERE WEB.",
         problem: "Cada cliente de Convenio Multilateral lleva horas: pasar ventas y retenciones a planillas, cruzarlas con lo que informan los agentes, calcular cada jurisdicción y recién después armar la presentación.",
         how: "El sistema lee la planilla de ventas, cruza las retenciones, aplica el coeficiente unificado jurisdicción por jurisdicción y avisa los errores antes de presentar. Genera el XML o Excel para SIFERE WEB y el papel de trabajo para firmar. Vos revisás y presentás.",
-        result: "Una cartera con el estado de cada cliente, alertas a la vista y una estimación de las horas que vuelven al estudio: 12,1 h por mes en el ejemplo (25 clientes, 4 jurisdicciones, 60 min por cliente hoy).",
+        result: "Una cartera con el estado de cada cliente, alertas a la vista y una estimación de las horas que vuelven al estudio: 12,1 h por mes en esta demo (25 clientes, 4 jurisdicciones, 60 min por cliente hoy).",
         origin: "Es la base de un sistema que se adapta a cómo trabaja cada estudio. El video usa datos ficticios, ningún dato de un cliente real.",
         video: {
           heading: "Video del recorrido",
@@ -287,7 +287,7 @@ export const demoDefinitions: DemoDefinition[] = [
         lead: "Watch in 34 seconds how an accounting firm loads sales, reconciles withholdings, splits by province and gets the file ready for SIFERE WEB.",
         problem: "Every Convenio Multilateral client takes hours: moving sales and withholdings into spreadsheets, matching them with what withholding agents report, calculating each province and only then building the filing.",
         how: "The system reads the sales sheet, matches withholdings, applies the unified coefficient province by province and flags errors before filing. It produces the XML or Excel for SIFERE WEB and a work paper to sign. You review and file.",
-        result: "A portfolio with each client's status, alerts in plain sight and an estimate of the hours that come back to the firm: 12.1 h per month in the example (25 clients, 4 provinces, 60 min per client today).",
+        result: "A portfolio with each client's status, alerts in plain sight and an estimate of the hours that come back to the firm: 12.1 h per month in this demo (25 clients, 4 provinces, 60 min per client today).",
         origin: "This is the base of a system that adapts to how each firm works. The video uses fictional data, nothing from a real client.",
         video: {
           heading: "Walkthrough video",
