@@ -186,7 +186,7 @@
 .dm-check input, .dm-table input[type="checkbox"] { width: 1.15rem; height: 1.15rem; accent-color: var(--dm-orange); }
 
 /* tables */
-.dm-table-wrap { overflow-x: auto; border: 1.5px solid var(--dm-line); max-width: 100%; }
+.dm-table-wrap { position: relative; overflow-x: auto; border: 1.5px solid var(--dm-line); max-width: 100%; }
 .dm-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 34rem; }
 .dm-table th { text-align: left; font-family: var(--dm-mono); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--dm-ink); color: var(--dm-cream); padding: 0.55rem 0.7rem; white-space: nowrap; }
 .dm-table td, .dm-table tfoot th { padding: 0.55rem 0.7rem; border-top: 1px solid var(--dm-line); vertical-align: top; }
