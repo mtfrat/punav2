@@ -1,5 +1,5 @@
-import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import { Link } from "react-router";
+import type { HeadersArgs, LoaderFunctionArgs, MetaFunction } from "react-router";
+import { data, Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { PageShell } from "../components/marketing";
 import { blogPath, copy, servicePath, services, type Locale } from "../content/site";
@@ -10,7 +10,16 @@ import { blogIndexSchema, createMeta } from "../lib/seo";
 export async function loader({ request }: LoaderFunctionArgs) {
   const locale: Locale = new URL(request.url).pathname.startsWith("/es") ? "es" : "en";
   const posts = await getPublishedPosts(locale);
-  return { locale, posts };
+  // SSR + one Supabase read per request was the slowest page in the 2026-10-29 audit (TTFB 1.05-2.18 s).
+  // Cache the HTML at the CDN, but never an empty list: getPublishedPosts returns [] when Supabase blips.
+  return data({ locale, posts }, { headers: { "Cache-Control": posts.length > 0 ? "public, max-age=0, s-maxage=300, stale-while-revalidate=3600" : "no-store" } });
+}
+
+type LoaderData = Awaited<ReturnType<typeof loader>> extends { data: infer D } ? D : never;
+
+export function headers({ loaderHeaders }: HeadersArgs) {
+  const cacheControl = loaderHeaders.get("Cache-Control");
+  return cacheControl ? { "Cache-Control": cacheControl } : {};
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -26,7 +35,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
-export default function BlogIndex({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
+export default function BlogIndex({ loaderData }: { loaderData: LoaderData }) {
   const { locale, posts } = loaderData;
   const serviceLinks = [...services[locale].map((service) => ({ path: servicePath(locale, service.slug), title: service.eyebrow })), ...(locale === "es" ? useCases.map((item) => ({ path: item.path, title: item.cardTitle })) : [])];
   const servicesStrip = <section className="related-guides" aria-labelledby="blog-services-heading"><div className="shell"><h2 id="blog-services-heading">{locale === "en" ? "Put these guides to work" : "Llevá estas guías a tu operación"}</h2><ol className="related-guide-list">{serviceLinks.map((item, index) => <li key={item.path}><Link to={item.path}><span className="related-guide-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span><span className="related-guide-title">{item.title}</span><ArrowRight aria-hidden="true" size={18} /></Link></li>)}</ol></div></section>;

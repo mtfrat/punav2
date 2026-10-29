@@ -35,7 +35,7 @@ for (const [route, language, canonical, image] of routes) {
   const html = await readFile(file, "utf8");
   const expect = (condition, label) => { if (!condition) failures.push(`${route}: ${label}`); };
   expect(new RegExp(`<html[^>]+lang=["']${language}["']`).test(html), `html lang is not ${language}`);
-  expect(/<title>[^<]{10,}Puna Tech[^<]*<\/title>/.test(html), "missing descriptive title");
+  expect(/<title>(?:[^<]{10,}Puna Tech|Puna Tech[^<]{10,})[^<]*<\/title>/.test(html), "missing descriptive title");
   expect(/<meta[^>]+name=["']description["'][^>]+content=["'][^"']{50,}/.test(html), "missing substantive meta description");
   expect(html.includes(`rel="canonical" href="${canonical}"`) || html.includes(`rel='canonical' href='${canonical}'`), `canonical mismatch (expected ${canonical})`);
   expect(html.includes('hreflang="en"') || html.includes('hrefLang="en"'), "English hreflang missing");
@@ -66,7 +66,7 @@ try {
 const englishHome = await readFile(join(root, "index.html"), "utf8");
 const spanishHome = await readFile(join(root, "es", "index.html"), "utf8");
 if (!englishHome.includes("Custom Software and AI Automation | Puna Tech")) failures.push("English homepage title did not render");
-if (!spanishHome.includes("Software a Medida y Automatización con IA | Puna Tech")) failures.push("Spanish homepage title did not render");
+if (!spanishHome.includes("Puna Tech, software factory de Buenos Aires")) failures.push("Spanish homepage title did not render");
 if (!englishHome.includes("Custom software for operations that ") || !englishHome.includes("outgrew off-the-shelf tools")) failures.push("English homepage H1 changed");
 if (!spanishHome.includes("Software a medida para operaciones que ya superaron las ") || !spanishHome.includes("herramientas estándar")) failures.push("Spanish homepage H1 changed");
 
@@ -1203,12 +1203,12 @@ for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
 }
 
 const privacyDescription = {
-  en: "How Puna Tech handles website and inquiry data.",
-  es: "Cómo Puna Tech gestiona los datos del sitio y las consultas.",
+  en: "What Puna Tech collects through the project brief and website analytics, how it is used, and how to ask for access, correction or deletion.",
+  es: "Qué datos reúne Puna Tech con el brief y la analítica del sitio, cómo los usa y cómo pedir acceso, corrección o eliminación.",
 };
 const termsDescription = {
   en: "Terms of use for the Puna Tech website. Pages are general information, not a binding proposal, and a discovery call or brief is not a signed agreement.",
-  es: "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante, y una llamada o un brief no son un acuerdo firmado.",
+  es: "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante; una llamada o un brief no son un acuerdo.",
 };
 
 function decodeHtml(value) {
@@ -1376,25 +1376,26 @@ else {
     if (locs.length < 20) failures.push(`sitemap.xml: expected the public page set, found ${locs.length} URLs`);
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/servicios/software-a-medida</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-10-20");
+      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-10-29");
       const english = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/services/custom-software</loc>")) || "";
-      if (english.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod moved without an English copy change");
+      // 2026-10-29: both locales of the service page gained the by-industry demo links, so both lastmods move.
+      if (!english.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod is not 2026-10-29");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-28</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-28");
+      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/carga-de-facturas-proveedores lastmod is not 2026-10-29");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/tienda-nube</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-23</lastmod>")) failures.push("sitemap.xml: /es/integraciones/tienda-nube lastmod is not 2026-10-23");
+      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/integraciones/tienda-nube lastmod is not 2026-10-29");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-libre</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-22</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-libre lastmod is not 2026-10-22");
+      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-libre lastmod is not 2026-10-29");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/facturacion-electronica-arca</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-26</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/facturacion-electronica-arca lastmod is not 2026-10-26");
+      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/automatizaciones/facturacion-electronica-arca lastmod is not 2026-10-29");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-pago</loc>")) || "";
@@ -1431,8 +1432,14 @@ else {
       }
       const title = decodeHtml(page.html.match(/<title>([^<]*)<\/title>/)?.[1] || "");
       const description = decodeHtml(metaDescription(page.html));
-      if (title.length < 45 || title.length > 60) failures.push(`${path}: title length ${title.length} is outside 45-60 (${title})`);
-      if (!title.endsWith(" | Puna Tech")) failures.push(`${path}: title missing brand suffix (${title})`);
+      // The ES home title is fixed by the 2026-10-29 audit to "Puna Tech, software factory de Buenos Aires" (brand first, 43 chars).
+      if (path === "/es") {
+        if (title !== "Puna Tech, software factory de Buenos Aires") failures.push(`/es: title is "${title}"`);
+      } else {
+        if (title.length < 45 || title.length > 60) failures.push(`${path}: title length ${title.length} is outside 45-60 (${title})`);
+        if (!title.endsWith(" | Puna Tech")) failures.push(`${path}: title missing brand suffix (${title})`);
+      }
+      if (/^\/es\/privacidad$|^\/privacy$/.test(path) && (description.length < 70 || description.length > 155)) failures.push(`${path}: privacy description is ${description.length} chars (70-155)`);
       if (description.length > 160) failures.push(`${path}: meta description is ${description.length} characters`);
       const ogTitle = decodeHtml(metaContent(page.html, "property", "og:title"));
       const twitterTitle = decodeHtml(metaContent(page.html, "name", "twitter:title"));

@@ -1,4 +1,45 @@
+# Puna Tech: los asistentes de IA son bienvenidos en el contenido público.
+# /api/ y /ops/ son internos y no se indexan.
+
 User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /ops/
+
+# OpenAI (búsqueda, navegación a pedido y entrenamiento)
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /ops/
+
+# Anthropic
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /ops/
+
+# Perplexity
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+Allow: /
+Disallow: /api/
+Disallow: /ops/
+
+# Google (Gemini / AI Overviews usan Googlebot; Google-Extended controla el uso para modelos)
+User-agent: Googlebot
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /ops/
+
+# Apple Intelligence y Bing/Copilot
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: Bingbot
 Allow: /
 Disallow: /api/
 Disallow: /ops/

@@ -146,6 +146,15 @@
 .ac-step-body { grid-column: 8 / -1; font-size: 1.0625rem; line-height: 1.55; max-width: 30rem; }
 .ac-steps li:hover .ac-step-title { color: #8a3a00; }
 
+/* ---------- preguntas frecuentes ---------- */
+.ac-faq-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
+.ac-faq-grid .ac-h2 { grid-column: 1 / span 4; margin: 0; }
+.ac-faq-list { grid-column: 5 / -1; display: grid; gap: clamp(1.25rem, 2.5vw, 2rem); min-width: 0; }
+.ac-faq-item { border-top: 1px solid rgba(239, 235, 219, 0.28); padding-top: 1rem; }
+.ac-faq-q { margin: 0 0 0.5rem; font-size: 1.1875rem; font-weight: 750; line-height: 1.3; color: var(--ac-cream); }
+.ac-faq-a { margin: 0; font-size: 1.0625rem; line-height: 1.6; color: #d8cfbf; max-width: 46rem; overflow-wrap: anywhere; }
+.ac-faq-a a { color: var(--ac-orange); text-decoration: underline; text-underline-offset: 3px; }
+
 /* ---------- cierre ---------- */
 .ac-cta-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(2rem, 4vw, 4rem); align-items: end; }
 .ac-cta-grid .ac-h2 { grid-column: 1 / span 7; margin: 0; }
@@ -179,6 +188,7 @@
   .ac-video-media, .ac-video-side, .ac-cta-grid .ac-h2, .ac-cta-side, .ac-custom-grid .ac-h2, .ac-custom-grid .ac-lead { grid-column: 1 / -1; grid-row: auto; }
   .ac-steps li { grid-template-columns: minmax(0, 1fr); }
   .ac-step-title, .ac-step-body { grid-column: 1 / -1; }
+  .ac-faq-grid .ac-h2, .ac-faq-list { grid-column: 1 / -1; }
 }
 @media (max-width: 700px) {
   .ac-video-wide { display: none !important; }

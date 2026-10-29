@@ -1,4 +1,4 @@
-import { SITE_URL, type Locale } from "../content/chrome.ts";
+import { CONTACT_EMAIL, SITE_URL, type Locale } from "../content/chrome.ts";
 
 type JsonLd = Record<string, unknown> | Array<Record<string, unknown>>;
 
@@ -140,38 +140,54 @@ export function createMeta({
   return entries;
 }
 
+/** Public profiles that identify the entity. Only URLs the owner confirmed; LinkedIn is the one already linked in the footer. */
+export const ORGANIZATION_SAME_AS = [
+  "https://www.linkedin.com/company/puna-tech",
+  "https://www.instagram.com/puna.tech/",
+  "https://x.com/PunaTechBA",
+  "https://github.com/mtfrat",
+];
+
 export function organizationSchema(locale: Locale) {
+  const en = locale === "en";
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
+        "@type": ["Organization", "ProfessionalService"],
         "@id": `${SITE_URL}/#organization`,
         name: "Puna Tech",
         url: `${SITE_URL}/`,
         logo: `${SITE_URL}/profile-picture.png`,
-        description: locale === "en"
-          ? "Bilingual software factory for custom software, AI automation, and systems integration."
-          : "Software factory bilingüe para software a medida, automatización con IA e integraciones de sistemas.",
+        image: `${SITE_URL}/og-es.png`,
+        description: en
+          ? "Buenos Aires software factory: process automation, custom software and systems integration for SMEs and B2B companies in Argentina."
+          : "Software factory de Buenos Aires: automatización de procesos, software a medida e integraciones de sistemas para pymes y empresas B2B de Argentina.",
+        disambiguatingDescription: "No confundir con PUNA Software Factory (Salta, punasoftwarefactory.com.ar).",
+        slogan: en ? "We automate one business process in 2 weeks, at a fixed price." : "Automatizamos un proceso de tu empresa en 2 semanas, a precio cerrado.",
+        // City level only: no street address and no phone are published.
         address: { "@type": "PostalAddress", addressLocality: "Buenos Aires", addressCountry: "AR" },
-        sameAs: ["https://www.linkedin.com/company/puna-tech"],
-        knowsAbout: [
-          "AI Agents",
-          "AI Workflow Automation",
-          "n8n Automation",
-          "Clay Data Enrichment",
-          "Custom B2B Software",
-          "Systems Integration",
-          "Supabase",
-          "TypeScript",
-          "Python",
-        ],
+        foundingLocation: { "@type": "Place", name: "Buenos Aires, Argentina" },
+        areaServed: [{ "@type": "Country", name: "Argentina" }],
+        knowsLanguage: ["es", "en"],
+        founder: { "@type": "Person", name: "Martin" },
+        sameAs: ORGANIZATION_SAME_AS,
+        knowsAbout: en
+          ? ["Business process automation", "Custom software", "Systems integration", "Argentine e-invoicing (ARCA)", "Convenio Multilateral", "Mercado Libre, Tienda Nube and Mercado Pago integrations", "Bank reconciliation"]
+          : ["Automatización de procesos", "Software a medida", "Integración de sistemas", "Facturación electrónica ARCA", "Convenio Multilateral", "Integraciones con Mercado Libre, Tienda Nube y Mercado Pago", "Conciliación bancaria"],
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "sales",
-          email: "punatechba@gmail.com",
-          availableLanguage: ["English", "Spanish"],
+          email: CONTACT_EMAIL,
+          areaServed: "AR",
+          availableLanguage: ["Spanish", "English"],
+          url: `${SITE_URL}/es/contacto`,
         },
+        makesOffer: [
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Automatización de procesos con IA", url: `${SITE_URL}/es/servicios/automatizacion-ia` } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Software a medida", url: `${SITE_URL}/es/servicios/software-a-medida` } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Integración de sistemas", url: `${SITE_URL}/es/servicios/integraciones-de-datos` } },
+        ],
       },
       {
         "@type": "WebSite",
@@ -182,6 +198,36 @@ export function organizationSchema(locale: Locale) {
         inLanguage: ["en", "es"],
       },
     ],
+  };
+}
+
+/** FAQPage from [question, answer] pairs. The same pairs must also be visible on the page. */
+export function faqPageSchema(items: Array<[string, string]>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map(([question, answer]) => ({
+      "@type": "Question",
+      name: question,
+      acceptedAnswer: { "@type": "Answer", text: answer },
+    })),
+  };
+}
+
+/** Service node for an industry landing; the provider points at the home Organization @id. */
+export function industryServiceSchema({ locale, path, name, audience }: { locale: Locale; path: string; name: string; audience: string }) {
+  const url = absoluteUrl(path);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "@id": `${url}#service`,
+    name,
+    serviceType: locale === "en" ? "Process automation and custom software" : "Automatización de procesos y software a medida",
+    url,
+    inLanguage: locale === "en" ? "en" : "es-AR",
+    provider: { "@id": `${SITE_URL}/#organization` },
+    areaServed: { "@type": "Country", name: "Argentina" },
+    audience: { "@type": "Audience", audienceType: audience },
   };
 }
 

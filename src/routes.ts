@@ -38,6 +38,8 @@ export default [
   route("es/demos/:slug", "./routes/demo-detail.tsx", { id: "demo-detail-es" }),
   route("demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-en" }),
   route("es/demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-es" }),
+  route("es/sobre-puna", "./routes/about.tsx", { id: "about-es" }),
+  route("about", "./routes/about.tsx", { id: "about-en" }),
   route("en", "./routes/legacy-redirect.ts", { id: "legacy-en-root" }),
   route("en/*", "./routes/legacy-redirect.ts", { id: "legacy-en-wildcard" }),
   route("sitemap.xml", "./routes/sitemap.ts"),

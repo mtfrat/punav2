@@ -8,6 +8,7 @@ import { demoDefinitions, demoPath, demosHubCopy, demosHubPath, type DemoId } fr
 import { rubroDefinitions, rubroPath, rubrosHubCopy, type RubroId } from "../../content/rubros";
 import { contactPath } from "../../content/chrome";
 import { wantThisHref, wantThisLabel } from "../../content/demo-cta";
+import { rubroFaq } from "../../content/rubro-faq";
 
 /**
  * Landing de un rubro con el diseño "capítulos de color" (es + en), manejada por datos.
@@ -23,6 +24,7 @@ const T = {
     videoNote: "Video de 34 segundos, sin voz.",
     chaptersLabel: "Capítulos del video",
     stepsLabel: "Pasos",
+    faqTitle: "Preguntas frecuentes",
     otherRubros: "Otros rubros",
     tagVideo: "Video",
     tagInteractive: "Demo interactiva",
@@ -37,6 +39,7 @@ const T = {
     videoNote: "34-second video, no voiceover.",
     chaptersLabel: "Video chapters",
     stepsLabel: "Steps",
+    faqTitle: "Frequently asked questions",
     otherRubros: "Other industries",
     tagVideo: "Video",
     tagInteractive: "Interactive demo",
@@ -218,6 +221,13 @@ export function Fragment({ blocks }: { blocks: FragBlock[] }) {
 
 /* ---------- la página ---------- */
 
+/** Turns bare https URLs in FAQ answers into links (answers stay plain text for JSON-LD). */
+function linkify(text: string): ReactNode {
+  return text.split(/(https:\/\/[^\s)]+)/g).map((part, i) =>
+    part.startsWith("https://") ? <a key={i} href={part} target="_blank" rel="noopener noreferrer">{part.replace("https://", "")}</a> : part,
+  );
+}
+
 export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroId; locale: Loc; config: RubroPageConfig }) {
   const t = T[locale];
   const rootRef = useRef<HTMLElement>(null);
@@ -359,6 +369,20 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
               <li key={title} {...reveal(i * 90)}><h3 className="ac-h2 ac-step-title">{title}</h3><p className="ac-step-body">{body}</p></li>
             ))}
           </ol>
+        </div>
+      </section>
+
+      <section className="ac-field ac-ink ac-faq" aria-labelledby="ac-faq-h">
+        <div className="ac-wrap ac-faq-grid">
+          <h2 id="ac-faq-h" className="ac-h2" {...reveal()}>{t.faqTitle}</h2>
+          <div className="ac-faq-list">
+            {rubroFaq[rubroId][locale].map(([q, a]) => (
+              <div key={q} className="ac-faq-item">
+                <h3 className="ac-faq-q">{q}</h3>
+                <p className="ac-faq-a">{linkify(a)}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
