@@ -1,6 +1,7 @@
 import { caseStudies, casePath, casesHubPath, servicePath, services, servicesHubGuideEs, servicesHubPath, SITE_URL } from "../content/site";
 import { useCaseHubs, useCases } from "../content/use-cases";
 import { demoDefinitions, demoPath, demosHubPath } from "../content/demos";
+import { toolDefinitions, toolHub, toolPath, TOOLS_BASE } from "../content/tools";
 import { rubroDefinitions, rubroPath } from "../content/rubros";
 import { getPublishedPosts } from "../lib/posts.server";
 
@@ -58,6 +59,9 @@ export async function loader() {
     ...localizedPair(demosHubPath("en"), demosHubPath("es"), STATIC_LASTMOD.demos),
     ...demoDefinitions.flatMap((demo) => localizedPair(demoPath("en", demo.slug.en), demoPath("es", demo.slug.es), STATIC_LASTMOD.demos)),
     ...rubroDefinitions.flatMap((rubro) => localizedPair(rubroPath("en", rubro.slug.en), rubroPath("es", rubro.slug.es), STATIC_LASTMOD.demos)),
+    // Spanish-only free tools (hub + one page per tool).
+    { path: TOOLS_BASE, en: "", es: TOOLS_BASE, lastmod: toolHub.lastmod },
+    ...toolDefinitions.map((tool) => ({ path: toolPath(tool.slug), en: "", es: toolPath(tool.slug), lastmod: tool.lastmod })),
     // Spanish-only use-case hubs and landings (no English alternate yet).
     ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path, lastmod: hub.updatedAt })),
     ...useCases.map((item) => ({ path: item.path, en: "", es: item.path, lastmod: item.updatedAt })),
