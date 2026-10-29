@@ -143,6 +143,7 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
         <Link to={workAnchor}>{t.nav.work}</Link>
         <Link to={processAnchor}>{t.nav.process}</Link>
         <Link to={insights}>{t.nav.insights}</Link>
+        {locale === "es" ? <Link to="/es/herramientas">Herramientas</Link> : null}
       </nav>
       <div className="nav-actions">
         <Link
@@ -181,6 +182,7 @@ export function SiteHeader({ locale, chrome = "default" }: { locale: Locale; chr
           <Link to={workAnchor}>{t.nav.work}</Link>
           <Link to={processAnchor}>{t.nav.process}</Link>
           <Link to={insights}>{t.nav.insights}</Link>
+          {locale === "es" ? <Link to="/es/herramientas">Herramientas</Link> : null}
           <a
             href={briefAnchor}
             className="button-ghost-ink"
@@ -230,6 +232,7 @@ export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chr
           <Link to={locale === "en" ? "/services/custom-software" : "/es/servicios/software-a-medida"}>{locale === "en" ? "Custom software" : "Software a medida"}</Link>
           <Link to={locale === "en" ? "/blog" : "/es/blog"}>Blog</Link>
           <Link to={locale === "en" ? "/demos" : "/es/demos"}>{locale === "en" ? "Interactive demos" : "Demos interactivas"}</Link>
+          {locale === "es" ? <Link to="/es/herramientas">Herramientas gratis</Link> : null}
         </div>
         <div className="footer-links">
           <Link to={contactPath(locale)}>{locale === "en" ? "Contact" : "Contacto"}</Link>

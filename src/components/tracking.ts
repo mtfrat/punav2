@@ -29,7 +29,9 @@ export type AnalyticsEvent =
   | "demo_view"
   | "demo_action"
   | "demo_rubro_view"
-  | "demo_rubro_card";
+  | "demo_rubro_card"
+  | "tool_use"
+  | "tool_export";
 
 type QueuedEvent = {
   event: AnalyticsEvent;

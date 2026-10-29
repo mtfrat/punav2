@@ -73,5 +73,7 @@ export default [
     route("runs", "./routes/ops-runs.tsx"),
   ]),
   route("ops/reel-media/:variantId", "./routes/ops-reel-media.ts"),
+  route("es/herramientas", "./routes/herramientas-hub.tsx", { id: "tools-hub-es" }),
+  route("es/herramientas/:slug", "./routes/herramienta.tsx", { id: "tool-es" }),
   route("*", "./routes/not-found.tsx"),
 ] satisfies RouteConfig;

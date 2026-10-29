@@ -24,6 +24,7 @@ import {
 } from "../content/site";
 import { useCases } from "../content/use-cases";
 import { DemosByIndustry } from "../components/demos-strip";
+import { ToolsStrip } from "../components/tools-strip";
 
 function SystemMap({ study, compact = false }: { study: CaseStudyContent; compact?: boolean }) {
   return (
@@ -331,6 +332,7 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
         </section>
 
         <DemosByIndustry locale={locale} placement="home_demos_rubro" />
+        {locale === "es" ? <ToolsStrip placement="home_tools" /> : null}
 
         <section id="process" className="mm-section" aria-labelledby="audit-heading">
           <div className="shell">

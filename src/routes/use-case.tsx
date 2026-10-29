@@ -16,7 +16,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const pathname = new URL(request.url).pathname;
   const useCase = getUseCaseByPath(pathname);
   if (!useCase) throw new Response("Not found", { status: 404 });
-  const siblings = useCases.filter((item) => item.key !== useCase.key).map(({ path, cardTitle, cardBlurb }) => ({ path, cardTitle, cardBlurb }));
+  const siblings = useCase.relatedLinks
+    ? useCase.relatedLinks.map(({ path, title }) => ({ path, cardTitle: title, cardBlurb: "" }))
+    : useCases.filter((item) => item.key !== useCase.key).map(({ path, cardTitle, cardBlurb }) => ({ path, cardTitle, cardBlurb }));
   const hub = getUseCaseHubBySection(useCase.section);
   return { locale: "es" as const, useCase, siblings, hub };
 }
@@ -83,8 +85,19 @@ function ContactLink({ placement, light = false }: { placement: string; light?: 
 export default function UseCasePage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { useCase, siblings, hub } = loaderData;
   const t = copy.es;
-  // Optional blocks between "how" and "Cómo trabajamos" (guide, cases): keeps the light/soft alternation.
-  const extraSections = (useCase.guide?.length ? 1 : 0) + (useCase.cases?.length ? 1 : 0);
+  // Light/soft alternation runs through every block in order, optional ones only count when they render.
+  let sectionIndex = 0;
+  const nextTone = () => (sectionIndex++ % 2 === 0 ? "section light-section" : "section soft-section");
+  const sectionsTone = useCase.sections?.length ? nextTone() : "";
+  const beforeAfterTone = nextTone();
+  const howTone = nextTone();
+  const demoLinksTone = useCase.demoLinks ? nextTone() : "";
+  const guideTone = useCase.guide?.length ? nextTone() : "";
+  const casesTone = useCase.cases?.length ? nextTone() : "";
+  const stepsTone = nextTone();
+  const fitTone = nextTone();
+  const hasSources = Boolean(useCase.sources?.length || useCase.disclaimer);
+  const sourcesTone = hasSources ? nextTone() : "";
   useEffect(() => trackEvent("use_case_view", { locale: "es", use_case: useCase.key }), [useCase.key]);
 
   return (
@@ -109,7 +122,21 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className="section light-section" aria-labelledby="before-after-heading">
+        {useCase.sections?.length ? (
+          <section className={sectionsTone} aria-label="Contenido de la página">
+            <div className="shell commercial-expand-stack">
+              {useCase.sections.map((block) => (
+                <article className="commercial-h2-block" key={block.heading}>
+                  <h2>{block.heading}</h2>
+                  {block.paragraphs.map((paragraph) => <p key={paragraph}><RichText text={paragraph} /></p>)}
+                  {block.items?.length ? <ul className="use-case-list">{block.items.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section className={beforeAfterTone} aria-labelledby="before-after-heading">
           <div className="shell">
             <header className="section-heading">
               <p className="eyebrow">El problema</p>
@@ -129,7 +156,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className="section soft-section" aria-label={useCase.howTitle}>
+        <section className={howTone} aria-label={useCase.howTitle}>
           <div className="shell commercial-expand-stack">
             <h2>{useCase.howTitle}</h2>
             {useCase.how.map((item) => (
@@ -141,8 +168,28 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
+        {useCase.demoLinks ? (
+          <section className={demoLinksTone} aria-labelledby="use-case-demo-links-heading">
+            <div className="shell commercial-expand-stack">
+              <h2 id="use-case-demo-links-heading">{useCase.demoLinks.title}</h2>
+              <p>{useCase.demoLinks.body}</p>
+              <ul className="rubro-link-list">
+                {useCase.demoLinks.links.map((link) => (
+                  <li key={link.path}>
+                    <Link to={link.path} onClick={() => trackEvent("cta_click", { locale: "es", placement: `use_case_${useCase.key}_demo_links`, destination: link.path })}>
+                      <span className="rubro-link-label">{link.label}</span>
+                      {link.note ? <span className="rubro-link-note">{link.note}</span> : null}
+                      <ArrowRight aria-hidden="true" size={16} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        ) : null}
+
         {useCase.guide?.length ? (
-          <section className="section light-section" aria-labelledby="use-case-guide-heading">
+          <section className={guideTone} aria-labelledby="use-case-guide-heading">
             <div className="shell commercial-expand-stack">
               <h2 id="use-case-guide-heading">{useCase.guideTitle}</h2>
               {useCase.guideIntro ? <p>{useCase.guideIntro}</p> : null}
@@ -157,7 +204,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
         ) : null}
 
         {useCase.cases?.length ? (
-          <section className={useCase.guide?.length ? "section soft-section" : "section light-section"} aria-labelledby="use-case-cases-heading">
+          <section className={casesTone} aria-labelledby="use-case-cases-heading">
             <div className="shell commercial-expand-stack">
               <h2 id="use-case-cases-heading">{useCase.casesTitle}</h2>
               {useCase.casesIntro ? <p>{useCase.casesIntro}</p> : null}
@@ -171,7 +218,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </section>
         ) : null}
 
-        <section className={extraSections % 2 === 1 ? "section soft-section" : "section light-section"}>
+        <section className={stepsTone}>
           <div className="shell two-column">
             <header className="section-heading">
               <p className="eyebrow">Cómo trabajamos</p>
@@ -186,7 +233,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className={extraSections % 2 === 1 ? "section light-section" : "section soft-section"}>
+        <section className={fitTone}>
           <div className="shell two-column">
             <header className="section-heading">
               <p className="eyebrow">¿Es para vos?</p>
@@ -195,6 +242,27 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
             <ul className="check-list">{useCase.fit.map((item) => <li key={item}><CheckCircle2 aria-hidden="true" /><span>{item}</span></li>)}</ul>
           </div>
         </section>
+
+        {hasSources ? (
+          <section className={sourcesTone} aria-labelledby="use-case-sources-heading">
+            <div className="shell commercial-expand-stack">
+              {useCase.sources?.length ? (
+                <>
+                  <h2 id="use-case-sources-heading">Fuentes oficiales</h2>
+                  {useCase.reviewedAt ? <p><strong>Revisado el {useCase.reviewedAt}.</strong> Las normas y los calendarios cambian: verificá siempre la fecha vigente en la fuente.</p> : null}
+                  <ul className="use-case-list">
+                    {useCase.sources.map((source) => (
+                      <li key={source.href}><a href={source.href} target="_blank" rel="noopener noreferrer">{source.label}</a></li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <h2 id="use-case-sources-heading">Antes de decidir</h2>
+              )}
+              {useCase.disclaimer ? <p className="use-case-disclaimer">{useCase.disclaimer}</p> : null}
+            </div>
+          </section>
+        ) : null}
 
         <section className="section faq-section" id="faq">
           <div className="shell faq-grid">

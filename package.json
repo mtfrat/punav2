@@ -24,11 +24,13 @@
     "nightshift": "node nightshift/runner.mjs",
     "nightshift:dry-run": "node nightshift/runner.mjs --dry-run",
     "test:nightshift": "node nightshift/tests/test-nightshift.mjs",
-    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run test:art-variety && npm run test:editorial && npm run test:seo-metadata && npm run test:llms && npm run test:lead-alert && npm run test:demos && npm run test:measurement && npm run build && npm run test:worker-bundle && npm run test:seo",
+    "test": "npm run lint && npm run test:workflows && npm run test:safety && npm run test:content-worker && npm run test:social-studio && npm run test:art-variety && npm run test:editorial && npm run test:seo-metadata && npm run test:llms && npm run test:lead-alert && npm run test:demos && npm run test:measurement && npm run test:tools && npm run test:rubros && npm run build && npm run test:worker-bundle && npm run test:seo",
     "test:llms": "node --experimental-strip-types scripts/test-llms.mjs",
     "test:lead-alert": "node --experimental-strip-types scripts/test-lead-alert.mjs",
     "test:demos": "node --experimental-strip-types scripts/test-demos-rubros.mjs",
-    "test:measurement": "node --experimental-strip-types scripts/test-measurement.mjs"
+    "test:measurement": "node --experimental-strip-types scripts/test-measurement.mjs",
+    "test:tools": "node --experimental-strip-types scripts/test-tools.mjs",
+    "test:rubros": "node --experimental-strip-types scripts/test-rubro-landings.mjs"
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",

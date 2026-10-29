@@ -2,6 +2,8 @@ import type { Config } from "@react-router/dev/config";
 import { vercelPreset } from "@vercel/react-router/vite";
 import { demoDefinitions } from "./src/content/demos";
 import { rubroDefinitions } from "./src/content/rubros";
+import { rubroUseCases } from "./src/content/use-cases-rubros";
+import { toolDefinitions, toolPath, TOOLS_BASE } from "./src/content/tools";
 
 const marketingRoutes = [
   "/",
@@ -48,10 +50,13 @@ const marketingRoutes = [
   "/es/automatizaciones/conciliacion-bancaria",
   "/es/integraciones/tienda-nube",
   "/es/integraciones/mercado-libre",
+  ...rubroUseCases.map((page) => page.path),
   "/demos",
   "/es/demos",
   ...demoDefinitions.flatMap((demo) => [`/demos/${demo.slug.en}`, `/es/demos/${demo.slug.es}`]),
   ...rubroDefinitions.flatMap((rubro) => [`/demos/for/${rubro.slug.en}`, `/es/demos/para/${rubro.slug.es}`]),
+  TOOLS_BASE,
+  ...toolDefinitions.map((tool) => toolPath(tool.slug)),
 ];
 
 export default {
