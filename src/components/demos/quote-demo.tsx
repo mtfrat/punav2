@@ -19,8 +19,8 @@ const CATALOG: Product[] = [
 
 const CLIENTS = [
   { id: "new", es: "Cliente nuevo (lista)", en: "New client (list)", disc: 0 },
-  { id: "a", es: "Autoservicio Los Pinos · Mayorista A", en: "Los Pinos Grocery · Wholesale A", disc: 5 },
-  { id: "b", es: "Cadena Norte · Distribuidor B", en: "Norte Chain · Distributor B", disc: 8 },
+  { id: "a", es: "Autoservicio Los Pinos · Mayorista", en: "Los Pinos Grocery · Wholesale A", disc: 5 },
+  { id: "b", es: "Cadena Norte · Distribuidor", en: "Norte Chain · Distributor B", disc: 8 },
   { id: "vip", es: "Hotel Costanera · VIP", en: "Costanera Hotel · VIP", disc: 12 },
 ];
 
@@ -36,8 +36,8 @@ const T = {
     emptyCart: "El carrito está vacío. Sumá productos del catálogo o pegá un pedido de WhatsApp.",
     summary: "Resumen", subtotalList: "Subtotal a precio de lista", volDisc: "Descuento por volumen", clientDisc: "Descuento de cliente", transferDisc: "Descuento por transferencia", subtotal: "Subtotal", ivaLine: "IVA 21%", total: "Total",
     kpiItems: "Unidades", kpiSaved: "Ahorro del cliente", kpiTotal: "Total", kpiLines: "Productos",
-    quote: "Cotización", valid: "Válida por 7 días", date: "Fecha", to: "Para", conditions: "Condiciones: precios en pesos, entrega en 48 h en CABA y GBA, stock sujeto a confirmación.", sampleTag: "DATOS DE EJEMPLO · DOCUMENTO ILUSTRATIVO",
-    seller: "Distribuidora Ejemplo S.A.", cols2: { qty: "Cant.", desc: "Descripción", unit: "P. unit.", sub: "Subtotal" },
+    quote: "Cotización", valid: "Válida por 7 días", date: "Fecha", to: "Para", conditions: "Condiciones: precios en pesos, entrega en 48 h en CABA y GBA, stock sujeto a confirmación.", sampleTag: "DATOS FICTICIOS · DOCUMENTO ILUSTRATIVO",
+    seller: "Distribuidora Cerro Alto S.A.", cols2: { qty: "Cant.", desc: "Descripción", unit: "P. unit.", sub: "Subtotal" },
     msg: "Mensaje de WhatsApp", copy: "Copiar mensaje", copied: "Copiado", copyErr: "No pude copiar automáticamente. Seleccioná el texto del cuadro y copialo a mano.", print: "Imprimir / guardar PDF",
     approve: "Aprobar y enviar al cliente", approvedMsg: "Cotización aprobada (envío simulado)", newQuote: "Nueva cotización",
     logParsed: (n: number, u: number) => `Leí el pedido de WhatsApp y armé el carrito: ${n} productos, ${u} unidades.`, logApproved: (q: string, c: string, tot: string) => `Aprobaste la cotización ${q} para ${c} por ${tot} (envío simulado).`, logCopied: "Copiaste el mensaje de WhatsApp.", logClient: (c: string) => `Cambiaste el cliente a ${c}: recalculé descuentos.`,
@@ -54,8 +54,8 @@ const T = {
     emptyCart: "The cart is empty. Add products from the catalog or paste a WhatsApp order.",
     summary: "Summary", subtotalList: "Subtotal at list price", volDisc: "Volume discount", clientDisc: "Client discount", transferDisc: "Transfer discount", subtotal: "Subtotal", ivaLine: "VAT 21%", total: "Total",
     kpiItems: "Units", kpiSaved: "Client savings", kpiTotal: "Total", kpiLines: "Products",
-    quote: "Quote", valid: "Valid for 7 days", date: "Date", to: "For", conditions: "Terms: prices in pesos, delivery within 48 h in Buenos Aires, stock subject to confirmation.", sampleTag: "SAMPLE DATA · ILLUSTRATIVE DOCUMENT",
-    seller: "Example Distributor Inc.", cols2: { qty: "Qty", desc: "Description", unit: "Unit price", sub: "Subtotal" },
+    quote: "Quote", valid: "Valid for 7 days", date: "Date", to: "For", conditions: "Terms: prices in pesos, delivery within 48 h in Buenos Aires, stock subject to confirmation.", sampleTag: "FICTIONAL DATA · ILLUSTRATIVE DOCUMENT",
+    seller: "Distribuidora Cerro Alto S.A.", cols2: { qty: "Qty", desc: "Description", unit: "Unit price", sub: "Subtotal" },
     msg: "WhatsApp message", copy: "Copy message", copied: "Copied", copyErr: "I couldn't copy automatically. Select the text in the box and copy it by hand.", print: "Print / save as PDF",
     approve: "Approve and send to client", approvedMsg: "Quote approved (simulated send)", newQuote: "New quote",
     logParsed: (n: number, u: number) => `I read the WhatsApp order and built the cart: ${n} products, ${u} units.`, logApproved: (q: string, c: string, tot: string) => `You approved quote ${q} for ${c} totaling ${tot} (simulated send).`, logCopied: "You copied the WhatsApp message.", logClient: (c: string) => `You switched the client to ${c}: I recalculated discounts.`,

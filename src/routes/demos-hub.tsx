@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import "../demos.css";
 import { CalButton, PageShell, trackEvent } from "../components/marketing";
-import { DemoHeading, ExampleBadge } from "../components/demos/shared";
+import { DemoHeading } from "../components/demos/shared";
 import { DEMO_ICONS, VERTICAL_ICONS } from "../components/demos/icons";
 import { demoDefinitions, demoOgPath, demoPath, demosHubCopy, demosHubPath, type VerticalId } from "../content/demos";
 import { rubroDefinitions, rubroPath, rubrosHubCopy } from "../content/rubros";
@@ -28,7 +28,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     path,
     alternatePath: data.alternatePath,
     image: demoOgPath(locale, "hub"),
-    imageAlt: locale === "es" ? "Demos interactivas de automatización de Puna Tech, con datos de ejemplo." : "Puna Tech interactive automation demos, with sample data.",
+    imageAlt: locale === "es" ? "Demos interactivas de automatización de Puna Tech, con datos ficticios." : "Puna Tech interactive automation demos, with fictional data.",
     imageWidth: 1200,
     imageHeight: 630,
     imageType: "image/png",
@@ -55,7 +55,7 @@ export default function DemosHub({ loaderData }: { loaderData: Awaited<ReturnTyp
             <p className="dm-kicker">{t.eyebrow} · Puna Tech</p>
             <h1 className="dm-h1"><DemoHeading text={t.h1} mark={t.mark} /></h1>
             <p className="dm-lead">{t.lead}</p>
-            <p><ExampleBadge loc={locale} /> <span className="dm-hero-note">{t.exampleNote}</span></p>
+            <p className="dm-hero-note">{t.exampleNote}</p>
           </div>
         </section>
 

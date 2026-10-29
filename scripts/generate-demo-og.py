@@ -33,7 +33,7 @@ DEMOS = {
     "para-real-estate": {"es": ("Demos para inmobiliarias", "Consultas con puntaje y cobros a tiempo"), "en": ("Demos for real estate agencies", "Scored inquiries and rent on time")},
     "para-clinics": {"es": ("Demos para clínicas y consultorios", "Horas del equipo sin planillas a mano"), "en": ("Demos for clinics and practices", "Team hours without hand-made sheets")},
 }
-SAMPLE = {"es": "DATOS DE EJEMPLO", "en": "SAMPLE DATA"}
+SAMPLE = {"es": "DATOS FICTICIOS", "en": "FICTIONAL DATA"}
 
 
 def wrap(draw, text, font, max_w):

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { demoDefinitions, demosHubCopy } from "../src/content/demos.ts";
 import { rubroDefinitions, rubroPath, findRubroBySlug, rubroOgPath } from "../src/content/rubros.ts";
 import { SAMPLE_BATCH, checkBatch, expectedIva, formatCuit, isValidCae, isValidCuit, toCsv } from "../src/lib/demo-invoices.ts";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const BRAND = " | Puna Tech";
 const locales = ["es", "en"];
@@ -104,6 +104,22 @@ assert.deepEqual(codes("d5"), ["perc"]);
 assert.deepEqual(codes("d6"), ["cuit-invalid"]);
 assert.deepEqual(codes("d7"), ["cae-invalid"]);
 assert.deepEqual(codes("d8"), ["cuit-missing", "total"]);
-assert.ok(SAMPLE_BATCH.every((r) => !/real|cliente real/i.test(r.emisor)) && SAMPLE_BATCH.every((r) => /Ejemplo/.test(r.emisor)), "invented suppliers only");
+assert.ok(SAMPLE_BATCH.every((r) => !/real|cliente real/i.test(r.emisor)), "invented suppliers only");
+
+// --- fictional names must read as real-looking names: never "Ejemplo", "Example", "Demo", "Test", "Cliente A", "Proveedor X"...
+const PLACEHOLDER_NAME = /\b(ejemplo|example|demo|test|prueba|ficticio|fake|lorem|acme|foo)\b|\b(cliente|proveedor|client|supplier|empresa|company)\s+[A-Z0-9]\b/i;
+assert.ok(SAMPLE_BATCH.every((r) => !PLACEHOLDER_NAME.test(r.emisor)), "supplier names must not look like placeholders");
+for (const file of ["src/components/demos/monthly-docs-demo.tsx", "src/components/demos/policies-renewals-demo.tsx", "src/components/demos/collections-demo.tsx", "src/components/demos/rubro-pages.tsx"]) {
+  const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+  const names = [...src.matchAll(/(?:name|holder|insurer|client|main|seller):\s*"([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(names.length > 0, `${file}: expected to find fictional names`);
+  for (const name of names) assert.ok(!PLACEHOLDER_NAME.test(name), `${file}: placeholder-looking name "${name}"`);
+}
+const quoteSrc = readFileSync(new URL("../src/components/demos/quote-demo.tsx", import.meta.url), "utf8");
+assert.ok(!/seller:\s*"[^"]*(example|ejemplo|demo)/i.test(quoteSrc), "quote seller must not be a placeholder");
+assert.ok(!/(Mayorista|Distribuidor) [AB]"/.test(quoteSrc), "quote clients must not be labelled A/B");
+const notice = { es: "Datos ficticios con fines de demostración.", en: "Fictional data for demonstration purposes." };
+assert.ok(demosHubCopy.es.exampleNote.startsWith(notice.es) && demosHubCopy.en.exampleNote.startsWith(notice.en), "hub shows the single fictional-data notice");
+
 
 console.log("demos por rubro: ok");

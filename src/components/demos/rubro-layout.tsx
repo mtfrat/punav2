@@ -17,7 +17,7 @@ import { wantThisHref, wantThisLabel } from "../../content/demo-cta";
 
 const T = {
   es: {
-    exampleNote: "Datos de ejemplo. Nada de esto sale del navegador ni se envía a nadie.",
+    exampleNote: "Datos ficticios con fines de demostración. Nada de esto sale del navegador ni se envía a nadie.",
     crumbs: "Migas de pan",
     seeDemos: "Probá las demos",
     videoNote: "Video de 34 segundos, sin voz.",
@@ -31,7 +31,7 @@ const T = {
     customTitle: "Esto lo armamos a medida",
   },
   en: {
-    exampleNote: "Sample data. Nothing here leaves your browser or is sent to anyone.",
+    exampleNote: "Fictional data for demonstration purposes. Nothing here leaves your browser or is sent to anyone.",
     crumbs: "Breadcrumb",
     seeDemos: "Try the demos",
     videoNote: "34-second video, no voiceover.",
@@ -48,7 +48,7 @@ const T = {
 
 export interface RubroChapter {
   demo: DemoId;
-  /** Fragmento de interfaz armado con los datos de ejemplo de esa demo. */
+  /** Fragmento de interfaz armado con los datos ficticios de esa demo. */
   render: (loc: Loc) => ReactNode;
 }
 
@@ -85,7 +85,7 @@ function useReveal(root: RefObject<HTMLElement | null>) {
 
 export type Tone = "good" | "bad" | "mute";
 
-/** Hero vivo genérico: elegís un ítem de la lista y ves lo que leyó el agente. Todo con datos de ejemplo. */
+/** Hero vivo genérico: elegís un ítem de la lista y ves lo que leyó el agente. Todo con datos ficticios. */
 export interface PickRow {
   id: string;
   /** Texto del botón de la primera columna. */
@@ -109,9 +109,8 @@ export interface PickHeroProps {
   rows: PickRow[];
   /** Fila final opcional (totales). Primer valor es la etiqueta. */
   foot?: string[];
-  sample: string;
 }
-export function PickHero({ loc, rubro, readTitle, fields, tableTitle, pickLabel, firstCol, cols, rows, foot, sample }: PickHeroProps) {
+export function PickHero({ loc, rubro, readTitle, fields, tableTitle, pickLabel, firstCol, cols, rows, foot }: PickHeroProps) {
   const [sel, setSel] = useState(0);
   const cur = rows[sel];
   const cls = (c: { num?: boolean; hideSm?: boolean }) => [c.num ? "ac-num" : "", c.hideSm ? "ac-hide-sm" : ""].filter(Boolean).join(" ") || undefined;
@@ -151,18 +150,17 @@ export function PickHero({ loc, rubro, readTitle, fields, tableTitle, pickLabel,
           ) : null}
         </table>
       </section>
-      <p className="ac-ui-foot">{sample}</p>
     </div>
   );
 }
 
-/** Fragmento estático: bloques de lista, tabla o borrador, armados con datos de ejemplo. */
+/** Fragmento estático: bloques de lista, tabla o borrador, armados con datos ficticios. */
 export type FragBlock =
   | { kind: "rows"; title: string; rows: { main: string; value?: string; sub?: string; tag?: string; tone?: Tone }[]; total?: [string, string] }
   | { kind: "table"; title: string; cols: string[]; rows: (string | [string, Tone])[][]; midFrom?: number }
   | { kind: "draft"; title: string; to: string; body: string; state: string };
 
-export function Fragment({ blocks, sample }: { blocks: FragBlock[]; sample: string }) {
+export function Fragment({ blocks }: { blocks: FragBlock[] }) {
   return (
     <div className="ac-ui" data-ui>
       {blocks.map((b, i) => {
@@ -214,7 +212,6 @@ export function Fragment({ blocks, sample }: { blocks: FragBlock[]; sample: stri
           </div>
         );
       })}
-      <p className="ac-ui-foot">{sample}</p>
     </div>
   );
 }

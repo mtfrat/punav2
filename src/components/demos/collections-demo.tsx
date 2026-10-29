@@ -73,7 +73,7 @@ const T = {
 function draftText(loc: Loc, stepIndex: number, channel: Channel, inv: Invoice) {
   const amount = money(inv.amount, loc);
   const date = exampleDate(inv.dueOffset, loc);
-  const link = "mpago.la/ejemplo";
+  const link = "mpago.la/k7Qp2x";
   if (loc === "es") {
     const body = [
       `Hola ${inv.client.split(" ")[0]}, ¿cómo andan? Te recordamos que la factura ${inv.id} por ${amount} vence el ${date}. Podés pagarla acá: ${link}. ¡Gracias!`,
