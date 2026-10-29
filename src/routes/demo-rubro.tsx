@@ -8,6 +8,7 @@ import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { DemoHeading, ExampleBadge } from "../components/demos/shared";
 import { DEMO_ICONS, VERTICAL_ICONS } from "../components/demos/icons";
 import VideoDemo, { VIDEO_BASE } from "../components/demos/video-demo";
+import RubroContables from "../components/demos/rubro-contables";
 import { demoDefinitions, demoPath, demosHubCopy, demosHubPath } from "../content/demos";
 import { findRubroBySlug, rubroDefinitions, rubroOgPath, rubroPath, rubrosHubCopy } from "../content/rubros";
 import { contactPath, SITE_URL, type Locale } from "../content/chrome";
@@ -92,6 +93,15 @@ export default function DemoRubro({ loaderData }: { loaderData: Awaited<ReturnTy
   const briefHref = `${contactPath(locale)}?bloque=${rubro.placement}#brief-form`;
 
   useEffect(() => { trackEvent("demo_rubro_view", { locale, rubro: id }); }, [locale, id]);
+
+  // Estudios contables tiene su propio diseño; los demás rubros usan el layout común de abajo.
+  if (id === "accounting") {
+    return (
+      <PageShell locale={locale}>
+        <RubroContables locale={locale} />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell locale={locale}>
