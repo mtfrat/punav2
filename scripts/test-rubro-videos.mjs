@@ -129,7 +129,7 @@ if (process.argv.includes("--build")) {
       assert.ok(html.includes("https://creativecommons.org/licenses/by/4.0/"), `${route}: license link`);
     }
   }
-  console.log("Verified rubro video markup in prerendered HTML (8 rubro pages).");
+  console.log(`Verified rubro video markup in prerendered HTML (${rubroDefinitions.length * locales.length} rubro pages).`);
 } else {
   console.log(`Rubro videos OK: ${(total / MB).toFixed(1)} MB across ${Object.keys(rubroVideos).length} rubros.`);
 }
