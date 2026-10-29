@@ -7,6 +7,10 @@ import { getPublishedPosts } from "../lib/posts.server";
 const withoutModelVersions = (tech: string) =>
   tech.replace(/OpenAI GPT-4o/i, "OpenAI").replace(/Claude 3\.5 Sonnet/i, "Claude (Anthropic)").replace(/Gemini 2\.5/i, "Gemini (Google)");
 
+// Case-study prose also names model versions; the extended spec stays version-free so it never ages.
+const withoutModelVersionsText = (text: string) =>
+  text.replace(/GPT-4o/gi, "modelos de OpenAI").replace(/Claude 3\.5 Sonnet/gi, "Claude (Anthropic)").replace(/Gemini 1\.5( Pro)?/gi, "Gemini (Google)");
+
 export async function loader() {
   const [english, spanish] = await Promise.all([getPublishedPosts("en", 100), getPublishedPosts("es", 100)]);
   const lines = [
@@ -76,7 +80,7 @@ export async function loader() {
     "## Preguntas frecuentes",
     ...llmsFaqLines,
   ];
-  return new Response(lines.join("\n"), {
+  return new Response(withoutModelVersionsText(lines.join("\n")), {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
       "Cache-Control": "public, max-age=0, s-maxage=3600",

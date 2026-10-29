@@ -160,6 +160,15 @@ for (const route of extraPaths) {
   checkFaqVisible(route, html, nodes, 3);
 }
 
+// Live-only: SSR text endpoints stay free of stale model versions and the old "across the US" claim (GEO spec acceptance).
+if (base) {
+  for (const route of ["/llms-full.txt", "/llms.txt", "/puna.md"]) {
+    const text = await load(route);
+    if (text && /gpt-4o|claude 3\.5|gemini 1\.5|across the US/i.test(text)) fail(route, "mentions a stale model version or 'across the US'");
+    if (text && /Fraticelli/i.test(text)) fail(route, "publishes the founder surname");
+  }
+}
+
 if (failures.length) {
   console.error(`GEO build checks failed (${failures.length}):\n- ${failures.join("\n- ")}`);
   process.exit(1);
