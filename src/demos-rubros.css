@@ -1,4 +1,4 @@
-/* Landing "Estudios contables". Capítulos de color a sangre, una tipografía de títulos (Anton) y la paleta Puna. */
+/* Landings de rubro (contables, jurídicos, seguros, inmobiliarias, clínicas). Capítulos de color a sangre, una tipografía de títulos (Anton) y la paleta Puna. */
 .ac {
   --ac-ink: #181410;
   --ac-orange: #ff6b00;
@@ -33,11 +33,15 @@
 .ac-tag, .ac-note, .ac-credit, .ac-ui-foot { font-size: 0.875rem; line-height: 1.5; }
 .ac-tag { font-weight: 700; margin-bottom: 1.25rem !important; }
 
+/* ---------- titulares largos (rubros con dolor en una frase) ---------- */
+.ac-long .ac-h1 { font-size: clamp(2.1rem, 6.3vw, 6.3rem); }
+.ac-long .ac-line { white-space: normal; }
+
 /* ---------- hero ---------- */
 .ac-crumbs { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--ac-cream); }
 .ac-crumbs a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
 .ac-crumbs a:hover { color: var(--ac-orange); }
-.ac-line { display: block; overflow: hidden; padding-bottom: 0.04em; white-space: nowrap; }
+.ac-line { display: block; overflow: hidden; padding: 0.2em 0 0.04em; margin-top: -0.2em; white-space: nowrap; }
 .ac-line-accent { color: var(--ac-orange); }
 .ac-line-in { display: block; animation: ac-rise 0.9s var(--ac-ease) both; }
 .ac-fade { animation: ac-fade 0.7s var(--ac-ease) both; }
@@ -79,6 +83,7 @@
 .ac-ui-dl dt { font-size: 0.875rem; color: var(--ac-muted); }
 .ac-ui-dl dd { margin: 0; font-weight: 650; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .ac-ui-ok { margin-top: 0.8rem !important; font-size: 0.875rem; color: var(--ac-good) !important; font-weight: 650; }
+.ac-ui-ok.is-bad { color: var(--ac-bad) !important; }
 .ac-ui-foot { color: var(--ac-muted) !important; }
 .ac-ui-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .ac-ui-table th, .ac-ui-table td { padding: 0.55rem 0.5rem; text-align: left; vertical-align: top; font-weight: 500; border-bottom: 1px solid #e0d8c8; }
@@ -105,6 +110,21 @@
 .ac-draft-to { color: var(--ac-muted) !important; font-size: 0.875rem; }
 .ac-draft-body { font-weight: 550; }
 .ac-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- tonos, listas y capítulo a medida ---------- */
+.ac-tone-good { color: var(--ac-good); }
+.ac-tone-bad { color: var(--ac-bad); }
+.ac-tone-mute { color: var(--ac-muted); }
+.ac-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+.ac-rows li { background: #f3eddc; padding: 0.8rem 1rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.15rem 1rem; align-items: baseline; }
+.ac-row-main { font-weight: 650; overflow-wrap: anywhere; }
+.ac-row-value { font-weight: 650; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.ac-row-sub { grid-column: 1 / -1; color: var(--ac-muted) !important; }
+.ac-row-tag { grid-column: 1 / -1; font-weight: 750; }
+.ac-row-total { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.75rem !important; padding-top: 0.6rem; border-top: 2px solid var(--ac-ink); font-weight: 750; }
+.ac-custom-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: clamp(1.5rem, 4vw, 4rem); align-items: start; }
+.ac-custom-grid .ac-h2 { grid-column: 1 / span 6; margin: 0; }
+.ac-custom-grid .ac-lead { grid-column: 7 / -1; margin: 0; max-width: 34rem; }
 
 /* ---------- video ---------- */
 .ac-video-head { max-width: 62rem; }
@@ -156,7 +176,7 @@
 /* ---------- responsive ---------- */
 @media (max-width: 960px) {
   .ac-hero-copy, .ac-hero-ui, .ac-split-text, .ac-split-ui, .ac-split-flip .ac-split-text, .ac-split-flip .ac-split-ui,
-  .ac-video-media, .ac-video-side, .ac-cta-grid .ac-h2, .ac-cta-side { grid-column: 1 / -1; grid-row: auto; }
+  .ac-video-media, .ac-video-side, .ac-cta-grid .ac-h2, .ac-cta-side, .ac-custom-grid .ac-h2, .ac-custom-grid .ac-lead { grid-column: 1 / -1; grid-row: auto; }
   .ac-steps li { grid-template-columns: minmax(0, 1fr); }
   .ac-step-title, .ac-step-body { grid-column: 1 / -1; }
 }
@@ -171,4 +191,5 @@
 }
 @media (max-width: 700px) {
   .ac-h1 { font-size: 10.3vw; }
+  .ac-long .ac-h1 { font-size: 9vw; }
 }
