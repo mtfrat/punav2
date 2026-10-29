@@ -235,6 +235,7 @@ export function SiteFooter({ locale, chrome = "default" }: { locale: Locale; chr
           {locale === "es" ? <Link to="/es/herramientas">Herramientas gratis</Link> : null}
         </div>
         <div className="footer-links">
+          <Link to={locale === "en" ? "/about" : "/es/sobre-puna"}>{locale === "en" ? "About" : "Sobre Puna"}</Link>
           <Link to={contactPath(locale)}>{locale === "en" ? "Contact" : "Contacto"}</Link>
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           <a href="https://www.linkedin.com/company/puna-tech" target="_blank" rel="noreferrer">LinkedIn <ExternalLink aria-hidden="true" size={14} /></a>

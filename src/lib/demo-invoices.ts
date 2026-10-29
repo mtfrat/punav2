@@ -1,6 +1,6 @@
 /**
  * Pure checks behind the "Facturas de compra de tus clientes" demo (also unit-tested in scripts/test-demos-rubros.mjs).
- * Sample data only: nothing here talks to ARCA or to any external service.
+ * Fictional data only: nothing here talks to ARCA or to any external service.
  */
 
 export interface PurchaseInvoice {

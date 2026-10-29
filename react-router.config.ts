@@ -40,6 +40,8 @@ const marketingRoutes = [
   "/es/terminos",
   "/contact",
   "/es/contacto",
+  "/es/sobre-puna",
+  "/about",
   "/es/automatizaciones",
   "/es/automatizaciones/carga-de-facturas-proveedores",
   "/es/integraciones",

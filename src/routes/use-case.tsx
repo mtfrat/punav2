@@ -3,6 +3,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
 import { Accordion, CalButton, PageShell, trackEvent } from "../components/marketing";
+import { DemosByIndustry } from "../components/demos-strip";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { RichText } from "../components/rich-text";
 import { contactPath, copy, servicesHubPath, SITE_URL } from "../content/site";
@@ -302,6 +303,8 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
             </ol>
           </div>
         </section>
+
+        <DemosByIndustry locale="es" placement="use_case_demos_rubro" />
 
         <section className="detail-cta dark-section">
           <div className="shell">

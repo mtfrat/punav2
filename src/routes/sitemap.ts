@@ -18,15 +18,18 @@ function localizedPair(en: string, es: string, lastmod?: string): SitemapItem[] 
  * Use-case pages and hubs carry their own `updatedAt` in content/use-cases.ts; a service page can set `updatedAt` in content/catalog.ts (per locale); blog posts use `updated_at`.
  */
 export const STATIC_LASTMOD = {
-  home: "2026-10-15",
+  home: "2026-10-29",
   servicesHub: "2026-10-15",
-  service: "2026-10-16",
-  casesHub: "2026-10-16",
-  caseStudy: "2026-10-15",
+  service: "2026-10-29",
+  casesHub: "2026-10-29",
+  caseStudy: "2026-10-29",
   blogHub: "2026-10-13",
-  legal: "2026-10-13",
+  legal: "2026-10-29",
   contact: "2026-10-13",
   demos: "2026-10-29",
+  about: "2026-10-29",
+  /** Use-case hubs and landings got the by-industry demo links (2026-10-29). */
+  useCaseLinks: "2026-10-29",
 } as const;
 
 function latest(...dates: (string | undefined)[]) {
@@ -56,6 +59,7 @@ export async function loader() {
     ...localizedPair("/privacy", "/es/privacidad", STATIC_LASTMOD.legal),
     ...localizedPair("/terms", "/es/terminos", STATIC_LASTMOD.legal),
     ...localizedPair("/contact", "/es/contacto", STATIC_LASTMOD.contact),
+    ...localizedPair("/about", "/es/sobre-puna", STATIC_LASTMOD.about),
     ...localizedPair(demosHubPath("en"), demosHubPath("es"), STATIC_LASTMOD.demos),
     ...demoDefinitions.flatMap((demo) => localizedPair(demoPath("en", demo.slug.en), demoPath("es", demo.slug.es), STATIC_LASTMOD.demos)),
     ...rubroDefinitions.flatMap((rubro) => localizedPair(rubroPath("en", rubro.slug.en), rubroPath("es", rubro.slug.es), STATIC_LASTMOD.demos)),
@@ -63,8 +67,8 @@ export async function loader() {
     { path: TOOLS_BASE, en: "", es: TOOLS_BASE, lastmod: toolHub.lastmod },
     ...toolDefinitions.map((tool) => ({ path: toolPath(tool.slug), en: "", es: toolPath(tool.slug), lastmod: tool.lastmod })),
     // Spanish-only use-case hubs and landings (no English alternate yet).
-    ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path, lastmod: hub.updatedAt })),
-    ...useCases.map((item) => ({ path: item.path, en: "", es: item.path, lastmod: item.updatedAt })),
+    ...useCaseHubs.map((hub) => ({ path: hub.path, en: "", es: hub.path, lastmod: latest(hub.updatedAt, STATIC_LASTMOD.useCaseLinks) })),
+    ...useCases.map((item) => ({ path: item.path, en: "", es: item.path, lastmod: latest(item.updatedAt, STATIC_LASTMOD.useCaseLinks) })),
   ];
   const spanishByGroup = new Map(spanish.map((post) => [post.translation_group_id, post]));
   const blogItems: SitemapItem[] = [];

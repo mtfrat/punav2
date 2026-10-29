@@ -19,8 +19,8 @@ const CATALOG: Product[] = [
 
 const CLIENTS = [
   { id: "new", es: "Cliente nuevo (lista)", en: "New client (list)", disc: 0 },
-  { id: "a", es: "Autoservicio Los Pinos · Mayorista", en: "Los Pinos Grocery · Wholesale A", disc: 5 },
-  { id: "b", es: "Cadena Norte · Distribuidor", en: "Norte Chain · Distributor B", disc: 8 },
+  { id: "a", es: "Autoservicio Los Pinos · Mayorista", en: "Los Pinos Grocery · Wholesale", disc: 5 },
+  { id: "b", es: "Cadena Norte · Distribuidor", en: "Norte Chain · Distributor", disc: 8 },
   { id: "vip", es: "Hotel Costanera · VIP", en: "Costanera Hotel · VIP", disc: 12 },
 ];
 

@@ -14,11 +14,11 @@ function legalDescription(kind: "privacy" | "terms", locale: Locale) {
   if (kind === "terms") {
     return locale === "en"
       ? "Terms of use for the Puna Tech website. Pages are general information, not a binding proposal, and a discovery call or brief is not a signed agreement."
-      : "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante, y una llamada o un brief no son un acuerdo firmado.";
+      : "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante; una llamada o un brief no son un acuerdo.";
   }
   return locale === "en"
-    ? "How Puna Tech handles website and inquiry data."
-    : "Cómo Puna Tech gestiona los datos del sitio y las consultas.";
+    ? "What Puna Tech collects through the project brief and website analytics, how it is used, and how to ask for access, correction or deletion."
+    : "Qué datos reúne Puna Tech con el brief y la analítica del sitio, cómo los usa y cómo pedir acceso, corrección o eliminación.";
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

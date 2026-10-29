@@ -7,9 +7,10 @@ import RubroPage from "../components/demos/rubro-layout";
 import { rubroPages } from "../components/demos/rubro-pages";
 import { demoDefinitions, demoPath, demosHubCopy, demosHubPath } from "../content/demos";
 import { findRubroBySlug, rubroDefinitions, rubroOgPath, rubroPath } from "../content/rubros";
+import { rubroFaq } from "../content/rubro-faq";
 import { SITE_URL, type Locale } from "../content/chrome";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
-import { breadcrumbSchema, collectionPageSchema, createMeta } from "../lib/seo";
+import { breadcrumbSchema, collectionPageSchema, createMeta, faqPageSchema, industryServiceSchema } from "../lib/seo";
 
 export { PublicNotFoundBoundary as ErrorBoundary };
 
@@ -45,6 +46,16 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
       }),
     }),
   ];
+  schema.push(
+    industryServiceSchema({
+      locale,
+      path,
+      name: locale === "en" ? `Automation for ${c.name.toLowerCase()}` : `Automatización para ${c.name.toLowerCase()}`,
+      audience: c.name,
+    }),
+    // Same questions and answers are rendered in the page (rubro-layout FAQ section).
+    faqPageSchema(rubroFaq[id][locale]),
+  );
   if (videoDemo) {
     const v = videoDemo.copy[locale];
     schema.push({
