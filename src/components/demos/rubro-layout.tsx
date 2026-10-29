@@ -8,6 +8,7 @@ import { demoDefinitions, demoPath, demosHubCopy, demosHubPath, type DemoId } fr
 import { rubroDefinitions, rubroPath, rubrosHubCopy, type RubroId } from "../../content/rubros";
 import { contactPath } from "../../content/chrome";
 import { wantThisHref, wantThisLabel } from "../../content/demo-cta";
+import { CC_BY_URL, MUSIC_ARTIST_URL, rubroVideos } from "../../content/rubro-videos";
 
 /**
  * Landing de un rubro con el diseño "capítulos de color" (es + en), manejada por datos.
@@ -232,19 +233,16 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
   const briefHref = `${contactPath(locale)}?bloque=${rubro.placement}#brief-form`;
   const track = (demoId: string) => () => trackEvent("demo_rubro_card", { locale, rubro: rubroId, demo: demoId });
   const wantLabel = wantThisLabel(locale, rubroId);
-  /** "Quiero esto para mi …" inside a demo chapter: brief link tagged with rubro and demo_slug. */
-  const wantThis = (id: DemoId, tone: "orange" | "ink") => {
-    const d = demo(id);
-    const demoSlug = d.slug[locale];
-    return (
-      <Link
-        to={wantThisHref(contactPath(locale), rubro.placement, d.id)}
-        className={`ac-btn ac-want${tone === "orange" ? " ac-btn-orange" : ""}`}
-        data-cta="want-this"
-        onClick={() => trackEvent("cta_click", { locale, placement: rubro.placement, destination: "brief", cta: "want_this", rubro: rubroId, demo_slug: demoSlug })}
-      >{wantLabel}<ArrowRight aria-hidden="true" size={18} /></Link>
-    );
-  };
+  /** "Quiero esto para mi …": brief link tagged with rubro and a block id (demo id, or "video"). */
+  const wantLink = (blockId: string, demoSlug: string, tone: "orange" | "ink") => (
+    <Link
+      to={wantThisHref(contactPath(locale), rubro.placement, blockId)}
+      className={`ac-btn ac-want${tone === "orange" ? " ac-btn-orange" : ""}`}
+      data-cta="want-this"
+      onClick={() => trackEvent("cta_click", { locale, placement: rubro.placement, destination: "brief", cta: "want_this", rubro: rubroId, demo_slug: demoSlug })}
+    >{wantLabel}<ArrowRight aria-hidden="true" size={18} /></Link>
+  );
+  const wantThis = (id: DemoId, tone: "orange" | "ink") => wantLink(id, demo(id).slug[locale], tone);
 
   const h1 = config.h1?.[locale] ?? (c.h1.endsWith(c.mark) ? [c.h1.slice(0, c.h1.length - c.mark.length).trim(), c.mark] : [c.h1, ""]);
   const long = config.size === "l";
@@ -269,6 +267,7 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
   };
 
   const v = videoDemo?.copy[locale].video;
+  const rv = rubroVideos[rubroId];
   const chapterTone = ["ac-cream", "ac-orange"];
 
   return (
@@ -337,6 +336,44 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
               </div>
             </div>
             <p className="ac-credit">{t.videoNote} {v.credit}</p>
+          </div>
+        </section>
+      ) : null}
+
+      {rv ? (
+        <section id="ac-video" className="ac-field ac-ink ac-video" aria-labelledby="ac-vid-h" data-rubro-video={rubroId}>
+          <div className="ac-wrap">
+            <div className="ac-video-head">
+              <h2 id="ac-vid-h" className="ac-h2" {...reveal()}>{rv.copy[locale].heading}</h2>
+            </div>
+            <div className="ac-video-grid">
+              <div className="ac-video-media" {...reveal(80)}>
+                {/* Two players switched by CSS (wide on desktop, tall on phones). preload="none" + poster: nothing but the
+                    poster is fetched until play, and width/height reserve the aspect ratio so there is no layout shift. */}
+                <video className="ac-video-wide" controls playsInline preload="none" poster={`${rv.base}-16x9.webp`} aria-label={rv.copy[locale].alt} width={rv.size.wide[0]} height={rv.size.wide[1]} onPlay={() => trackEvent("demo_action", { locale, rubro: rubroId, action: "video_play", shape: "wide" })}>
+                  <source src={`${rv.base}-16x9.webm`} type="video/webm" />
+                  <source src={`${rv.base}-16x9.mp4`} type="video/mp4" />
+                </video>
+                <video className="ac-video-tall" controls playsInline preload="none" poster={`${rv.base}-9x16.webp`} aria-label={rv.copy[locale].alt} width={rv.size.tall[0]} height={rv.size.tall[1]} onPlay={() => trackEvent("demo_action", { locale, rubro: rubroId, action: "video_play", shape: "tall" })}>
+                  <source src={`${rv.base}-9x16.webm`} type="video/webm" />
+                  <source src={`${rv.base}-9x16.mp4`} type="video/mp4" />
+                </video>
+              </div>
+              <div className="ac-video-side">
+                <p className="ac-lead" {...reveal(120)}>{rv.copy[locale].lead}</p>
+                <ol className="ac-chapters" aria-label={t.chaptersLabel} {...reveal(160)}>
+                  {rv.copy[locale].chapters.map(([time, label]) => <li key={time}><time>{time}</time><span>{label}</span></li>)}
+                </ol>
+                <p className="ac-chapter-actions" {...reveal(200)}>
+                  {wantLink("video", "video", "orange")}
+                  <a href="#ac-demos" className="ac-link">{t.seeDemos}</a>
+                </p>
+              </div>
+            </div>
+            <p className="ac-credit" data-music-credit>
+              {rv.copy[locale].note}{" "}
+              <span>Music: &quot;<a href={rv.music.trackUrl} rel="noopener noreferrer">{rv.music.title}</a>&quot; by Kevin MacLeod (<a href={MUSIC_ARTIST_URL} rel="noopener noreferrer">incompetech.com</a>), licensed under CC BY 4.0 <a href={CC_BY_URL} rel="license noopener noreferrer">{CC_BY_URL}</a></span>
+            </p>
           </div>
         </section>
       ) : null}
