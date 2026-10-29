@@ -7,6 +7,7 @@ import type { Loc } from "./shared";
 import { demoDefinitions, demoPath, demosHubCopy, demosHubPath, type DemoId } from "../../content/demos";
 import { rubroDefinitions, rubroPath, rubrosHubCopy, type RubroId } from "../../content/rubros";
 import { contactPath } from "../../content/chrome";
+import { wantThisHref, wantThisLabel } from "../../content/demo-cta";
 
 /**
  * Landing de un rubro con el diseño "capítulos de color" (es + en), manejada por datos.
@@ -233,6 +234,20 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
   const otherRubros = rubroDefinitions.filter((x) => x.id !== rubroId);
   const briefHref = `${contactPath(locale)}?bloque=${rubro.placement}#brief-form`;
   const track = (demoId: string) => () => trackEvent("demo_rubro_card", { locale, rubro: rubroId, demo: demoId });
+  const wantLabel = wantThisLabel(locale, rubroId);
+  /** "Quiero esto para mi …" inside a demo chapter: brief link tagged with rubro and demo_slug. */
+  const wantThis = (id: DemoId, tone: "orange" | "ink") => {
+    const d = demo(id);
+    const demoSlug = d.slug[locale];
+    return (
+      <Link
+        to={wantThisHref(contactPath(locale), rubro.placement, d.id)}
+        className={`ac-btn ac-want${tone === "orange" ? " ac-btn-orange" : ""}`}
+        data-cta="want-this"
+        onClick={() => trackEvent("cta_click", { locale, placement: rubro.placement, destination: "brief", cta: "want_this", rubro: rubroId, demo_slug: demoSlug })}
+      >{wantLabel}<ArrowRight aria-hidden="true" size={18} /></Link>
+    );
+  };
 
   const h1 = config.h1?.[locale] ?? (c.h1.endsWith(c.mark) ? [c.h1.slice(0, c.h1.length - c.mark.length).trim(), c.mark] : [c.h1, ""]);
   const long = config.size === "l";
@@ -240,7 +255,7 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
   useReveal(rootRef);
   useEffect(() => { trackEvent("demo_rubro_view", { locale, rubro: rubroId }); }, [locale, rubroId]);
 
-  const chapter = (id: DemoId, tag: string, hid: string) => {
+  const chapter = (id: DemoId, tag: string, hid: string, tone: "orange" | "ink") => {
     const d = demo(id);
     const k = d.copy[locale];
     return (
@@ -248,8 +263,9 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
         <h2 id={hid} className="ac-h2" {...reveal()}>{k.title}</h2>
         <p className="ac-lead" {...reveal(80)}>{k.lead}</p>
         <p className="ac-tag" {...reveal(120)}>{tag}</p>
-        <p {...reveal(160)}>
-          <Link to={demoPath(locale, d.slug[locale])} className="ac-btn" onClick={track(d.id)}>{hub.open}<ArrowRight aria-hidden="true" size={18} /></Link>
+        <p className="ac-chapter-actions" {...reveal(160)}>
+          {wantThis(id, tone)}
+          <Link to={demoPath(locale, d.slug[locale])} className="ac-link" onClick={track(d.id)}>{hub.open}</Link>
         </p>
       </>
     );
@@ -275,7 +291,7 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
             <div className="ac-hero-copy">
               <p className="ac-lead ac-fade" style={{ animationDelay: "700ms" }}>{config.lead?.[locale] ?? c.lead}</p>
               <p className="ac-actions ac-fade" style={{ animationDelay: "800ms" }}>
-                <CalButton locale={locale} placement={rubro.placement} className="ac-cal" />
+                <CalButton locale={locale} placement={rubro.placement} className="ac-cal" params={{ rubro: rubroId }} />
                 <a href="#ac-demos" className="ac-link">{t.seeDemos}</a>
               </p>
               <p className="ac-note ac-fade" style={{ animationDelay: "900ms" }}>{t.exampleNote}</p>
@@ -290,7 +306,7 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
         return (
           <section key={ch.demo} id={i === 0 ? "ac-demos" : undefined} className={`ac-field ${chapterTone[i % 2]}`} aria-labelledby={hid}>
             <div className={`ac-wrap ac-split${i % 2 ? " ac-split-flip" : ""}`}>
-              <div className="ac-split-text">{chapter(ch.demo, t.tagInteractive, hid)}</div>
+              <div className="ac-split-text">{chapter(ch.demo, t.tagInteractive, hid, i % 2 ? "ink" : "orange")}</div>
               <div className="ac-split-ui" {...reveal(120)}>{ch.render(locale)}</div>
             </div>
           </section>
@@ -317,8 +333,9 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
                 <ol className="ac-chapters" aria-label={t.chaptersLabel} {...reveal(160)}>
                   {v.chapters.map(([time, label]) => <li key={time}><time>{time}</time><span>{label}</span></li>)}
                 </ol>
-                <p {...reveal(200)}>
-                  <Link to={demoPath(locale, videoDemo.slug[locale])} className="ac-btn ac-btn-orange" onClick={track(videoDemo.id)}>{hub.open}<ArrowRight aria-hidden="true" size={18} /></Link>
+                <p className="ac-chapter-actions" {...reveal(200)}>
+                  {wantThis(videoDemo.id, "orange")}
+                  <Link to={demoPath(locale, videoDemo.slug[locale])} className="ac-link" onClick={track(videoDemo.id)}>{hub.open}</Link>
                 </p>
               </div>
             </div>
@@ -354,8 +371,8 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
           <div className="ac-cta-side" {...reveal(100)}>
             <p className="ac-lead">{c.ctaBody}</p>
             <p className="ac-actions">
-              <CalButton locale={locale} placement={rubro.placement} className="ac-cal" />
-              <Link to={briefHref} className="ac-link" onClick={() => trackEvent("cta_click", { locale, placement: rubro.placement, destination: "brief" })}>{t.briefCta}</Link>
+              <CalButton locale={locale} placement={rubro.placement} className="ac-cal" params={{ rubro: rubroId }} />
+              <Link to={briefHref} className="ac-link" onClick={() => trackEvent("cta_click", { locale, placement: rubro.placement, destination: "brief", rubro: rubroId })}>{t.briefCta}</Link>
             </p>
           </div>
         </div>

@@ -1,3 +1,5 @@
+import { detectInternalTrafficInBrowser } from "../lib/internal-traffic";
+
 declare global {
   interface Window {
     dataLayer?: unknown[];
@@ -63,7 +65,11 @@ export function activateAnalytics() {
   if (gaConfigured || typeof window.gtag !== "function") return;
   gaConfigured = true;
   window.gtag("js", new Date());
-  window.gtag("config", GA_MEASUREMENT_ID);
+  // traffic_type goes on the config call so it is set before the first page_view (which gtag('config') itself sends)
+  // and is inherited by every later event for this measurement ID. It only excludes data once the GA4 "Internal
+  // Traffic" data filter (traffic_type = internal) is Active.
+  if (detectInternalTrafficInBrowser().internal) window.gtag("config", GA_MEASUREMENT_ID, { traffic_type: "internal" });
+  else window.gtag("config", GA_MEASUREMENT_ID);
   for (const item of queuedEvents) window.gtag("event", item.event, item.payload);
   queuedEvents.length = 0;
 }

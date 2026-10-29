@@ -3,7 +3,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import "../demos.css";
-import { CalButton, PageShell } from "../components/marketing";
+import { CalButton, PageShell, trackEvent } from "../components/marketing";
 import { DemoHeading, ExampleBadge } from "../components/demos/shared";
 import { DEMO_ICONS, VERTICAL_ICONS } from "../components/demos/icons";
 import { demoDefinitions, demoOgPath, demoPath, demosHubCopy, demosHubPath, type VerticalId } from "../content/demos";
@@ -132,7 +132,7 @@ export default function DemosHub({ loaderData }: { loaderData: Awaited<ReturnTyp
               <div><h2 className="dm-h2">{t.ctaTitle}</h2><p>{t.ctaBody}</p></div>
               <div className="dm-cta-actions">
                 <CalButton locale={locale} placement="demos_hub" />
-                <Link to={`${contactPath(locale)}#brief-form`} className="dm-btn dm-btn-ink">{locale === "es" ? "Mandanos un brief" : "Send us a brief"}<ArrowRight aria-hidden="true" size={16} /></Link>
+                <Link to={`${contactPath(locale)}?bloque=demos_hub#brief-form`} className="dm-btn dm-btn-ink" onClick={() => trackEvent("cta_click", { locale, placement: "demos_hub", destination: "brief" })}>{locale === "es" ? "Mandanos un brief" : "Send us a brief"}<ArrowRight aria-hidden="true" size={16} /></Link>
               </div>
             </div>
           </div>

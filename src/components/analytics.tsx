@@ -23,11 +23,11 @@ export function Analytics() {
     activateAnalytics();
     injectScript(`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`, "gtag");
     injectScript(`https://www.clarity.ms/tag/${CLARITY_ID}`, "clarityTag");
-    window.gtag?.("event", "page_view", {
-      page_location: window.location.href,
-      page_path: `${location.pathname}${location.search}`,
-      page_title: document.title,
-    });
+    // No manual page_view here. gtag('config') already sends the landing page_view, and GA4 Enhanced Measurement
+    // ("Page changes based on browser history events", on for this stream) sends exactly one per SPA navigation
+    // with the right page_location, page_referrer and title. A manual event on top of those counted every
+    // navigation twice. If that Enhanced Measurement option is ever switched off, SPA page_views stop: re-add one here.
+
   }, [location.pathname, location.search]);
 
   return null;

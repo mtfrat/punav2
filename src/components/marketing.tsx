@@ -41,7 +41,7 @@ function useCtaView(ref: React.RefObject<HTMLElement | null>, locale: Locale, pl
   }, [locale, placement, ref]);
 }
 
-export function CalButton({ locale, placement, className = "", compact = false, label, dot = false }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean }) {
+export function CalButton({ locale, placement, className = "", compact = false, label, dot = false, params }: { locale: Locale; placement: string; className?: string; compact?: boolean; label?: string; dot?: boolean; params?: Record<string, string> }) {
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLAnchorElement>(null);
   useCtaView(ref, locale, placement);
@@ -49,14 +49,14 @@ export function CalButton({ locale, placement, className = "", compact = false, 
   async function openCal(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
     if (loading) return;
-    trackEvent("cta_click", { locale, placement, destination: "cal" });
+    trackEvent("cta_click", { locale, placement, destination: "cal", ...params });
     setLoading(true);
     try {
       const { getCalApi } = await import("@calcom/embed-react");
       const cal = await getCalApi({ namespace: "puna-audit" });
       cal("on", {
         action: "bookingSuccessfulV2",
-        callback: () => trackEvent("cal_booked", { locale, placement }),
+        callback: () => trackEvent("cal_booked", { locale, placement, ...params }),
       });
       cal("modal", { calLink: CAL_LINK, config: { layout: "month_view" } });
       trackEvent("cal_open", { locale, placement });
