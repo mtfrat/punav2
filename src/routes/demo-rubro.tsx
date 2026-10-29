@@ -68,7 +68,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     path,
     alternatePath: data.alternatePath,
     image: rubroOgPath(locale, id),
-    imageAlt: locale === "es" ? `Demos de automatización para ${c.name.toLowerCase()}. Datos de ejemplo.` : `Automation demos for ${c.name.toLowerCase()}. Sample data.`,
+    imageAlt: locale === "es" ? `Demos de automatización para ${c.name.toLowerCase()}. Datos ficticios.` : `Automation demos for ${c.name.toLowerCase()}. Fictional data.`,
     imageWidth: 1200,
     imageHeight: 630,
     imageType: "image/png",

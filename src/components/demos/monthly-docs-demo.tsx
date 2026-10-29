@@ -10,12 +10,12 @@ const DOC_ORDER: DocId[] = ["invoices", "bank", "payroll", "f931"];
 
 /** Invented clients. The needs list differs per client: someone without employees is never asked for payroll novelties. */
 const CLIENTS: ClientRow[] = [
-  { id: "c1", name: "Almacén Ejemplo S.R.L.", contact: "Laura", channel: "mail", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices", "bank", "payroll", "f931"] },
-  { id: "c2", name: "Ferretería Ejemplo S.A.", contact: "Diego", channel: "wa", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices", "bank"] },
-  { id: "c3", name: "Consultorio Ejemplo", contact: "Marta", channel: "mail", needs: ["invoices", "bank"], received: [] },
-  { id: "c4", name: "Taller Ejemplo S.R.L.", contact: "Sergio", channel: "wa", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices"] },
-  { id: "c5", name: "Panadería Ejemplo", contact: "Julia", channel: "mail", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices", "bank", "f931"] },
-  { id: "c6", name: "Constructora Ejemplo S.A.", contact: "Pablo", channel: "wa", needs: ["invoices", "bank", "payroll", "f931"], received: [] },
+  { id: "c1", name: "Almacén Los Tilos S.R.L.", contact: "Laura", channel: "mail", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices", "bank", "payroll", "f931"] },
+  { id: "c2", name: "Ferretería San Martín S.A.", contact: "Diego", channel: "wa", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices", "bank"] },
+  { id: "c3", name: "Consultorio Dr. Salas", contact: "Marta", channel: "mail", needs: ["invoices", "bank"], received: [] },
+  { id: "c4", name: "Taller Los Pinos S.R.L.", contact: "Sergio", channel: "wa", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices"] },
+  { id: "c5", name: "Panadería La Aurora", contact: "Julia", channel: "mail", needs: ["invoices", "bank", "payroll", "f931"], received: ["invoices", "bank", "f931"] },
+  { id: "c6", name: "Constructora Altos del Sur S.A.", contact: "Pablo", channel: "wa", needs: ["invoices", "bank", "payroll", "f931"], received: [] },
 ];
 
 const T = {

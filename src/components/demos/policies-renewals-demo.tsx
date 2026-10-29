@@ -7,14 +7,14 @@ interface Policy { id: string; holder: string; contact: string; ramo: Ramo; insu
 
 /** Sample portfolio. "days" = days until the policy ends; null when the scan could not be read. Relative on purpose: no calendar to go stale. */
 const POLICIES: Policy[] = [
-  { id: "p1", holder: "Ana Ejemplo", contact: "Ana", ramo: "auto", insurer: "Aseguradora Ejemplo Sur", number: "AU-100231", file: "poliza-auto-100231.pdf", days: 9, premium: 184000 },
-  { id: "p2", holder: "Comercio Ejemplo S.R.L.", contact: "equipo de Comercio Ejemplo", ramo: "business", insurer: "Aseguradora Ejemplo Norte", number: "IN-200458", file: "poliza-integral-200458.pdf", days: 21, premium: 420000 },
-  { id: "p3", holder: "Marcos Ejemplo", contact: "Marcos", ramo: "home", insurer: "Aseguradora Ejemplo Sur", number: "HO-300117", file: "poliza-hogar-300117.pdf", days: 27, premium: 96000 },
-  { id: "p4", holder: "Lucía Ejemplo", contact: "Lucía", ramo: "life", insurer: "Aseguradora Ejemplo Norte", number: "VI-400982", file: "poliza-vida-400982.pdf", days: 64, premium: 150000 },
-  { id: "p5", holder: "Transporte Ejemplo S.A.", contact: "equipo de Transporte Ejemplo", ramo: "auto", insurer: "Aseguradora Ejemplo Norte", number: "AU-100877", file: "poliza-flota-100877.pdf", days: 15, premium: 1260000 },
-  { id: "p6", holder: "Taller Ejemplo S.R.L.", contact: "equipo de Taller Ejemplo", ramo: "liability", insurer: "Aseguradora Ejemplo Sur", number: "RC-500310", file: "poliza-rc-500310.pdf", days: 112, premium: 310000 },
-  { id: "p7", holder: "Julián Ejemplo", contact: "Julián", ramo: "moto", insurer: "Aseguradora Ejemplo Sur", number: "MO-600044", file: "poliza-moto-600044.pdf", days: 41, premium: 72000 },
-  { id: "p8", holder: "Paula Ejemplo", contact: "Paula", ramo: "home", insurer: "Aseguradora Ejemplo Norte", number: "HO-300642", file: "poliza-escaneada.jpg", days: null, premium: 88000 },
+  { id: "p1", holder: "Ana Beltrán", contact: "Ana", ramo: "auto", insurer: "Aseguradora Faro del Sur", number: "AU-100231", file: "poliza-auto-100231.pdf", days: 9, premium: 184000 },
+  { id: "p2", holder: "Óptica Mirador S.R.L.", contact: "equipo de Óptica Mirador", ramo: "business", insurer: "Aseguradora Monte Verde", number: "IN-200458", file: "poliza-integral-200458.pdf", days: 21, premium: 420000 },
+  { id: "p3", holder: "Marcos Ledesma", contact: "Marcos", ramo: "home", insurer: "Aseguradora Faro del Sur", number: "HO-300117", file: "poliza-hogar-300117.pdf", days: 27, premium: 96000 },
+  { id: "p4", holder: "Lucía Ferreyra", contact: "Lucía", ramo: "life", insurer: "Aseguradora Monte Verde", number: "VI-400982", file: "poliza-vida-400982.pdf", days: 64, premium: 150000 },
+  { id: "p5", holder: "Transporte Pampa Alta S.A.", contact: "equipo de Transporte Pampa Alta", ramo: "auto", insurer: "Aseguradora Monte Verde", number: "AU-100877", file: "poliza-flota-100877.pdf", days: 15, premium: 1260000 },
+  { id: "p6", holder: "Taller Los Pinos S.R.L.", contact: "equipo de Taller Los Pinos", ramo: "liability", insurer: "Aseguradora Faro del Sur", number: "RC-500310", file: "poliza-rc-500310.pdf", days: 112, premium: 310000 },
+  { id: "p7", holder: "Julián Moyano", contact: "Julián", ramo: "moto", insurer: "Aseguradora Faro del Sur", number: "MO-600044", file: "poliza-moto-600044.pdf", days: 41, premium: 72000 },
+  { id: "p8", holder: "Paula Quiroga", contact: "Paula", ramo: "home", insurer: "Aseguradora Monte Verde", number: "HO-300642", file: "poliza-escaneada.jpg", days: null, premium: 88000 },
 ];
 const MONTH_WINDOW = 30;
 
@@ -40,7 +40,7 @@ const T = {
     logRead: (n: number, r: number) => `Leí ${n} pólizas y armé la cartera. ${r ? `${r} quedó para revisar por la imagen borrosa.` : "Todas se leyeron bien."}`,
     logFix: (h: string, d: number) => `Confirmaste que la póliza de ${h} vence en ${d} días. Actualicé la cartera y las renovaciones.`,
     logSent: (h: string) => `Aprobaste el aviso de renovación para ${h} (envío simulado).`,
-    note: "La cartera de ejemplo es inventada. En el proyecto se leen tus pólizas reales y los avisos salen por tu WhatsApp o tu mail, siempre con tu aprobación.",
+    note: "La cartera es ficticia. En el proyecto se leen tus pólizas reales y los avisos salen por tu WhatsApp o tu mail, siempre con tu aprobación.",
   },
   en: {
     label: "Policies from PDF and renewals",
@@ -63,7 +63,7 @@ const T = {
     logRead: (n: number, r: number) => `I read ${n} policies and built the portfolio. ${r ? `${r} was left for review because of a blurry image.` : "All of them read fine."}`,
     logFix: (h: string, d: number) => `You confirmed ${h}'s policy ends in ${d} days. I updated the portfolio and the renewals.`,
     logSent: (h: string) => `You approved the renewal notice for ${h} (simulated send).`,
-    note: "The sample portfolio is invented. In a project your real policies are read and notices go out through your WhatsApp or email, always with your approval.",
+    note: "The portfolio is fictional. In a project your real policies are read and notices go out through your WhatsApp or email, always with your approval.",
   },
 };
 

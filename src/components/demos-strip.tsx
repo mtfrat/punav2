@@ -9,14 +9,14 @@ const COPY = {
   es: {
     eyebrow: "Demos por rubro",
     title: "Mirá cómo se ve en tu rubro",
-    lead: "Demos interactivas con datos de ejemplo. Elegí tu rubro y probá el flujo antes de hablar con nadie.",
+    lead: "Demos interactivas con datos ficticios. Elegí tu rubro y probá el flujo antes de hablar con nadie.",
     open: "Ver demos",
     all: "Ver todas las demos",
   },
   en: {
     eyebrow: "Demos by industry",
     title: "See how it looks in your industry",
-    lead: "Interactive demos with sample data. Pick your industry and try the flow before you talk to anyone.",
+    lead: "Interactive demos with fictional data. Pick your industry and try the flow before you talk to anyone.",
     open: "See demos",
     all: "See all demos",
   },
