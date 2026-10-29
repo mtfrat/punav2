@@ -5,6 +5,7 @@ import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { VIDEO_BASE } from "../components/demos/video-demo";
 import RubroPage from "../components/demos/rubro-layout";
 import { rubroPages } from "../components/demos/rubro-pages";
+import { MUSIC_ARTIST, MUSIC_ARTIST_URL, musicCreditLine, rubroVideos } from "../content/rubro-videos";
 import { demoDefinitions, demoPath, demosHubCopy, demosHubPath } from "../content/demos";
 import { findRubroBySlug, rubroDefinitions, rubroOgPath, rubroPath } from "../content/rubros";
 import { SITE_URL, type Locale } from "../content/chrome";
@@ -58,6 +59,27 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
       duration: "PT34S",
       inLanguage: "es-AR",
       isAccessibleForFree: true,
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    });
+  }
+  const rv = rubroVideos[id];
+  if (rv) {
+    const v = rv.copy[locale];
+    schema.push({
+      "@context": "https://schema.org",
+      "@type": "VideoObject",
+      name: v.name,
+      description: v.description,
+      thumbnailUrl: [`${SITE_URL}${rv.base}-16x9.webp`, `${SITE_URL}${rv.base}-9x16.webp`],
+      contentUrl: `${SITE_URL}${rv.base}-16x9.mp4`,
+      uploadDate: rv.uploadDate,
+      duration: rv.duration,
+      inLanguage: "es-AR",
+      isAccessibleForFree: true,
+      width: rv.size.wide[0],
+      height: rv.size.wide[1],
+      creditText: musicCreditLine(rv.music.title),
+      musicBy: { "@type": "Person", name: MUSIC_ARTIST, url: MUSIC_ARTIST_URL },
       publisher: { "@id": `${SITE_URL}/#organization` },
     });
   }
