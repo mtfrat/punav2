@@ -4,6 +4,8 @@
  * illustrative and worded as examples ("por ejemplo, …"). No price range until Martin sets one.
  */
 
+import { rubroUseCases } from "./use-cases-rubros.ts";
+
 export interface UseCaseContent {
   key: string;
   /** Full path, Spanish only. */
@@ -39,6 +41,18 @@ export interface UseCaseContent {
   faqs: [string, string][];
   relatedService: { path: string; title: string };
   relatedPosts: { path: string; title: string }[];
+  /** Optional long-tail rubro landings (estudios contables / jurídicos / seguros). All additive: old pages leave them unset. */
+  /** H2 blocks rendered right after the hero (informational content with its own headings). */
+  sections?: { heading: string; paragraphs: string[]; items?: string[] }[];
+  /** Block of links to the rubro demos and free tools, rendered after "how". */
+  demoLinks?: { title: string; body: string; links: { label: string; path: string; note?: string }[] };
+  /** Official sources opened and read when the copy was reviewed. */
+  sources?: { label: string; href: string }[];
+  /** "Revisado el DD/MM/AAAA" for pages with regulatory facts. */
+  reviewedAt?: string;
+  disclaimer?: string;
+  /** When set, "Relacionado" lists these instead of every other use case. */
+  relatedLinks?: { path: string; title: string }[];
 }
 
 export const USE_CASE_OFFER = {
@@ -706,6 +720,7 @@ export const useCases: UseCaseContent[] = [
       { path: "/es/blog/cuando-dejar-zapier-n8n-por-software-a-medida", title: "Cuándo dejar Zapier o n8n por software a medida" },
     ],
   },
+  ...rubroUseCases,
 ];
 
 export function getUseCaseByPath(path: string) {
