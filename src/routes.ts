@@ -32,6 +32,8 @@ export default [
   route("es/integraciones/:slug", "./routes/use-case.tsx", { id: "use-case-integration-es" }),
   route("demos", "./routes/demos-hub.tsx", { id: "demos-hub-en" }),
   route("es/demos", "./routes/demos-hub.tsx", { id: "demos-hub-es" }),
+  route("demos/for/:rubro", "./routes/demo-rubro.tsx", { id: "demo-rubro-en" }),
+  route("es/demos/para/:rubro", "./routes/demo-rubro.tsx", { id: "demo-rubro-es" }),
   route("demos/:slug", "./routes/demo-detail.tsx", { id: "demo-detail-en" }),
   route("es/demos/:slug", "./routes/demo-detail.tsx", { id: "demo-detail-es" }),
   route("demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-en" }),

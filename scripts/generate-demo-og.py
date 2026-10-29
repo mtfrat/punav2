@@ -15,7 +15,7 @@ INK, ORANGE, CREAM = (24, 20, 16), (255, 107, 0), (239, 235, 219)
 W, H = 1200, 630
 
 DEMOS = {
-    "hub": {"es": ("Probalo antes de contratarlo", "7 demos de automatización"), "en": ("Try it before you hire it", "7 automation demos")},
+    "hub": {"es": ("Probalo antes de contratarlo", "10 demos de automatización"), "en": ("Try it before you hire it", "10 automation demos")},
     "collections": {"es": ("Cobranzas automáticas", "El agente prepara, vos aprobás"), "en": ("Automatic collections", "The agent prepares, you approve")},
     "stock-sync": {"es": ("Sync de stock con proveedores", "CSV del proveedor vs tu tienda"), "en": ("Supplier stock sync", "Supplier CSV vs your store")},
     "payroll": {"es": ("Control de horas y pagos", "Anomalías y liquidación para aprobar"), "en": ("Hours and payroll control", "Anomalies and payroll to approve")},
@@ -23,6 +23,15 @@ DEMOS = {
     "wholesale-quotes": {"es": ("Cotizador mayorista", "Escalas por volumen y WhatsApp"), "en": ("Wholesale quote builder", "Volume tiers and WhatsApp")},
     "store-dashboard": {"es": ("Panel para tu comercio", "Ventas, stock y caja en una pantalla"), "en": ("Store dashboard", "Sales, stock and cash on one screen")},
     "convenio-multilateral": {"es": ("Convenio Multilateral / DDJJ SIFERE", "Video de 34 segundos para estudios contables"), "en": ("Multilateral Agreement / SIFERE", "34-second video for accounting firms")},
+    "client-invoices": {"es": ("Facturas de tus clientes a planilla", "CUIT, CAE, duplicados y percepciones"), "en": ("Client invoices to a spreadsheet", "Tax ID, CAE, duplicates and withholdings")},
+    "monthly-docs": {"es": ("Documentación del mes", "Checklist por cliente y recordatorios"), "en": ("Monthly client documents", "A checklist per client and reminders")},
+    "policies-renewals": {"es": ("Pólizas desde PDF y renovaciones", "Cartera y avisos para aprobar"), "en": ("Policies from PDF and renewals", "Portfolio and notices to approve")},
+    # One image per rubro page, saved as demos-para-<id>-<loc>.png
+    "para-accounting": {"es": ("Demos para estudios contables", "Facturas, documentación y Convenio Multilateral"), "en": ("Demos for accounting firms", "Invoices, documents and Convenio Multilateral")},
+    "para-legal": {"es": ("Demos para estudios jurídicos", "Consultas ordenadas y honorarios al día"), "en": ("Demos for law firms", "Sorted inquiries and fees on time")},
+    "para-insurance": {"es": ("Demos para productores de seguros", "Pólizas desde PDF y renovaciones"), "en": ("Demos for insurance brokers", "Policies from PDF and renewals")},
+    "para-real-estate": {"es": ("Demos para inmobiliarias", "Consultas con puntaje y cobros a tiempo"), "en": ("Demos for real estate agencies", "Scored inquiries and rent on time")},
+    "para-clinics": {"es": ("Demos para clínicas y consultorios", "Horas del equipo sin planillas a mano"), "en": ("Demos for clinics and practices", "Team hours without hand-made sheets")},
 }
 SAMPLE = {"es": "DATOS DE EJEMPLO", "en": "SAMPLE DATA"}
 

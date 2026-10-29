@@ -23,6 +23,7 @@ import {
   type Locale,
 } from "../content/site";
 import { useCases } from "../content/use-cases";
+import { DemosByIndustry } from "../components/demos-strip";
 
 function SystemMap({ study, compact = false }: { study: CaseStudyContent; compact?: boolean }) {
   return (
@@ -328,6 +329,8 @@ export default function HomeBelow({ locale }: { locale: Locale }) {
             </div>
           </div>
         </section>
+
+        <DemosByIndustry locale={locale} placement="home_demos_rubro" />
 
         <section id="process" className="mm-section" aria-labelledby="audit-heading">
           <div className="shell">

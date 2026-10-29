@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import { ArrowRight, Mail, MessageCircle } from "lucide-react";
 import { CalButton, PageShell, ProjectBrief, trackEvent } from "../components/marketing";
 import { CONTACT_EMAIL, CONTACT_WHATSAPP, contactPath, copy, SITE_URL, type Locale } from "../content/site";
@@ -78,6 +79,14 @@ export default function ContactPage({ loaderData }: { loaderData: Awaited<Return
   const { locale } = loaderData;
   const c = contactCopy[locale];
   const t = copy[locale];
+  // A link such as /es/contacto?bloque=demos-contables keeps the block that sent the visitor here, so the lead alert can name it.
+  // Set after hydration so the prerendered HTML and the first client render match.
+  const [searchParams] = useSearchParams();
+  const [placement, setPlacement] = useState("contact_page");
+  useEffect(() => {
+    const block = (searchParams.get("bloque") ?? "").replace(/[^a-z0-9_-]/gi, "").slice(0, 60);
+    setPlacement(block || "contact_page");
+  }, [searchParams]);
   return (
     <PageShell locale={locale}>
       <main id="main-content">
@@ -137,7 +146,7 @@ export default function ContactPage({ loaderData }: { loaderData: Awaited<Return
               <p className="eyebrow">{c.briefEyebrow}</p>
               <h2 className="brief-card-title">{c.briefTitle}</h2>
               <p>{c.briefBody}</p>
-              <ProjectBrief locale={locale} placement="contact_page" />
+              <ProjectBrief locale={locale} placement={placement} />
             </div>
           </div>
         </section>

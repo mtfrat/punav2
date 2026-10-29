@@ -1325,3 +1325,53 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .services-hub-guide-intro { margin: 0; max-width: 52rem; color: var(--ink-soft); line-height: 1.55; }
 .services-hub-steps { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.9rem; max-width: 52rem; color: var(--ink-soft); line-height: 1.55; }
 .services-hub-steps strong { color: var(--ink); }
+
+/* Demos por rubro strip (home + services hub) */
+.rubro-strip-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+.rubro-strip-head h2 { margin: 0.25rem 0 0.6rem; }
+.rubro-strip-head p:not(.eyebrow) { margin: 0; max-width: 46rem; }
+.rubro-strip-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
+  gap: 1rem;
+}
+.rubro-strip-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  height: 100%;
+  padding: 1.15rem 1.1rem;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.rubro-strip-card:hover,
+.rubro-strip-card:focus-visible { border-color: var(--wine); transform: translateY(-2px); }
+.rubro-strip-card strong { font-size: 1.05rem; line-height: 1.25; }
+.rubro-strip-card span { color: var(--ink-soft); font-size: 0.92rem; line-height: 1.5; }
+.rubro-strip-card em {
+  margin-top: auto;
+  padding-top: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--wine);
+}
+@media (max-width: 720px) {
+  .rubro-strip-head { flex-direction: column; align-items: flex-start; }
+  .rubro-strip-grid { grid-template-columns: minmax(0, 1fr); }
+}

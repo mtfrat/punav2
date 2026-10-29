@@ -6,6 +6,7 @@ import { Accordion, CalButton, PageShell, trackEvent } from "../components/marke
 import { RichText } from "../components/rich-text";
 import { contactPath, copy, servicePath, services, servicesHubCopy, servicesHubGuideEs, servicesHubPath, type Locale } from "../content/site";
 import { useCases } from "../content/use-cases";
+import { DemosByIndustry } from "../components/demos-strip";
 import { breadcrumbSchema, collectionPageSchema, createMeta } from "../lib/seo";
 
 function linkPhrase(text: string, phrase: string, to: string): ReactNode {
@@ -194,6 +195,8 @@ export default function ServicesHub({ loaderData }: { loaderData: Awaited<Return
             </div>
           </section>
         ) : null}
+
+        <DemosByIndustry locale={locale} placement="services_demos_rubro" />
 
         <section className="detail-cta dark-section">
           <div className="shell">
