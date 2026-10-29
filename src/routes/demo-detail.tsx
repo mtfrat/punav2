@@ -10,6 +10,7 @@ import { DemoCta, DemoHeading, ExampleBadge } from "../components/demos/shared";
 import { GumroadKitBox } from "../components/demos/dashboard-demo";
 import { VIDEO_BASE } from "../components/demos/video-demo";
 import { demoDefinitions, demoOgPath, demoPath, demosHubCopy, demosHubPath, findDemoBySlug } from "../content/demos";
+import { rubroDefinitions, rubroPath } from "../content/rubros";
 import { SITE_URL, type Locale } from "../content/chrome";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
@@ -93,6 +94,7 @@ export default function DemoDetail({ loaderData }: { loaderData: Awaited<ReturnT
   const Demo = demoComponents[id];
   const labels = storyLabels[locale];
   const hub = demosHubCopy[locale];
+  const forRubros = rubroDefinitions.filter((r) => demo.verticals.includes(r.id));
 
   useEffect(() => { trackEvent("demo_view", { locale, demo: id }); }, [locale, id]);
 
@@ -138,6 +140,16 @@ export default function DemoDetail({ loaderData }: { loaderData: Awaited<ReturnT
         <section className="dm-section">
           <div className="shell">
             <DemoCta loc={locale} demo={id} />
+            {forRubros.length > 0 ? (
+              <>
+                <h2 className="dm-h3 dm-more-title">{locale === "es" ? "Esta demo, por rubro" : "This demo, by industry"}</h2>
+                <ul className="dm-more">
+                  {forRubros.map((r) => (
+                    <li key={r.id}><Link to={rubroPath(locale, r.slug[locale])}>{r.copy[locale].name}<ArrowRight aria-hidden="true" size={14} /></Link></li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
             <h2 className="dm-h3 dm-more-title">{locale === "es" ? "Otras demos" : "More demos"}</h2>
             <ul className="dm-more">
               {demoDefinitions.filter((d) => d.id !== id).map((d) => (

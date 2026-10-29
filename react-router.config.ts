@@ -1,6 +1,7 @@
 import type { Config } from "@react-router/dev/config";
 import { vercelPreset } from "@vercel/react-router/vite";
 import { demoDefinitions } from "./src/content/demos";
+import { rubroDefinitions } from "./src/content/rubros";
 
 const marketingRoutes = [
   "/",
@@ -50,6 +51,7 @@ const marketingRoutes = [
   "/demos",
   "/es/demos",
   ...demoDefinitions.flatMap((demo) => [`/demos/${demo.slug.en}`, `/es/demos/${demo.slug.es}`]),
+  ...rubroDefinitions.flatMap((rubro) => [`/demos/for/${rubro.slug.en}`, `/es/demos/para/${rubro.slug.es}`]),
 ];
 
 export default {

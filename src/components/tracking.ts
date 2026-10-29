@@ -25,7 +25,9 @@ export type AnalyticsEvent =
   | "chat_qualified"
   | "language_switch"
   | "demo_view"
-  | "demo_action";
+  | "demo_action"
+  | "demo_rubro_view"
+  | "demo_rubro_card";
 
 type QueuedEvent = {
   event: AnalyticsEvent;

@@ -1,6 +1,11 @@
 import type { Locale } from "./chrome";
 
-export type DemoId = "collections" | "stock-sync" | "payroll" | "lead-scoring" | "wholesale-quotes" | "store-dashboard" | "convenio-multilateral";
+export type DemoId =
+  | "collections" | "stock-sync" | "payroll" | "lead-scoring" | "wholesale-quotes" | "store-dashboard" | "convenio-multilateral"
+  | "client-invoices" | "monthly-docs" | "policies-renewals";
+
+/** Who a demo is useful for. "commerce" is a group on the hub ("Comercio y distribución"), not a rubro page. */
+export type VerticalId = "accounting" | "legal" | "insurance" | "real-estate" | "clinics" | "commerce";
 
 export interface DemoCopy {
   /** Short card / nav title. */
@@ -38,6 +43,8 @@ export interface DemoCopy {
 export interface DemoDefinition {
   id: DemoId;
   slug: Record<Locale, string>;
+  /** Rubros where this demo is shown. The first one is the "home" rubro of the demo. */
+  verticals: VerticalId[];
   /** Spanish-only landing pages that explain the same automation in more depth. */
   related?: { label: string; path: string };
   copy: Record<Locale, DemoCopy>;
@@ -46,6 +53,7 @@ export interface DemoDefinition {
 export const demoDefinitions: DemoDefinition[] = [
   {
     id: "collections",
+    verticals: ["accounting", "real-estate", "legal"],
     slug: { es: "cobranzas", en: "collections" },
     related: { label: "Cómo funciona la automatización de cobranzas", path: "/es/automatizaciones/automatizar-cobranzas" },
     copy: {
@@ -79,6 +87,7 @@ export const demoDefinitions: DemoDefinition[] = [
   },
   {
     id: "stock-sync",
+    verticals: ["commerce"],
     slug: { es: "sync-stock", en: "stock-sync" },
     related: { label: "Integración con Tienda Nube", path: "/es/integraciones/tienda-nube" },
     copy: {
@@ -112,6 +121,7 @@ export const demoDefinitions: DemoDefinition[] = [
   },
   {
     id: "payroll",
+    verticals: ["accounting", "clinics"],
     slug: { es: "horas-y-pagos", en: "payroll" },
     copy: {
       es: {
@@ -144,6 +154,7 @@ export const demoDefinitions: DemoDefinition[] = [
   },
   {
     id: "lead-scoring",
+    verticals: ["real-estate", "legal"],
     slug: { es: "leads-con-ia", en: "lead-scoring" },
     copy: {
       es: {
@@ -176,6 +187,7 @@ export const demoDefinitions: DemoDefinition[] = [
   },
   {
     id: "wholesale-quotes",
+    verticals: ["commerce"],
     slug: { es: "cotizador-mayorista", en: "wholesale-quotes" },
     related: { label: "Pedidos por WhatsApp", path: "/es/automatizaciones/pedidos-por-whatsapp" },
     copy: {
@@ -209,6 +221,7 @@ export const demoDefinitions: DemoDefinition[] = [
   },
   {
     id: "store-dashboard",
+    verticals: ["commerce"],
     slug: { es: "panel-comercio", en: "store-dashboard" },
     copy: {
       es: {
@@ -241,6 +254,7 @@ export const demoDefinitions: DemoDefinition[] = [
   },
   {
     id: "convenio-multilateral",
+    verticals: ["accounting"],
     slug: { es: "convenio-multilateral", en: "multilateral-agreement" },
     copy: {
       es: {
@@ -285,16 +299,115 @@ export const demoDefinitions: DemoDefinition[] = [
       },
     },
   },
+  {
+    id: "client-invoices",
+    verticals: ["accounting", "insurance"],
+    slug: { es: "facturas-de-clientes", en: "client-invoices" },
+    copy: {
+      es: {
+        title: "Facturas de compra de tus clientes",
+        blurb: "Los comprobantes que suben tus clientes pasan a la planilla del estudio con alertas de CUIT, CAE, duplicados y percepciones.",
+        metaTitle: "Facturas de clientes a planilla del estudio | Puna Tech",
+        metaDescription: "Probá cómo un estudio pasa las facturas de compra de sus clientes a planilla con alertas de CUIT, CAE, duplicados y percepciones. Datos de ejemplo.",
+        h1: "Las facturas de tus clientes, cargadas sin tipear",
+        mark: "sin tipear",
+        lead: "Tu cliente sube PDF y fotos. El agente las lee, controla cada comprobante y deja la planilla lista. Vos aprobás lo que se carga.",
+        problem: "Cada mes llegan cientos de comprobantes en PDF, fotos y capturas. Alguien los tipea, y los errores aparecen recién cuando ya se liquidó: un CUIT mal leído, un CAE incompleto, una factura cargada dos veces, una percepción que no coincide.",
+        how: "El agente lee cada comprobante y valida el CUIT, el CAE, el IVA, las percepciones y los duplicados. Lo que está limpio queda listo; lo dudoso se marca con el motivo. Con una foto mala no adivina: la manda a revisar. Vos aprobás y se carga la planilla del estudio.",
+        result: "Una planilla con una fila por comprobante, los totales a la vista y una lista corta de lo que una persona tiene que mirar.",
+        origin: "Parte del mismo motor de lectura de facturas que usamos para otros casos. Los proveedores y los montos de la demo son inventados.",
+      },
+      en: {
+        title: "Your clients' purchase invoices",
+        blurb: "The documents your clients upload land in the firm's spreadsheet with alerts for tax ID, CAE, duplicates and withholdings.",
+        metaTitle: "Client invoices to the firm's spreadsheet | Puna Tech",
+        metaDescription: "See how an accounting firm moves clients' purchase invoices into a spreadsheet with alerts for tax ID, CAE, duplicates and withholdings. Sample data.",
+        h1: "Your clients' invoices, loaded without typing",
+        mark: "without typing",
+        lead: "Your client uploads PDFs and photos. The agent reads them, checks every document and leaves the spreadsheet ready. You approve what gets loaded.",
+        problem: "Hundreds of documents arrive every month as PDFs, photos and screenshots. Someone types them in, and mistakes only show up after the books are closed: a misread tax ID, a short CAE, an invoice loaded twice, a withholding that doesn't match.",
+        how: "The agent reads each document and validates the tax ID, the CAE, VAT, withholdings and duplicates. What is clean is ready; what is doubtful is flagged with the reason. With a bad photo it doesn't guess: it sends it to review. You approve and the firm's spreadsheet is filled.",
+        result: "A spreadsheet with one row per document, totals in plain sight and a short list of what a person has to look at.",
+        origin: "Part of the same invoice-reading engine we use for other cases. Suppliers and amounts in the demo are invented.",
+      },
+    },
+  },
+  {
+    id: "monthly-docs",
+    verticals: ["accounting"],
+    slug: { es: "documentacion-del-mes", en: "monthly-documents" },
+    copy: {
+      es: {
+        title: "Documentación del mes de tus clientes",
+        blurb: "Checklist por cliente, recordatorio a medida que vos aprobás y un tablero de quién falta.",
+        metaTitle: "Documentación del mes: checklist por cliente | Puna Tech",
+        metaDescription: "Probá un checklist mensual por cliente: el agente detecta qué falta, arma el recordatorio y vos lo aprobás antes de enviarlo. Datos de ejemplo.",
+        h1: "Dejá de pedir la documentación una y otra vez",
+        mark: "una y otra vez",
+        lead: "Cada cliente tiene su lista. El agente ve qué llegó y qué falta, redacta el pedido justo y lo manda cuando vos aprobás.",
+        problem: "Cerrar el mes depende de que cada cliente mande facturas, extractos y novedades. Alguien tiene que acordarse de quién entregó qué, y salir a perseguir a los demás por WhatsApp o mail, cliente por cliente.",
+        how: "El agente clasifica lo que sube cada cliente y lo cruza con su lista. Arma un recordatorio que nombra solo lo que falta. Vos lo revisás, lo editás si querés y lo aprobás. El tablero muestra quién no subió nada, a quién le falta algo y quién ya está completo.",
+        result: "Un tablero claro del cierre y recordatorios a medida, sin que nadie lleve la cuenta de memoria.",
+        origin: "Basado en cómo trabajan los estudios contables que consultan con nosotros. Los clientes de la demo son inventados.",
+      },
+      en: {
+        title: "Your clients' monthly documents",
+        blurb: "A checklist per client, a tailored reminder you approve, and a board of who is missing what.",
+        metaTitle: "Monthly documents: a checklist per client | Puna Tech",
+        metaDescription: "Try a monthly document checklist per client: the agent finds what is missing, drafts the reminder and you approve it before it goes out. Sample data.",
+        h1: "Stop chasing the same documents every month",
+        mark: "every month",
+        lead: "Each client has their own list. The agent sees what arrived and what is missing, writes the exact request and sends it when you approve.",
+        problem: "Closing the month depends on every client sending invoices, bank statements and staff changes. Someone has to remember who delivered what and chase the rest over WhatsApp or email, client by client.",
+        how: "The agent classifies what each client uploads and matches it with their list. It drafts a reminder that names only what is missing. You review it, edit it if you like and approve it. The board shows who uploaded nothing, who is missing something and who is complete.",
+        result: "A clear board for the close and tailored reminders, with nobody keeping count from memory.",
+        origin: "Based on how the accounting firms that talk to us work. The clients in the demo are invented.",
+      },
+    },
+  },
+  {
+    id: "policies-renewals",
+    verticals: ["insurance"],
+    slug: { es: "polizas-y-renovaciones", en: "policies-and-renewals" },
+    copy: {
+      es: {
+        title: "Pólizas desde PDF y renovaciones",
+        blurb: "La cartera se arma sola desde los PDF y las renovaciones del mes quedan con el aviso listo para aprobar.",
+        metaTitle: "Pólizas desde PDF y renovaciones del mes | Puna Tech",
+        metaDescription: "Probá cómo un productor de seguros arma la cartera desde los PDF de las pólizas y prepara los avisos de renovación del mes para aprobar. Datos de ejemplo.",
+        h1: "Pólizas sin tipear y ninguna renovación olvidada",
+        mark: "ninguna renovación olvidada",
+        lead: "Subí los PDF de las pólizas. El agente arma la cartera, separa lo que vence este mes y deja el aviso listo para que lo apruebes.",
+        problem: "Las pólizas llegan en PDF de cada compañía y alguien las pasa a mano a una planilla. Si el vencimiento se tipea mal o nadie mira la planilla a tiempo, la renovación se pierde y el cliente queda sin cobertura.",
+        how: "El agente lee cada póliza (asegurado, ramo, compañía, número, vigencia y prima) y arma la cartera. Separa las que vencen en los próximos 30 días y redacta el aviso de renovación para cada asegurado. Vos lo editás si querés y lo aprobás. Si un escaneo no se lee bien, te pide confirmar la vigencia.",
+        result: "Una cartera siempre al día y una lista de renovaciones del mes con el aviso listo, sin planillas a mano.",
+        origin: "Parte del mismo motor de lectura de documentos que usamos en otros casos. La cartera, las compañías y los asegurados de la demo son inventados.",
+      },
+      en: {
+        title: "Policies from PDF and renewals",
+        blurb: "The portfolio builds itself from PDFs and this month's renewals come with a notice ready to approve.",
+        metaTitle: "Policies from PDF and monthly renewals | Puna Tech",
+        metaDescription: "See how an insurance broker builds a portfolio from policy PDFs and prepares this month's renewal notices for approval. Sample data.",
+        h1: "Policies without typing and no renewal forgotten",
+        mark: "no renewal forgotten",
+        lead: "Upload the policy PDFs. The agent builds the portfolio, separates what ends this month and leaves the notice ready for you to approve.",
+        problem: "Policies arrive as PDFs from each insurer and someone copies them by hand into a spreadsheet. If an end date is mistyped or nobody checks the sheet in time, the renewal is lost and the client is left uncovered.",
+        how: "The agent reads each policy (holder, line, insurer, number, term and premium) and builds the portfolio. It separates the ones ending in the next 30 days and drafts the renewal notice for each holder. You edit it if you like and approve it. If a scan is hard to read, it asks you to confirm the end date.",
+        result: "A portfolio that is always current and a list of this month's renewals with the notice ready, no hand-made spreadsheets.",
+        origin: "Part of the same document-reading engine we use for other cases. The portfolio, insurers and policyholders in the demo are invented.",
+      },
+    },
+  },
 ];
 
 export const demosHubCopy = {
   es: {
     metaTitle: "Demos interactivas de automatización para pymes | Puna Tech",
-    metaDescription: "Probá 7 demos de automatización: cobranzas, stock, horas y sueldos, leads con IA, cotizador, panel de comercio y DDJJ de Convenio Multilateral.",
+    metaDescription: "Probá 10 demos de automatización para estudios, productores de seguros, inmobiliarias y comercios. Elegí tu rubro y mirá cómo funciona. Datos de ejemplo.",
     eyebrow: "Demos interactivas",
     h1: "Probalo antes de contratarlo",
     mark: "Probalo",
-    lead: "Siete casos reales de automatización para pymes y estudios argentinos: seis funcionan en tu navegador y uno es un video. En todos pasa lo mismo: el agente prepara, vos aprobás.",
+    lead: "Diez casos de automatización para pymes y estudios argentinos: nueve funcionan en tu navegador y uno es un video. En todos pasa lo mismo: el agente prepara, vos aprobás.",
     exampleNote: "Todas las demos usan datos de ejemplo y no envían nada a nadie.",
     open: "Abrir la demo",
     patternTitle: "El patrón de todas las demos",
@@ -306,11 +419,11 @@ export const demosHubCopy = {
   },
   en: {
     metaTitle: "Interactive automation demos for small business | Puna Tech",
-    metaDescription: "Try 7 automation demos: collections, stock, hours and payroll, AI leads, wholesale quotes, a shop dashboard and Convenio Multilateral tax returns.",
+    metaDescription: "Try 10 automation demos for accounting firms, insurance brokers, real estate agencies and shops. Pick your industry and see how it works. Sample data.",
     eyebrow: "Interactive demos",
     h1: "Try it before you hire it",
     mark: "Try it",
-    lead: "Seven real automation cases for Argentine small businesses and firms: six run in your browser and one is a video. They all follow the same rule: the agent prepares, you approve.",
+    lead: "Ten automation cases for Argentine small businesses and firms: nine run in your browser and one is a video. They all follow the same rule: the agent prepares, you approve.",
     exampleNote: "Every demo uses sample data and sends nothing to anyone.",
     open: "Open the demo",
     patternTitle: "The pattern behind every demo",
