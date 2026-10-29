@@ -309,42 +309,11 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
         );
       })}
 
-      {videoDemo && v ? (
-        <section className="ac-field ac-ink ac-video" aria-labelledby="ac-vid-h">
-          <div className="ac-wrap">
-            <div className="ac-video-head">
-              <h2 id="ac-vid-h" className="ac-h2" {...reveal()}>{videoDemo.copy[locale].title}</h2>
-            </div>
-            <div className="ac-video-grid">
-              <div className="ac-video-media" {...reveal(80)}>
-                <video className="ac-video-wide" controls playsInline preload="none" poster="/media/demos/convenio-multilateral-16x9.webp" aria-label={v.alt} width={1280} height={720}>
-                  <source src="/media/demos/convenio-multilateral-16x9.mp4" type="video/mp4" />
-                </video>
-                <video className="ac-video-tall" controls playsInline preload="none" poster="/media/demos/convenio-multilateral-9x16.webp" aria-label={v.alt} width={720} height={1280}>
-                  <source src="/media/demos/convenio-multilateral-9x16.mp4" type="video/mp4" />
-                </video>
-              </div>
-              <div className="ac-video-side">
-                <p className="ac-lead" {...reveal(120)}>{videoDemo.copy[locale].lead}</p>
-                <ol className="ac-chapters" aria-label={t.chaptersLabel} {...reveal(160)}>
-                  {v.chapters.map(([time, label]) => <li key={time}><time>{time}</time><span>{label}</span></li>)}
-                </ol>
-                <p className="ac-chapter-actions" {...reveal(200)}>
-                  {wantThis(videoDemo.id, "orange")}
-                  <Link to={demoPath(locale, videoDemo.slug[locale])} className="ac-link" onClick={track(videoDemo.id)}>{hub.open}</Link>
-                </p>
-              </div>
-            </div>
-            <p className="ac-credit">{t.videoNote} {v.credit}</p>
-          </div>
-        </section>
-      ) : null}
-
       {rv ? (
-        <section id="ac-video" className="ac-field ac-ink ac-video" aria-labelledby="ac-vid-h" data-rubro-video={rubroId}>
+        <section id="ac-video" className="ac-field ac-ink ac-video" aria-labelledby="ac-rvid-h" data-rubro-video={rubroId}>
           <div className="ac-wrap">
             <div className="ac-video-head">
-              <h2 id="ac-vid-h" className="ac-h2" {...reveal()}>{rv.copy[locale].heading}</h2>
+              <h2 id="ac-rvid-h" className="ac-h2" {...reveal()}>{rv.copy[locale].heading}</h2>
             </div>
             <div className="ac-video-grid">
               <div className="ac-video-media" {...reveal(80)}>
@@ -374,6 +343,39 @@ export default function RubroPage({ rubroId, locale, config }: { rubroId: RubroI
               {rv.copy[locale].note}{" "}
               <span>Music: &quot;<a href={rv.music.trackUrl} rel="noopener noreferrer">{rv.music.title}</a>&quot; by Kevin MacLeod (<a href={MUSIC_ARTIST_URL} rel="noopener noreferrer">incompetech.com</a>), licensed under CC BY 4.0 <a href={CC_BY_URL} rel="license noopener noreferrer">{CC_BY_URL}</a></span>
             </p>
+          </div>
+        </section>
+      ) : null}
+
+      {videoDemo && v ? (
+        <section className="ac-field ac-ink ac-video" aria-labelledby="ac-vid-h">
+          <div className="ac-wrap">
+            <div className="ac-video-head">
+              <h2 id="ac-vid-h" className="ac-h2" {...reveal()}>{videoDemo.copy[locale].title}</h2>
+            </div>
+            <div className="ac-video-grid">
+              <div className="ac-video-media" {...reveal(80)}>
+                <video className="ac-video-wide" controls playsInline preload="none" poster="/media/demos/convenio-multilateral-16x9.webp" aria-label={v.alt} width={1280} height={720}>
+                  <source src="/media/demos/convenio-multilateral-16x9.webm" type="video/webm" />
+                  <source src="/media/demos/convenio-multilateral-16x9.mp4" type="video/mp4" />
+                </video>
+                <video className="ac-video-tall" controls playsInline preload="none" poster="/media/demos/convenio-multilateral-9x16.webp" aria-label={v.alt} width={720} height={1280}>
+                  <source src="/media/demos/convenio-multilateral-9x16.webm" type="video/webm" />
+                  <source src="/media/demos/convenio-multilateral-9x16.mp4" type="video/mp4" />
+                </video>
+              </div>
+              <div className="ac-video-side">
+                <p className="ac-lead" {...reveal(120)}>{videoDemo.copy[locale].lead}</p>
+                <ol className="ac-chapters" aria-label={t.chaptersLabel} {...reveal(160)}>
+                  {v.chapters.map(([time, label]) => <li key={time}><time>{time}</time><span>{label}</span></li>)}
+                </ol>
+                <p className="ac-chapter-actions" {...reveal(200)}>
+                  {wantThis(videoDemo.id, "orange")}
+                  <Link to={demoPath(locale, videoDemo.slug[locale])} className="ac-link" onClick={track(videoDemo.id)}>{hub.open}</Link>
+                </p>
+              </div>
+            </div>
+            <p className="ac-credit">{t.videoNote} {v.credit}</p>
           </div>
         </section>
       ) : null}

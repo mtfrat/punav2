@@ -9,12 +9,13 @@ const locales = ["es", "en"];
 const MB = 1024 * 1024;
 /** Attribution lines copied from each video's CREDITS.md ("Para publicar"). */
 const expectedCredit = {
+  accounting: 'Music: "Easy Lemon" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/',
   legal: 'Music: "Relaxing Piano Music" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/',
   insurance: 'Music: "Wholesome" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/',
   "real-estate": 'Music: "Dreamy Flashback" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/',
   clinics: 'Music: "Relaxing Piano Music" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/',
 };
-assert.deepEqual(Object.keys(rubroVideos).sort(), Object.keys(expectedCredit).sort(), "videos exist for legal, insurance, real-estate and clinics only (accounting has its own demo video; contables has none yet)");
+assert.deepEqual(Object.keys(rubroVideos).sort(), Object.keys(expectedCredit).sort(), "videos exist for the five rubros");
 
 const secs = (t) => { const [m, s] = t.split(":").map(Number); return m * 60 + s; };
 const isoSecs = (d) => Number(/^PT(\d+(?:\.\d+)?)S$/.exec(d)?.[1]);
@@ -54,7 +55,14 @@ for (const [id, v] of Object.entries(rubroVideos)) {
   }
   assert.equal(v.copy.es.chapters.length, v.copy.en.chapters.length, `${id}: same chapters in both languages`);
 }
-assert.ok(total <= 30 * MB, `rubro video assets weigh ${(total / MB).toFixed(1)} MB, budget is 30 MB`);
+for (const shape of ["16x9", "9x16"]) for (const ext of ["webm", "mp4", "webp"]) {
+  const file = publicFile(`/media/demos/convenio-multilateral-${shape}.${ext}`);
+  assert.ok(existsSync(file), `convenio-multilateral-${shape}.${ext} is missing`);
+  const size = statSync(file).size;
+  total += size;
+  assert.ok(size <= (ext === "webp" ? 0.1 : 2.2) * MB, `convenio-multilateral-${shape}.${ext} is ${size} bytes`);
+}
+assert.ok(total <= 36 * MB, `rubro video assets weigh ${(total / MB).toFixed(1)} MB, budget is 36 MB`);
 
 // Clinics: the page must lead with what the demo shows (hours and payroll). Authorizations only "a medida" / "to order".
 const clinics = rubroDefinitions.find((r) => r.id === "clinics");
@@ -88,13 +96,19 @@ if (process.argv.includes("--build")) {
       assert.ok(!/autoplay/i.test(html), `${route}: no autoplay in the HTML`);
       const blocks = [...html.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(decode(m[1])));
       const flat = blocks.flatMap((b) => (Array.isArray(b) ? b : b["@graph"] ?? [b]));
-      const videos = flat.filter((b) => b["@type"] === "VideoObject");
+      const allVideos = flat.filter((b) => b["@type"] === "VideoObject");
       const v = rubroVideos[r.id];
-      if (!v) { // contables keeps its own demo video elsewhere; here we only check that no new embed leaked in
-        assert.ok(!html.includes('data-rubro-video'), `${route}: unexpected rubro video`);
-        continue;
+      assert.ok(v, `${route}: every rubro has a video now`);
+      // The accounting page also keeps the Convenio Multilateral video (second VideoObject and second pair of players).
+      const hasCm = r.id === "accounting";
+      assert.equal(allVideos.length, hasCm ? 2 : 1, `${route}: VideoObject count`);
+      const videos = allVideos.filter((b) => b.contentUrl.includes("/rubro-"));
+      assert.equal(videos.length, 1, `${route}: exactly one rubro VideoObject`);
+      if (hasCm) {
+        const cm = allVideos.find((b) => b.contentUrl.includes("/convenio-multilateral-"));
+        assert.equal(cm.creditText, 'Music: "Wholesome" by Kevin MacLeod (incompetech.com), licensed under CC BY 4.0 https://creativecommons.org/licenses/by/4.0/');
+        assert.equal(cm.musicBy?.name, "Kevin MacLeod");
       }
-      assert.equal(videos.length, 1, `${route}: exactly one VideoObject`);
       const o = videos[0];
       for (const key of ["name", "description", "thumbnailUrl", "uploadDate", "contentUrl", "duration"]) assert.ok(o[key] && o[key].length !== 0, `${route}: VideoObject.${key}`);
       assert.equal(o.duration, v.duration);
@@ -103,7 +117,7 @@ if (process.argv.includes("--build")) {
       assert.ok(o.contentUrl.startsWith("https://www.puna-tech.com/media/demos/rubro-"), `${route}: contentUrl is absolute`);
       for (const u of [o.contentUrl, ...o.thumbnailUrl]) assert.ok(existsSync(new URL(u.replace("https://www.puna-tech.com/", ""), root)), `${route}: ${u} not in build output`);
       const videoTags = html.match(/<video\b[^>]*>/g) ?? [];
-      assert.equal(videoTags.length, 2, `${route}: two players (wide + tall)`);
+      assert.equal(videoTags.length, hasCm ? 4 : 2, `${route}: players (wide + tall per video)`);
       for (const tag of videoTags) {
         assert.ok(/ controls=""/.test(tag) || / controls[ >]/.test(tag), `${route}: controls`);
         assert.ok(/preload="none"/.test(tag) && /poster="/.test(tag) && /playsinline/i.test(tag), `${route}: preload none, poster, playsinline`);
