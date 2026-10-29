@@ -51,7 +51,7 @@ GUA-050,Guantes de seguridad,90,1500`;
 const T = {
   es: {
     label: "Sync de stock con proveedores",
-    feed: "Feed del proveedor (CSV)", feedHelp: "Pegá el CSV que te manda tu proveedor o cargá uno de ejemplo. Columnas: sku, nombre, stock, costo.",
+    feed: "Feed del proveedor (CSV)", feedHelp: "Pegá el CSV que te manda tu proveedor o cargá uno de prueba. Columnas: sku, nombre, stock, costo.",
     loadOk: "Feed del lunes", loadBad: "Feed con errores", compare: "Comparar con la tienda", comparing: "Leyendo el feed y comparando…",
     rules: "Reglas de la tienda", margin: "Margen sobre costo", rounding: "Redondear precio a", minStock: "Ocultar si el proveedor tiene stock ≤", maxJump: "Revisar si el precio cambia más de",
     kpiProducts: "Productos en tienda", kpiChanges: "Cambios propuestos", kpiReview: "Para revisar a mano", kpiErrors: "Líneas con error",
@@ -70,7 +70,7 @@ const T = {
   },
   en: {
     label: "Supplier stock sync",
-    feed: "Supplier feed (CSV)", feedHelp: "Paste the CSV your supplier sends you or load a sample. Columns: sku, name, stock, cost.",
+    feed: "Supplier feed (CSV)", feedHelp: "Paste the CSV your supplier sends you or load a test one. Columns: sku, name, stock, cost.",
     loadOk: "Monday feed", loadBad: "Feed with errors", compare: "Compare with the store", comparing: "Reading the feed and comparing…",
     rules: "Store rules", margin: "Margin over cost", rounding: "Round price to", minStock: "Hide if supplier stock ≤", maxJump: "Flag if price moves more than",
     kpiProducts: "Products in store", kpiChanges: "Proposed changes", kpiReview: "Needs manual review", kpiErrors: "Lines with errors",
