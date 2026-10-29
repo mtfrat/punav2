@@ -595,7 +595,7 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
   }
-  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-pago", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-cases-heading")) failures.push(`${other}: cases block rendered on a page without cases copy`);
   }
@@ -673,12 +673,29 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
     if (!html.includes(`href="${href}"`)) failures.push(`${route}: guide link ${href} missing`);
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
-  if (words < 1550) failures.push(`${route}: page copy too thin (${words} words)`);
+  if (words < 2100) failures.push(`${route}: page copy too thin (${words} words)`);
   let nodes = [];
   try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
   const questions = (nodes.find((node) => node["@type"] === "FAQPage")?.mainEntity || []).map((item) => item.name);
-  if (questions.length !== 8) failures.push(`${route}: FAQPage should have 8 questions, found ${questions.length}`);
-  for (const question of ["¿Por qué lo que acredita Mercado Pago no coincide con lo que vendí?", "¿Se puede conciliar Mercado Pago con Tango?"]) {
+  if (questions.length !== 10) failures.push(`${route}: FAQPage should have 10 questions, found ${questions.length}`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push(`${route}: expected exactly one h1`);
+  // 29/10: "movimientos que complican la conciliación" block (7 cases) after the guide.
+  if (!html.includes('<h2 id="use-case-cases-heading">Los movimientos de Mercado Pago que complican la conciliación (y qué se hace con cada uno)</h2>')) failures.push(`${route}: cases heading missing`);
+  for (const heading of [
+    "Un pago para varias facturas, o una factura en varios pagos",
+    "Transferencias a tu CVU sin referencia",
+    "Ventas en cuotas",
+    "Ventas de Mercado Libre que se cobran en Mercado Pago",
+    "Retenciones de Ingresos Brutos y otros impuestos",
+    "Devoluciones parciales y pagos en disputa",
+    "Movimientos que no son cobros",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing case ${heading}`);
+  }
+  if (html.indexOf("use-case-guide-heading") > html.indexOf("use-case-cases-heading")) failures.push(`${route}: cases block should come after the guide`);
+  const mainText = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "");
+  if (/\$\s?\d|USD\s?\d|testimonio|clientes como/i.test(mainText)) failures.push(`${route}: price/testimonial-like text found`);
+  for (const question of ["¿Por qué lo que acredita Mercado Pago no coincide con lo que vendí?", "¿Se puede conciliar Mercado Pago con Tango?", "¿Qué pasa si un cliente paga varias facturas juntas o una factura en partes?", "¿Las retenciones de Ingresos Brutos de Mercado Pago son una diferencia en la conciliación?"]) {
     if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
     if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
   }
@@ -1375,7 +1392,7 @@ else {
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/integraciones/mercado-pago</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-24</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-pago lastmod is not 2026-10-24");
+      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/integraciones/mercado-pago lastmod is not 2026-10-29");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/servicios</loc>")) || "";
