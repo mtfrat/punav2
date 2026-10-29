@@ -799,6 +799,12 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/automatizar-cobranzas",
     "/es/automatizaciones/facturacion-electronica-arca",
     "/es/automatizaciones/conciliacion-bancaria",
+    "/es/automatizaciones/convenio-multilateral-coeficientes",
+    "/es/automatizaciones/conciliacion-sifere-retenciones-percepciones",
+    "/es/automatizaciones/control-de-expedientes-estudio-juridico",
+    "/es/automatizaciones/control-de-honorarios-estudio-juridico",
+    "/es/automatizaciones/cartera-de-polizas-y-renovaciones",
+    "/es/automatizaciones/matricula-productor-asesor-de-seguros",
   ]],
   ["/es/integraciones", "Integrar Mercado Libre y Tienda Nube con tu ERP | Puna Tech", "Integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema de gestión", [
     "/es/integraciones/mercado-pago",
@@ -1476,6 +1482,38 @@ else {
   } finally {
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }
+}
+
+// Long-tail rubro landings under /es/automatizaciones (briefs of 2026-10-29): prerendered, one H1, Service + Breadcrumb + FAQPage JSON-LD.
+for (const slug of [
+  "convenio-multilateral-coeficientes",
+  "conciliacion-sifere-retenciones-percepciones",
+  "control-de-expedientes-estudio-juridico",
+  "control-de-honorarios-estudio-juridico",
+  "cartera-de-polizas-y-renovaciones",
+  "matricula-productor-asesor-de-seguros",
+]) {
+  const route = `/es/automatizaciones/${slug}`;
+  let html = "";
+  try { html = await readFile(join(root, route.slice(1), "index.html"), "utf8"); } catch { failures.push(`${route}: prerendered HTML is missing`); continue; }
+  const title = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || "";
+  if (!title.endsWith(" | Puna Tech") || title.length < 45 || title.length > 60) failures.push(`${route}: title ${JSON.stringify(title)}`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push(`${route}: expected a single H1`);
+  const description = metaDescription(html);
+  if (description.length < 70 || description.length > 160) failures.push(`${route}: meta description length ${description.length}`);
+  if (!html.includes(`rel="canonical" href="https://www.puna-tech.com${route}"`)) failures.push(`${route}: canonical mismatch`);
+  if (!html.includes(`property="og:image" content="https://www.puna-tech.com/og/automatizaciones-${slug}.png"`)) failures.push(`${route}: og:image mismatch`);
+  if (!html.includes('<html lang="es"')) failures.push(`${route}: html lang is not es`);
+  let nodes = [];
+  try { nodes = jsonLdBlocks(html).flatMap((block) => Array.isArray(block) ? block : [block]); } catch (error) { failures.push(`${route}: JSON-LD did not parse (${error.message})`); }
+  for (const type of ["Service", "BreadcrumbList", "FAQPage"]) {
+    if (!nodes.find((node) => node["@type"] === type)) failures.push(`${route}: ${type} JSON-LD missing`);
+  }
+  const questions = nodes.find((node) => node["@type"] === "FAQPage")?.mainEntity || [];
+  if (questions.length < 5) failures.push(`${route}: FAQPage has ${questions.length} questions`);
+  if (!html.includes('href="/es/contacto"')) failures.push(`${route}: missing link to /es/contacto`);
+  if (!html.includes('href="/es/automatizaciones"')) failures.push(`${route}: missing link to the hub`);
+  if (/US\$\s?\d|\$\s?\d/.test(html.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: amount found in the page text`);
 }
 
 if (failures.length) {
