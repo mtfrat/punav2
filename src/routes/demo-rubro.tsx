@@ -59,6 +59,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
       duration: "PT34S",
       inLanguage: "es-AR",
       isAccessibleForFree: true,
+      creditText: musicCreditLine("Wholesome"),
+      musicBy: { "@type": "Person", name: MUSIC_ARTIST, url: MUSIC_ARTIST_URL },
       publisher: { "@id": `${SITE_URL}/#organization` },
     });
   }

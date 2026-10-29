@@ -51,6 +51,33 @@ const TALL: [number, number] = [720, 1280];
 const DATE = "2026-10-29";
 
 export const rubroVideos: Partial<Record<RubroId, RubroVideo>> = {
+  accounting: {
+    base: "/media/demos/rubro-estudios-contables",
+    size: { wide: WIDE, tall: TALL },
+    duration: "PT35S",
+    uploadDate: DATE,
+    music: { title: "Easy Lemon", isrc: "USUAN1200076", trackUrl: track("USUAN1200076") },
+    copy: {
+      es: {
+        name: "Demo en video para estudios contables: facturas de clientes y documentación del mes",
+        description: "Video de 35 segundos con datos ficticios: un estudio contable pasa facturas de clientes a la planilla sin tipear, revisa la documentación del mes cliente por cliente y aprueba los recordatorios.",
+        heading: "Mirá la demo en 35 segundos",
+        lead: "Cargás una factura, el agente lee CUIT, importes y CAE y marca lo que no cierra. Después ves qué documentación falta de cada cliente y aprobás el recordatorio.",
+        alt: "Recorrido en video de la demo para estudios contables: factura leída a planilla con CUIT, importes y CAE, facturas de compra de clientes con alertas, documentación del mes cliente por cliente y recordatorio por WhatsApp listo para tu OK. Datos ficticios.",
+        note: "Video sin voz, con subtítulos en pantalla en español. Datos ficticios.",
+        chapters: [["0:00", "Facturas, sin tipear"], ["0:04", "Elegís una factura y ves qué leyó"], ["0:08", "Facturas de compra de tus clientes"], ["0:14", "Documentación del mes, cliente por cliente"], ["0:17", "Recordatorio listo para tu OK"], ["0:19", "Y el recorrido en video"]],
+      },
+      en: {
+        name: "Video demo for accounting firms: client invoices and monthly paperwork",
+        description: "35-second video with fictional data: an accounting firm moves client invoices into the spreadsheet without typing, checks the month's paperwork client by client and approves the reminders.",
+        heading: "Watch the demo in 35 seconds",
+        lead: "You load an invoice, the agent reads the tax ID, amounts and CAE and flags what doesn't add up. Then you see which documents each client is missing and approve the reminder.",
+        alt: "Video walkthrough of the accounting firm demo: an invoice read into a spreadsheet with tax ID, amounts and CAE, clients' purchase invoices with alerts, the month's paperwork client by client and a WhatsApp reminder ready for your OK. Fictional data.",
+        note: "No voiceover. On-screen captions are in Spanish. Fictional data.",
+        chapters: [["0:00", "Invoices, without typing"], ["0:04", "Pick an invoice and see what it read"], ["0:08", "Your clients' purchase invoices"], ["0:14", "The month's paperwork, client by client"], ["0:17", "Reminder ready for your OK"], ["0:19", "And the video walkthrough"]],
+      },
+    },
+  },
   legal: {
     base: "/media/demos/rubro-estudios-juridicos",
     size: { wide: WIDE, tall: TALL },
