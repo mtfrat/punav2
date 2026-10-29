@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { useCaseHubs, useCases } from "../src/content/use-cases.ts";
+import { TOOLS_BASE, toolDefinitions, toolPath } from "../src/content/tools.ts";
+import { rubroUseCases } from "../src/content/use-cases-rubros.ts";
+import { llmsAutomationDetailLines, llmsToolDetailLines } from "../src/content/about.ts";
 import { buildLlmsTxt, buildPunaMd, PUNA_MD_PATH } from "../src/lib/llms.ts";
 
 const SITE = "https://www.puna-tech.com";
@@ -63,5 +66,26 @@ for (const bot of ["OAI-SearchBot", "ChatGPT-User", "GPTBot", "Claude-SearchBot"
   assert.ok(group.includes("Allow: /") && group.includes("Disallow: /api/") && group.includes("Disallow: /ops/"), `robots.txt: ${bot} group must allow / and keep /api/ + /ops/ disallowed`);
 }
 assert.ok(robots.includes(`Sitemap: ${SITE}/sitemap.xml`), "robots.txt: Sitemap line missing");
+
+// Free tools: hub + each tool in llms.txt and puna.md; llms-full sections (built from the same arrays) cover the 3 tools and the 6 rubro automatizaciones.
+assert.equal(toolDefinitions.length, 3, "expected the 3 free tools");
+assert.equal(rubroUseCases.length, 6, "expected the 6 rubro automatizaciones");
+for (const [name, text] of [["llms.txt", llms], ["puna.md", md]]) {
+  assert.ok(text.includes(`(${SITE}${TOOLS_BASE})`), `${name}: missing ${TOOLS_BASE}`);
+  for (const tool of toolDefinitions) assert.ok(text.includes(`(${SITE}${toolPath(tool.slug)})`), `${name}: missing ${toolPath(tool.slug)}`);
+}
+const toolsFull = llmsToolDetailLines().join("\n");
+for (const tool of toolDefinitions) {
+  assert.ok(toolsFull.includes(`${SITE}${toolPath(tool.slug)}`) && toolsFull.includes(`### Herramienta: ${tool.name}`), `llms-full: tool ${tool.slug} missing`);
+  for (const faq of tool.faqs) assert.ok(toolsFull.includes(faq.q), `llms-full: ${tool.slug} FAQ missing`);
+}
+const automationsFull = llmsAutomationDetailLines().join("\n");
+for (const item of rubroUseCases) {
+  assert.ok(automationsFull.includes(`URL canónica: ${SITE}${item.path}`) && automationsFull.includes(`### Automatización: ${item.title}`), `llms-full: ${item.path} missing`);
+  for (const [q] of item.faqs) assert.ok(automationsFull.includes(q), `llms-full: ${item.path} FAQ missing`);
+}
+for (const item of useCases) assert.ok(automationsFull.includes(`${SITE}${item.path}`), `llms-full: ${item.path} missing`);
+assert.ok(!/gpt-4o|claude 3\.5|gemini 1\.5|across the US/i.test(toolsFull + automationsFull), "llms-full: no stale model versions");
+assert.ok(!/Fraticelli/i.test(toolsFull + automationsFull), "llms-full: no surname");
 
 console.log("llms.txt + puna.md: OK");

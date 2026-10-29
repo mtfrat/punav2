@@ -5,6 +5,9 @@
  */
 import { CONTACT_EMAIL, SITE_URL, servicePath, type Locale } from "./chrome.ts";
 import { rubroDefinitions, rubroPath } from "./rubros.ts";
+import { TOOLS_BASE, toolDefinitions, toolHub, toolPath } from "./tools.ts";
+import { rubroUseCases } from "./use-cases-rubros.ts";
+import { useCases } from "./use-cases.ts";
 
 export const ABOUT_PATH: Record<Locale, string> = { es: "/es/sobre-puna", en: "/about" };
 
@@ -67,6 +70,7 @@ export const aboutCopy: Record<Locale, AboutCopy> = {
       ["Integración de sistemas y datos", servicePath("es", "integraciones-de-datos")],
       ["Automatizaciones por proceso: facturas, cobranzas, pedidos, ARCA, conciliación", "/es/automatizaciones"],
       ["Integraciones con Mercado Libre, Tienda Nube y Mercado Pago", "/es/integraciones"],
+      ["Herramientas gratis: Convenio Multilateral, plazos procesales y horas ahorradas", TOOLS_BASE],
     ],
     whoTitle: "Para quién",
     whoLead: "Demos con datos ficticios, pensadas para cada rubro:",
@@ -120,6 +124,7 @@ export const aboutCopy: Record<Locale, AboutCopy> = {
       ["Systems and data integration", servicePath("en", "data-integrations")],
       ["Process automations (in Spanish): invoices, collections, orders, ARCA, reconciliation", "/es/automatizaciones"],
       ["Mercado Libre, Tienda Nube and Mercado Pago integrations (in Spanish)", "/es/integraciones"],
+      ["Free tools (in Spanish): Convenio Multilateral, procedural deadlines and hours saved", TOOLS_BASE],
     ],
     whoTitle: "Who it is for",
     whoLead: "Demos with fictional data, built for each industry:",
@@ -197,3 +202,64 @@ export const llmsFaqLines = [
   "- ¿Hay que cambiar de sistema? No: primero se conecta y extiende lo que la empresa ya usa.",
   "- ¿Quién es el responsable? Martin, fundador de Puna Tech. Contacto en https://www.puna-tech.com/es/contacto.",
 ];
+
+/** llms.txt: the free-tools hub and its tools, generated from content/tools.ts (the same source the pages and the sitemap use). */
+export const llmsFreeToolsLines = () => [
+  `- [${toolHub.h1}](${abs(TOOLS_BASE)}): ${toolHub.description}`,
+  ...toolDefinitions.map((tool) => `- [${tool.name}](${abs(toolPath(tool.slug))}): ${tool.description}`),
+];
+
+const oneLine = (text: string) => text.replace(/\s+/g, " ").trim();
+
+/** llms-full: each free tool in full (what it does, the rule it applies, sources, caveat), from content/tools.ts. */
+export const llmsToolDetailLines = () => [
+  `Hub: ${abs(TOOLS_BASE)}`,
+  oneLine(toolHub.lead),
+  "Todas son gratuitas, sin registro, y calculan en el navegador sin guardar los datos que se cargan. Son orientativas, no reemplazan al profesional matriculado.",
+  "",
+  ...toolDefinitions.flatMap((tool) => [
+    `### Herramienta: ${tool.name}`,
+    `URL canónica: ${abs(toolPath(tool.slug))}`,
+    `Qué hace: ${oneLine(tool.description)}`,
+    `Para quién: ${oneLine(tool.audience)}`,
+    oneLine(tool.lead),
+    ...tool.sections.flatMap((section) => [
+      `- ${section.heading}: ${[...(section.paragraphs ?? []).map(oneLine), ...(section.formula ? [`Fórmula: ${oneLine(section.formula)}`] : []), ...(section.items ?? []).map((item) => `· ${oneLine(item)}`)].join(" ")}`,
+    ]),
+    "Preguntas frecuentes:",
+    ...tool.faqs.map((faq) => `  - ${oneLine(faq.q)} ${oneLine(faq.a)}`),
+    "Fuentes oficiales consultadas:",
+    ...tool.sources.map((source) => `  - ${source.label}: ${source.href} (${oneLine(source.note)})`),
+    `Aviso: ${oneLine(tool.disclaimer)}`,
+    `Última revisión: ${tool.lastmod}`,
+    "",
+  ]),
+  "Preguntas frecuentes del hub:",
+  ...toolHub.faqs.map((faq) => `  - ${oneLine(faq.q)} ${oneLine(faq.a)}`),
+];
+
+/**
+ * llms-full: the Spanish /es/automatizaciones pages. The long-tail rubro landings (content/use-cases-rubros.ts) in detail,
+ * every other use case as one line. Generated from the same arrays as the pages, so a copy edit flows here.
+ */
+export const llmsAutomationDetailLines = () => {
+  const rubroPaths = new Set(rubroUseCases.map((item) => item.path));
+  return [
+    ...rubroUseCases.flatMap((item) => [
+      `### Automatización: ${item.title}`,
+      `URL canónica: ${abs(item.path)}`,
+      `Rubro: ${item.eyebrow}`,
+      oneLine(item.lead),
+      ...(item.sections ?? []).map((section) => `- ${section.heading}: ${[...section.paragraphs.map(oneLine), ...(section.items ?? []).map((entry) => `· ${oneLine(entry)}`)].join(" ")}`),
+      `Cómo se hace (${item.howTitle}): ${item.how.map((step) => `${step.title}: ${oneLine(step.body)}`).join(" | ")}`,
+      "Preguntas frecuentes:",
+      ...item.faqs.map(([q, a]) => `  - ${oneLine(q)} ${oneLine(a)}`),
+      ...(item.sources?.length ? ["Fuentes oficiales consultadas:", ...item.sources.map((source) => `  - ${source.label}: ${source.href}`)] : []),
+      ...(item.reviewedAt ? [`Revisado el ${item.reviewedAt}.`] : []),
+      ...(item.disclaimer ? [`Aviso: ${oneLine(item.disclaimer)}`] : []),
+      "",
+    ]),
+    "Otras páginas por proceso e integración:",
+    ...useCases.filter((item) => !rubroPaths.has(item.path)).map((item) => `- [${item.title}](${abs(item.path)}): ${oneLine(item.metaDescription)}`),
+  ];
+};

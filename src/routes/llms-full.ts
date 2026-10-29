@@ -1,5 +1,5 @@
 import { caseStudies, casePath, CONTACT_EMAIL, servicePath, services, SITE_URL } from "../content/site";
-import { ABOUT_PATH, llmsFaqLines, llmsOpenToolsLines, llmsQuickFacts, llmsRubroLines } from "../content/about";
+import { ABOUT_PATH, llmsAutomationDetailLines, llmsFaqLines, llmsOpenToolsLines, llmsQuickFacts, llmsRubroLines, llmsToolDetailLines } from "../content/about";
 import { PUNA_SUMMARY } from "../lib/llms";
 import { getPublishedPosts } from "../lib/posts.server";
 
@@ -45,6 +45,12 @@ export async function loader() {
       `URL canónica: ${SITE_URL}${servicePath("es", item.slug)}`,
       "",
     ].join("\n")),
+    "",
+    "## Automatizaciones por proceso y por rubro (español, Argentina)",
+    ...llmsAutomationDetailLines(),
+    "",
+    "## Herramientas gratis",
+    ...llmsToolDetailLines(),
     "",
     "## Por rubro (demos con datos ficticios)",
     ...llmsRubroLines(),

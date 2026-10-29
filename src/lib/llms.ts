@@ -6,7 +6,7 @@
 import { CONTACT_EMAIL, SITE_URL, casePath, servicePath } from "../content/chrome.ts";
 import { caseStudies, services } from "../content/catalog.ts";
 import { USE_CASE_OFFER, useCaseHubs, useCases } from "../content/use-cases.ts";
-import { ABOUT_PATH, llmsFaqLines, llmsOpenToolsLines, llmsQuickFacts, llmsRubroLines } from "../content/about.ts";
+import { ABOUT_PATH, llmsFaqLines, llmsFreeToolsLines, llmsOpenToolsLines, llmsQuickFacts, llmsRubroLines } from "../content/about.ts";
 
 export const PUNA_MD_PATH = "/puna.md";
 
@@ -111,6 +111,9 @@ export function buildLlmsTxt(): string {
     "## Automatizaciones e integraciones (español, Argentina)",
     ...useCaseLinks(true),
     "",
+    "## Herramientas gratis (calculadoras en el navegador, sin registro)",
+    ...llmsFreeToolsLines(),
+    "",
     "## Por rubro (demos con datos ficticios)",
     ...llmsRubroLines(),
     "",
@@ -162,6 +165,9 @@ export function buildPunaMd(): string {
     "",
     "## Páginas por proceso (español)",
     ...useCaseLinks(true),
+    "",
+    "## Herramientas gratis (español)",
+    ...llmsFreeToolsLines(),
     "",
     "## Servicios",
     ...serviceLinks(),
