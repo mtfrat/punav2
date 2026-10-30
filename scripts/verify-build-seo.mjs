@@ -1203,8 +1203,8 @@ for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
 }
 
 const privacyDescription = {
-  en: "How Puna Tech handles website and inquiry data.",
-  es: "Cómo Puna Tech gestiona los datos del sitio y las consultas.",
+  en: "What data Puna Tech collects from project briefs and site analytics, how it is used, which cookies the site sets and how to request access or deletion.",
+  es: "Qué datos recopila Puna Tech en los briefs y en la analítica del sitio, para qué se usan, qué cookies instala y cómo pedir acceso, corrección o eliminación.",
 };
 const termsDescription = {
   en: "Terms of use for the Puna Tech website. Pages are general information, not a binding proposal, and a discovery call or brief is not a signed agreement.",
@@ -1250,7 +1250,8 @@ for (const [route, language, canonical, alternate, description, cookieMarker] of
   }
   const rendered = metaDescription(html);
   if (rendered !== description) failures.push(`${route}: meta description mismatch (${rendered})`);
-  if (!cookieMarker && (description.length < 50 || description.length > 160)) failures.push(`${route}: meta description length is ${description.length}`);
+  // 30/10: privacy descriptions were 47 (EN) and 60 (ES) chars; every legal page now needs 70–160.
+  if (description.length < 70 || description.length > 160) failures.push(`${route}: meta description length is ${description.length}`);
   if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${route}: html lang is not ${language}`);
   if (!html.includes(`rel="canonical" href="${canonical}"`) && !html.includes(`rel='canonical' href='${canonical}'`)) failures.push(`${route}: canonical mismatch`);
   if (!html.includes('hreflang="en"') && !html.includes('hrefLang="en"')) failures.push(`${route}: English hreflang missing`);
