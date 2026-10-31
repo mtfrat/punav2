@@ -595,7 +595,7 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
   }
-  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-cases-heading")) failures.push(`${other}: cases block rendered on a page without cases copy`);
   }
@@ -623,10 +623,57 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 1600) failures.push(`${route}: page copy too thin (${words} words)`);
-  for (const other of ["/es/automatizaciones/pedidos-por-whatsapp"]) {
-    const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
-    if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+}
+
+// "sistema de pedidos por whatsapp": step-by-step guide + hard cases + Meta sources on the WhatsApp orders page (31/10).
+{
+  const route = "/es/automatizaciones/pedidos-por-whatsapp";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Sistema de pedidos por WhatsApp para empresas | Puna Tech") failures.push(`${route}: title changed (${title})`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push(`${route}: expected exactly one h1`);
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo funciona un sistema de pedidos por WhatsApp, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. Tu número en la plataforma oficial",
+    "2. Cada mensaje llega al flujo",
+    "3. Del mensaje a productos de tu catálogo",
+    "4. Precio, stock y condiciones desde tu sistema",
+    "5. El vendedor confirma el borrador",
+    "6. Respuesta al cliente dentro de las reglas de WhatsApp",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
   }
+  if (!html.includes('<h2 id="use-case-cases-heading">Los pedidos que complican la automatización (y qué hace el sistema con cada uno)</h2>')) failures.push(`${route}: cases heading missing`);
+  for (const heading of [
+    "Un pedido repartido en varios mensajes",
+    "Productos con nombres que no están en tu catálogo",
+    "Audios y fotos de listas escritas a mano",
+    "Sin stock o con stock parcial",
+    "Un número que no está en tu sistema",
+    "Cambios y cancelaciones después de confirmar",
+    "Pedidos fuera de horario",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing case ${heading}`);
+  }
+  if (html.indexOf("use-case-guide-heading") > html.indexOf("use-case-cases-heading")) failures.push(`${route}: cases block should come after the guide`);
+  for (const href of ["/es/integraciones/tienda-nube", "/es/automatizaciones/facturacion-electronica-arca", "/es/automatizaciones/automatizar-cobranzas", "/es/demos/cotizador-mayorista", "https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: link ${href} missing`);
+  }
+  for (const q of ["¿Qué plataforma sirve para gestionar pedidos por WhatsApp?", "¿Alcanza con la app de WhatsApp Business?", "¿Cuánto cobra Meta por los mensajes de WhatsApp?"]) {
+    if (!html.includes(q)) failures.push(`${route}: FAQ missing ${q}`);
+  }
+  for (const block of html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || []) {
+    const data = JSON.parse(block.replace(/^<script[^>]*>/, "").replace(/<\/script>$/, ""));
+    const nodes = Array.isArray(data["@graph"]) ? data["@graph"] : [data];
+    for (const node of nodes) {
+      if (node["@type"] === "FAQPage" && node.mainEntity.length !== 11) failures.push(`${route}: FAQPage should have 11 questions (${node.mainEntity.length})`);
+    }
+  }
+  const main = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0];
+  if (/\$\s?\d|USD\s?\d|testimonio|clientes como/i.test(main.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price/testimonial-like text found`);
+  if (/ejemplo s\.?a\.?|\bejemplo srl/i.test(main)) failures.push(`${route}: placeholder company name found`);
+  const words = main.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 2000) failures.push(`${route}: page copy too thin (${words} words)`);
 }
 
 // "automatizar facturación electrónica ARCA": step-by-step guide on the ARCA page (26/10).
