@@ -1442,3 +1442,8 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 @media (max-width: 560px) {
   .demo-cta-band-actions .button-primary { width: 100%; justify-content: center; }
 }
+
+/* Hero link on the (dark) tool pages: light text, arrow stays on the same line. */
+.tl-hero-demo { margin: 14px 0 0; }
+.tl-hero-demo .demo-cta-band-second { display: inline-flex; align-items: center; gap: 6px; color: #fff; text-decoration-color: var(--terracotta, #c4522a); white-space: normal; }
+.tl-hero-demo .demo-cta-band-second svg { flex: none; }
