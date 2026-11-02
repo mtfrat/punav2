@@ -77,17 +77,29 @@ export function CalInline({ locale, placement, eager = false }: { locale: Locale
   const track = useRef({ locale, placement });
   track.current = { locale, placement };
 
-  // Eager mode (contact page): start loading when the block is about to scroll into view. Never before.
+  // Eager mode (contact page): start loading when the block is about to scroll into view AND the page has
+  // finished loading and gone idle, so the embed never competes with first paint / LCP.
   useEffect(() => {
     if (!eager || requested || !anchorRef.current || typeof IntersectionObserver === "undefined") return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+    const start = () => {
+      if (cancelled) return;
+      timer = setTimeout(() => { if (!cancelled) setRequested(true); }, 1200);
+    };
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setRequested(true);
-        observer.disconnect();
-      }
+      if (!entry.isIntersecting) return;
+      observer.disconnect();
+      if (document.readyState === "complete") start();
+      else window.addEventListener("load", start, { once: true });
     }, { rootMargin: "200px 0px" });
     observer.observe(anchorRef.current);
-    return () => observer.disconnect();
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+      window.removeEventListener("load", start);
+      if (timer) clearTimeout(timer);
+    };
   }, [eager, requested]);
 
   // Impression of the block itself (not the embed), for the funnel.
