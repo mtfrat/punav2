@@ -8,17 +8,17 @@ OUT="$(cd "$(dirname "$0")/.." && pwd)/public/media/demos"
 mkdir -p "$OUT"
 SLUGS="${SLUGS:-estudios-contables estudios-juridicos productores-de-seguros inmobiliarias clinicas-y-consultorios}"
 for slug in $SLUGS; do
-  # Poster frame (seconds): a frame with the demo UI. The clinics master still shows an old page headline in some
-  # frames (checked by OCR): 6 s is clean in 16:9 and 19 s in 9:16 until Video Lab re-renders it.
+  # Poster frame (seconds): a frame with the demo UI and no page headline.
   POSTER_AT=6
+  # webm quality: 42 by default; the two re-rendered masters (clinics, insurance) use 44 to keep all media within the 36 MB budget.
+  WEBM_CRF=42; case "$slug" in clinicas-y-consultorios|productores-de-seguros) WEBM_CRF=44;; esac
   for shape in 16x9 9x16; do
     in="$SRC/$slug/$slug-$shape.mp4"
     if [ "$shape" = 16x9 ]; then scale="scale=1280:720:flags=lanczos"; else scale="scale=720:1280:flags=lanczos"; fi
     base="$OUT/rubro-$slug-$shape"
-    [ "$slug-$shape" = clinicas-y-consultorios-9x16 ] && POSTER_AT=19 || POSTER_AT=6
     ffmpeg -v error -y -i "$in" -vf "$scale" -c:v libx264 -preset slow -crf 33 -profile:v high -pix_fmt yuv420p \
       -movflags +faststart -c:a aac -b:a 64k -ac 2 "$base.mp4"
-    ffmpeg -v error -y -i "$in" -vf "$scale" -c:v libvpx-vp9 -crf 42 -b:v 0 -row-mt 1 -cpu-used 2 -pix_fmt yuv420p \
+    ffmpeg -v error -y -i "$in" -vf "$scale" -c:v libvpx-vp9 -crf "$WEBM_CRF" -b:v 0 -row-mt 1 -cpu-used 2 -pix_fmt yuv420p \
       -c:a libopus -b:a 56k "$base.webm"
     ffmpeg -v error -y -ss "$POSTER_AT" -i "$in" -frames:v 1 -vf "$scale" -c:v libwebp -quality 74 "$base.webp"
   done
