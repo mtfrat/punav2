@@ -2,7 +2,10 @@ import { useEffect, type ReactNode } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
+import { BookingChoice } from "../components/booking-choice";
+import { DemoCtaBand } from "../components/demo-cta-band";
 import { Accordion, CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
+import { demoCtaFor } from "../content/demo-ctas";
 import {
   casePath,
   caseStudies,
@@ -127,6 +130,7 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
   const guides = serviceGuides[service.key]?.[locale] ?? [];
   useEffect(() => trackEvent("service_view", { locale, service: service.key }), [locale, service.key]);
   const briefHref = contactPath(locale);
+  const demoCta = locale === "es" ? demoCtaFor(servicePath(locale, service.slug)) : undefined;
 
   return (
     <PageShell locale={locale}>
@@ -155,6 +159,8 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
             </div>
           </div>
         </section>
+
+        {demoCta ? <DemoCtaBand cta={demoCta} page={servicePath(locale, service.slug)} position="top" labelledBy="demo-cta-top-heading" /> : null}
 
         <section className="section light-section">
           <div className="shell two-column">
@@ -285,25 +291,27 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className="detail-cta dark-section">
+        {demoCta ? <DemoCtaBand cta={demoCta} page={servicePath(locale, service.slug)} position="end" labelledBy="demo-cta-end-heading" /> : null}
+
+        <section className="detail-cta detail-cta-booking dark-section">
           <div className="shell">
             <div>
               <p className="eyebrow eyebrow-dark">{locale === "en" ? "A useful first conversation" : "Una primera conversación útil"}</p>
               <h2>{service.finalCtaTitle}</h2>
               <p className="detail-cta-body">{service.finalCtaBody}</p>
               {service.finalCtaMicro ? <p className="detail-cta-micro">{service.finalCtaMicro}</p> : null}
+              <div className="cta-group">
+                <a
+                  href={briefHref}
+                  className="button-ghost-burgundy button-ghost-burgundy-light"
+                  onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}_final`, destination: "contact" })}
+                >
+                  <span>{t.sendBrief}</span>
+                  <ArrowRight aria-hidden="true" size={16} />
+                </a>
+              </div>
             </div>
-            <div className="cta-group detail-cta-actions">
-              <CalButton locale={locale} placement={`service_${service.key}_final`} label={t.book} className="button-primary-terracotta" />
-              <a
-                href={briefHref}
-                className="button-ghost-burgundy"
-                onClick={() => trackEvent("cta_click", { locale, placement: `service_${service.key}_final`, destination: "contact" })}
-              >
-                <span>{t.sendBrief}</span>
-                <ArrowRight aria-hidden="true" size={16} />
-              </a>
-            </div>
+            <BookingChoice locale={locale} placement={`service_${service.key}_final`} />
           </div>
         </section>
       </main>

@@ -14,6 +14,8 @@ export interface LeadAlertInput {
   placement: string;
   stored: boolean;
   receivedAt: Date;
+  /** "quick" = email-only box next to the Cal embed (no name, company or budget). */
+  kind?: "quick";
 }
 
 export interface LeadAlertEnv {
@@ -62,7 +64,35 @@ export function formatArt(date: Date): string {
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}:${get("second")} ART`;
 }
 
+function buildQuickLeadAlertEmail(lead: LeadAlertInput, options: { to: string; from: string }) {
+  const when = formatArt(lead.receivedAt);
+  const source = [lead.page || "(desconocida)", lead.placement ? `bloque: ${lead.placement}` : ""].filter(Boolean).join(" · ");
+  const storedNote = lead.stored ? "Guardado en la tabla website_quick_leads." : "ATENCIÓN: no se pudo guardar en la base. Este mail es la única copia.";
+  const note = lead.problem || "(no dejó nota)";
+  const rows: Array<[string, string]> = [
+    ["Email", lead.email],
+    ["Idioma", lead.locale],
+    ["Página / origen", source],
+    ["Recibido", when],
+  ];
+  const subject = oneLine(`Nuevo contacto rápido: ${lead.email}`, 150);
+  const html = [
+    `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#181410;line-height:1.5">`,
+    `<h2 style="margin:0 0 12px;font-size:18px">Nuevo contacto rápido en puna-tech.com (solo mail)</h2>`,
+    `<table cellpadding="6" cellspacing="0" style="border-collapse:collapse">`,
+    ...rows.map(([label, value]) => `<tr><td style="color:#6b6258;vertical-align:top"><strong>${escapeHtml(label)}</strong></td><td>${escapeHtml(value)}</td></tr>`),
+    `</table>`,
+    `<h3 style="margin:16px 0 6px;font-size:15px">Qué quiere automatizar</h3>`,
+    `<div style="white-space:pre-wrap;border-left:3px solid #ff6b00;padding:8px 12px;background:#faf7f2">${escapeHtml(note)}</div>`,
+    `<p style="color:#6b6258;font-size:12px;margin-top:16px">${escapeHtml(storedNote)} Respondé este mail para contestarle directo.</p>`,
+    `</div>`,
+  ].join("");
+  const text = ["Nuevo contacto rápido en puna-tech.com (solo mail)", "", ...rows.map(([label, value]) => `${label}: ${value}`), "", "Qué quiere automatizar:", note, "", storedNote].join("\n");
+  return { from: options.from, to: [options.to], reply_to: lead.email, subject, html, text };
+}
+
 export function buildLeadAlertEmail(lead: LeadAlertInput, options: { to: string; from: string }) {
+  if (lead.kind === "quick") return buildQuickLeadAlertEmail(lead, options);
   const when = formatArt(lead.receivedAt);
   const budget = budgetLabels[lead.budget] || lead.budget;
   const source = [lead.page || "(desconocida)", lead.placement ? `bloque: ${lead.placement}` : ""].filter(Boolean).join(" · ");
