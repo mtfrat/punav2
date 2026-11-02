@@ -6,6 +6,7 @@ import { demoDefinitions } from "../src/content/demos.ts";
 import { rubroDefinitions } from "../src/content/rubros.ts";
 import { rubroFaq } from "../src/content/rubro-faq.ts";
 import { extractFaq } from "../src/lib/blog-faq.ts";
+import { articleAuthorSchema, publicPersonName } from "../src/lib/author.ts";
 import { faqPageSchema, organizationSchema, ORGANIZATION_SAME_AS } from "../src/lib/seo.ts";
 
 // 1. A rubro landing must not repeat the H1 of one of its demos (audit 2026-10-29: insurance brokers vs policies demo).
@@ -67,3 +68,19 @@ assert.deepEqual(extractFaq("<h2>Sin faq</h2><h3>¿Pregunta?</h3><p>Respuesta</p
 assert.deepEqual(extractFaq('<h2>Frequently asked questions</h2><h3>Why?</h3><p>Because.</p>'), [["Why?", "Because."]]);
 
 console.log("geo source checks: OK");
+
+// 5. Blog signature policy (Martin, 2026-11-02): the blog is signed "Martin", never with the surname.
+assert.equal(publicPersonName("Martin Fraticelli"), "Martin");
+assert.equal(publicPersonName("Ing. Martín Fraticelli"), "Ing. Martín");
+assert.equal(publicPersonName("Martin"), "Martin");
+assert.equal(publicPersonName("Fraticelli"), null);
+assert.equal(publicPersonName(null), null);
+assert.deepEqual(articleAuthorSchema("Martin Fraticelli"), { "@type": "Person", name: "Martin" });
+assert.deepEqual(articleAuthorSchema("Martin"), { "@type": "Person", name: "Martin" });
+assert.deepEqual(articleAuthorSchema("Puna Tech Engineering"), { "@type": "Organization", name: "Puna Tech Engineering" });
+assert.deepEqual(articleAuthorSchema(null), { "@type": "Organization", name: "Puna Tech Engineering" });
+assert.ok(!/Fraticelli/i.test(JSON.stringify(articleAuthorSchema("Martin Fraticelli"))), "author JSON-LD must not carry the surname");
+const postsSource = readFileSync(new URL("../src/lib/posts.server.ts", import.meta.url), "utf8");
+assert.ok(/author_name: publicPersonName\(/.test(postsSource) && /reviewer_name: publicPersonName\(/.test(postsSource), "posts.server must normalize author_name and reviewer_name");
+const blogPostSource = readFileSync(new URL("../src/routes/blog-post.tsx", import.meta.url), "utf8");
+assert.ok(blogPostSource.includes("author: articleAuthorSchema(post.author_name)"), "blog-post JSON-LD must use articleAuthorSchema");

@@ -9,6 +9,7 @@ import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { blogDocumentTitle, breadcrumbSchema, createMeta, faqPageSchema } from "../lib/seo";
 import { extractFaq } from "../lib/blog-faq";
+import { articleAuthorSchema } from "../lib/author";
 import { DemosByIndustryList } from "../components/demos-strip";
 
 export { PublicNotFoundBoundary as ErrorBoundary };
@@ -53,7 +54,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
     imageAlt: post.hero_image_alt || post.title,
     article: { publishedTime: post.published_at, modifiedTime: post.updated_at, section: post.category || undefined, author: post.author_name || "Puna Tech Engineering" },
     schema: [
-      { "@context": "https://schema.org", "@type": "Article", headline: post.title, description: post.excerpt, datePublished: post.published_at, dateModified: post.updated_at, inLanguage: locale === "en" ? "en" : "es-AR", author: { "@type": "Organization", name: post.author_name || "Puna Tech Engineering" }, publisher: { "@id": `${SITE_URL}/#organization` }, image: post.hero_image_url || `${SITE_URL}/${locale === "en" ? "og-en.png" : "og-es.png"}`, mainEntityOfPage: `${SITE_URL}${path}` },
+      { "@context": "https://schema.org", "@type": "Article", headline: post.title, description: post.excerpt, datePublished: post.published_at, dateModified: post.updated_at, inLanguage: locale === "en" ? "en" : "es-AR", author: articleAuthorSchema(post.author_name), publisher: { "@id": `${SITE_URL}/#organization` }, image: post.hero_image_url || `${SITE_URL}/${locale === "en" ? "og-en.png" : "og-es.png"}`, mainEntityOfPage: `${SITE_URL}${path}` },
       breadcrumbSchema([{ name: "Puna Tech", path: locale === "en" ? "/" : "/es" }, { name: locale === "en" ? "Insights" : "Insights", path: blogPath(locale) }, { name: post.title, path }]),
       ...(faq.length > 0 ? [faqPageSchema(faq)] : []),
     ],
