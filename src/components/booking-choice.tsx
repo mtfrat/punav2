@@ -171,7 +171,7 @@ export function CalInline({ locale, placement, eager = false }: { locale: Locale
   );
 }
 
-type QuickLeadResponse = { ok: boolean; error?: string; fieldErrors?: Record<string, string> };
+type QuickLeadResponse = { ok: boolean; dryRun?: boolean; error?: string; fieldErrors?: Record<string, string> };
 
 export function QuickLeadForm({ locale, placement }: { locale: Locale; placement: string }) {
   const t = copyByLocale[locale];

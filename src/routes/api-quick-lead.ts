@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { data, type ActionFunctionArgs } from "react-router";
-import { createRateLimiter, isPermittedOrigin } from "../lib/lead-guard";
+import { createRateLimiter, isPermittedOrigin, isProductionLeadRequest } from "../lib/lead-guard";
 import { sendLeadAlert } from "../lib/lead-alert";
 import { handleQuickLead } from "../lib/quick-lead";
 
@@ -13,6 +13,8 @@ export async function action({ request }: ActionFunctionArgs) {
   if (Number(request.headers.get("content-length") || 0) > 4_000) return data({ ok: false, error: "Request too large." }, { status: 413 });
   const form = await request.formData();
   const result = await handleQuickLead(form, {
+    // Only the real site on www.puna-tech.com (Vercel Production) may write to Supabase or send mail.
+    dryRun: !isProductionLeadRequest(request),
     referer: request.headers.get("referer"),
     storeLead: async (record) => {
       const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;

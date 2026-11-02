@@ -1447,3 +1447,8 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .tl-hero-demo { margin: 14px 0 0; }
 .tl-hero-demo .demo-cta-band-second { display: inline-flex; align-items: center; gap: 6px; color: #fff; text-decoration-color: var(--terracotta, #c4522a); white-space: normal; }
 .tl-hero-demo .demo-cta-band-second svg { flex: none; }
+
+/* ops: quick leads section */
+.ops-tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: #f3e4d8; color: #8a3a16; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: 2px; }
+.ops-muted { color: #6b6258; margin: 8px 0; }
+.ops-count { font-size: 0.8rem; font-weight: 400; color: #6b6258; }

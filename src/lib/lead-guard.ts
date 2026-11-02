@@ -30,3 +30,25 @@ export function createRateLimiter(limit: number, windowMs: number) {
     return current.count > limit;
   };
 }
+
+export const PRODUCTION_LEAD_HOST = "www.puna-tech.com";
+
+/**
+ * True only for a real production request: the deployment is Vercel's Production environment AND the request
+ * is addressed to www.puna-tech.com (and, when the browser sent an Origin, that Origin is the same host).
+ * Previews, local dev, *.vercel.app production aliases and spoofed Origin headers all return false, so they
+ * can never write to the production database or send mail.
+ */
+export function isProductionLeadRequest(request: Request, env: { VERCEL_ENV?: string } = process.env): boolean {
+  if (env.VERCEL_ENV !== "production") return false;
+  try {
+    const forwarded = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = (forwarded || new URL(request.url).host).toLowerCase();
+    if (host !== PRODUCTION_LEAD_HOST) return false;
+    const origin = request.headers.get("origin");
+    if (origin && new URL(origin).host.toLowerCase() !== PRODUCTION_LEAD_HOST) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}

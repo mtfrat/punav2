@@ -29,6 +29,8 @@ export interface QuickLeadRecord {
 export type QuickSpamReason = "honeypot" | "too_fast" | "missing_timestamp" | "too_many_links" | BlocklistReason;
 
 export interface QuickLeadDeps {
+  /** Required on purpose: true = validate only, never store or email (anything that is not a production request). */
+  dryRun: boolean;
   /** Returns "stored", "unconfigured" (no DB credentials) or "error". */
   storeLead: (record: QuickLeadRecord) => Promise<"stored" | "unconfigured" | "error">;
   /** Must never throw; the result is ignored by the response. */
@@ -41,7 +43,7 @@ export interface QuickLeadDeps {
 
 export interface QuickLeadResult {
   status: number;
-  body: { ok: boolean; error?: string; fieldErrors?: Record<string, string> };
+  body: { ok: boolean; dryRun?: boolean; error?: string; fieldErrors?: Record<string, string> };
   spam?: QuickSpamReason;
 }
 
@@ -92,6 +94,12 @@ export async function handleQuickLead(form: FormData, deps: QuickLeadDeps): Prom
   if (note.length > QUICK_LEAD_LIMITS.noteMax) fieldErrors.note = locale === "es" ? "Contalo en una línea, hasta 280 caracteres." : "Keep it to one line, up to 280 characters.";
   if (Object.keys(fieldErrors).length) {
     return { status: 400, body: { ok: false, error: locale === "es" ? "Revisá el mail e intentá de nuevo." : "Check the email and try again.", fieldErrors } };
+  }
+
+  // Not a production request (preview, dev, *.vercel.app alias): behave like a success but touch nothing.
+  if (deps.dryRun) {
+    logger.info("quick lead dry run: nothing stored, nothing sent (not a production request)");
+    return { status: 200, body: { ok: true, dryRun: true } };
   }
 
   let outcome: "stored" | "unconfigured" | "error";

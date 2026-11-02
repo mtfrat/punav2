@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { buildLeadAlertEmail } from "../src/lib/lead-alert.ts";
-import { createRateLimiter, isPermittedOrigin } from "../src/lib/lead-guard.ts";
+import { readFileSync } from "node:fs";
+import { createRateLimiter, isPermittedOrigin, isProductionLeadRequest } from "../src/lib/lead-guard.ts";
+import { loadQuickLeads, QUICK_LEAD_STATUSES } from "../src/lib/quick-leads-admin.ts";
 import { cleanNote, handleQuickLead, QUICK_LEAD_LIMITS } from "../src/lib/quick-lead.ts";
 
 const NOW = new Date("2026-11-02T15:00:00.000Z");
@@ -18,6 +20,7 @@ function makeDeps(outcome = "stored") {
     calls,
     deps: {
       now: () => NOW,
+      dryRun: false,
       logger: silent,
       storeLead: async (record) => { calls.stored.push(record); if (outcome === "throw") throw new Error("boom"); return outcome; },
       sendAlert: async (lead) => { calls.alerts.push(lead); if (outcome === "alert-throws") throw new Error("alert down"); },
@@ -130,6 +133,59 @@ assert.equal(cleanNote("hola\r\n\tmundo\u0000  ok"), "hola mundo ok");
   assert.equal(limited(r, 1000), true, "6th request in the window is limited");
   assert.equal(limited(req({ "x-forwarded-for": "9.9.9.9" }), 1000), false, "another IP is unaffected");
   assert.equal(limited(r, 1000 + 61_000), false, "window resets");
+}
+
+// dry run (anything that is not a production request): success shape, nothing stored, nothing emailed
+{
+  const { deps, calls } = makeDeps();
+  const result = await handleQuickLead(makeForm(), { ...deps, dryRun: true });
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body, { ok: true, dryRun: true });
+  assert.equal(calls.stored.length + calls.alerts.length, 0, "dry run must not store or email");
+  // validation still runs, so the form can be exercised on a preview
+  const bad = await handleQuickLead(makeForm({ email: "nope" }), { ...deps, dryRun: true });
+  assert.equal(bad.status, 400);
+  // spam is still dropped silently (no dryRun flag leaks to bots)
+  const bot = await handleQuickLead(makeForm({ website: "x" }), { ...deps, dryRun: true });
+  assert.deepEqual(bot.body, { ok: true });
+  assert.equal(calls.stored.length + calls.alerts.length, 0);
+}
+
+// production gate: VERCEL_ENV === production AND host www.puna-tech.com (AND origin, when present)
+{
+  const prod = { VERCEL_ENV: "production" };
+  const req = (url, headers = {}) => new Request(url, { method: "POST", headers });
+  const ok = "https://www.puna-tech.com/api/lead-rapido";
+  assert.equal(isProductionLeadRequest(req(ok, { origin: "https://www.puna-tech.com" }), prod), true);
+  assert.equal(isProductionLeadRequest(req(ok), prod), true, "no Origin header: host alone decides");
+  assert.equal(isProductionLeadRequest(req(ok, { "x-forwarded-host": "www.puna-tech.com" }), prod), true);
+  for (const vercelEnv of ["preview", "development", "", undefined]) {
+    assert.equal(isProductionLeadRequest(req(ok, { origin: "https://www.puna-tech.com" }), { VERCEL_ENV: vercelEnv }), false, `VERCEL_ENV=${vercelEnv}`);
+  }
+  assert.equal(isProductionLeadRequest(req("https://punav2-git-feat-x-mfrats-projects.vercel.app/api/lead-rapido", { origin: "https://www.puna-tech.com" }), prod), false, "preview host with spoofed Origin");
+  assert.equal(isProductionLeadRequest(req("https://punav2.vercel.app/api/lead-rapido"), prod), false, "production *.vercel.app alias");
+  assert.equal(isProductionLeadRequest(req("http://localhost:5173/api/lead-rapido"), prod), false, "local dev");
+  assert.equal(isProductionLeadRequest(req(ok, { origin: "https://evil.com" }), prod), false, "foreign Origin");
+  assert.equal(isProductionLeadRequest(req(ok, { origin: "not a url" }), prod), false);
+  assert.equal(isProductionLeadRequest(req("https://puna-tech.com/api/lead-rapido"), prod), false, "apex is not the allowed host");
+}
+
+// the route must wire the gate (the route itself needs react-router, so this is a static guard)
+{
+  const route = readFileSync(new URL("../src/routes/api-quick-lead.ts", import.meta.url), "utf8");
+  assert.ok(route.includes("dryRun: !isProductionLeadRequest(request)"), "api-quick-lead must pass dryRun from isProductionLeadRequest");
+}
+
+// /ops/leads reader: works with rows, and degrades (never throws) when the table is missing or the client breaks
+{
+  const client = (result) => ({ from: (table) => { assert.equal(table, "website_quick_leads"); return { select: () => ({ order: () => ({ limit: async () => result }) }) }; } });
+  const rows = [{ id: "1", email: "a@b.co", status: "new" }];
+  assert.deepEqual(await loadQuickLeads(client({ data: rows, error: null })), { quickLeads: rows, quickAvailable: true });
+  assert.deepEqual(await loadQuickLeads(client({ data: [], error: null })), { quickLeads: [], quickAvailable: true });
+  assert.deepEqual(await loadQuickLeads(client({ data: null, error: { code: "42P01", message: 'relation "website_quick_leads" does not exist' } })), { quickLeads: [], quickAvailable: false });
+  assert.deepEqual(await loadQuickLeads({ from() { throw new Error("network"); } }), { quickLeads: [], quickAvailable: false });
+  assert.deepEqual(await loadQuickLeads(undefined), { quickLeads: [], quickAvailable: false });
+  assert.deepEqual(QUICK_LEAD_STATUSES, ["new", "contacted", "closed", "spam"]);
 }
 
 console.log("quick lead tests passed");
