@@ -860,6 +860,8 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/control-de-honorarios-estudio-juridico",
     "/es/automatizaciones/cartera-de-polizas-y-renovaciones",
     "/es/automatizaciones/matricula-productor-asesor-de-seguros",
+    "/es/automatizaciones/control-de-facturacion-monotributistas",
+    "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo",
   ]],
   ["/es/integraciones", "Integrar Mercado Libre y Tienda Nube con tu ERP | Puna Tech", "Integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema de gestión", [
     "/es/integraciones/mercado-pago",
@@ -1548,6 +1550,8 @@ for (const slug of [
   "control-de-honorarios-estudio-juridico",
   "cartera-de-polizas-y-renovaciones",
   "matricula-productor-asesor-de-seguros",
+  "control-de-facturacion-monotributistas",
+  "matricula-cpacf-y-bono-derecho-fijo",
 ]) {
   const route = `/es/automatizaciones/${slug}`;
   let html = "";

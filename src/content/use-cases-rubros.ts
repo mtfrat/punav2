@@ -11,6 +11,8 @@ import type { UseCaseContent } from "./use-cases.ts";
 
 export const RUBRO_REVIEWED_AT = "29/10/2026";
 const UPDATED_AT = "2026-10-29";
+const REVIEWED_AT_1102 = "02/11/2026";
+const UPDATED_AT_1102 = "2026-11-02";
 const costFaq = (detail: string): [string, string] => [
   "¿Cuánto tarda y cuánto cuesta?",
   `La propuesta es automatizar un proceso en 2 semanas a precio cerrado. El precio depende de ${detail}. Lo acordamos por escrito antes de empezar, después de una llamada de 15 minutos. No publicamos precios en la web porque cada proceso es distinto.`,
@@ -42,6 +44,20 @@ const CA = {
   consultas: { label: "Comisión Arbitral: SIFERE WEB Consultas", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sifere/sifere-web-consultas" },
   deducciones: { label: "Comisión Arbitral: Módulo Deducciones de SIFERE (Eventos 43 a 56)", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sifere/modulo-deducciones" },
   sircreb: { label: "Comisión Arbitral: ¿cómo se deducen las recaudaciones bancarias? (SIRCREB)", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sircreb/como-se-deducen-las-recaudaciones-bancarias" },
+};
+
+const ARCA_MONO = {
+  recat: { label: "ARCA: ¿cuándo y cómo me recategorizo? (Ayuda sobre el monotributo)", href: "https://www.arca.gob.ar/monotributo/ayuda/recategorizacion.asp" },
+  exclusion: { label: "ARCA: exclusión del monotributo (Ayuda sobre el monotributo)", href: "https://arca.gob.ar/monotributo/ayuda/exclusion.asp" },
+  parametros: { label: "ARCA: parámetros y categorías del monotributo (Ayuda sobre el monotributo)", href: "https://arca.gob.ar/monotributo/ayuda/parametros.asp" },
+  categorias: { label: "ARCA: montos y categorías vigentes del monotributo", href: "https://www.arca.gob.ar/monotributo/categorias.asp" },
+};
+const CPACF = {
+  matriculas: { label: "CPACF: Matrículas (vencimiento, valor y formas de pago)", href: "https://www.cpacf.org.ar/noticia/5145/matriculas-cpacf" },
+  bono: { label: "CPACF: Bono de Derecho Fijo Ley 23.187 (canales y pasos)", href: "https://www.cpacf.org.ar/noticia/5146/bono-cpacf-ley-23187" },
+  faqs: { label: "CPACF: preguntas frecuentes (matrícula, suspensión por falta de pago, bono)", href: "https://www.cpacf.org.ar/faqs" },
+  reglamento: { label: "CPACF: Reglamento Interno (arts. 121 a 129: cuota anual y derecho fijo)", href: "https://new.cpacf.org.ar/noticia/5141/reglamento-interno" },
+  ley: { label: "Ley 23.187, ejercicio de la abogacía en la Capital Federal (arts. 51 y 53, InfoLEG)", href: "https://servicios.infoleg.gob.ar/infolegInternet/anexos/25000-29999/26188/texact.htm" },
 };
 
 const STANDARD_DISCLAIMER = "Esta página informa y no es asesoramiento legal ni contable. La presentación, el pago y las decisiones las toma el profesional: el sistema prepara y vos aprobás.";
@@ -158,6 +174,7 @@ rubroUseCases.push({
   reviewedAt: RUBRO_REVIEWED_AT,
   disclaimer: STANDARD_DISCLAIMER,
   relatedLinks: [
+    { path: "/es/automatizaciones/control-de-facturacion-monotributistas", title: "Control de facturación de monotributistas" },
     { path: "/es/automatizaciones/conciliacion-sifere-retenciones-percepciones", title: "Conciliación de retenciones y percepciones de SIFERE" },
     { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
     { path: "/es/demos/facturas-de-clientes", title: "Demo: facturas de compra de tus clientes" },
@@ -390,6 +407,7 @@ rubroUseCases.push({
   reviewedAt: RUBRO_REVIEWED_AT,
   disclaimer: LEGAL_DISCLAIMER,
   relatedLinks: [
+    { path: "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo", title: "Matrícula CPACF y bono de derecho fijo" },
     { path: "/es/automatizaciones/control-de-honorarios-estudio-juridico", title: "Control de honorarios para estudios jurídicos" },
     { path: "/es/demos/leads-con-ia", title: "Demo: captación y calificación de leads con IA" },
     { path: "/es/demos/cobranzas", title: "Demo: cobranzas automáticas" },
@@ -509,6 +527,7 @@ rubroUseCases.push({
   sources: [],
   disclaimer: LEGAL_DISCLAIMER,
   relatedLinks: [
+    { path: "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo", title: "Matrícula CPACF y bono de derecho fijo" },
     { path: "/es/automatizaciones/control-de-expedientes-estudio-juridico", title: "Control de expedientes para estudios jurídicos" },
     { path: "/es/automatizaciones/automatizar-cobranzas", title: "Automatizar cobranzas" },
     { path: "/es/automatizaciones/conciliacion-bancaria", title: "Conciliación bancaria" },
@@ -746,4 +765,272 @@ rubroUseCases.push({
   ],
   relatedService: AUTOMATION,
   relatedPosts: [BLOG.renov],
+});
+
+/* ───────────────────────── 7. Monotributo: control de facturación (brief 2026-11-02) ───────────────────────── */
+rubroUseCases.push({
+  key: "contable-monotributo",
+  path: "/es/automatizaciones/control-de-facturacion-monotributistas",
+  updatedAt: UPDATED_AT_1102,
+  section: "automatizaciones",
+  eyebrow: "Estudios contables · Monotributo",
+  title: "Control de facturación de monotributistas: recategorización y topes sin una planilla por cliente",
+  lead: "Si tu estudio lleva monotributistas, dos veces por año toca mirar, cliente por cliente, cuánto facturó en los últimos 12 meses y si le corresponde cambiar de categoría. Acá resumimos lo que dice ARCA, con el link a la fuente, y cómo armamos a medida una tabla con semáforo y avisos para que revisés vos. Mirá las [demos para estudios contables](/es/demos/para/estudios-contables).",
+  metaTitle: "Control de facturación de monotributistas | Puna Tech",
+  metaDescription: "Qué controlar de cada monotributista según ARCA: facturación de 12 meses, recategorización y causales de exclusión. Diagnóstico gratis de 15 min.",
+  serviceType: "Control de facturación y recategorización de monotributistas",
+  ogImage: "/og/automatizaciones-control-de-facturacion-monotributistas.png",
+  ogImageAlt: "Puna Tech: control de facturación de monotributistas, recategorización y topes para estudios contables.",
+  cardTitle: "Control de facturación de monotributistas",
+  cardBlurb: "Qué controlar de cada cliente monotributista según ARCA, y una tabla con semáforo y avisos armada a medida.",
+  example: "Un estudio lleva varios monotributistas, cada uno con su propia planilla. Cuando se acerca la recategorización hay que bajar las facturas de los últimos 12 meses de cada cliente, sumarlas y compararlas con la categoría. Si un cliente se acercó al límite y nadie lo vio a tiempo, el estudio se entera tarde.",
+  before: [
+    "Una planilla por cliente, con la facturación de los últimos 12 meses sumada a mano.",
+    "Las facturas emitidas se bajan una por una antes de cada recategorización.",
+    "Nadie sabe qué clientes están cerca del límite de su categoría hasta que se hace la cuenta.",
+    "El aviso al cliente sale cuando ya es la fecha de recategorizar.",
+  ],
+  after: [
+    "Una tabla única con todos tus monotributistas, la facturación de los últimos 12 meses y la categoría cargada de ARCA.",
+    "Un semáforo por cliente con el umbral que definas vos.",
+    "Un aviso al estudio antes de cada fecha de recategorización, y un borrador de mensaje al cliente que sale cuando lo aprobás.",
+    "La recategorización la hacés vos o tu cliente en ARCA: no pedimos clave fiscal ni presentamos nada.",
+  ],
+  sections: [
+    {
+      heading: "Qué parámetros mira ARCA de cada monotributista",
+      paragraphs: [
+        "Según ARCA, los parámetros son los topes máximos que definen la categoría, de la A a la K, y de ella depende la cuota mensual. Son cinco:",
+        "Los montos se actualizan dos veces por año según la variación del IPC que informa el INDEC, y por eso no los publicamos en esta página: mirá siempre la tabla vigente en la fuente.",
+      ],
+      items: [
+        "Ingresos brutos: el máximo que se puede facturar por año.",
+        "Superficie afectada: los metros cuadrados del local donde se desarrolla la actividad. No se considera en ciudades de menos de 40.000 habitantes, salvo excepciones.",
+        "Energía eléctrica consumida anualmente, en kilovatios.",
+        "Alquileres devengados anualmente: lo pagado en el año por el inmueble donde se desarrolla la actividad.",
+        "Precio unitario máximo para la venta de cosas muebles: el del producto más caro que se vende.",
+      ],
+    },
+    {
+      heading: "Cuándo se recategoriza",
+      paragraphs: [
+        "Según ARCA, la recategorización se hace dos veces por año, en febrero y en agosto, y en cada una se evalúan los últimos 12 meses de actividad. El trámite puede hacerse hasta el día 5 de febrero o de agosto, según corresponda. Confirmá siempre la fecha vigente en la fuente.",
+        "No tienen que hacer nada quienes se mantienen en la misma categoría ni quienes tienen menos de 6 meses de actividad. Si no se hace ninguna acción, el sistema entiende que no hubo cambios y la persona permanece en su categoría. En la recategorización simplificada, al iniciar el trámite el portal muestra automáticamente la facturación anual.",
+      ],
+    },
+    {
+      heading: "Recategorización de oficio",
+      paragraphs: [
+        "ARCA la aplica cuando un monotributista no se recategoriza o lo hace de forma incorrecta. Se inicia cuando detecta que las compras, los gastos o las acreditaciones bancarias superan el límite máximo de ingresos brutos anuales de la categoría en la que está inscripto.",
+        "La notificación llega al Domicilio Fiscal Electrónico dentro de los 10 días hábiles administrativos posteriores al vencimiento del plazo para recategorizarse, y se puede apelar dentro de los 15 días de recibida.",
+      ],
+    },
+    {
+      heading: "Causales de exclusión que conviene vigilar",
+      paragraphs: [
+        "ARCA lista varias situaciones que generan la baja por exclusión. Estas son las que se pueden seguir con datos del estudio; la lista completa y vigente está en la fuente:",
+        "Después de una exclusión no se puede volver al régimen hasta que pasen 3 años calendario desde la fecha de exclusión, con las excepciones que ARCA detalla en la fuente. Qué hacer en cada caso lo decide el profesional.",
+      ],
+      items: [
+        "Que la suma de los ingresos brutos exceda el máximo de la categoría más alta.",
+        "Que la superficie o el alquiler superen los máximos de esa categoría, o que el precio unitario de venta supere el límite.",
+        "Depósitos bancarios incompatibles con los ingresos declarados para la categorización.",
+        "Operaciones sin facturar.",
+        "Más de 3 actividades simultáneas o más de 3 unidades de explotación.",
+        "Compras más gastos de la actividad iguales o superiores al 80 % (venta de bienes) o superiores al 40 % (locaciones, servicios y obras) del tope de ingresos brutos de la categoría K.",
+      ],
+    },
+    {
+      heading: "Dónde se va el tiempo con una planilla por cliente",
+      paragraphs: [
+        "Bajar las facturas emitidas de cada cliente, sumar la ventana móvil de 12 meses, volver a hacerlo cuando ARCA actualiza los topes y recorrer la lista para saber a quién avisar. Cada paso es simple; el problema es repetirlo para todos los clientes antes de cada fecha.",
+      ],
+    },
+  ],
+  howTitle: "Qué hay hoy y qué armamos a medida",
+  how: [
+    {
+      title: "Hoy: no hay una demo de monotributo",
+      body: "No existe una función ya hecha ni una demo de este control. Lo más cercano es la [demo de facturas de compra de tus clientes](/es/demos/facturas-de-clientes), que con datos ficticios muestra cómo se leen y se controlan comprobantes antes de cargarlos a la planilla del estudio. Son facturas de compra y el control de monotributo necesita las emitidas: sirve para ver el estilo de trabajo, no es este proceso.",
+    },
+    {
+      title: "A medida: tabla de monotributistas con semáforo",
+      body: "Lo armamos a medida: una base con tus clientes monotributistas, que arranca desde tus planillas; la facturación de los últimos 12 meses sumada desde los comprobantes emitidos que nos pases (el export de tu sistema de facturación o los emitidos que bajes de ARCA); la tabla de categorías cargada desde la fuente de ARCA, que revisás vos; un semáforo por cliente con el umbral que definas; y un aviso al estudio antes de cada fecha de recategorización. El mensaje al cliente sale cuando lo aprobás.",
+    },
+    {
+      title: "Qué queda de tu lado",
+      body: "Revisás, decidís y recategorizás en ARCA con la clave fiscal del cliente o la tuya. No pedimos esa clave ni presentamos nada en tu nombre. Cómo tratar cada caso (notas de crédito, ingresos en moneda extranjera, actividades mixtas) lo define el contador.",
+    },
+    {
+      title: "Qué necesitamos de tu lado",
+      body: "Una de tus planillas de control (anonimizada si preferís), cuántos monotributistas llevás y de dónde salen hoy las facturas emitidas. Para otros controles del estudio, mirá [coeficientes de Convenio Multilateral](/es/automatizaciones/convenio-multilateral-coeficientes) y [facturación electrónica con ARCA](/es/automatizaciones/facturacion-electronica-arca).",
+    },
+  ],
+  demoLinks: {
+    title: "Probalo antes de contratarlo",
+    body: DEMO_BODY,
+    links: [
+      { label: "Demo: facturas de compra de tus clientes", path: "/es/demos/facturas-de-clientes", note: "Lectura y controles de comprobantes (no es monotributo)" },
+      { label: "Demos para estudios contables", path: DEMO_ACC.path, note: "Facturas, documentación del mes y Convenio Multilateral" },
+      { label: "Calculadora de horas ahorradas", path: HOURS_TOOL.path, note: "Una estimación con tus propios datos" },
+    ],
+  },
+  fit: [
+    "Llevás varios monotributistas y cada uno tiene su propia planilla.",
+    "Antes de cada recategorización repetís la misma suma de facturas, cliente por cliente.",
+    "Querés enterarte de quién se acerca al límite antes de la fecha, no después.",
+  ],
+  faqs: [
+    ["¿Cuándo se recategoriza el monotributo?", "Según ARCA, dos veces por año, en febrero y en agosto, evaluando los últimos 12 meses de actividad. El trámite puede hacerse hasta el día 5 de esos meses. Confirmá la fecha vigente en la página de ARCA antes de avisar a tus clientes."],
+    ["¿Qué pasa si un cliente no se recategoriza?", "Si no hace nada, el sistema entiende que no hubo cambios y sigue en su categoría. Si ARCA detecta que las compras, los gastos o las acreditaciones bancarias superan el límite máximo de ingresos brutos de su categoría, puede recategorizarlo de oficio: notifica al Domicilio Fiscal Electrónico y se puede apelar dentro de los 15 días de recibida la notificación."],
+    ["¿Cómo llevar el control de facturación de monotributistas en Excel?", "Con una fila por cliente (nombre, CUIT, categoría actual, si es servicios o venta de bienes, fecha del último control) y una hoja de facturación con una fila por cliente y por mes. Sumás los últimos 12 meses, los comparás con el tope de ingresos brutos de la categoría que copiaste de ARCA, con la fecha de la tabla anotada, y marcás con color a quien se acerca. Alcanza para pocos clientes, siempre que alguien actualice la tabla cuando ARCA publica los valores nuevos."],
+    ["¿Cuáles son los topes de cada categoría?", "ARCA los actualiza dos veces por año según el IPC. Para no dejarte un número viejo, no los publicamos acá: están en la tabla de montos y categorías vigentes de ARCA, que linkeamos en las fuentes."],
+    ["¿Se puede automatizar el control de varios clientes?", "A medida, sí: sumar la facturación de los últimos 12 meses de cada cliente desde los comprobantes emitidos, compararla con la categoría y avisarte antes de cada fecha de recategorización. No pedimos clave fiscal ni presentamos nada en ARCA: la recategorización la hacés vos o tu cliente."],
+    costFaq("cuántos monotributistas llevás y de qué sistemas salen las facturas emitidas"),
+  ],
+  sources: [
+    ARCA_MONO.recat,
+    ARCA_MONO.exclusion,
+    ARCA_MONO.parametros,
+    ARCA_MONO.categorias,
+  ],
+  reviewedAt: REVIEWED_AT_1102,
+  disclaimer: "Esta página resume información pública de ARCA y no reemplaza el trámite ni el criterio del contador. Verificá siempre fechas, parámetros y causales vigentes en la fuente. " + STANDARD_DISCLAIMER,
+  relatedLinks: [
+    { path: "/es/automatizaciones/convenio-multilateral-coeficientes", title: "Convenio Multilateral: coeficientes" },
+    { path: "/es/automatizaciones/facturacion-electronica-arca", title: "Facturación electrónica ARCA" },
+    { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
+    { path: "/es/demos/facturas-de-clientes", title: "Demo: facturas de compra de tus clientes" },
+    DEMO_ACC,
+    SERVICE,
+  ],
+  relatedService: AUTOMATION,
+  relatedPosts: [BLOG.conc],
+});
+
+/* ───────────────────────── 8. Matrícula CPACF y bono de derecho fijo (brief 2026-11-02) ───────────────────────── */
+rubroUseCases.push({
+  key: "legal-cpacf",
+  path: "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo",
+  updatedAt: UPDATED_AT_1102,
+  section: "automatizaciones",
+  eyebrow: "Estudios jurídicos · CPACF",
+  title: "Matrícula CPACF y bono de derecho fijo: cómo llevar el control en el estudio",
+  lead: "En un estudio con varios abogados matriculados en la Capital Federal hay dos obligaciones con el CPACF que se repiten: la cuota anual de la matrícula y el bono de derecho fijo de cada causa. Acá resumimos lo que dicen la ley 23.187 y el propio Colegio, con los links a la fuente, y cómo armamos a medida un tablero para que no queden sin controlar. Mirá las [demos para estudios jurídicos](/es/demos/para/estudios-juridicos).",
+  metaTitle: "Matrícula CPACF y bono de derecho fijo | Puna Tech",
+  metaDescription: "Matrícula CPACF y bono de derecho fijo según la ley 23.187 y el Colegio: qué se paga, cuándo y cómo llevar el control en el estudio. Diagnóstico en 15 min.",
+  serviceType: "Control de matrícula CPACF y bono de derecho fijo para estudios jurídicos",
+  ogImage: "/og/automatizaciones-matricula-cpacf-y-bono-derecho-fijo.png",
+  ogImageAlt: "Puna Tech: control de la matrícula del CPACF y del bono de derecho fijo para estudios jurídicos.",
+  cardTitle: "Matrícula CPACF y bono de derecho fijo",
+  cardBlurb: "Qué dicen la ley 23.187 y el CPACF sobre la cuota anual y el bono, y un tablero a medida para llevar el control del estudio.",
+  example: "Un estudio con varios abogados matriculados lleva el pago de la cuota anual de cada uno y los bonos de cada causa en cabezas y mails distintos. Al presentar un escrito en una causa nueva, nadie recuerda si el bono ya está pagado a nombre del abogado que firma.",
+  before: [
+    "Cada abogado se acuerda de pagar su matrícula, o no.",
+    "El bono de derecho fijo de cada causa se paga a último momento y el comprobante queda en un mail.",
+    "Nadie ve de un vistazo qué causas tienen el bono pagado y a nombre de quién.",
+    "Si alguien se atrasó con la cuota anual, el estudio se entera tarde.",
+  ],
+  after: [
+    "Un tablero con cada abogado del estudio, su cuota anual y el comprobante de pago.",
+    "Una lista de causas con el bono: quién lo paga, a nombre de qué matriculado, fecha y comprobante.",
+    "Avisos al responsable con la anticipación que definas.",
+    "Todo lo confirma el abogado: nosotros no pagamos nada ni presentamos escritos.",
+  ],
+  sections: [
+    {
+      heading: "La cuota anual de la matrícula del CPACF",
+      paragraphs: [
+        "Según el CPACF, el ejercicio va del 1.º de mayo al 30 de abril del año siguiente y la cuota se paga una vez al año. El valor se fija en UMA (art. 122 del Reglamento Interno) y se convierte a pesos con la UMA vigente en el mes anterior al del pago; por eso el Colegio publica un valor distinto cada mes. No lo publicamos acá: mirá el valor y el vencimiento del ejercicio en la página de Matrículas del CPACF.",
+        "Quienes se matriculan en el segundo semestre del ejercicio pagan la mitad de la cuota (art. 123 del Reglamento Interno). Las matrículas vencidas de períodos anteriores tienen un valor mayor, porque incluyen un adicional por pago fuera de término.",
+      ],
+    },
+    {
+      heading: "Qué pasa si no se paga",
+      paragraphs: [
+        "El art. 53 de la ley 23.187 dice que la falta de pago de tres cuotas anuales se interpreta como abandono del ejercicio profesional y da lugar a que el Colegio suspenda la matrícula hasta que se regularice. Según el CPACF, la suspensión se comunica a todos los tribunales y al SECLO.",
+      ],
+    },
+    {
+      heading: "El bono de derecho fijo: cuándo se paga",
+      paragraphs: [
+        "El art. 51, inc. d), de la ley 23.187 dispone que el derecho fijo se abona al iniciarse o contestarse cualquier acción judicial ante jueces o tribunales con intervención de abogados, y que los jueces no dan curso a ninguna presentación sin verificar el pago, sin perjuicio de la validez de los actos procesales cumplidos.",
+        "Están exceptuados quienes ejercen el patrocinio o la representación jurídica gratuita, los recursos de hábeas corpus, las acciones de amparo y los casos en que se obtuvo el beneficio de litigar sin gastos. El valor del bono lo publica el CPACF y cambia: no lo ponemos acá.",
+      ],
+    },
+    {
+      heading: "A nombre de quién se paga el bono",
+      paragraphs: [
+        "Según el Reglamento Interno del CPACF (art. 125), el derecho fijo lo paga cada persona matriculada en todas las causas en que interviene como patrocinante, apoderada, defensora, querellante, denunciante o asistente, y el bono se emite a nombre del profesional matriculado y es intransferible (art. 128). En un estudio con varios abogados, eso significa controlar el pago por matriculado, no solo por causa.",
+      ],
+    },
+    {
+      heading: "Cómo se paga el bono en causas del PJN y de la Ciudad",
+      paragraphs: [
+        "Para causas del Poder Judicial de la Nación, el CPACF indica la Plataforma de Pagos Judiciales del Banco Ciudad: se ingresan el CUIT del matriculado por el que se acredita el pago y los datos del expediente (fuero, causa y año), y el bono se acredita en el trámite judicial sin otro escrito. Para causas del Poder Judicial de la Ciudad hay una forma online desde el Portal del Litigante y una presencial en las cajas del CPACF.",
+        "Los canales pueden cambiar: seguí los pasos de la página oficial del CPACF, no esta.",
+      ],
+    },
+    {
+      heading: "Y si matriculás en otro colegio",
+      paragraphs: [
+        "Esta página habla solo del CPACF, el Colegio de la Capital Federal. Los colegios de abogados de las provincias tienen sus propias cuotas, aportes y bonos, con reglas distintas. Si tu estudio tiene abogados matriculados en otra jurisdicción, las sumamos al tablero después de verificar cada una en su fuente.",
+      ],
+    },
+  ],
+  howTitle: "Qué hay hoy y qué armamos a medida",
+  how: [
+    {
+      title: "Hoy: no hay una función para esto",
+      body: "No existe un tablero de matrícula y bonos ya hecho ni una demo de este proceso. Con datos ficticios podés ver la idea de avisos que salen cuando el abogado los aprueba en la [demo de cobranzas automáticas](/es/demos/cobranzas).",
+    },
+    {
+      title: "A medida: tablero de matrícula y bonos del estudio",
+      body: "Lo armamos a medida: una lista de los abogados matriculados del estudio, con el ejercicio, el vencimiento y el comprobante de la cuota anual, y una lista de causas con el bono de derecho fijo (matriculado, fuero, causa y año, fecha de pago y comprobante). El sistema avisa al responsable con la anticipación que definas y marca las causas sin bono cargado. Los datos y las fechas los cargás y los confirmás vos: no pagamos ni presentamos nada, ni calculamos plazos con valor legal.",
+    },
+    {
+      title: "Qué necesitamos de tu lado",
+      body: "Cuántos abogados matriculados tiene el estudio, cómo llevan hoy la lista de causas y dónde guardan los comprobantes. Las causas y sus vencimientos tienen su propia página: [control de expedientes](/es/automatizaciones/control-de-expedientes-estudio-juridico). Para los cobros al cliente, mirá [control de honorarios](/es/automatizaciones/control-de-honorarios-estudio-juridico).",
+    },
+  ],
+  demoLinks: {
+    title: "Probalo antes de contratarlo",
+    body: DEMO_BODY,
+    links: [
+      { label: "Demos para estudios jurídicos", path: DEMO_LEGAL.path, note: "Consultas y cobro de honorarios" },
+      { label: "Demo: cobranzas automáticas", path: "/es/demos/cobranzas", note: "Avisos que salen cuando los aprobás" },
+      { label: "Calculadora de horas ahorradas", path: HOURS_TOOL.path, note: "Una estimación con tus propios datos" },
+    ],
+  },
+  fit: [
+    "Tu estudio tiene varios abogados matriculados en la Capital Federal.",
+    "Los comprobantes de la cuota anual y de los bonos quedan en mails y carpetas distintas.",
+    "Querés ver de un vistazo qué causas tienen el bono cargado y a nombre de quién.",
+  ],
+  faqs: [
+    ["¿Cuándo vence la matrícula del CPACF?", "El ejercicio del CPACF va del 1.º de mayo al 30 de abril y la cuota se paga una vez al año. El vencimiento y el valor de cada ejercicio los publica el Colegio en su página de Matrículas: confirmalos ahí antes de pagar."],
+    ["¿Qué pasa si no pago la matrícula del CPACF?", "Según el art. 53 de la ley 23.187, la falta de pago de tres cuotas anuales da lugar a que el Colegio suspenda la matrícula hasta que se regularice, y según el CPACF lo comunica a los tribunales y al SECLO. Las matrículas vencidas de períodos anteriores tienen un valor mayor."],
+    ["¿Cuándo hay que pagar el bono de derecho fijo?", "Según el art. 51, inc. d), de la ley 23.187, al iniciarse o contestarse cualquier acción judicial ante jueces o tribunales con intervención de abogados. Están exceptuados el patrocinio o la representación gratuita, el hábeas corpus, el amparo y los casos con beneficio de litigar sin gastos."],
+    ["¿A nombre de quién se paga el bono?", "Según el Reglamento Interno del CPACF, lo paga cada persona matriculada que interviene en la causa y el bono se emite a su nombre y es intransferible. En un estudio con varios abogados conviene llevar el control por matriculado."],
+    ["¿Se puede automatizar el control de la matrícula y de los bonos?", "A medida, sí: un tablero con la cuota anual de cada abogado y los bonos de cada causa, con avisos al responsable. Los datos los confirma el abogado y no pagamos ni presentamos nada por el estudio."],
+    costFaq("cuántos abogados, causas y fuentes de datos entran"),
+  ],
+  sources: [
+    CPACF.matriculas,
+    CPACF.bono,
+    CPACF.faqs,
+    CPACF.reglamento,
+    CPACF.ley,
+  ],
+  reviewedAt: REVIEWED_AT_1102,
+  disclaimer: "Esta página resume información pública del CPACF y de la ley 23.187 y no reemplaza el trámite ante el Colegio. Verificá siempre valores, fechas y canales vigentes en la fuente. " + LEGAL_DISCLAIMER,
+  relatedLinks: [
+    { path: "/es/automatizaciones/control-de-expedientes-estudio-juridico", title: "Control de expedientes para estudios jurídicos" },
+    { path: "/es/automatizaciones/control-de-honorarios-estudio-juridico", title: "Control de honorarios para estudios jurídicos" },
+    { path: "/es/demos/cobranzas", title: "Demo: cobranzas automáticas" },
+    DEMO_LEGAL,
+    SERVICE,
+  ],
+  relatedService: AUTOMATION,
+  relatedPosts: [BLOG.venc],
 });
