@@ -123,6 +123,9 @@ export function CalInline({ locale, placement, eager = false }: { locale: Locale
       try {
         const mod = await import("@calcom/embed-react");
         const api = await mod.getCalApi({ namespace: "puna-inline" });
+        // The event title / duration / timezone header sits above the month grid and fades in only once the iframe
+        // counts as "in view", which left a ~240px blank block above the calendar. The card already says what this is.
+        api("ui", { hideEventTypeDetails: true, layout: "month_view", theme: "light" });
         api("on", { action: "linkReady", callback: () => !cancelled && setReady(true) });
         api("on", { action: "bookingSuccessfulV2", callback: () => trackEvent("cal_booked", { ...track.current, mode: "inline" }) });
         if (cancelled) return;
