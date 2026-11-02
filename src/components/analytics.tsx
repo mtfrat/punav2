@@ -20,8 +20,8 @@ export function Analytics() {
 
   useEffect(() => {
     if (location.pathname === "/ops" || location.pathname.startsWith("/ops/")) return;
-    activateAnalytics();
-    injectScript(`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`, "gtag");
+    // activateAnalytics decides before any hit: off www.puna-tech.com it returns false and gtag.js is never injected.
+    if (activateAnalytics()) injectScript(`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`, "gtag");
     injectScript(`https://www.clarity.ms/tag/${CLARITY_ID}`, "clarityTag");
     // No manual page_view here. gtag('config') already sends the landing page_view, and GA4 Enhanced Measurement
     // ("Page changes based on browser history events", on for this stream) sends exactly one per SPA navigation
