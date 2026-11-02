@@ -9,11 +9,14 @@ mkdir -p "$OUT"
 SLUGS="${SLUGS:-estudios-contables estudios-juridicos productores-de-seguros inmobiliarias clinicas-y-consultorios}"
 for slug in $SLUGS; do
   # Poster frame (seconds): a frame with the demo UI and no page headline.
-  POSTER_AT=6
+  # Per-slug/shape override: the clinics 9x16 poster comes from 10 s (at 6 s the section title is cut off in portrait).
+  POSTER_AT_16x9=6; POSTER_AT_9x16=6
+  case "$slug" in clinicas-y-consultorios) POSTER_AT_9x16=10;; esac
   # webm quality: 42 by default; the two re-rendered masters (clinics, insurance) use 44 to keep all media within the 36 MB budget.
   WEBM_CRF=42; case "$slug" in clinicas-y-consultorios|productores-de-seguros) WEBM_CRF=44;; esac
   for shape in 16x9 9x16; do
     in="$SRC/$slug/$slug-$shape.mp4"
+    if [ "$shape" = 16x9 ]; then POSTER_AT=$POSTER_AT_16x9; else POSTER_AT=$POSTER_AT_9x16; fi
     if [ "$shape" = 16x9 ]; then scale="scale=1280:720:flags=lanczos"; else scale="scale=720:1280:flags=lanczos"; fi
     base="$OUT/rubro-$slug-$shape"
     ffmpeg -v error -y -i "$in" -vf "$scale" -c:v libx264 -preset slow -crf 33 -profile:v high -pix_fmt yuv420p \
