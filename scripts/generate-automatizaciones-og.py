@@ -24,7 +24,6 @@ PAGES = {
     "cartera-de-polizas-y-renovaciones": ("Cartera de pólizas y renovaciones", "De los PDF al Excel y a los avisos a 30 días"),
     "matricula-productor-asesor-de-seguros": ("Matrícula de productor asesor de seguros", "Fechas y pasos según la SSN, y un calendario que avisa"),
     "control-de-facturacion-monotributistas": ("Control de facturación de monotributistas", "Recategorización y topes según ARCA, con semáforo y avisos"),
-    "matricula-cpacf-y-bono-derecho-fijo": ("Matrícula CPACF y bono de derecho fijo", "Qué dicen la ley 23.187 y el Colegio, y un tablero que avisa"),
 }
 BADGE = "DIAGNÓSTICO EN 15 MIN"
 

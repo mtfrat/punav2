@@ -12,9 +12,8 @@ const SLUGS = [
   "control-de-honorarios-estudio-juridico",
   "cartera-de-polizas-y-renovaciones",
   "matricula-productor-asesor-de-seguros",
-  // Briefs of 2026-11-02 (appended: some asserts below are index-based on the first six).
+  // Brief of 2026-11-02 (appended: some asserts below are index-based on the first six).
   "control-de-facturacion-monotributistas",
-  "matricula-cpacf-y-bono-derecho-fijo",
 ];
 const pages = SLUGS.map((slug) => {
   const page = useCases.find((item) => item.path === `/es/automatizaciones/${slug}`);
@@ -55,7 +54,7 @@ const prose = (page) => [
   page.demoLinks?.body ?? "", page.disclaimer ?? "",
 ].join("\n");
 
-const OFFICIAL_SOURCES = /^https:\/\/(www\.ca\.gob\.ar|webs\.comarb\.gob\.ar|servicios\.infoleg\.gob\.ar|www\.argentina\.gob\.ar|servicios\.pjn\.gov\.ar|www\.csjn\.gov\.ar|(www\.)?arca\.gob\.ar|(www|new)\.cpacf\.org\.ar)\//;
+const OFFICIAL_SOURCES = /^https:\/\/(www\.ca\.gob\.ar|webs\.comarb\.gob\.ar|servicios\.infoleg\.gob\.ar|www\.argentina\.gob\.ar|servicios\.pjn\.gov\.ar|www\.csjn\.gov\.ar|(www\.)?arca\.gob\.ar)\//;
 
 for (const page of pages) {
   const body = prose(page);
@@ -113,20 +112,15 @@ assert.ok(/no lo publicamos/.test(prose(ssn)), "ssn: explain why the amount is n
 
 console.log("rubro landings OK");
 
-// Briefs of 2026-11-02: facts that must stay on the page (or must never be published).
+// Brief of 2026-11-02: facts that must stay on the page (or must never be published).
 const mono = pages[6];
-const cpacf = pages[7];
-for (const [page, label] of [[mono, "monotributo"], [cpacf, "cpacf"]]) {
-  const text = JSON.stringify(page);
-  assert.ok(!/\$\s?\d/.test(text), `${label}: no amounts in pesos (the values change; the page links the source)`);
-  assert.ok(/ARCA|CPACF/.test(page.sources.map((s) => s.label).join(" ")), `${label}: official source label`);
+{
+  const text = JSON.stringify(mono);
+  assert.ok(!/\$\s?\d/.test(text), "monotributo: no amounts in pesos (the values change; the page links the source)");
+  assert.ok(/ARCA/.test(mono.sources.map((s) => s.label).join(" ")), "monotributo: official source label");
 }
 assert.ok(mono.sections.some((s) => /Recategorización de oficio/.test(s.heading)), "monotributo: recategorización de oficio section");
 assert.ok(mono.faqs.some(([q]) => /Excel/.test(q)), "monotributo: Excel FAQ (keyword evidence)");
-assert.ok(cpacf.sections.some((s) => /otro colegio/i.test(s.heading)), "cpacf: must say that other colegios differ");
-assert.ok(cpacf.sources.some((s) => s.href.includes("cpacf.org.ar/noticia/5146")), "cpacf: bono source");
-assert.ok(cpacf.sources.some((s) => s.href.includes("infoleg")), "cpacf: law 23.187 source");
-// New pages must be linked from the pages they relate to.
-for (const [from, to] of [[pages[2], cpacf], [pages[3], cpacf], [pages[0], mono]]) {
-  assert.ok(from.relatedLinks?.some((l) => l.path === to.path), `${from.key} must link to ${to.key}`);
-}
+// The new page must be linked from the page it relates to, and must not link to the CPACF page (separate PR, pending legal review).
+assert.ok(pages[0].relatedLinks?.some((l) => l.path === mono.path), `${pages[0].key} must link to ${mono.key}`);
+assert.ok(!JSON.stringify(pages).includes("matricula-cpacf"), "no page links to the CPACF page in this PR");
