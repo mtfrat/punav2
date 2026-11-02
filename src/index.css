@@ -106,9 +106,10 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .brand-name strong { font-size: 1rem; letter-spacing: 0.08em; }
 .brand-name small { margin-top: 0.32rem; color: var(--terracotta); font-size: 0.61rem; font-weight: 800; letter-spacing: 0.24em; }
 .desktop-nav { display: flex; align-items: center; gap: 2.2rem; }
-.desktop-nav a, .language-link { display: inline-flex; min-height: 44px; align-items: center; color: var(--ink-soft); font-size: 0.79rem; font-weight: 680; }
+.desktop-nav a, .language-link { display: inline-flex; min-height: 44px; align-items: center; white-space: nowrap; color: var(--ink-soft); font-size: 0.79rem; font-weight: 680; }
 .desktop-nav a:hover, .language-link:hover { color: var(--terracotta); }
-.nav-actions { display: flex; align-items: center; gap: 0.85rem; }
+.nav-actions { display: flex; flex: none; align-items: center; gap: 0.85rem; }
+.nav-actions .button-compact { white-space: nowrap; }
 .language-link { padding-inline: 0.4rem; font-family: var(--font-mono); letter-spacing: 0.08em; }
 .menu-button { display: none; width: 48px; height: 48px; align-items: center; justify-content: center; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
 .mobile-nav { display: none; }
@@ -979,13 +980,25 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .error-page p:not(.eyebrow) { font-size: 1.1rem; }
 .error-page .button-primary { margin-top: 1rem; }
 
-@media (max-width: 1100px) {
-  .footer-grid-solutions { grid-template-columns: 1fr 1fr; }
+/* Header, desktop bar (1240px and up): tighter gaps that scale with the viewport so Spanish fits on one line at 1240-1440px. */
+@media (min-width: 1240px) {
+  .site-nav { gap: clamp(1rem, 2vw, 2rem); }
+  .desktop-nav { gap: clamp(1rem, 1.9vw, 2.2rem); }
+  .nav-actions { gap: clamp(0.5rem, 0.9vw, 0.85rem); }
+}
+
+/* Header: below 1240px the full desktop bar (5 links + language + 2 CTAs, ~1140px in Spanish) no longer fits on one line,
+   so the menu button takes over. Kept apart from the 1100px layout breakpoint on purpose. */
+@media (max-width: 1239px) {
   .desktop-nav, .desktop-cal { display: none; }
   .menu-button { display: inline-flex; }
   .mobile-nav { display: grid; gap: 0.3rem; padding: 0.8rem 1.5rem 1rem; border-top: 1px solid var(--line); background: var(--surface); }
   .mobile-nav > a:not(.button-primary) { display: flex; min-height: 48px; align-items: center; padding: 0 0.5rem; font-weight: 680; }
   .mobile-nav .button-primary { margin-top: 0.5rem; }
+}
+
+@media (max-width: 1100px) {
+  .footer-grid-solutions { grid-template-columns: 1fr 1fr; }
   .hero-grid, .detail-hero-grid { grid-template-columns: 1fr; }
   .hero-copy { max-width: 850px; }
   .hero-proof { width: min(700px, 100%); min-height: 610px; }
