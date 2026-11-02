@@ -42,6 +42,8 @@ const queuedEvents: QueuedEvent[] = [];
 let gaConfigured = false;
 /** false once activateAnalytics decided this host must not talk to GA4 (anything but www.puna-tech.com). */
 let gtagAllowed = true;
+/** false once activateAnalytics decided Clarity must not run here (non-prod host or an internal session). */
+let clarityAllowed = true;
 
 function installQueues() {
   if (typeof window === "undefined") return;
@@ -51,7 +53,7 @@ function installQueues() {
       window.dataLayer?.push(arguments);
     };
   }
-  if (typeof window.clarity !== "function") {
+  if (clarityAllowed && typeof window.clarity !== "function") {
     const clarity = function clarity(this: Window["clarity"]) {
       const stub = clarity as NonNullable<Window["clarity"]>;
       stub.q = stub.q || [];
@@ -61,22 +63,32 @@ function installQueues() {
   }
 }
 
+export interface AnalyticsActivation {
+  /** inject gtag.js */
+  gtag: boolean;
+  /** inject the Clarity tag */
+  clarity: boolean;
+}
+
 /**
- * Decides, before any GA4 hit, whether gtag may run, then queues the GA config and flushes events captured earlier.
- * Returns whether gtag.js should be loaded. Off the production host (previews, localhost, the apex) it returns false and
- * gtag('config') is never called, so no page_view or event reaches GA4. On the production host it returns true and the
- * config call carries traffic_type=internal for automated browsers and flagged visitors.
+ * Decides, before any GA4 hit and before any third-party script is injected, what may run, then queues the GA config and
+ * flushes events captured earlier. Decision table (see planAnalytics):
+ * - off the production host (previews, localhost, the apex): neither gtag nor Clarity; gtag('config') is never called.
+ * - production host, automated browser or ?internal flag: gtag with traffic_type=internal on the config call; no Clarity.
+ * - production host, everybody else: gtag plain, Clarity.
  */
-export function activateAnalytics(): boolean {
+export function activateAnalytics(): AnalyticsActivation {
   installQueues();
-  if (gaConfigured) return gtagAllowed;
-  if (typeof window.gtag !== "function") return false;
+  if (gaConfigured) return { gtag: gtagAllowed, clarity: clarityAllowed };
+  if (typeof window.gtag !== "function") return { gtag: false, clarity: false };
   gaConfigured = true;
   const plan = planAnalyticsInBrowser();
   gtagAllowed = plan.loadGtag;
+  clarityAllowed = plan.loadClarity;
+  if (!clarityAllowed) window.clarity = undefined; // drops the stub (and anything queued on it) so no later call can reach Clarity
   if (!gtagAllowed) {
     queuedEvents.length = 0;
-    return false;
+    return { gtag: false, clarity: clarityAllowed };
   }
   window.gtag("js", new Date());
   // traffic_type goes on the config call so it is set before the first page_view (which gtag('config') itself sends)
@@ -86,7 +98,7 @@ export function activateAnalytics(): boolean {
   else window.gtag("config", GA_MEASUREMENT_ID);
   for (const item of queuedEvents) window.gtag("event", item.event, item.payload);
   queuedEvents.length = 0;
-  return true;
+  return { gtag: true, clarity: clarityAllowed };
 }
 
 export function trackEvent(event: AnalyticsEvent, properties: Record<string, string | number | boolean | undefined> = {}) {
@@ -95,7 +107,7 @@ export function trackEvent(event: AnalyticsEvent, properties: Record<string, str
   installQueues();
   if (!gaConfigured) queuedEvents.push({ event, payload });
   else if (gtagAllowed) window.gtag?.("event", event, payload);
-  window.clarity?.("event", event);
+  if (clarityAllowed) window.clarity?.("event", event);
 }
 
 installQueues();

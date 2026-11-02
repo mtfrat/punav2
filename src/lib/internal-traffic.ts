@@ -63,11 +63,20 @@ export function detectInternalTraffic(input: InternalTrafficInput): InternalTraf
 export interface AnalyticsPlan extends InternalTrafficResult {
   /** false off the production host: gtag.js is not injected and gtag('config') is never called. */
   loadGtag: boolean;
+  /**
+   * Clarity loads only for real visitors on the production host. Clarity can tag a session (`clarity("set", key, value)`)
+   * but excluding tagged sessions needs an exclusion filter that someone creates in the Clarity dashboard, and its IP
+   * blocking is IPv4 only. So internal sessions simply never load Clarity.
+   * Docs: https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-api (custom tags),
+   * https://learn.microsoft.com/en-us/clarity/filters/exclusion-filters, https://learn.microsoft.com/en-us/clarity/setup-and-installation/ip-exclusion
+   */
+  loadClarity: boolean;
 }
 
-/** Single decision point for GA4: whether to load gtag at all, and whether its config call carries traffic_type=internal. */
+/** Single decision point for analytics: whether gtag and Clarity load at all, and whether the gtag config call carries traffic_type=internal. */
 export function planAnalytics(input: InternalTrafficInput): AnalyticsPlan {
-  return { loadGtag: input.hostname === PRODUCTION_HOSTNAME, ...detectInternalTraffic(input) };
+  const result = detectInternalTraffic(input);
+  return { loadGtag: input.hostname === PRODUCTION_HOSTNAME, loadClarity: input.hostname === PRODUCTION_HOSTNAME && !result.internal, ...result };
 }
 
 function browserInput(): InternalTrafficInput {
