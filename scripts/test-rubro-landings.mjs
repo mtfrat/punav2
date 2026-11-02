@@ -4,7 +4,7 @@ import { demoDefinitions, demoPath, demosHubPath } from "../src/content/demos.ts
 import { rubroDefinitions, rubroPath } from "../src/content/rubros.ts";
 import { toolDefinitions, toolPath } from "../src/content/tools.ts";
 
-// Content guards for the long-tail rubro landings (briefs of 2026-10-29).
+// Content guards for the long-tail rubro landings (briefs of 2026-10-29 and 2026-11-02).
 const SLUGS = [
   "convenio-multilateral-coeficientes",
   "conciliacion-sifere-retenciones-percepciones",
@@ -12,6 +12,8 @@ const SLUGS = [
   "control-de-honorarios-estudio-juridico",
   "cartera-de-polizas-y-renovaciones",
   "matricula-productor-asesor-de-seguros",
+  // Brief of 2026-11-02 (appended: some asserts below are index-based on the first six).
+  "matricula-cpacf-y-bono-derecho-fijo",
 ];
 const pages = SLUGS.map((slug) => {
   const page = useCases.find((item) => item.path === `/es/automatizaciones/${slug}`);
@@ -52,7 +54,7 @@ const prose = (page) => [
   page.demoLinks?.body ?? "", page.disclaimer ?? "",
 ].join("\n");
 
-const OFFICIAL_SOURCES = /^https:\/\/(www\.ca\.gob\.ar|webs\.comarb\.gob\.ar|servicios\.infoleg\.gob\.ar|www\.argentina\.gob\.ar|servicios\.pjn\.gov\.ar|www\.csjn\.gov\.ar)\//;
+const OFFICIAL_SOURCES = /^https:\/\/(www\.ca\.gob\.ar|webs\.comarb\.gob\.ar|servicios\.infoleg\.gob\.ar|www\.argentina\.gob\.ar|servicios\.pjn\.gov\.ar|www\.csjn\.gov\.ar|(www|new)\.cpacf\.org\.ar)\//;
 
 for (const page of pages) {
   const body = prose(page);
@@ -109,3 +111,18 @@ assert.ok(ssn.sources?.some((s) => s.href.includes("argentina.gob.ar")), "ssn: o
 assert.ok(/no lo publicamos/.test(prose(ssn)), "ssn: explain why the amount is not published");
 
 console.log("rubro landings OK");
+
+// Brief of 2026-11-02: facts that must stay on the page (or must never be published).
+const cpacf = pages[6];
+{
+  const text = JSON.stringify(cpacf);
+  assert.ok(!/\$\s?\d/.test(text), "cpacf: no amounts in pesos (the values change; the page links the source)");
+  assert.ok(/CPACF/.test(cpacf.sources.map((s) => s.label).join(" ")), "cpacf: official source label");
+}
+assert.ok(cpacf.sections.some((s) => /otro colegio/i.test(s.heading)), "cpacf: must say that other colegios differ");
+assert.ok(cpacf.sources.some((s) => s.href.includes("cpacf.org.ar/noticia/5146")), "cpacf: bono source");
+assert.ok(cpacf.sources.some((s) => s.href.includes("infoleg")), "cpacf: law 23.187 source");
+// New page must be linked from the pages it relates to.
+for (const from of [pages[2], pages[3]]) {
+  assert.ok(from.relatedLinks?.some((l) => l.path === cpacf.path), `${from.key} must link to ${cpacf.key}`);
+}

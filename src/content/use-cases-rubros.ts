@@ -11,6 +11,8 @@ import type { UseCaseContent } from "./use-cases.ts";
 
 export const RUBRO_REVIEWED_AT = "29/10/2026";
 const UPDATED_AT = "2026-10-29";
+const REVIEWED_AT_1102 = "02/11/2026";
+const UPDATED_AT_1102 = "2026-11-02";
 const costFaq = (detail: string): [string, string] => [
   "¿Cuánto tarda y cuánto cuesta?",
   `La propuesta es automatizar un proceso en 2 semanas a precio cerrado. El precio depende de ${detail}. Lo acordamos por escrito antes de empezar, después de una llamada de 15 minutos. No publicamos precios en la web porque cada proceso es distinto.`,
@@ -42,6 +44,14 @@ const CA = {
   consultas: { label: "Comisión Arbitral: SIFERE WEB Consultas", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sifere/sifere-web-consultas" },
   deducciones: { label: "Comisión Arbitral: Módulo Deducciones de SIFERE (Eventos 43 a 56)", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sifere/modulo-deducciones" },
   sircreb: { label: "Comisión Arbitral: ¿cómo se deducen las recaudaciones bancarias? (SIRCREB)", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sircreb/como-se-deducen-las-recaudaciones-bancarias" },
+};
+
+const CPACF = {
+  matriculas: { label: "CPACF: Matrículas (vencimiento, valor y formas de pago)", href: "https://www.cpacf.org.ar/noticia/5145/matriculas-cpacf" },
+  bono: { label: "CPACF: Bono de Derecho Fijo Ley 23.187 (canales y pasos)", href: "https://www.cpacf.org.ar/noticia/5146/bono-cpacf-ley-23187" },
+  faqs: { label: "CPACF: preguntas frecuentes (matrícula, suspensión por falta de pago, bono)", href: "https://www.cpacf.org.ar/faqs" },
+  reglamento: { label: "CPACF: Reglamento Interno (arts. 121 a 129: cuota anual y derecho fijo)", href: "https://new.cpacf.org.ar/noticia/5141/reglamento-interno" },
+  ley: { label: "Ley 23.187, ejercicio de la abogacía en la Capital Federal (arts. 51 y 53, InfoLEG)", href: "https://servicios.infoleg.gob.ar/infolegInternet/anexos/25000-29999/26188/texact.htm" },
 };
 
 const STANDARD_DISCLAIMER = "Esta página informa y no es asesoramiento legal ni contable. La presentación, el pago y las decisiones las toma el profesional: el sistema prepara y vos aprobás.";
@@ -390,6 +400,7 @@ rubroUseCases.push({
   reviewedAt: RUBRO_REVIEWED_AT,
   disclaimer: LEGAL_DISCLAIMER,
   relatedLinks: [
+    { path: "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo", title: "Matrícula CPACF y bono de derecho fijo" },
     { path: "/es/automatizaciones/control-de-honorarios-estudio-juridico", title: "Control de honorarios para estudios jurídicos" },
     { path: "/es/demos/leads-con-ia", title: "Demo: captación y calificación de leads con IA" },
     { path: "/es/demos/cobranzas", title: "Demo: cobranzas automáticas" },
@@ -509,6 +520,7 @@ rubroUseCases.push({
   sources: [],
   disclaimer: LEGAL_DISCLAIMER,
   relatedLinks: [
+    { path: "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo", title: "Matrícula CPACF y bono de derecho fijo" },
     { path: "/es/automatizaciones/control-de-expedientes-estudio-juridico", title: "Control de expedientes para estudios jurídicos" },
     { path: "/es/automatizaciones/automatizar-cobranzas", title: "Automatizar cobranzas" },
     { path: "/es/automatizaciones/conciliacion-bancaria", title: "Conciliación bancaria" },
@@ -746,4 +758,131 @@ rubroUseCases.push({
   ],
   relatedService: AUTOMATION,
   relatedPosts: [BLOG.renov],
+});
+
+/* ───────────────────────── 7. Matrícula CPACF y bono de derecho fijo (brief 2026-11-02) ───────────────────────── */
+rubroUseCases.push({
+  key: "legal-cpacf",
+  path: "/es/automatizaciones/matricula-cpacf-y-bono-derecho-fijo",
+  updatedAt: UPDATED_AT_1102,
+  section: "automatizaciones",
+  eyebrow: "Estudios jurídicos · CPACF",
+  title: "Matrícula CPACF y bono de derecho fijo: cómo llevar el control en el estudio",
+  lead: "En un estudio con varios abogados matriculados en la Capital Federal hay dos obligaciones con el CPACF que se repiten: la cuota anual de la matrícula y el bono de derecho fijo de cada causa. Acá resumimos lo que dicen la ley 23.187 y el propio Colegio, con los links a la fuente, y cómo armamos a medida un tablero para que no queden sin controlar. Mirá las [demos para estudios jurídicos](/es/demos/para/estudios-juridicos).",
+  metaTitle: "Matrícula CPACF y bono de derecho fijo | Puna Tech",
+  metaDescription: "Matrícula CPACF y bono de derecho fijo según la ley 23.187 y el Colegio: qué se paga, cuándo y cómo llevar el control en el estudio. Diagnóstico en 15 min.",
+  serviceType: "Control de matrícula CPACF y bono de derecho fijo para estudios jurídicos",
+  ogImage: "/og/automatizaciones-matricula-cpacf-y-bono-derecho-fijo.png",
+  ogImageAlt: "Puna Tech: control de la matrícula del CPACF y del bono de derecho fijo para estudios jurídicos.",
+  cardTitle: "Matrícula CPACF y bono de derecho fijo",
+  cardBlurb: "Qué dicen la ley 23.187 y el CPACF sobre la cuota anual y el bono, y un tablero a medida para llevar el control del estudio.",
+  example: "Un estudio con varios abogados matriculados lleva el pago de la cuota anual de cada uno y los bonos de cada causa en cabezas y mails distintos. Al presentar un escrito en una causa nueva, nadie recuerda si el bono ya está pagado a nombre del abogado que firma.",
+  before: [
+    "Cada abogado se acuerda de pagar su matrícula, o no.",
+    "El bono de derecho fijo de cada causa se paga a último momento y el comprobante queda en un mail.",
+    "Nadie ve de un vistazo qué causas tienen el bono pagado y a nombre de quién.",
+    "Si alguien se atrasó con la cuota anual, el estudio se entera tarde.",
+  ],
+  after: [
+    "Un tablero con cada abogado del estudio, su cuota anual y el comprobante de pago.",
+    "Una lista de causas con el bono: quién lo paga, a nombre de qué matriculado, fecha y comprobante.",
+    "Avisos al responsable con la anticipación que definas.",
+    "Todo lo confirma el abogado: nosotros no pagamos nada ni presentamos escritos.",
+  ],
+  sections: [
+    {
+      heading: "La cuota anual de la matrícula del CPACF",
+      paragraphs: [
+        "Según el CPACF, el ejercicio va del 1.º de mayo al 30 de abril del año siguiente y la cuota se paga una vez al año. El valor se fija en UMA (art. 122 del Reglamento Interno) y se convierte a pesos con la UMA vigente en el mes anterior al del pago; por eso el Colegio publica un valor distinto cada mes. No lo publicamos acá: mirá el valor y el vencimiento del ejercicio en la página de Matrículas del CPACF.",
+        "Quienes se matriculan en el segundo semestre del ejercicio pagan la mitad de la cuota (art. 123 del Reglamento Interno). Las matrículas vencidas de períodos anteriores tienen un valor mayor, porque incluyen un adicional por pago fuera de término.",
+      ],
+    },
+    {
+      heading: "Qué pasa si no se paga",
+      paragraphs: [
+        "El art. 53 de la ley 23.187 dice que la falta de pago de tres cuotas anuales se interpreta como abandono del ejercicio profesional y da lugar a que el Colegio suspenda la matrícula hasta que se regularice. Según el CPACF, la suspensión se comunica a todos los tribunales y al SECLO.",
+      ],
+    },
+    {
+      heading: "El bono de derecho fijo: cuándo se paga",
+      paragraphs: [
+        "El art. 51, inc. d), de la ley 23.187 dispone que el derecho fijo se abona al iniciarse o contestarse cualquier acción judicial ante jueces o tribunales con intervención de abogados, y que los jueces no dan curso a ninguna presentación sin verificar el pago, sin perjuicio de la validez de los actos procesales cumplidos.",
+        "Están exceptuados quienes ejercen el patrocinio o la representación jurídica gratuita, los recursos de hábeas corpus, las acciones de amparo y los casos en que se obtuvo el beneficio de litigar sin gastos. El valor del bono lo publica el CPACF y cambia: no lo ponemos acá.",
+      ],
+    },
+    {
+      heading: "A nombre de quién se paga el bono",
+      paragraphs: [
+        "Según el Reglamento Interno del CPACF (art. 125), el derecho fijo lo paga cada persona matriculada en todas las causas en que interviene como patrocinante, apoderada, defensora, querellante, denunciante o asistente, y el bono se emite a nombre del profesional matriculado y es intransferible (art. 128). En un estudio con varios abogados, eso significa controlar el pago por matriculado, no solo por causa.",
+      ],
+    },
+    {
+      heading: "Cómo se paga el bono en causas del PJN y de la Ciudad",
+      paragraphs: [
+        "Para causas del Poder Judicial de la Nación, el CPACF indica la Plataforma de Pagos Judiciales del Banco Ciudad: se ingresan el CUIT del matriculado por el que se acredita el pago y los datos del expediente (fuero, causa y año), y el bono se acredita en el trámite judicial sin otro escrito. Para causas del Poder Judicial de la Ciudad hay una forma online desde el Portal del Litigante y una presencial en las cajas del CPACF.",
+        "Los canales pueden cambiar: seguí los pasos de la página oficial del CPACF, no esta.",
+      ],
+    },
+    {
+      heading: "Y si matriculás en otro colegio",
+      paragraphs: [
+        "Esta página habla solo del CPACF, el Colegio de la Capital Federal. Los colegios de abogados de las provincias tienen sus propias cuotas, aportes y bonos, con reglas distintas. Si tu estudio tiene abogados matriculados en otra jurisdicción, las sumamos al tablero después de verificar cada una en su fuente.",
+      ],
+    },
+  ],
+  howTitle: "Qué hay hoy y qué armamos a medida",
+  how: [
+    {
+      title: "Hoy: no hay una función para esto",
+      body: "No existe un tablero de matrícula y bonos ya hecho ni una demo de este proceso. Con datos ficticios podés ver la idea de avisos que salen cuando el abogado los aprueba en la [demo de cobranzas automáticas](/es/demos/cobranzas).",
+    },
+    {
+      title: "A medida: tablero de matrícula y bonos del estudio",
+      body: "Lo armamos a medida: una lista de los abogados matriculados del estudio, con el ejercicio, el vencimiento y el comprobante de la cuota anual, y una lista de causas con el bono de derecho fijo (matriculado, fuero, causa y año, fecha de pago y comprobante). El sistema avisa al responsable con la anticipación que definas y marca las causas sin bono cargado. Los datos y las fechas los cargás y los confirmás vos: no pagamos ni presentamos nada, ni calculamos plazos con valor legal.",
+    },
+    {
+      title: "Qué necesitamos de tu lado",
+      body: "Cuántos abogados matriculados tiene el estudio, cómo llevan hoy la lista de causas y dónde guardan los comprobantes. Las causas y sus vencimientos tienen su propia página: [control de expedientes](/es/automatizaciones/control-de-expedientes-estudio-juridico). Para los cobros al cliente, mirá [control de honorarios](/es/automatizaciones/control-de-honorarios-estudio-juridico).",
+    },
+  ],
+  demoLinks: {
+    title: "Probalo antes de contratarlo",
+    body: DEMO_BODY,
+    links: [
+      { label: "Demos para estudios jurídicos", path: DEMO_LEGAL.path, note: "Consultas y cobro de honorarios" },
+      { label: "Demo: cobranzas automáticas", path: "/es/demos/cobranzas", note: "Avisos que salen cuando los aprobás" },
+      { label: "Calculadora de horas ahorradas", path: HOURS_TOOL.path, note: "Una estimación con tus propios datos" },
+    ],
+  },
+  fit: [
+    "Tu estudio tiene varios abogados matriculados en la Capital Federal.",
+    "Los comprobantes de la cuota anual y de los bonos quedan en mails y carpetas distintas.",
+    "Querés ver de un vistazo qué causas tienen el bono cargado y a nombre de quién.",
+  ],
+  faqs: [
+    ["¿Cuándo vence la matrícula del CPACF?", "El ejercicio del CPACF va del 1.º de mayo al 30 de abril y la cuota se paga una vez al año. El vencimiento y el valor de cada ejercicio los publica el Colegio en su página de Matrículas: confirmalos ahí antes de pagar."],
+    ["¿Qué pasa si no pago la matrícula del CPACF?", "Según el art. 53 de la ley 23.187, la falta de pago de tres cuotas anuales da lugar a que el Colegio suspenda la matrícula hasta que se regularice, y según el CPACF lo comunica a los tribunales y al SECLO. Las matrículas vencidas de períodos anteriores tienen un valor mayor."],
+    ["¿Cuándo hay que pagar el bono de derecho fijo?", "Según el art. 51, inc. d), de la ley 23.187, al iniciarse o contestarse cualquier acción judicial ante jueces o tribunales con intervención de abogados. Están exceptuados el patrocinio o la representación gratuita, el hábeas corpus, el amparo y los casos con beneficio de litigar sin gastos."],
+    ["¿A nombre de quién se paga el bono?", "Según el Reglamento Interno del CPACF, lo paga cada persona matriculada que interviene en la causa y el bono se emite a su nombre y es intransferible. En un estudio con varios abogados conviene llevar el control por matriculado."],
+    ["¿Se puede automatizar el control de la matrícula y de los bonos?", "A medida, sí: un tablero con la cuota anual de cada abogado y los bonos de cada causa, con avisos al responsable. Los datos los confirma el abogado y no pagamos ni presentamos nada por el estudio."],
+    costFaq("cuántos abogados, causas y fuentes de datos entran"),
+  ],
+  sources: [
+    CPACF.matriculas,
+    CPACF.bono,
+    CPACF.faqs,
+    CPACF.reglamento,
+    CPACF.ley,
+  ],
+  reviewedAt: REVIEWED_AT_1102,
+  disclaimer: "Esta página resume información pública del CPACF y de la ley 23.187 y no reemplaza el trámite ante el Colegio. Verificá siempre valores, fechas y canales vigentes en la fuente. " + LEGAL_DISCLAIMER,
+  relatedLinks: [
+    { path: "/es/automatizaciones/control-de-expedientes-estudio-juridico", title: "Control de expedientes para estudios jurídicos" },
+    { path: "/es/automatizaciones/control-de-honorarios-estudio-juridico", title: "Control de honorarios para estudios jurídicos" },
+    { path: "/es/demos/cobranzas", title: "Demo: cobranzas automáticas" },
+    DEMO_LEGAL,
+    SERVICE,
+  ],
+  relatedService: AUTOMATION,
+  relatedPosts: [BLOG.venc],
 });
