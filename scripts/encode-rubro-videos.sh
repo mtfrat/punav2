@@ -8,12 +8,14 @@ OUT="$(cd "$(dirname "$0")/.." && pwd)/public/media/demos"
 mkdir -p "$OUT"
 SLUGS="${SLUGS:-estudios-contables estudios-juridicos productores-de-seguros inmobiliarias clinicas-y-consultorios}"
 for slug in $SLUGS; do
-  # Poster frame (seconds): a frame with the demo UI. The clinics master opens on the old headline, so it uses a later one.
-  POSTER_AT=6; [ "$slug" = clinicas-y-consultorios ] && POSTER_AT=12
+  # Poster frame (seconds): a frame with the demo UI. The clinics master still shows an old page headline in some
+  # frames (checked by OCR): 6 s is clean in 16:9 and 19 s in 9:16 until Video Lab re-renders it.
+  POSTER_AT=6
   for shape in 16x9 9x16; do
     in="$SRC/$slug/$slug-$shape.mp4"
     if [ "$shape" = 16x9 ]; then scale="scale=1280:720:flags=lanczos"; else scale="scale=720:1280:flags=lanczos"; fi
     base="$OUT/rubro-$slug-$shape"
+    [ "$slug-$shape" = clinicas-y-consultorios-9x16 ] && POSTER_AT=19 || POSTER_AT=6
     ffmpeg -v error -y -i "$in" -vf "$scale" -c:v libx264 -preset slow -crf 33 -profile:v high -pix_fmt yuv420p \
       -movflags +faststart -c:a aac -b:a 64k -ac 2 "$base.mp4"
     ffmpeg -v error -y -i "$in" -vf "$scale" -c:v libvpx-vp9 -crf 42 -b:v 0 -row-mt 1 -cpu-used 2 -pix_fmt yuv420p \
