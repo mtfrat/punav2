@@ -29,6 +29,7 @@ export default function VideoDemo({ loc }: { loc: Loc }) {
             width={1280}
             height={720}
           >
+            <source src={`${VIDEO_BASE}-16x9.webm`} type="video/webm" />
             <source src={`${VIDEO_BASE}-16x9.mp4`} type="video/mp4" />
           </video>
           <video
@@ -41,6 +42,7 @@ export default function VideoDemo({ loc }: { loc: Loc }) {
             width={720}
             height={1280}
           >
+            <source src={`${VIDEO_BASE}-9x16.webm`} type="video/webm" />
             <source src={`${VIDEO_BASE}-9x16.mp4`} type="video/mp4" />
           </video>
         </div>

@@ -25,7 +25,7 @@ const T = {
     keep: "Cargar igual", drop: "Dejar afuera", undo: "Volver a revisar",
     approve: (n: number) => `Aprobar y cargar ${n} a la planilla`, nothing: "No hay comprobantes listos para cargar.",
     leftOut: (n: number) => `${n} quedan afuera hasta que alguien los revise.`,
-    sent: "Planilla del estudio", sentHelp: "Formato de ejemplo: una fila por comprobante, lista para importar al sistema de carga.",
+    sent: "Planilla del estudio", sentHelp: "Formato de prueba: una fila por comprobante, lista para importar al sistema de carga.",
     sentCols: ["Emisor", "CUIT", "Comprobante", "Neto", "IVA 21%", "Perc. IIBB", "Total"],
     totals: "Totales cargados", csv: "Descargar CSV", emptySheet: "Todavía no cargaste nada. Aprobá los comprobantes listos y aparecen acá.",
     blurry: "Foto borrosa: el sistema no adivina, lo manda a revisar.",
