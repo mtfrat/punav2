@@ -4,6 +4,11 @@
  * GA4 only excludes internal traffic when the hit carries `traffic_type=internal` AND an admin has created and
  * activated the "Internal Traffic" data filter (Admin > Data collection > Data filters). This module only decides
  * whether to send the parameter; see `activateAnalytics` in components/tracking.ts.
+ *
+ * Two layers, both decided before the first hit (the gtag `config` call, which itself sends the landing page_view):
+ *  1. Off the production host (previews, localhost, the apex before its redirect) gtag.js is not loaded at all.
+ *  2. On the production host gtag loads, and `traffic_type=internal` rides on the config call when navigator.webdriver is
+ *     true, the UA contains HeadlessChrome/Lighthouse, or ?internal=1 was seen (persisted in localStorage; ?internal=0 clears).
  */
 
 export const PRODUCTION_HOSTNAME = "www.puna-tech.com";
@@ -55,14 +60,36 @@ export function detectInternalTraffic(input: InternalTrafficInput): InternalTraf
   return { internal: false, reason: null };
 }
 
-/** Reads the current browser environment. Must only be called in the browser. */
-export function detectInternalTrafficInBrowser(): InternalTrafficResult {
-  const storage = safely(() => window.localStorage) ?? null;
-  return detectInternalTraffic({
+export interface AnalyticsPlan extends InternalTrafficResult {
+  /** false off the production host: gtag.js is not injected and gtag('config') is never called. */
+  loadGtag: boolean;
+  /**
+   * Clarity loads only for real visitors on the production host. Clarity can tag a session (`clarity("set", key, value)`)
+   * but excluding tagged sessions needs an exclusion filter that someone creates in the Clarity dashboard, and its IP
+   * blocking is IPv4 only. So internal sessions simply never load Clarity.
+   * Docs: https://learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-api (custom tags),
+   * https://learn.microsoft.com/en-us/clarity/filters/exclusion-filters, https://learn.microsoft.com/en-us/clarity/setup-and-installation/ip-exclusion
+   */
+  loadClarity: boolean;
+}
+
+/** Single decision point for analytics: whether gtag and Clarity load at all, and whether the gtag config call carries traffic_type=internal. */
+export function planAnalytics(input: InternalTrafficInput): AnalyticsPlan {
+  const result = detectInternalTraffic(input);
+  return { loadGtag: input.hostname === PRODUCTION_HOSTNAME, loadClarity: input.hostname === PRODUCTION_HOSTNAME && !result.internal, ...result };
+}
+
+function browserInput(): InternalTrafficInput {
+  return {
     hostname: window.location.hostname,
     userAgent: navigator.userAgent,
     webdriver: navigator.webdriver === true,
     search: window.location.search,
-    storage,
-  });
+    storage: safely(() => window.localStorage) ?? null,
+  };
+}
+
+/** Reads the current browser environment. Must only be called in the browser. */
+export function planAnalyticsInBrowser(): AnalyticsPlan {
+  return planAnalytics(browserInput());
 }
