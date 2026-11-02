@@ -70,7 +70,7 @@ const T = {
   },
   en: {
     label: "Supplier stock sync",
-    feed: "Supplier feed (CSV)", feedHelp: "Paste the CSV your supplier sends you or load a test one. Columns: sku, name, stock, cost.",
+    feed: "Supplier feed (CSV)", feedHelp: "Paste the CSV your supplier sends you or load a test CSV. Columns: sku, name, stock, cost.",
     loadOk: "Monday feed", loadBad: "Feed with errors", compare: "Compare with the store", comparing: "Reading the feed and comparing…",
     rules: "Store rules", margin: "Margin over cost", rounding: "Round price to", minStock: "Hide if supplier stock ≤", maxJump: "Flag if price moves more than",
     kpiProducts: "Products in store", kpiChanges: "Proposed changes", kpiReview: "Needs manual review", kpiErrors: "Lines with errors",
