@@ -11,6 +11,7 @@ import { GumroadKitBox } from "../components/demos/dashboard-demo";
 import { VIDEO_BASE } from "../components/demos/video-demo";
 import { demoDefinitions, demoOgPath, demoPath, demosHubCopy, demosHubPath, findDemoBySlug } from "../content/demos";
 import { rubroDefinitions, rubroPath } from "../content/rubros";
+import { CM_REPO_URL } from "../content/rubro-faq";
 import { SITE_URL, type Locale } from "../content/chrome";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
@@ -78,6 +79,20 @@ export const meta: MetaFunction<typeof loader> = ({ data, error, location }) => 
         { name: demosHubCopy[locale].breadcrumb, path: demosHubPath(locale) },
         { name: c.title, path },
       ]),
+      // Open-source companion of the Convenio Multilateral demo (repo checked public + MIT before linking).
+      ...(id === "convenio-multilateral" ? [{
+        "@context": "https://schema.org",
+        "@type": "SoftwareSourceCode",
+        name: locale === "en" ? "Unified coefficient for Convenio Multilateral" : "Coeficiente unificado de Convenio Multilateral",
+        description: locale === "en"
+          ? "Open-source calculator, validator and Excel sheet for the unified coefficient of the General Regime of the Convenio Multilateral (Ingresos Brutos, Argentina)."
+          : "Calculadora, validador y planilla Excel de código abierto para el coeficiente unificado del Régimen General del Convenio Multilateral (Ingresos Brutos, Argentina).",
+        codeRepository: CM_REPO_URL,
+        programmingLanguage: "Python",
+        license: "https://opensource.org/licenses/MIT",
+        inLanguage: locale === "en" ? "en" : "es",
+        author: { "@id": `${SITE_URL}/#organization` },
+      }] : []),
     ],
   });
 };
@@ -132,6 +147,14 @@ export default function DemoDetail({ loaderData }: { loaderData: Awaited<ReturnT
             <Demo loc={locale} />
             {id === "store-dashboard" ? <GumroadKitBox loc={locale} /> : null}
             {c.origin ? <p className="dm-origin">{c.origin}</p> : null}
+            {id === "convenio-multilateral" ? (
+              <p className="dm-related">
+                <a href={CM_REPO_URL} target="_blank" rel="noopener noreferrer">
+                  {locale === "es" ? "Calculadora, validador y planilla del coeficiente: código abierto (MIT) en GitHub" : "Coefficient calculator, validator and spreadsheet: open source (MIT) on GitHub"}
+                  <ArrowRight aria-hidden="true" size={16} />
+                </a>
+              </p>
+            ) : null}
             {locale === "es" && demo.related ? <p className="dm-related"><Link to={demo.related.path}>{demo.related.label}<ArrowRight aria-hidden="true" size={16} /></Link></p> : null}
           </div>
         </section>

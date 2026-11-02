@@ -3,6 +3,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
 import { CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
+import { DemosByIndustry } from "../components/demos-strip";
 import { casePath, getCaseStudy, SITE_URL, type Locale } from "../content/site";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
@@ -198,6 +199,8 @@ export default function CaseStudyPage({ loaderData }: { loaderData: Awaited<Retu
             </div>
           </section>
         ) : null}
+
+        <DemosByIndustry locale={locale} placement="case_demos_rubro" />
 
         <section className="detail-cta dark-section">
           <div className="shell">

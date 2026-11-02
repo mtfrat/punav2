@@ -69,3 +69,23 @@ export function DemosByIndustry({ locale, placement }: { locale: Locale; placeme
     </section>
   );
 }
+
+/** Compact list of the five rubro pages for sidebars (blog posts). Same links as the strip, no section chrome. */
+export function DemosByIndustryList({ locale, placement }: { locale: Locale; placement: string }) {
+  const t = COPY[locale];
+  return (
+    <div className="article-aside-solutions">
+      <p className="eyebrow">{t.eyebrow}</p>
+      <ul>
+        {rubroDefinitions.map((rubro) => (
+          <li key={rubro.id}>
+            <Link to={rubroPath(locale, rubro.slug[locale])} onClick={() => trackEvent("cta_click", { locale, placement, destination: `demos_${rubro.id}` })}>
+              {rubro.copy[locale].name}
+            </Link>
+          </li>
+        ))}
+        <li><Link to={demosHubPath(locale)}>{t.all}</Link></li>
+      </ul>
+    </div>
+  );
+}

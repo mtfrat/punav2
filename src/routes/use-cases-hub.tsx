@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight, Compass } from "lucide-react";
 import { Accordion, CalButton, PageShell, trackEvent } from "../components/marketing";
+import { DemosByIndustry } from "../components/demos-strip";
 import { RichText } from "../components/rich-text";
 import { contactPath, copy } from "../content/site";
 import { getUseCaseHub, useCasesForHub } from "../content/use-cases";
@@ -131,6 +132,8 @@ export default function UseCasesHub({ loaderData }: { loaderData: Awaited<Return
             </div>
           </section>
         ) : null}
+
+        <DemosByIndustry locale="es" placement="use_cases_hub_demos_rubro" />
 
         <section className="detail-cta dark-section">
           <div className="shell">

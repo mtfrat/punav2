@@ -118,6 +118,12 @@ for (const file of ["src/components/demos/monthly-docs-demo.tsx", "src/component
 const quoteSrc = readFileSync(new URL("../src/components/demos/quote-demo.tsx", import.meta.url), "utf8");
 assert.ok(!/seller:\s*"[^"]*(example|ejemplo|demo)/i.test(quoteSrc), "quote seller must not be a placeholder");
 assert.ok(!/(Mayorista|Distribuidor) [AB]"/.test(quoteSrc), "quote clients must not be labelled A/B");
+assert.ok(!/(Grocery|Chain|Distributor|Wholesale)\s*[·-]?\s*[AB]["\s]/.test(quoteSrc.replace(/Wholesale"/g, "")), "EN quote labels must not end in a lone letter");
+assert.ok(!/Wholesale\s+[AB]\b|Distributor\s+[AB]\b/.test(quoteSrc), "EN quote clients must not be labelled A/B");
+for (const file of ["src/components/demos/collections-demo.tsx", "src/components/demos/rubro-pages.tsx", "src/content/demos.ts", "src/content/rubros.ts"]) {
+  const src = readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+  assert.ok(!/FitZone|Don Quijote/.test(src), `${file}: replace the leftover invented names (FitZone, Don Quijote)`);
+}
 const notice = { es: "Datos ficticios con fines de demostración.", en: "Fictional data for demonstration purposes." };
 assert.ok(demosHubCopy.es.exampleNote.startsWith(notice.es) && demosHubCopy.en.exampleNote.startsWith(notice.en), "hub shows the single fictional-data notice");
 

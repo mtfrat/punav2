@@ -3,6 +3,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
 import { Accordion, CalButton, FlowDiagram, PageShell, trackEvent } from "../components/marketing";
+import { DemosByIndustry } from "../components/demos-strip";
 import {
   casePath,
   caseStudies,
@@ -284,6 +285,8 @@ export default function ServicePage({ loaderData }: { loaderData: Awaited<Return
             <Accordion items={service.faqs} />
           </div>
         </section>
+
+        <DemosByIndustry locale={locale} placement="service_demos_rubro" />
 
         <section className="detail-cta dark-section">
           <div className="shell">

@@ -12,8 +12,8 @@ const INVOICES: Invoice[] = [
   { id: "A-0001-1310", client: "Estudio Contable Pérez", amount: 95000, dueOffset: 3 },
   { id: "A-0001-1316", client: "Panadería La Espiga", amount: 127800, dueOffset: 5 },
   { id: "A-0001-1263", client: "Corralón San Martín", amount: 1218000, dueOffset: -24 },
-  { id: "A-0001-1322", client: "Librería Don Quijote", amount: 56400, dueOffset: 12 },
-  { id: "A-0001-1275", client: "Gimnasio FitZone", amount: 210000, dueOffset: -6, paid: true },
+  { id: "A-0001-1322", client: "Librería Aguas Claras", amount: 56400, dueOffset: 12 },
+  { id: "A-0001-1275", client: "Gimnasio Costa Norte", amount: 210000, dueOffset: -6, paid: true },
   { id: "A-0001-1280", client: "Transportes del Sur", amount: 330000, dueOffset: -4, paid: true },
 ];
 

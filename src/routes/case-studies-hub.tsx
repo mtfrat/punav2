@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { CalButton, PageShell, trackEvent } from "../components/marketing";
+import { DemosByIndustry } from "../components/demos-strip";
 import { casePath, caseStudies, casesHubCopy, casesHubPath, copy, type Locale } from "../content/site";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
@@ -111,6 +112,8 @@ export default function CaseStudiesHub({ loaderData }: { loaderData: Awaited<Ret
             </div>
           </div>
         </section>
+
+        <DemosByIndustry locale={locale} placement="cases_hub_demos_rubro" />
 
         <section className="detail-cta dark-section">
           <div className="shell">

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import sanitizeHtml from "sanitize-html";
 import type { Locale } from "../content/site";
+import { DEFAULT_AUTHOR, publicPersonName } from "./author.ts";
 
 export interface PublishedPost {
   id: string;
@@ -78,8 +79,8 @@ function mapPost(row: Record<string, unknown>): PublishedPost {
     hero_image_alt: typeof row.hero_image_alt === "string" ? row.hero_image_alt : null,
     category: typeof row.category === "string" ? row.category : null,
     primary_keyword: typeof row.primary_keyword === "string" ? row.primary_keyword : null,
-    author_name: typeof row.author_name === "string" ? row.author_name : typeof row.author === "string" ? row.author : "Puna Tech Engineering",
-    reviewer_name: typeof row.reviewer_name === "string" ? row.reviewer_name : null,
+    author_name: publicPersonName(typeof row.author_name === "string" ? row.author_name : typeof row.author === "string" ? row.author : null) || DEFAULT_AUTHOR,
+    reviewer_name: publicPersonName(typeof row.reviewer_name === "string" ? row.reviewer_name : null),
     source_urls: normalizeSources(row.source_urls),
     related_service_slug: typeof row.related_service_slug === "string" ? row.related_service_slug : null,
     status: "published",
