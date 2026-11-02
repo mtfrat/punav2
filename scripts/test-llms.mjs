@@ -40,4 +40,12 @@ for (const line of robots.split("\n")) {
   for (const path of ["/llms.txt", PUNA_MD_PATH]) assert.ok(!path.startsWith(rule), `robots.txt blocks ${path} via ${rule}`);
 }
 
+// GEO decision (2026-11-02): AI crawlers are NOT blocked and the "__usage_ai-training" opt-out token is not used.
+const robotsRules = robots.split("\n").filter((line) => !line.trim().startsWith("#")).join("\n");
+for (const bot of ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "CCBot"]) {
+  assert.ok(!new RegExp(`user-agent:\\s*${bot}`, "i").test(robotsRules), `robots.txt has a rule group for ${bot}`);
+}
+assert.ok(!/__usage/i.test(robotsRules), "robots.txt uses the __usage_ai-training token (intentionally not used)");
+assert.ok(/^Disallow:\s*\/\s*$/im.test(robotsRules) === false, "robots.txt blocks the whole site");
+
 console.log("llms.txt + puna.md: OK");
