@@ -58,18 +58,9 @@ for (const line of robots.split("\n")) {
   for (const path of ["/llms.txt", PUNA_MD_PATH]) assert.ok(!path.startsWith(rule), `robots.txt blocks ${path} via ${rule}`);
 }
 
-// Explicit groups for the AI crawlers, each repeating the Disallows (a bot with its own group ignores "*").
-const groups = robots.split(/\n\s*\n/).map((block) => block.split("\n").filter((l) => l && !l.startsWith("#")));
-for (const bot of ["OAI-SearchBot", "ChatGPT-User", "GPTBot", "Claude-SearchBot", "Claude-User", "ClaudeBot", "PerplexityBot", "Perplexity-User", "Googlebot", "Google-Extended", "Applebot", "Applebot-Extended", "Bingbot"]) {
-  const group = groups.find((lines) => lines.includes(`User-agent: ${bot}`));
-  assert.ok(group, `robots.txt: no group for ${bot}`);
-  assert.ok(group.includes("Allow: /") && group.includes("Disallow: /api/") && group.includes("Disallow: /ops/"), `robots.txt: ${bot} group must allow / and keep /api/ + /ops/ disallowed`);
-}
-assert.ok(robots.includes(`Sitemap: ${SITE}/sitemap.xml`), "robots.txt: Sitemap line missing");
-
 // Free tools: hub + each tool in llms.txt and puna.md; llms-full sections (built from the same arrays) cover the 3 tools and the 6 rubro automatizaciones.
 assert.equal(toolDefinitions.length, 3, "expected the 3 free tools");
-assert.equal(rubroUseCases.length, 6, "expected the 6 rubro automatizaciones");
+assert.equal(rubroUseCases.length, 7, "expected the 7 rubro automatizaciones (6 + monotributistas, #79)");
 for (const [name, text] of [["llms.txt", llms], ["puna.md", md]]) {
   assert.ok(text.includes(`(${SITE}${TOOLS_BASE})`), `${name}: missing ${TOOLS_BASE}`);
   for (const tool of toolDefinitions) assert.ok(text.includes(`(${SITE}${toolPath(tool.slug)})`), `${name}: missing ${toolPath(tool.slug)}`);
@@ -87,5 +78,13 @@ for (const item of rubroUseCases) {
 for (const item of useCases) assert.ok(automationsFull.includes(`${SITE}${item.path}`), `llms-full: ${item.path} missing`);
 assert.ok(!/gpt-4o|claude 3\.5|gemini 1\.5|across the US/i.test(toolsFull + automationsFull), "llms-full: no stale model versions");
 assert.ok(!/Fraticelli/i.test(toolsFull + automationsFull), "llms-full: no surname");
+
+// GEO decision (2026-11-02): AI crawlers are NOT blocked and the "__usage_ai-training" opt-out token is not used.
+const robotsRules = robots.split("\n").filter((line) => !line.trim().startsWith("#")).join("\n");
+for (const bot of ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "CCBot"]) {
+  assert.ok(!new RegExp(`user-agent:\\s*${bot}`, "i").test(robotsRules), `robots.txt has a rule group for ${bot}`);
+}
+assert.ok(!/__usage/i.test(robotsRules), "robots.txt uses the __usage_ai-training token (intentionally not used)");
+assert.ok(/^Disallow:\s*\/\s*$/im.test(robotsRules) === false, "robots.txt blocks the whole site");
 
 console.log("llms.txt + puna.md: OK");

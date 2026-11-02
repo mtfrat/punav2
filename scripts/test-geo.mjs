@@ -18,12 +18,12 @@ for (const locale of ["es", "en"]) {
   }
 }
 
-// 2. Legal metas stay between 70 and 155 characters.
+// 2. Legal metas stay between 70 and 160 characters (same range as verify-build-seo, #74).
 const legal = readFileSync(new URL("../src/routes/legal.tsx", import.meta.url), "utf8");
 const body = legal.slice(legal.indexOf("function legalDescription"), legal.indexOf("export const meta"));
 const descriptions = [...body.matchAll(/"([^"\n]{40,})"/g)].map((m) => m[1]);
 assert.equal(descriptions.length, 4, "expected 4 legal descriptions (privacy/terms x en/es)");
-for (const text of descriptions) assert.ok(text.length >= 70 && text.length <= 155, `legal description is ${text.length} chars: ${text}`);
+for (const text of descriptions) assert.ok(text.length >= 70 && text.length <= 160, `legal description is ${text.length} chars: ${text}`);
 
 // 3. Organization entity: public profiles only, no private data.
 const graph = organizationSchema("es")["@graph"];

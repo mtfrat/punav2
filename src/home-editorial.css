@@ -188,7 +188,7 @@ a.mm-btn {
   background: #fff;
   box-shadow: 0 0 0 8px var(--paper);
 }
-.site-header-editorial .desktop-nav { gap: 1.35rem; }
+.site-header-editorial .desktop-nav { gap: clamp(0.9rem, 1.4vw, 1.35rem); }
 .site-header-editorial .desktop-nav a,
 .site-header-editorial .language-link,
 .site-header-editorial .editorial-brief {
@@ -716,8 +716,19 @@ a.mm-btn {
 @media (max-width: 1280px) {
   .site-header-editorial .editorial-brief { display: none; }
 }
-@media (max-width: 1100px) {
+/* Spanish labels are longer: with the brief link the pill needs ~1166px, more than its 1152px inner width.
+   Up to 1480px the link stays hidden (as it already was up to 1280px); above that the ES pill gets 60px more room. */
+@media (max-width: 1480px) {
+  html[lang="es"] .site-header-editorial .editorial-brief { display: none; }
+}
+@media (min-width: 1481px) {
+  html[lang="es"] .editorial-pill-scale { width: min(1240px, calc(100% - 1.5rem)); }
+}
+/* Same breakpoint as the header menu button (index.css): the pill narrows when the desktop links go away. */
+@media (max-width: 1239px) {
   .editorial-pill-scale { width: min(34rem, calc(100% - 4.5rem)); }
+}
+@media (max-width: 1100px) {
   .mm-card-grid, .mm-versus, .mm-audit, .mm-proof-grid { grid-template-columns: 1fr; }
   .mm-process, .mm-lab-grid { grid-template-columns: 1fr; }
   .mm-client, .mm-final, .mm-calc-fields, .mm-calc-results { grid-template-columns: 1fr; }

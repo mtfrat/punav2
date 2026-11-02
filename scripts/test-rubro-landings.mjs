@@ -4,7 +4,7 @@ import { demoDefinitions, demoPath, demosHubPath } from "../src/content/demos.ts
 import { rubroDefinitions, rubroPath } from "../src/content/rubros.ts";
 import { toolDefinitions, toolPath } from "../src/content/tools.ts";
 
-// Content guards for the long-tail rubro landings (briefs of 2026-10-29).
+// Content guards for the long-tail rubro landings (briefs of 2026-10-29 and 2026-11-02).
 const SLUGS = [
   "convenio-multilateral-coeficientes",
   "conciliacion-sifere-retenciones-percepciones",
@@ -12,6 +12,8 @@ const SLUGS = [
   "control-de-honorarios-estudio-juridico",
   "cartera-de-polizas-y-renovaciones",
   "matricula-productor-asesor-de-seguros",
+  // Brief of 2026-11-02 (appended: some asserts below are index-based on the first six).
+  "control-de-facturacion-monotributistas",
 ];
 const pages = SLUGS.map((slug) => {
   const page = useCases.find((item) => item.path === `/es/automatizaciones/${slug}`);
@@ -52,7 +54,7 @@ const prose = (page) => [
   page.demoLinks?.body ?? "", page.disclaimer ?? "",
 ].join("\n");
 
-const OFFICIAL_SOURCES = /^https:\/\/(www\.ca\.gob\.ar|webs\.comarb\.gob\.ar|servicios\.infoleg\.gob\.ar|www\.argentina\.gob\.ar|servicios\.pjn\.gov\.ar|www\.csjn\.gov\.ar)\//;
+const OFFICIAL_SOURCES = /^https:\/\/(www\.ca\.gob\.ar|webs\.comarb\.gob\.ar|servicios\.infoleg\.gob\.ar|www\.argentina\.gob\.ar|servicios\.pjn\.gov\.ar|www\.csjn\.gov\.ar|(www\.)?arca\.gob\.ar)\//;
 
 for (const page of pages) {
   const body = prose(page);
@@ -109,3 +111,16 @@ assert.ok(ssn.sources?.some((s) => s.href.includes("argentina.gob.ar")), "ssn: o
 assert.ok(/no lo publicamos/.test(prose(ssn)), "ssn: explain why the amount is not published");
 
 console.log("rubro landings OK");
+
+// Brief of 2026-11-02: facts that must stay on the page (or must never be published).
+const mono = pages[6];
+{
+  const text = JSON.stringify(mono);
+  assert.ok(!/\$\s?\d/.test(text), "monotributo: no amounts in pesos (the values change; the page links the source)");
+  assert.ok(/ARCA/.test(mono.sources.map((s) => s.label).join(" ")), "monotributo: official source label");
+}
+assert.ok(mono.sections.some((s) => /Recategorización de oficio/.test(s.heading)), "monotributo: recategorización de oficio section");
+assert.ok(mono.faqs.some(([q]) => /Excel/.test(q)), "monotributo: Excel FAQ (keyword evidence)");
+// The new page must be linked from the page it relates to, and must not link to the CPACF page (separate PR, pending legal review).
+assert.ok(pages[0].relatedLinks?.some((l) => l.path === mono.path), `${pages[0].key} must link to ${mono.key}`);
+assert.ok(!JSON.stringify(pages).includes("matricula-cpacf"), "no page links to the CPACF page in this PR");

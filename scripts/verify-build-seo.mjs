@@ -330,6 +330,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "Cuándo conviene (y cuándo no)",
     "Integración con lo que ya usás",
     "Qué recibís: código, documentación y soporte",
+    "Ejemplos de software a medida que podés probar",
   ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
@@ -369,7 +370,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  if (questions.length < 9 || questions.length > 10) failures.push(`${route}: FAQPage should have 9 or 10 questions, found ${questions.length}`);
+  if (questions.length !== 11) failures.push(`${route}: FAQPage should have 11 questions, found ${questions.length}`);
   for (const question of [
     "¿Qué es el desarrollo de software a medida?",
     "¿Cómo es el proceso: diagnóstico, MVP e iteraciones?",
@@ -381,6 +382,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "¿Conviene software a medida o alcanza con n8n, Zapier o una planilla?",
     "¿Puedo empezar por un solo módulo?",
     "¿Trabajan con pymes en Argentina?",
+    "¿Tienen ejemplos de software a medida que pueda ver?",
   ]) {
     if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
     if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
@@ -412,6 +414,12 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 2300) failures.push(`${route}: page copy too thin (${words} words)`);
+  // 02/11: ejemplos que se pueden probar (demos con datos ficticios), sin presentarlos como clientes.
+  for (const href of ["/es/demos", "/es/demos/sync-stock", "/es/demos/cotizador-mayorista", "/es/demos/panel-comercio", "/es/demos/cobranzas", "/es/demos/horas-y-pagos", "/es/demos/para/estudios-contables", "/es/demos/para/estudios-juridicos", "/es/demos/para/productores-de-seguros", "/es/demos/para/inmobiliarias", "/es/demos/para/clinicas-y-consultorios"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: examples section missing demo link ${href}`);
+  }
+  if (!html.includes("con datos ficticios") || !html.includes("No son clientes nuestros")) failures.push(`${route}: demos not labeled as fictional / not clients`);
+  if (!html.includes("programas a medida")) failures.push(`${route}: missing phrase programas a medida`);
   const english = await readFile(join(root, "services/custom-software/index.html"), "utf8");
   for (const [page, label] of [[html, route], [english, "/services/custom-software"]]) {
     for (const [lang, href] of [["es-AR", "https://www.puna-tech.com/es/servicios/software-a-medida"], ["en", "https://www.puna-tech.com/services/custom-software"], ["x-default", "https://www.puna-tech.com/services/custom-software"]]) {
@@ -595,7 +603,7 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
   }
-  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube", "/es/automatizaciones/pedidos-por-whatsapp"]) {
+  for (const other of ["/es/automatizaciones/conciliacion-bancaria", "/es/automatizaciones/facturacion-electronica-arca", "/es/integraciones/mercado-libre", "/es/integraciones/tienda-nube"]) {
     const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
     if (otherHtml.includes("use-case-cases-heading")) failures.push(`${other}: cases block rendered on a page without cases copy`);
   }
@@ -623,10 +631,57 @@ for (const [locale, html, prefix] of [["en", englishHome, "/case-studies/"], ["e
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 1600) failures.push(`${route}: page copy too thin (${words} words)`);
-  for (const other of ["/es/automatizaciones/pedidos-por-whatsapp"]) {
-    const otherHtml = await readFile(join(root, other.slice(1), "index.html"), "utf8");
-    if (otherHtml.includes("use-case-guide-heading")) failures.push(`${other}: guide block rendered on a page without guide copy`);
+}
+
+// "sistema de pedidos por whatsapp": step-by-step guide + hard cases + Meta sources on the WhatsApp orders page (31/10).
+{
+  const route = "/es/automatizaciones/pedidos-por-whatsapp";
+  const html = await readFile(join(root, route.slice(1), "index.html"), "utf8");
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1] || "";
+  if (title !== "Sistema de pedidos por WhatsApp para empresas | Puna Tech") failures.push(`${route}: title changed (${title})`);
+  if ((html.match(/<h1[\s>]/g) || []).length !== 1) failures.push(`${route}: expected exactly one h1`);
+  if (!html.includes('<h2 id="use-case-guide-heading">Cómo funciona un sistema de pedidos por WhatsApp, paso a paso</h2>')) failures.push(`${route}: guide heading missing`);
+  for (const heading of [
+    "1. Tu número en la plataforma oficial",
+    "2. Cada mensaje llega al flujo",
+    "3. Del mensaje a productos de tu catálogo",
+    "4. Precio, stock y condiciones desde tu sistema",
+    "5. El vendedor confirma el borrador",
+    "6. Respuesta al cliente dentro de las reglas de WhatsApp",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing guide step ${heading}`);
   }
+  if (!html.includes('<h2 id="use-case-cases-heading">Los pedidos que complican la automatización (y qué hace el sistema con cada uno)</h2>')) failures.push(`${route}: cases heading missing`);
+  for (const heading of [
+    "Un pedido repartido en varios mensajes",
+    "Productos con nombres que no están en tu catálogo",
+    "Audios y fotos de listas escritas a mano",
+    "Sin stock o con stock parcial",
+    "Un número que no está en tu sistema",
+    "Cambios y cancelaciones después de confirmar",
+    "Pedidos fuera de horario",
+  ]) {
+    if (!html.includes(`<h3>${heading}</h3>`)) failures.push(`${route}: missing case ${heading}`);
+  }
+  if (html.indexOf("use-case-guide-heading") > html.indexOf("use-case-cases-heading")) failures.push(`${route}: cases block should come after the guide`);
+  for (const href of ["/es/integraciones/tienda-nube", "/es/automatizaciones/facturacion-electronica-arca", "/es/automatizaciones/automatizar-cobranzas", "/es/demos/cotizador-mayorista", "https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: link ${href} missing`);
+  }
+  for (const q of ["¿Qué plataforma sirve para gestionar pedidos por WhatsApp?", "¿Alcanza con la app de WhatsApp Business?", "¿Cuánto cobra Meta por los mensajes de WhatsApp?"]) {
+    if (!html.includes(q)) failures.push(`${route}: FAQ missing ${q}`);
+  }
+  for (const block of html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) || []) {
+    const data = JSON.parse(block.replace(/^<script[^>]*>/, "").replace(/<\/script>$/, ""));
+    const nodes = Array.isArray(data["@graph"]) ? data["@graph"] : [data];
+    for (const node of nodes) {
+      if (node["@type"] === "FAQPage" && node.mainEntity.length !== 11) failures.push(`${route}: FAQPage should have 11 questions (${node.mainEntity.length})`);
+    }
+  }
+  const main = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0];
+  if (/\$\s?\d|USD\s?\d|testimonio|clientes como/i.test(main.replace(/<script[\s\S]*?<\/script>/g, ""))) failures.push(`${route}: price/testimonial-like text found`);
+  if (/ejemplo s\.?a\.?|\bejemplo srl/i.test(main)) failures.push(`${route}: placeholder company name found`);
+  const words = main.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
+  if (words < 2000) failures.push(`${route}: page copy too thin (${words} words)`);
 }
 
 // "automatizar facturación electrónica ARCA": step-by-step guide on the ARCA page (26/10).
@@ -805,6 +860,7 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/control-de-honorarios-estudio-juridico",
     "/es/automatizaciones/cartera-de-polizas-y-renovaciones",
     "/es/automatizaciones/matricula-productor-asesor-de-seguros",
+    "/es/automatizaciones/control-de-facturacion-monotributistas",
   ]],
   ["/es/integraciones", "Integrar Mercado Libre y Tienda Nube con tu ERP | Puna Tech", "Integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema de gestión", [
     "/es/integraciones/mercado-pago",
@@ -1203,8 +1259,8 @@ for (const routeFile of ["blog-index.tsx", "blog-post.tsx"]) {
 }
 
 const privacyDescription = {
-  en: "What Puna Tech collects through the project brief and website analytics, how it is used, and how to ask for access, correction or deletion.",
-  es: "Qué datos reúne Puna Tech con el brief y la analítica del sitio, cómo los usa y cómo pedir acceso, corrección o eliminación.",
+  en: "What data Puna Tech collects from project briefs and site analytics, how it is used, which cookies the site sets and how to request access or deletion.",
+  es: "Qué datos recopila Puna Tech en los briefs y en la analítica del sitio, para qué se usan, qué cookies instala y cómo pedir acceso, corrección o eliminación.",
 };
 const termsDescription = {
   en: "Terms of use for the Puna Tech website. Pages are general information, not a binding proposal, and a discovery call or brief is not a signed agreement.",
@@ -1250,7 +1306,8 @@ for (const [route, language, canonical, alternate, description, cookieMarker] of
   }
   const rendered = metaDescription(html);
   if (rendered !== description) failures.push(`${route}: meta description mismatch (${rendered})`);
-  if (!cookieMarker && (description.length < 50 || description.length > 160)) failures.push(`${route}: meta description length is ${description.length}`);
+  // 30/10: privacy descriptions were 47 (EN) and 60 (ES) chars; every legal page now needs 70–160.
+  if (description.length < 70 || description.length > 160) failures.push(`${route}: meta description length is ${description.length}`);
   if (!html.includes(`<html lang="${language}"`) && !html.includes(`<html lang='${language}'`)) failures.push(`${route}: html lang is not ${language}`);
   if (!html.includes(`rel="canonical" href="${canonical}"`) && !html.includes(`rel='canonical' href='${canonical}'`)) failures.push(`${route}: canonical mismatch`);
   if (!html.includes('hreflang="en"') && !html.includes('hrefLang="en"')) failures.push(`${route}: English hreflang missing`);
@@ -1376,10 +1433,9 @@ else {
     if (locs.length < 20) failures.push(`sitemap.xml: expected the public page set, found ${locs.length} URLs`);
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/servicios/software-a-medida</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-10-29");
+      if (!block.includes("<lastmod>2026-11-02</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-11-02");
       const english = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/services/custom-software</loc>")) || "";
-      // 2026-10-29: both locales of the service page gained the by-industry demo links, so both lastmods move.
-      if (!english.includes("<lastmod>2026-10-29</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod is not 2026-10-29");
+      if (english.includes("<lastmod>2026-10-20</lastmod>") || english.includes("<lastmod>2026-11-02</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod moved without an English copy change");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
@@ -1439,7 +1495,7 @@ else {
         if (title.length < 45 || title.length > 60) failures.push(`${path}: title length ${title.length} is outside 45-60 (${title})`);
         if (!title.endsWith(" | Puna Tech")) failures.push(`${path}: title missing brand suffix (${title})`);
       }
-      if (/^\/es\/privacidad$|^\/privacy$/.test(path) && (description.length < 70 || description.length > 155)) failures.push(`${path}: privacy description is ${description.length} chars (70-155)`);
+      if (/^\/es\/privacidad$|^\/privacy$/.test(path) && (description.length < 70 || description.length > 160)) failures.push(`${path}: privacy description is ${description.length} chars (70-160)`);
       if (description.length > 160) failures.push(`${path}: meta description is ${description.length} characters`);
       const ogTitle = decodeHtml(metaContent(page.html, "property", "og:title"));
       const twitterTitle = decodeHtml(metaContent(page.html, "name", "twitter:title"));
@@ -1499,6 +1555,7 @@ for (const slug of [
   "control-de-honorarios-estudio-juridico",
   "cartera-de-polizas-y-renovaciones",
   "matricula-productor-asesor-de-seguros",
+  "control-de-facturacion-monotributistas",
 ]) {
   const route = `/es/automatizaciones/${slug}`;
   let html = "";

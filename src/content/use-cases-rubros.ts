@@ -11,6 +11,8 @@ import type { UseCaseContent } from "./use-cases.ts";
 
 export const RUBRO_REVIEWED_AT = "29/10/2026";
 const UPDATED_AT = "2026-10-29";
+const REVIEWED_AT_1102 = "02/11/2026";
+const UPDATED_AT_1102 = "2026-11-02";
 const costFaq = (detail: string): [string, string] => [
   "¿Cuánto tarda y cuánto cuesta?",
   `La propuesta es automatizar un proceso en 2 semanas a precio cerrado. El precio depende de ${detail}. Lo acordamos por escrito antes de empezar, después de una llamada de 15 minutos. No publicamos precios en la web porque cada proceso es distinto.`,
@@ -42,6 +44,13 @@ const CA = {
   consultas: { label: "Comisión Arbitral: SIFERE WEB Consultas", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sifere/sifere-web-consultas" },
   deducciones: { label: "Comisión Arbitral: Módulo Deducciones de SIFERE (Eventos 43 a 56)", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sifere/modulo-deducciones" },
   sircreb: { label: "Comisión Arbitral: ¿cómo se deducen las recaudaciones bancarias? (SIRCREB)", href: "https://www.ca.gob.ar/preguntas-frecuentes/sistemas/sircreb/como-se-deducen-las-recaudaciones-bancarias" },
+};
+
+const ARCA_MONO = {
+  recat: { label: "ARCA: ¿cuándo y cómo me recategorizo? (Ayuda sobre el monotributo)", href: "https://www.arca.gob.ar/monotributo/ayuda/recategorizacion.asp" },
+  exclusion: { label: "ARCA: exclusión del monotributo (Ayuda sobre el monotributo)", href: "https://arca.gob.ar/monotributo/ayuda/exclusion.asp" },
+  parametros: { label: "ARCA: parámetros y categorías del monotributo (Ayuda sobre el monotributo)", href: "https://arca.gob.ar/monotributo/ayuda/parametros.asp" },
+  categorias: { label: "ARCA: montos y categorías vigentes del monotributo", href: "https://www.arca.gob.ar/monotributo/categorias.asp" },
 };
 
 const STANDARD_DISCLAIMER = "Esta página informa y no es asesoramiento legal ni contable. La presentación, el pago y las decisiones las toma el profesional: el sistema prepara y vos aprobás.";
@@ -158,6 +167,7 @@ rubroUseCases.push({
   reviewedAt: RUBRO_REVIEWED_AT,
   disclaimer: STANDARD_DISCLAIMER,
   relatedLinks: [
+    { path: "/es/automatizaciones/control-de-facturacion-monotributistas", title: "Control de facturación de monotributistas" },
     { path: "/es/automatizaciones/conciliacion-sifere-retenciones-percepciones", title: "Conciliación de retenciones y percepciones de SIFERE" },
     { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
     { path: "/es/demos/facturas-de-clientes", title: "Demo: facturas de compra de tus clientes" },
@@ -746,4 +756,145 @@ rubroUseCases.push({
   ],
   relatedService: AUTOMATION,
   relatedPosts: [BLOG.renov],
+});
+
+/* ───────────────────────── 7. Monotributo: control de facturación (brief 2026-11-02) ───────────────────────── */
+rubroUseCases.push({
+  key: "contable-monotributo",
+  path: "/es/automatizaciones/control-de-facturacion-monotributistas",
+  updatedAt: UPDATED_AT_1102,
+  section: "automatizaciones",
+  eyebrow: "Estudios contables · Monotributo",
+  title: "Control de facturación de monotributistas: recategorización y topes sin una planilla por cliente",
+  lead: "Si tu estudio lleva monotributistas, dos veces por año toca mirar, cliente por cliente, cuánto facturó en los últimos 12 meses y si le corresponde cambiar de categoría. Acá resumimos lo que dice ARCA, con el link a la fuente, y cómo armamos a medida una tabla con semáforo y avisos para que revisés vos. Mirá las [demos para estudios contables](/es/demos/para/estudios-contables).",
+  metaTitle: "Control de facturación de monotributistas | Puna Tech",
+  metaDescription: "Qué controlar de cada monotributista según ARCA: facturación de 12 meses, recategorización y causales de exclusión. Diagnóstico gratis de 15 min.",
+  serviceType: "Control de facturación y recategorización de monotributistas",
+  ogImage: "/og/automatizaciones-control-de-facturacion-monotributistas.png",
+  ogImageAlt: "Puna Tech: control de facturación de monotributistas, recategorización y topes para estudios contables.",
+  cardTitle: "Control de facturación de monotributistas",
+  cardBlurb: "Qué controlar de cada cliente monotributista según ARCA, y una tabla con semáforo y avisos armada a medida.",
+  example: "Un estudio lleva varios monotributistas, cada uno con su propia planilla. Cuando se acerca la recategorización hay que bajar las facturas de los últimos 12 meses de cada cliente, sumarlas y compararlas con la categoría. Si un cliente se acercó al límite y nadie lo vio a tiempo, el estudio se entera tarde.",
+  before: [
+    "Una planilla por cliente, con la facturación de los últimos 12 meses sumada a mano.",
+    "Las facturas emitidas se bajan una por una antes de cada recategorización.",
+    "Nadie sabe qué clientes están cerca del límite de su categoría hasta que se hace la cuenta.",
+    "El aviso al cliente sale cuando ya es la fecha de recategorizar.",
+  ],
+  after: [
+    "Una tabla única con todos tus monotributistas, la facturación de los últimos 12 meses y la categoría cargada de ARCA.",
+    "Un semáforo por cliente con el umbral que definas vos.",
+    "Un aviso al estudio antes de cada fecha de recategorización, y un borrador de mensaje al cliente que sale cuando lo aprobás.",
+    "La recategorización la hacés vos o tu cliente en ARCA: no pedimos clave fiscal ni presentamos nada.",
+  ],
+  sections: [
+    {
+      heading: "Qué parámetros mira ARCA de cada monotributista",
+      paragraphs: [
+        "Según ARCA, los parámetros son los topes máximos que definen la categoría, de la A a la K, y de ella depende la cuota mensual. Son cinco:",
+        "Los montos se actualizan dos veces por año según la variación del IPC que informa el INDEC, y por eso no los publicamos en esta página: mirá siempre la tabla vigente en la fuente.",
+      ],
+      items: [
+        "Ingresos brutos: el máximo que se puede facturar por año.",
+        "Superficie afectada: los metros cuadrados del local donde se desarrolla la actividad. No se considera en ciudades de menos de 40.000 habitantes, salvo excepciones.",
+        "Energía eléctrica consumida anualmente, en kilovatios.",
+        "Alquileres devengados anualmente: lo pagado en el año por el inmueble donde se desarrolla la actividad.",
+        "Precio unitario máximo para la venta de cosas muebles: el del producto más caro que se vende.",
+      ],
+    },
+    {
+      heading: "Cuándo se recategoriza",
+      paragraphs: [
+        "Según ARCA, la recategorización se hace dos veces por año, en febrero y en agosto, y en cada una se evalúan los últimos 12 meses de actividad. El trámite puede hacerse hasta el día 5 de febrero o de agosto, según corresponda. Confirmá siempre la fecha vigente en la fuente.",
+        "No tienen que hacer nada quienes se mantienen en la misma categoría ni quienes tienen menos de 6 meses de actividad. Si no se hace ninguna acción, el sistema entiende que no hubo cambios y la persona permanece en su categoría. En la recategorización simplificada, al iniciar el trámite el portal muestra automáticamente la facturación anual.",
+      ],
+    },
+    {
+      heading: "Recategorización de oficio",
+      paragraphs: [
+        "ARCA la aplica cuando un monotributista no se recategoriza o lo hace de forma incorrecta. Se inicia cuando detecta que las compras, los gastos o las acreditaciones bancarias superan el límite máximo de ingresos brutos anuales de la categoría en la que está inscripto.",
+        "La notificación llega al Domicilio Fiscal Electrónico dentro de los 10 días hábiles administrativos posteriores al vencimiento del plazo para recategorizarse, y se puede apelar dentro de los 15 días de recibida.",
+      ],
+    },
+    {
+      heading: "Causales de exclusión que conviene vigilar",
+      paragraphs: [
+        "ARCA lista varias situaciones que generan la baja por exclusión. Estas son las que se pueden seguir con datos del estudio; la lista completa y vigente está en la fuente:",
+        "Después de una exclusión no se puede volver al régimen hasta que pasen 3 años calendario desde la fecha de exclusión, con las excepciones que ARCA detalla en la fuente. Qué hacer en cada caso lo decide el profesional.",
+      ],
+      items: [
+        "Que la suma de los ingresos brutos exceda el máximo de la categoría más alta.",
+        "Que la superficie o el alquiler superen los máximos de esa categoría, o que el precio unitario de venta supere el límite.",
+        "Depósitos bancarios incompatibles con los ingresos declarados para la categorización.",
+        "Operaciones sin facturar.",
+        "Más de 3 actividades simultáneas o más de 3 unidades de explotación.",
+        "Compras más gastos de la actividad iguales o superiores al 80 % (venta de bienes) o superiores al 40 % (locaciones, servicios y obras) del tope de ingresos brutos de la categoría K.",
+      ],
+    },
+    {
+      heading: "Dónde se va el tiempo con una planilla por cliente",
+      paragraphs: [
+        "Bajar las facturas emitidas de cada cliente, sumar la ventana móvil de 12 meses, volver a hacerlo cuando ARCA actualiza los topes y recorrer la lista para saber a quién avisar. Cada paso es simple; el problema es repetirlo para todos los clientes antes de cada fecha.",
+      ],
+    },
+  ],
+  howTitle: "Qué hay hoy y qué armamos a medida",
+  how: [
+    {
+      title: "Hoy: no hay una demo de monotributo",
+      body: "No existe una función ya hecha ni una demo de este control. Lo más cercano es la [demo de facturas de compra de tus clientes](/es/demos/facturas-de-clientes), que con datos ficticios muestra cómo se leen y se controlan comprobantes antes de cargarlos a la planilla del estudio. Son facturas de compra y el control de monotributo necesita las emitidas: sirve para ver el estilo de trabajo, no es este proceso.",
+    },
+    {
+      title: "A medida: tabla de monotributistas con semáforo",
+      body: "Lo armamos a medida: una base con tus clientes monotributistas, que arranca desde tus planillas; la facturación de los últimos 12 meses sumada desde los comprobantes emitidos que nos pases (el export de tu sistema de facturación o los emitidos que bajes de ARCA); la tabla de categorías cargada desde la fuente de ARCA, que revisás vos; un semáforo por cliente con el umbral que definas; y un aviso al estudio antes de cada fecha de recategorización. El mensaje al cliente sale cuando lo aprobás.",
+    },
+    {
+      title: "Qué queda de tu lado",
+      body: "Revisás, decidís y recategorizás en ARCA con la clave fiscal del cliente o la tuya. No pedimos esa clave ni presentamos nada en tu nombre. Cómo tratar cada caso (notas de crédito, ingresos en moneda extranjera, actividades mixtas) lo define el contador.",
+    },
+    {
+      title: "Qué necesitamos de tu lado",
+      body: "Una de tus planillas de control (anonimizada si preferís), cuántos monotributistas llevás y de dónde salen hoy las facturas emitidas. Para otros controles del estudio, mirá [coeficientes de Convenio Multilateral](/es/automatizaciones/convenio-multilateral-coeficientes) y [facturación electrónica con ARCA](/es/automatizaciones/facturacion-electronica-arca).",
+    },
+  ],
+  demoLinks: {
+    title: "Probalo antes de contratarlo",
+    body: DEMO_BODY,
+    links: [
+      { label: "Demo: facturas de compra de tus clientes", path: "/es/demos/facturas-de-clientes", note: "Lectura y controles de comprobantes (no es monotributo)" },
+      { label: "Demos para estudios contables", path: DEMO_ACC.path, note: "Facturas, documentación del mes y Convenio Multilateral" },
+      { label: "Calculadora de horas ahorradas", path: HOURS_TOOL.path, note: "Una estimación con tus propios datos" },
+    ],
+  },
+  fit: [
+    "Llevás varios monotributistas y cada uno tiene su propia planilla.",
+    "Antes de cada recategorización repetís la misma suma de facturas, cliente por cliente.",
+    "Querés enterarte de quién se acerca al límite antes de la fecha, no después.",
+  ],
+  faqs: [
+    ["¿Cuándo se recategoriza el monotributo?", "Según ARCA, dos veces por año, en febrero y en agosto, evaluando los últimos 12 meses de actividad. El trámite puede hacerse hasta el día 5 de esos meses. Confirmá la fecha vigente en la página de ARCA antes de avisar a tus clientes."],
+    ["¿Qué pasa si un cliente no se recategoriza?", "Si no hace nada, el sistema entiende que no hubo cambios y sigue en su categoría. Si ARCA detecta que las compras, los gastos o las acreditaciones bancarias superan el límite máximo de ingresos brutos de su categoría, puede recategorizarlo de oficio: notifica al Domicilio Fiscal Electrónico y se puede apelar dentro de los 15 días de recibida la notificación."],
+    ["¿Cómo llevar el control de facturación de monotributistas en Excel?", "Con una fila por cliente (nombre, CUIT, categoría actual, si es servicios o venta de bienes, fecha del último control) y una hoja de facturación con una fila por cliente y por mes. Sumás los últimos 12 meses, los comparás con el tope de ingresos brutos de la categoría que copiaste de ARCA, con la fecha de la tabla anotada, y marcás con color a quien se acerca. Alcanza para pocos clientes, siempre que alguien actualice la tabla cuando ARCA publica los valores nuevos."],
+    ["¿Cuáles son los topes de cada categoría?", "ARCA los actualiza dos veces por año según el IPC. Para no dejarte un número viejo, no los publicamos acá: están en la tabla de montos y categorías vigentes de ARCA, que linkeamos en las fuentes."],
+    ["¿Se puede automatizar el control de varios clientes?", "A medida, sí: sumar la facturación de los últimos 12 meses de cada cliente desde los comprobantes emitidos, compararla con la categoría y avisarte antes de cada fecha de recategorización. No pedimos clave fiscal ni presentamos nada en ARCA: la recategorización la hacés vos o tu cliente."],
+    costFaq("cuántos monotributistas llevás y de qué sistemas salen las facturas emitidas"),
+  ],
+  sources: [
+    ARCA_MONO.recat,
+    ARCA_MONO.exclusion,
+    ARCA_MONO.parametros,
+    ARCA_MONO.categorias,
+  ],
+  reviewedAt: REVIEWED_AT_1102,
+  disclaimer: "Esta página resume información pública de ARCA y no reemplaza el trámite ni el criterio del contador. Verificá siempre fechas, parámetros y causales vigentes en la fuente. " + STANDARD_DISCLAIMER,
+  relatedLinks: [
+    { path: "/es/automatizaciones/convenio-multilateral-coeficientes", title: "Convenio Multilateral: coeficientes" },
+    { path: "/es/automatizaciones/facturacion-electronica-arca", title: "Facturación electrónica ARCA" },
+    { path: "/es/automatizaciones/carga-de-facturas-proveedores", title: "Carga de facturas de proveedores" },
+    { path: "/es/demos/facturas-de-clientes", title: "Demo: facturas de compra de tus clientes" },
+    DEMO_ACC,
+    SERVICE,
+  ],
+  relatedService: AUTOMATION,
+  relatedPosts: [BLOG.conc],
 });

@@ -17,8 +17,8 @@ function legalDescription(kind: "privacy" | "terms", locale: Locale) {
       : "Términos de uso del sitio de Puna Tech. El contenido es información general, no una propuesta vinculante; una llamada o un brief no son un acuerdo.";
   }
   return locale === "en"
-    ? "What Puna Tech collects through the project brief and website analytics, how it is used, and how to ask for access, correction or deletion."
-    : "Qué datos reúne Puna Tech con el brief y la analítica del sitio, cómo los usa y cómo pedir acceso, corrección o eliminación.";
+    ? "What data Puna Tech collects from project briefs and site analytics, how it is used, which cookies the site sets and how to request access or deletion."
+    : "Qué datos recopila Puna Tech en los briefs y en la analítica del sitio, para qué se usan, qué cookies instala y cómo pedir acceso, corrección o eliminación.";
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

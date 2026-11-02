@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { detectInternalTraffic, INTERNAL_STORAGE_KEY, PRODUCTION_HOSTNAME } from "../src/lib/internal-traffic.ts";
+import { detectInternalTraffic, planAnalytics, INTERNAL_STORAGE_KEY, PRODUCTION_HOSTNAME } from "../src/lib/internal-traffic.ts";
+import { buildSync } from "esbuild";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 const PROD = PRODUCTION_HOSTNAME;
 const CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
@@ -70,9 +75,152 @@ test("a stored value other than '1' is ignored", () => {
   assert.equal(detectInternalTraffic({ hostname: PROD, userAgent: CHROME, storage: memory({ [INTERNAL_STORAGE_KEY]: "0" }) }).internal, false);
 });
 
+// ---- planAnalytics: whether gtag loads at all, and whether the config call is flagged ----
+
+test("plan: only www.puna-tech.com loads gtag; every other host never does", () => {
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: CHROME }).loadGtag, true);
+  for (const hostname of ["punav2-git-feat-x-mfrats-projects.vercel.app", "punav2-e3neyc8qd-mfrats-projects.vercel.app", "puna-tech.com", "localhost", "127.0.0.1", "", "www.puna-tech.com.evil.test"]) {
+    assert.deepEqual(planAnalytics({ hostname, userAgent: CHROME }), { loadGtag: false, loadClarity: false, internal: true, reason: "hostname" }, hostname);
+  }
+});
+
+test("plan: on the prod host a normal visitor loads gtag unflagged; each automation rule loads it flagged", () => {
+  assert.deepEqual(planAnalytics({ hostname: PROD, userAgent: CHROME }), { loadGtag: true, loadClarity: true, internal: false, reason: null });
+  assert.deepEqual(planAnalytics({ hostname: PROD, userAgent: CHROME, webdriver: true }), { loadGtag: true, loadClarity: false, internal: true, reason: "webdriver" });
+  assert.deepEqual(planAnalytics({ hostname: PROD, userAgent: `${CHROME} HeadlessChrome/130` }), { loadGtag: true, loadClarity: false, internal: true, reason: "user_agent" });
+  assert.deepEqual(planAnalytics({ hostname: PROD, userAgent: `${CHROME} Chrome-Lighthouse` }), { loadGtag: true, loadClarity: false, internal: true, reason: "user_agent" });
+  assert.deepEqual(planAnalytics({ hostname: PROD, userAgent: CHROME, search: "?internal=1", storage: memory() }), { loadGtag: true, loadClarity: false, internal: true, reason: "query_flag" });
+});
+
+// ---- tracking.ts end to end against a fake window: what gtag receives, and in which order ----
+
+function loadTracking() {
+  const dir = mkdtempSync(join(tmpdir(), "puna-tracking-"));
+  const outfile = join(dir, "tracking.mjs");
+  buildSync({ entryPoints: ["src/components/tracking.ts"], bundle: true, format: "esm", platform: "neutral", outfile, logLevel: "silent" });
+  return { url: pathToFileURL(outfile).href, cleanup: () => rmSync(dir, { recursive: true, force: true }) };
+}
+
+let bundleSeq = 0;
+async function runPage({ hostname = PROD, userAgent = CHROME, webdriver = false, search = "", pathname = "/es/", storage = memory(), earlyEvent = false }) {
+  const { url, cleanup } = loadTracking();
+  const calls = [];
+  globalThis.window = { location: { hostname, pathname, search }, localStorage: storage, dataLayer: [] };
+  Object.defineProperty(globalThis, "navigator", { value: { userAgent, webdriver }, configurable: true, writable: true });
+  window.gtag = (...args) => calls.push(args);
+  try {
+    const mod = await import(`${url}?v=${bundleSeq++}`);
+    if (earlyEvent) mod.trackEvent("cta_view", { place: "hero" });
+    const act = mod.activateAnalytics();
+    mod.trackEvent("tool_use", { tool: "x" });
+    // what is left on window for Clarity: a stub (script may load and drain it) or nothing (it must never load)
+    const clarityStub = typeof window.clarity === "function";
+    const clarityQueued = window.clarity?.q?.length ?? 0;
+    return { loadScript: act.gtag, loadClarity: act.clarity, clarityStub, clarityQueued, calls, GA: mod.GA_MEASUREMENT_ID };
+  } finally {
+    cleanup();
+    delete globalThis.window;
+    delete globalThis.navigator;
+  }
+}
+const configs = (calls) => calls.filter((c) => c[0] === "config");
+
+test("tracking: off the prod host nothing reaches gtag (no js, no config, no events, queued events dropped)", async () => {
+  for (const hostname of ["punav2-git-feat-x-mfrats-projects.vercel.app", "localhost", "puna-tech.com"]) {
+    const r = await runPage({ hostname, earlyEvent: true });
+    assert.equal(r.loadScript, false, hostname);
+    assert.deepEqual(r.calls, [], hostname);
+  }
+});
+
+test("tracking: a normal visitor on prod gets a plain config with no traffic_type, and queued events flush after it", async () => {
+  const r = await runPage({ earlyEvent: true });
+  assert.equal(r.loadScript, true);
+  assert.deepEqual(configs(r.calls), [["config", r.GA]]);
+  assert.deepEqual(r.calls.map((c) => c[0]), ["js", "config", "event", "event"]);
+});
+
+test("tracking: webdriver, HeadlessChrome, Lighthouse and ?internal=1 put traffic_type=internal on the config call, before any event", async () => {
+  const cases = {
+    webdriver: { webdriver: true },
+    headless: { userAgent: `${CHROME} HeadlessChrome/130` },
+    lighthouse: { userAgent: `${CHROME} Chrome-Lighthouse` },
+    query: { search: "?internal=1" },
+    stored: { storage: memory({ [INTERNAL_STORAGE_KEY]: "1" }) },
+  };
+  for (const [name, input] of Object.entries(cases)) {
+    const r = await runPage({ earlyEvent: true, ...input });
+    assert.equal(r.loadScript, true, name);
+    assert.deepEqual(configs(r.calls), [["config", r.GA, { traffic_type: "internal" }]], name);
+    assert.equal(r.calls.findIndex((c) => c[0] === "config") < r.calls.findIndex((c) => c[0] === "event"), true, name);
+  }
+});
+
+test("tracking: no manual page_view is ever sent (Enhanced Measurement owns SPA page_views)", async () => {
+  const r = await runPage({ earlyEvent: true });
+  assert.equal(r.calls.some((c) => c[0] === "event" && c[1] === "page_view"), false);
+});
+
+// ---- Clarity: same gate, and never loaded for internal sessions ----
+// Decision: Clarity can only tag a session (clarity("set", key, value)); excluding tagged sessions needs an exclusion filter
+// created in the Clarity dashboard, and IP blocking is IPv4 only. Docs: learn.microsoft.com/en-us/clarity/setup-and-installation/clarity-api,
+// /clarity/filters/exclusion-filters and /clarity/setup-and-installation/ip-exclusion. So internal sessions do not load Clarity at all.
+
+test("plan: Clarity loads only for a normal visitor on www.puna-tech.com", () => {
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: CHROME }).loadClarity, true);
+  for (const hostname of ["punav2-git-feat-x-mfrats-projects.vercel.app", "puna-tech.com", "localhost", "127.0.0.1", "", "www.puna-tech.com.evil.test"]) {
+    assert.equal(planAnalytics({ hostname, userAgent: CHROME }).loadClarity, false, hostname);
+  }
+});
+
+test("plan: every internal rule keeps Clarity out on the prod host", () => {
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: CHROME, webdriver: true }).loadClarity, false);
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: `${CHROME} HeadlessChrome/130` }).loadClarity, false);
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: `${CHROME} Chrome-Lighthouse` }).loadClarity, false);
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: CHROME, search: "?internal=1", storage: memory() }).loadClarity, false);
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: CHROME, storage: memory({ [INTERNAL_STORAGE_KEY]: "1" }) }).loadClarity, false);
+  assert.equal(planAnalytics({ hostname: PROD, userAgent: CHROME, search: "?internal=0", storage: memory({ [INTERNAL_STORAGE_KEY]: "1" }) }).loadClarity, true);
+});
+
+test("tracking: prod normal visitor loads Clarity and its events reach the stub", async () => {
+  const r = await runPage({ earlyEvent: true });
+  assert.equal(r.loadClarity, true);
+  assert.equal(r.clarityStub, true);
+  assert.equal(r.clarityQueued, 2); // the early event and the later one
+});
+
+test("tracking: previews, localhost and the apex never load Clarity and leave no stub behind", async () => {
+  for (const hostname of ["punav2-git-feat-x-mfrats-projects.vercel.app", "localhost", "puna-tech.com"]) {
+    const r = await runPage({ hostname, earlyEvent: true });
+    assert.equal(r.loadClarity, false, hostname);
+    assert.equal(r.clarityStub, false, hostname);
+  }
+});
+
+test("tracking: webdriver, HeadlessChrome, Lighthouse, ?internal=1 and the stored flag never load Clarity (gtag still loads, flagged)", async () => {
+  const cases = {
+    webdriver: { webdriver: true },
+    headless: { userAgent: `${CHROME} HeadlessChrome/130` },
+    lighthouse: { userAgent: `${CHROME} Chrome-Lighthouse` },
+    query: { search: "?internal=1" },
+    stored: { storage: memory({ [INTERNAL_STORAGE_KEY]: "1" }) },
+  };
+  for (const [name, input] of Object.entries(cases)) {
+    const r = await runPage({ earlyEvent: true, ...input });
+    assert.equal(r.loadClarity, false, name);
+    assert.equal(r.clarityStub, false, name);
+    assert.equal(r.loadScript, true, name);
+  }
+});
+
+test("tracking: ?internal=0 on the prod host brings Clarity back", async () => {
+  const r = await runPage({ search: "?internal=0", storage: memory({ [INTERNAL_STORAGE_KEY]: "1" }) });
+  assert.equal(r.loadClarity, true);
+});
+
 let failed = 0;
 for (const [name, fn] of tests) {
-  try { fn(); console.log(`ok - ${name}`); }
+  try { await fn(); console.log(`ok - ${name}`); }
   catch (error) { failed += 1; console.error(`not ok - ${name}\n${error.stack}`); }
 }
 console.log(`\n${tests.length - failed}/${tests.length} measurement tests passed`);
