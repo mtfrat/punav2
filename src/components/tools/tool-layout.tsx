@@ -5,10 +5,13 @@ import { DemoHeading } from "../demos/shared";
 import { toolDefinitions, toolPath, TOOLS_BASE, type ToolDefinition } from "../../content/tools";
 import { trackEvent } from "../tracking";
 import { Accordion } from "../marketing";
+import { DemoCtaBand } from "../demo-cta-band";
+import { demoCtaFor } from "../../content/demo-ctas";
 
 /** Shared page frame for a tool: hero, calculator slot, how it works, sources, FAQ, soft CTA. Server-rendered. */
 export default function ToolPage({ tool, children }: { tool: ToolDefinition; children: ReactNode }) {
   const others = toolDefinitions.filter((t) => t.slug !== tool.slug);
+  const demoCta = demoCtaFor(toolPath(tool.slug));
   return (
     <main id="main-content" className="dm tl">
       <section className="dm-hero tl-hero">
@@ -27,6 +30,18 @@ export default function ToolPage({ tool, children }: { tool: ToolDefinition; chi
             <span className="dm-badge">Gratis y sin registro</span>
             <span className="tl-hero-note">Los datos que cargás no salen de tu navegador.</span>
           </p>
+          {demoCta ? (
+            <p className="tl-hero-demo">
+              <Link
+                className="demo-cta-band-second"
+                to={demoCta.href}
+                onClick={() => trackEvent("cta_click", { locale: "es", placement: "demo_cta_hero_link", destination: demoCta.href, source_page: toolPath(tool.slug) })}
+              >
+                {demoCta.label}
+                <ArrowRight aria-hidden="true" size={15} />
+              </Link>
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -53,6 +68,8 @@ export default function ToolPage({ tool, children }: { tool: ToolDefinition; chi
           ))}
         </div>
       </section>
+
+      {demoCta ? <DemoCtaBand cta={demoCta} page={toolPath(tool.slug)} position="top" labelledBy="demo-cta-top-heading" /> : null}
 
       <section className="dm-section dm-section-tight tl-sources" aria-labelledby="tl-sources-heading">
         <div className="shell tl-narrow">

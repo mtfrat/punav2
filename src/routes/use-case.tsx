@@ -2,9 +2,12 @@ import { useEffect } from "react";
 import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { isRouteErrorResponse, Link } from "react-router";
 import { ArrowRight, CheckCircle2, Compass } from "lucide-react";
+import { BookingChoice } from "../components/booking-choice";
+import { DemoCtaBand } from "../components/demo-cta-band";
 import { Accordion, CalButton, PageShell, trackEvent } from "../components/marketing";
 import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { RichText } from "../components/rich-text";
+import { demoCtaFor } from "../content/demo-ctas";
 import { contactPath, copy, servicesHubPath, SITE_URL } from "../content/site";
 import { getUseCaseByPath, getUseCaseHubBySection, USE_CASE_OFFER, USE_CASE_STEPS, useCases } from "../content/use-cases";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
@@ -99,6 +102,7 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
   const hasSources = Boolean(useCase.sources?.length || useCase.disclaimer);
   const sourcesTone = hasSources ? nextTone() : "";
   useEffect(() => trackEvent("use_case_view", { locale: "es", use_case: useCase.key }), [useCase.key]);
+  const demoCta = demoCtaFor(useCase.path);
 
   return (
     <PageShell locale="es">
@@ -121,6 +125,8 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
             </div>
           </div>
         </section>
+
+        {demoCta ? <DemoCtaBand cta={demoCta} page={useCase.path} position="top" labelledBy="demo-cta-top-heading" /> : null}
 
         {useCase.sections?.length ? (
           <section className={sectionsTone} aria-label="Contenido de la página">
@@ -303,17 +309,16 @@ export default function UseCasePage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
-        <section className="detail-cta dark-section">
+        {demoCta ? <DemoCtaBand cta={demoCta} page={useCase.path} position="end" labelledBy="demo-cta-end-heading" /> : null}
+
+        <section className="detail-cta detail-cta-booking dark-section">
           <div className="shell">
             <div>
               <p className="eyebrow eyebrow-dark">Una primera conversación útil</p>
               <h2>En 15 minutos vemos si tu proceso entra en 2 semanas.</h2>
               <p className="detail-cta-body">Contanos cómo lo hacen hoy. Si no conviene automatizarlo, también te lo decimos.</p>
             </div>
-            <div className="cta-group detail-cta-actions">
-              <CalButton locale="es" placement={`use_case_${useCase.key}_final`} label={t.book} className="button-primary-terracotta" />
-              <ContactLink placement={`use_case_${useCase.key}_final`} light />
-            </div>
+            <BookingChoice locale="es" placement={`use_case_${useCase.key}_final`} />
           </div>
         </section>
       </main>

@@ -1397,3 +1397,58 @@ h3 { font-size: clamp(1.45rem, 2.2vw, 2.25rem); }
 .rubro-link-list svg { grid-column: 2; grid-row: 1 / span 2; color: var(--terracotta); }
 .use-case-disclaimer { max-width: 52rem; margin: 0; padding-left: 1rem; border-left: 3px solid var(--terracotta); color: var(--ink-soft); font-size: 0.95rem; line-height: 1.55; }
 .commercial-expand-stack .use-case-list a { overflow-wrap: anywhere; }
+
+/* Booking choice: inline Cal.com calendar + email-only quick lead box (components/booking-choice.tsx) */
+.booking-choice { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: clamp(1rem, 2.5vw, 1.75rem); align-items: start; width: 100%; }
+.booking-card { padding: clamp(1.25rem, 3vw, 2rem); border: 1px solid #756254; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-strong, 0 18px 50px rgba(24, 20, 16, 0.14)); text-align: left; }
+.booking-card .eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem; color: var(--burgundy); }
+.booking-card h3 { margin: 0 0 0.4rem; font-size: clamp(1.35rem, 2.4vw, 1.75rem); color: var(--ink); }
+.booking-card > p:not(.eyebrow) { margin: 0 0 1rem; color: var(--ink-soft); max-width: 46ch; }
+.booking-cal { display: grid; gap: 0.75rem; }
+.booking-cal-button { justify-self: start; display: inline-flex; align-items: center; gap: 0.55rem; cursor: pointer; }
+.booking-cal-frame { position: relative; width: 100%; height: 640px; border: 1px solid var(--line); background: #fff; overflow: hidden; }
+.booking-cal-loading { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--ink-soft); font-weight: 650; }
+.booking-cal-failed { margin: 0; color: var(--error); font-weight: 700; }
+.booking-newtab { justify-self: start; color: var(--burgundy); font-size: 0.88rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.quick-lead-form { margin-top: 0.25rem; }
+.quick-lead-form .form-error a { color: inherit; text-decoration: underline; }
+.quick-lead-privacy { margin: 0; color: var(--ink-soft); font-size: 0.8rem; }
+.quick-lead-privacy a { color: var(--burgundy); text-decoration: underline; text-underline-offset: 3px; }
+.booking-card .button-submit:disabled { opacity: 0.6; cursor: wait; }
+.detail-cta-booking .shell { grid-template-columns: 1fr; align-items: start; gap: 2rem; }
+.detail-cta-booking .booking-choice { margin-top: 0.5rem; }
+.contact-booking { padding: clamp(2.5rem, 6vw, 4.5rem) 0; background: var(--paper); border-bottom: 1px solid var(--line); }
+.contact-booking-head { max-width: 46rem; margin-bottom: 1.75rem; }
+.contact-booking-head h2 { margin: 0 0 0.5rem; }
+.contact-booking-head p { margin: 0; color: var(--ink-soft); }
+@media (max-width: 799px) {
+  .booking-choice { grid-template-columns: minmax(0, 1fr); }
+  /* On a phone the low-friction option comes first: the calendar is tall and loads only on request. */
+  .booking-card-quick { order: -1; }
+  .booking-cal-frame { height: 720px; }
+  .booking-cal-button { justify-self: stretch; justify-content: center; }
+}
+
+/* Demo CTA band (components/demo-cta-band.tsx) */
+.demo-cta-band { padding: clamp(1.25rem, 3vw, 2rem) 0; background: var(--paper-deep); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.demo-cta-band-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.25rem 2rem; }
+.demo-cta-band-copy { flex: 1 1 28rem; min-width: 0; }
+.demo-cta-band-copy .eyebrow { margin: 0 0 0.35rem; color: var(--burgundy); }
+.demo-cta-band-copy h2 { margin: 0 0 0.4rem; font-size: clamp(1.25rem, 2.4vw, 1.7rem); color: var(--ink); }
+.demo-cta-band-copy p:not(.eyebrow) { margin: 0; max-width: 62ch; color: var(--ink-soft); }
+.demo-cta-band-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.demo-cta-band-actions .button-primary { display: inline-flex; align-items: center; gap: 0.5rem; }
+.demo-cta-band-second { color: var(--burgundy); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 560px) {
+  .demo-cta-band-actions .button-primary { width: 100%; justify-content: center; }
+}
+
+/* Hero link on the (dark) tool pages: light text, arrow stays on the same line. */
+.tl-hero-demo { margin: 14px 0 0; }
+.tl-hero-demo .demo-cta-band-second { display: inline-flex; align-items: center; gap: 6px; color: #fff; text-decoration-color: var(--terracotta, #c4522a); white-space: normal; }
+.tl-hero-demo .demo-cta-band-second svg { flex: none; }
+
+/* ops: quick leads section */
+.ops-tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: #f3e4d8; color: #8a3a16; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; vertical-align: 2px; }
+.ops-muted { color: #6b6258; margin: 8px 0; }
+.ops-count { font-size: 0.8rem; font-weight: 400; color: #6b6258; }

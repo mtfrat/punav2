@@ -10,7 +10,7 @@
     "lint": "tsc --noEmit",
     "test:workflows": "node scripts/validate-n8n-workflows.mjs",
     "test:seo": "node scripts/verify-build-seo.mjs",
-    "test:safety": "node --experimental-strip-types scripts/verify-content-safety.mjs",
+    "test:safety": "node --experimental-strip-types scripts/verify-content-safety.mjs && node --experimental-strip-types scripts/test-quick-lead.mjs",
     "test:content-worker": "node --experimental-strip-types scripts/test-content-worker-client.mjs",
     "test:social-studio": "node --experimental-strip-types scripts/test-social-studio.mjs",
     "test:art-variety": "node --experimental-strip-types scripts/test-art-variety.mjs",

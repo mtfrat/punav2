@@ -18,7 +18,7 @@ export const LEAD_LIMITS = {
 } as const;
 
 const budgetRanges = new Set(["usd_3_10", "usd_10_25", "usd_25_50", "usd_50_plus", "not_sure"]);
-const EMAIL_PATTERN = /^[^\s@<>()",;:\\[\]]+@[^\s@<>()",;:\\[\]]+\.[^\s@<>()",;:\\[\]]+$/;
+export const EMAIL_PATTERN = /^[^\s@<>()",;:\\[\]]+@[^\s@<>()",;:\\[\]]+\.[^\s@<>()",;:\\[\]]+$/;
 const LINK_PATTERN = /\b(?:https?:\/\/|www\.)[^\s<>"']+/gi;
 
 export interface LeadFields {

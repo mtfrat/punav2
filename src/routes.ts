@@ -45,6 +45,7 @@ export default [
   route("llms-full.txt", "./routes/llms-full.ts"),
   route("puna.md", "./routes/puna-md.ts"),
   route("api/lead", "./routes/api-lead.ts"),
+  route("api/lead-rapido", "./routes/api-quick-lead.ts"),
   route("api/chat", "./routes/api-chat.ts"),
   route("api/webhooks/cloudinary/reel-render", "./routes/api-cloudinary-reel-webhook.ts"),
   route("api/telegram-webhook", "./routes/api-telegram-webhook.ts"),

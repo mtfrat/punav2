@@ -2,8 +2,9 @@ import type { LoaderFunctionArgs, MetaFunction } from "react-router";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ArrowRight, Mail, MessageCircle } from "lucide-react";
-import { CalButton, PageShell, ProjectBrief, trackEvent } from "../components/marketing";
-import { CONTACT_EMAIL, CONTACT_WHATSAPP, contactPath, copy, SITE_URL, type Locale } from "../content/site";
+import { BookingChoice } from "../components/booking-choice";
+import { PageShell, ProjectBrief, trackEvent } from "../components/marketing";
+import { CONTACT_EMAIL, CONTACT_WHATSAPP, contactPath, SITE_URL, type Locale } from "../content/site";
 import { useCases } from "../content/use-cases";
 import { breadcrumbSchema, createMeta } from "../lib/seo";
 
@@ -20,8 +21,8 @@ const contactCopy = {
     eyebrow: "Contact",
     h1: "Tell us which process is slowing you down.",
     lead: "Pick the route that suits you. A person reads every message and replies with the next useful question, not an automated sales sequence.",
-    callTitle: "15-minute call",
-    callBody: "We map the bottleneck and tell you whether it is worth automating, and what to do first.",
+    bookingTitle: "Book a call or leave your email",
+    bookingBody: "Pick a 15-minute slot right here, or leave your email and we write to you. We map the bottleneck and tell you whether it is worth automating, and what to do first.",
     emailTitle: "Email",
     emailBody: "Prefer your own email client? Write to us directly.",
     whatsappTitle: "WhatsApp",
@@ -36,8 +37,8 @@ const contactCopy = {
     eyebrow: "Contacto",
     h1: "Contanos qué proceso te está frenando.",
     lead: "Elegí la vía que te quede más cómoda. Cada mensaje lo lee una persona y te respondemos con la siguiente pregunta útil, no con una secuencia automática de ventas.",
-    callTitle: "Llamada de 15 minutos",
-    callBody: "Mapeamos el cuello de botella y te decimos si conviene automatizarlo y por dónde empezar.",
+    bookingTitle: "Agendá una llamada o dejanos tu mail",
+    bookingBody: "Elegí un horario de 15 minutos acá mismo, o dejanos tu mail y te escribimos nosotros. Mapeamos el cuello de botella y te decimos si conviene automatizarlo y por dónde empezar.",
     emailTitle: "Email",
     emailBody: "¿Preferís tu propio mail? Escribinos directo.",
     whatsappTitle: "WhatsApp",
@@ -78,7 +79,6 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 export default function ContactPage({ loaderData }: { loaderData: Awaited<ReturnType<typeof loader>> }) {
   const { locale } = loaderData;
   const c = contactCopy[locale];
-  const t = copy[locale];
   // A link such as /es/contacto?bloque=demos-contables keeps the block that sent the visitor here, so the lead alert can name it.
   // Set after hydration so the prerendered HTML and the first client render match.
   const [searchParams] = useSearchParams();
@@ -98,19 +98,21 @@ export default function ContactPage({ loaderData }: { loaderData: Awaited<Return
           </div>
         </section>
 
+        <section className="contact-booking" id="agenda" aria-labelledby="contact-booking-heading">
+          <div className="shell">
+            <div className="contact-booking-head">
+              <h2 id="contact-booking-heading">{c.bookingTitle}</h2>
+              <p>{c.bookingBody}</p>
+            </div>
+            <BookingChoice locale={locale} placement={placement} eager />
+          </div>
+        </section>
+
         <section className="section final-section" id="brief">
           <div className="shell final-grid">
             <div className="final-copy contact-routes">
               <div className="contact-route">
                 <p className="eyebrow eyebrow-dark">01</p>
-                <h2>{c.callTitle}</h2>
-                <p>{c.callBody}</p>
-                <div className="cta-group">
-                  <CalButton locale={locale} placement="contact_page" label={t.book} className="button-primary-terracotta" />
-                </div>
-              </div>
-              <div className="contact-route">
-                <p className="eyebrow eyebrow-dark">02</p>
                 <h2>{c.emailTitle}</h2>
                 <p>{c.emailBody}</p>
                 <a
@@ -125,7 +127,7 @@ export default function ContactPage({ loaderData }: { loaderData: Awaited<Return
               {/* WhatsApp / phone: shown only when CONTACT_WHATSAPP is set in src/content/site.ts. */}
               {CONTACT_WHATSAPP ? (
                 <div className="contact-route">
-                  <p className="eyebrow eyebrow-dark">03</p>
+                  <p className="eyebrow eyebrow-dark">02</p>
                   <h2>{c.whatsappTitle}</h2>
                   <a
                     className="button-ghost-burgundy button-ghost-burgundy-light"
