@@ -330,6 +330,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "Cuándo conviene (y cuándo no)",
     "Integración con lo que ya usás",
     "Qué recibís: código, documentación y soporte",
+    "Ejemplos de software a medida que podés probar",
   ]) {
     if (!html.includes(`<h2>${heading}</h2>`)) failures.push(`${route}: missing section ${heading}`);
   }
@@ -369,7 +370,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   }
   const faq = nodes.find((node) => node["@type"] === "FAQPage");
   const questions = (faq?.mainEntity || []).map((item) => item.name);
-  if (questions.length < 9 || questions.length > 10) failures.push(`${route}: FAQPage should have 9 or 10 questions, found ${questions.length}`);
+  if (questions.length !== 11) failures.push(`${route}: FAQPage should have 11 questions, found ${questions.length}`);
   for (const question of [
     "¿Qué es el desarrollo de software a medida?",
     "¿Cómo es el proceso: diagnóstico, MVP e iteraciones?",
@@ -381,6 +382,7 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
     "¿Conviene software a medida o alcanza con n8n, Zapier o una planilla?",
     "¿Puedo empezar por un solo módulo?",
     "¿Trabajan con pymes en Argentina?",
+    "¿Tienen ejemplos de software a medida que pueda ver?",
   ]) {
     if (!questions.includes(question)) failures.push(`${route}: FAQPage missing ${question}`);
     if (!html.includes(question)) failures.push(`${route}: visible FAQ missing ${question}`);
@@ -412,6 +414,12 @@ for (const [route, href] of [["/es", "/es/servicios/automatizacion-ia"]]) {
   }
   const words = (html.match(/<main[\s\S]*?<\/main>/) || [""])[0].replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length;
   if (words < 2300) failures.push(`${route}: page copy too thin (${words} words)`);
+  // 02/11: ejemplos que se pueden probar (demos con datos ficticios), sin presentarlos como clientes.
+  for (const href of ["/es/demos", "/es/demos/sync-stock", "/es/demos/cotizador-mayorista", "/es/demos/panel-comercio", "/es/demos/cobranzas", "/es/demos/horas-y-pagos", "/es/demos/para/estudios-contables", "/es/demos/para/estudios-juridicos", "/es/demos/para/productores-de-seguros", "/es/demos/para/inmobiliarias", "/es/demos/para/clinicas-y-consultorios"]) {
+    if (!html.includes(`href="${href}"`)) failures.push(`${route}: examples section missing demo link ${href}`);
+  }
+  if (!html.includes("con datos ficticios") || !html.includes("No son clientes nuestros")) failures.push(`${route}: demos not labeled as fictional / not clients`);
+  if (!html.includes("programas a medida")) failures.push(`${route}: missing phrase programas a medida`);
   const english = await readFile(join(root, "services/custom-software/index.html"), "utf8");
   for (const [page, label] of [[html, route], [english, "/services/custom-software"]]) {
     for (const [lang, href] of [["es-AR", "https://www.puna-tech.com/es/servicios/software-a-medida"], ["en", "https://www.puna-tech.com/services/custom-software"], ["x-default", "https://www.puna-tech.com/services/custom-software"]]) {
@@ -1424,9 +1432,9 @@ else {
     if (locs.length < 20) failures.push(`sitemap.xml: expected the public page set, found ${locs.length} URLs`);
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/servicios/software-a-medida</loc>")) || "";
-      if (!block.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-10-20");
+      if (!block.includes("<lastmod>2026-11-02</lastmod>")) failures.push("sitemap.xml: /es/servicios/software-a-medida lastmod is not 2026-11-02");
       const english = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/services/custom-software</loc>")) || "";
-      if (english.includes("<lastmod>2026-10-20</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod moved without an English copy change");
+      if (english.includes("<lastmod>2026-10-20</lastmod>") || english.includes("<lastmod>2026-11-02</lastmod>")) failures.push("sitemap.xml: /services/custom-software lastmod moved without an English copy change");
     }
     {
       const block = sitemap.html.split("<url>").find((part) => part.includes("https://www.puna-tech.com/es/automatizaciones/carga-de-facturas-proveedores</loc>")) || "";
