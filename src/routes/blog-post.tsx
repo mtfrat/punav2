@@ -9,7 +9,7 @@ import { PublicNotFoundBoundary } from "../components/not-found-page";
 import { localeFromPathname, notFoundDocumentMeta } from "../lib/not-found";
 import { blogDocumentTitle, breadcrumbSchema, createMeta, faqPageSchema } from "../lib/seo";
 import { extractFaq } from "../lib/blog-faq";
-import { articleAuthorSchema } from "../lib/author";
+import { articleAuthorSchema } from "../lib/author.ts";
 import { DemosByIndustryList } from "../components/demos-strip";
 
 export { PublicNotFoundBoundary as ErrorBoundary };

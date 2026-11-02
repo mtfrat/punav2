@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import sanitizeHtml from "sanitize-html";
 import type { Locale } from "../content/site";
-import { DEFAULT_AUTHOR, publicPersonName } from "./author";
+import { DEFAULT_AUTHOR, publicPersonName } from "./author.ts";
 
 export interface PublishedPost {
   id: string;
