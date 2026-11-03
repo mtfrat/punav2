@@ -252,7 +252,7 @@ export const useCases: UseCaseContent[] = [
     title: "Conciliación de pagos con Mercado Pago y tu sistema",
     lead: "Cobrás por Mercado Pago, pero tu sistema no se entera. La conciliación de pagos asocia cada cobro a su factura o pedido, con comisiones y retenciones registradas y las diferencias marcadas.",
     metaTitle: "Conciliación de pagos con Mercado Pago | Puna Tech",
-    metaDescription: "Conciliación de pagos con Mercado Pago: cada cobro queda asociado a su factura, con comisiones y retenciones, y las diferencias marcadas.",
+    metaDescription: "Conciliación de pagos con Mercado Pago, paso a paso: qué es, cómo asociar cada cobro a su factura con comisiones y retenciones, y marcar las diferencias.",
     serviceType: "Integración de Mercado Pago y conciliación de pagos",
     ogImage: "/og/integracion-mercado-pago.png",
     ogImageAlt: "Puna Tech: conciliación de pagos con Mercado Pago y tu sistema.",
