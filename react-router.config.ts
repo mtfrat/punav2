@@ -56,6 +56,9 @@ const marketingRoutes = [
   "/demos",
   "/es/demos",
   ...demoDefinitions.flatMap((demo) => [`/demos/${demo.slug.en}`, `/es/demos/${demo.slug.es}`]),
+  // Outreach demos (noindex, not in the sitemap): prerendered like the rest of /es/demos.
+  "/es/demos/rescate-ia",
+  "/es/demos/liquid-software",
   ...rubroDefinitions.flatMap((rubro) => [`/demos/for/${rubro.slug.en}`, `/es/demos/para/${rubro.slug.es}`]),
   TOOLS_BASE,
   ...toolDefinitions.map((tool) => toolPath(tool.slug)),

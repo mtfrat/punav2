@@ -34,6 +34,9 @@ export default [
   route("es/demos", "./routes/demos-hub.tsx", { id: "demos-hub-es" }),
   route("demos/for/:rubro", "./routes/demo-rubro.tsx", { id: "demo-rubro-en" }),
   route("es/demos/para/:rubro", "./routes/demo-rubro.tsx", { id: "demo-rubro-es" }),
+  // Spanish-only outreach demos: noindex, not in the sitemap/hub. Static routes outrank the :slug pattern below.
+  route("es/demos/rescate-ia", "./routes/demo-rescate-ia.tsx", { id: "demo-rescate-ia-es" }),
+  route("es/demos/liquid-software", "./routes/demo-liquid-software.tsx", { id: "demo-liquid-software-es" }),
   route("demos/:slug", "./routes/demo-detail.tsx", { id: "demo-detail-en" }),
   route("es/demos/:slug", "./routes/demo-detail.tsx", { id: "demo-detail-es" }),
   route("demos/roi", "./routes/demo-roi.tsx", { id: "demo-roi-en" }),
