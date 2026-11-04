@@ -6,6 +6,7 @@ Fonts: Anton (OFL) for headlines, Atkinson Hyperlegible for small text.
 Override locations with ANTON_TTF / BODY_TTF env vars.
 """
 import os
+import sys
 from PIL import Image, ImageDraw, ImageFont
 
 ANTON = os.environ.get("ANTON_TTF", "/workspace/fonts/Anton-Regular.ttf")
@@ -22,6 +23,9 @@ DEMOS = {
     "lead-scoring": {"es": ("Leads calificados con IA", "Puntaje con reglas que podés leer"), "en": ("AI lead qualification", "A score with rules you can read")},
     "wholesale-quotes": {"es": ("Cotizador mayorista", "Escalas por volumen y WhatsApp"), "en": ("Wholesale quote builder", "Volume tiers and WhatsApp")},
     "store-dashboard": {"es": ("Panel para tu comercio", "Ventas, stock y caja en una pantalla"), "en": ("Store dashboard", "Sales, stock and cash on one screen")},
+    # Spanish-only outreach demos (noindex, not in the hub): generate with `python3 scripts/generate-demo-og.py rescate-ia liquid-software`
+    "rescate-ia": {"es": ("El vibe coding rompe proyectos", "Revisamos y estabilizamos tu app hecha con IA"), "en": ("Rescue for AI-built apps", "We review and stabilize your app")},
+    "liquid-software": {"es": ("Tu panel a medida que cambia con vos", "Pedís una mejora, aprobás, se publica"), "en": ("A custom panel that changes with you", "You ask, you approve, it ships")},
     "convenio-multilateral": {"es": ("Convenio Multilateral / DDJJ SIFERE", "Video de 34 segundos para estudios contables"), "en": ("Multilateral Agreement / SIFERE", "34-second video for accounting firms")},
     "client-invoices": {"es": ("Facturas de tus clientes a planilla", "CUIT, CAE, duplicados y percepciones"), "en": ("Client invoices to a spreadsheet", "Tax ID, CAE, duplicates and withholdings")},
     "monthly-docs": {"es": ("Documentación del mes", "Checklist por cliente y recordatorios"), "en": ("Monthly client documents", "A checklist per client and reminders")},
@@ -68,7 +72,7 @@ def render(key, loc):
     y = 140
     for line in lines:
         w = d.textlength(line, font=f_title)
-        d.rectangle([80 - 6, y + 8, 80 + w + 10, y + size * 1.05], fill=ORANGE) if line is lines[-1] else None
+        d.rectangle([80 - 6, y + 8, 80 + w + 10, y + size * 1.22], fill=ORANGE) if line is lines[-1] else None
         d.text((80, y), line, font=f_title, fill=INK if line is lines[-1] else CREAM)
         y += size * 1.08
     d.text((80, H - 190), sub, font=ImageFont.truetype(BODY, 36), fill=CREAM)
@@ -82,8 +86,11 @@ def render(key, loc):
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    only = sys.argv[1:]
     for key in DEMOS:
-        for loc in ("es", "en"):
+        if only and key not in only:
+            continue
+        for loc in (("es",) if key in ("rescate-ia", "liquid-software") else ("es", "en")):
             path = os.path.join(OUT, f"demos-{key}-{loc}.png")
             render(key, loc).save(path, optimize=True)
             print(path)
