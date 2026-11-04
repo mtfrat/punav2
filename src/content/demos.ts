@@ -189,7 +189,7 @@ export const demoDefinitions: DemoDefinition[] = [
     id: "wholesale-quotes",
     verticals: ["commerce"],
     slug: { es: "cotizador-mayorista", en: "wholesale-quotes" },
-    related: { label: "Pedidos por WhatsApp", path: "/es/automatizaciones/pedidos-por-whatsapp" },
+    related: { label: "Sistema de pedidos por WhatsApp", path: "/es/automatizaciones/pedidos-por-whatsapp" },
     copy: {
       es: {
         title: "Cotizador y pedidos mayorista",
