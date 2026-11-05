@@ -861,6 +861,7 @@ const useCaseHubExpectations = [
     "/es/automatizaciones/cartera-de-polizas-y-renovaciones",
     "/es/automatizaciones/matricula-productor-asesor-de-seguros",
     "/es/automatizaciones/control-de-facturacion-monotributistas",
+    "/es/automatizaciones/agentes-ia-con-aprobacion-humana",
   ]],
   ["/es/integraciones", "Integrar Mercado Libre y Tienda Nube con tu ERP | Puna Tech", "Integrar Mercado Libre, Tienda Nube y Mercado Pago con tu sistema de gestión", [
     "/es/integraciones/mercado-pago",

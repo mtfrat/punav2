@@ -898,3 +898,106 @@ rubroUseCases.push({
   relatedService: AUTOMATION,
   relatedPosts: [BLOG.conc],
 });
+
+/* ───────────────────────── 8. Agentes IA con aprobación humana (directiva CEO 03/11) ───────────────────────── */
+const UPDATED_AT_1105 = "2026-11-05";
+rubroUseCases.push({
+  key: "agentes-ia-aprobacion-humana",
+  path: "/es/automatizaciones/agentes-ia-con-aprobacion-humana",
+  updatedAt: UPDATED_AT_1105,
+  section: "automatizaciones",
+  eyebrow: "Pymes · Agentes de IA",
+  title: "Un equipo de agentes de IA para tu pyme, que no hace nada sin tu aprobación",
+  lead: "Agentes con nombre y tarea (uno contesta consultas, otro prepara cobranzas, otro arma reportes) que trabajan solos pero frenan antes de cualquier acción que importa: mandar un mail, tocar una planilla, cobrar. Vos aprobás o rechazás desde el celular. Mirá cómo se ve en la [demo de cobranzas](/es/demos/cobranzas).",
+  metaTitle: "Agentes de IA con aprobación humana para pymes | Puna Tech",
+  metaDescription: "Un equipo de agentes de IA para tu pyme que prepara el trabajo y espera tu OK antes de mandar, cobrar o modificar algo. Open source o a medida.",
+  serviceType: "Equipo de agentes de IA con aprobación humana",
+  ogImage: "/og/automatizaciones-agentes-ia-con-aprobacion-humana.png",
+  ogImageAlt: "Puna Tech: equipo de agentes de IA para pymes con aprobación humana antes de cada acción.",
+  cardTitle: "Agentes de IA con aprobación humana",
+  cardBlurb: "Agentes que preparan el trabajo y esperan tu OK antes de mandar, cobrar o modificar algo.",
+  example: "Por ejemplo, una distribuidora con tres personas en administración: un agente lee los pedidos que entran por WhatsApp y mail, otro arma los recordatorios de facturas vencidas y un tercero prepara el resumen del día. Nada sale sin que alguien lo apruebe.",
+  before: [
+    "Probaste un chatbot y no te animás a dejarlo responder solo.",
+    "Las tareas repetitivas se reparten entre personas que ya están saturadas.",
+    "No sabés qué hizo la IA ni por qué: no queda registro.",
+    "Cada herramienta nueva pide subir tus datos a otro servicio más.",
+  ],
+  after: [
+    "Cada agente tiene un nombre, una tarea y límites claros.",
+    "Las acciones que importan quedan en espera hasta que vos las aprobás.",
+    "Un historial de qué propuso cada agente y qué decidiste.",
+    "Si preferís, todo corre en un servidor tuyo.",
+  ],
+  sections: [
+    {
+      heading: "Qué es un equipo de agentes de IA (sin humo)",
+      paragraphs: [
+        "Un agente es un asistente con una tarea fija, instrucciones, memoria de lo que ya hizo y acceso solo a las herramientas que le diste. Un equipo son varios de esos, cada uno en lo suyo, y a veces uno que coordina y le pasa trabajo a los demás.",
+        "La diferencia con un chatbot: el agente no solo contesta, también prepara acciones (un borrador de mail, una fila nueva en la planilla, un aviso de cobro). Por eso la aprobación humana no es un detalle, es lo que hace que puedas usarlo en tu negocio.",
+      ],
+    },
+    {
+      heading: "Dónde frena el agente y te pide OK",
+      paragraphs: ["Lo definimos con vos, pero en una pyme lo normal es que nada de esto salga sin aprobación:"],
+      items: [
+        "Mandar un mail o un WhatsApp a un cliente o proveedor.",
+        "Modificar una planilla, el stock o un precio.",
+        "Emitir una factura o registrar un cobro.",
+        "Borrar o compartir cualquier archivo.",
+      ],
+    },
+    {
+      heading: "Open source y en tu servidor, o a medida",
+      paragraphs: [
+        "Hay proyectos open source como [Open Duet](https://github.com/Anil-matcha/open-duet) que ya traen agentes con nombre, memoria, rutinas programadas y aprobación antes de cada acción, y se pueden instalar en un servidor propio. Hoy se presenta como experimental y pensado para un solo dueño, así que lo evaluamos caso por caso.",
+        "Si tu proceso necesita otra cosa (varios usuarios, integración con tu sistema de gestión, WhatsApp), lo armamos a medida con la misma regla: el agente propone, vos decidís.",
+      ],
+    },
+  ],
+  howTitle: "Cómo lo armamos",
+  how: [
+    {
+      title: "1. Elegimos un proceso, no diez",
+      body: "En la llamada de 15 minutos vemos qué tarea repetitiva te come más tiempo. Arrancamos con un agente para esa tarea; si funciona, sumamos otros.",
+    },
+    {
+      title: "2. Definimos qué puede hacer solo y qué espera tu OK",
+      body: "Leer, ordenar y redactar borradores suele quedar libre. Todo lo que sale hacia afuera o cambia datos queda en espera. Lo dejamos por escrito.",
+    },
+    {
+      title: "3. Lo conectamos a tus herramientas",
+      body: "Mail, planillas, [Mercado Pago](/es/integraciones/mercado-pago) o [pedidos por WhatsApp](/es/automatizaciones/pedidos-por-whatsapp), sobre lo que ya usás. Elegís dónde corre: en un servidor tuyo o en uno que administramos nosotros.",
+    },
+  ],
+  demoLinks: {
+    title: "Probalo antes de contratarlo",
+    body: DEMO_BODY,
+    links: [
+      { label: "Demo de cobranzas automáticas", path: "/es/demos/cobranzas", note: "Borradores que salen solo cuando aprobás" },
+      { label: "Calculadora de horas ahorradas", path: HOURS_TOOL.path, note: "Una estimación con tus propios datos" },
+    ],
+  },
+  fit: [
+    "Querés usar IA en tareas reales, pero no dejarla actuar sola.",
+    "Tenés tareas repetitivas que hoy reparten personas saturadas.",
+    "Te importa que tus datos queden en un servidor que controlás.",
+  ],
+  faqs: [
+    ["¿Qué es un agente de IA con aprobación humana?", "Un asistente con una tarea fija que prepara el trabajo (borradores, cambios, avisos) pero se frena antes de cualquier acción importante hasta que una persona la aprueba o la rechaza."],
+    ["¿La IA puede mandar mensajes o cobrar sola?", "Solo si vos lo decidís. Por defecto, todo lo que sale hacia afuera o modifica datos espera tu aprobación, y queda registrado."],
+    ["¿Se puede instalar en un servidor propio?", "Sí. Hay opciones open source, como Open Duet, que se instalan en un servidor tuyo. Hoy son experimentales, así que lo evaluamos según tu caso; si no encaja, lo armamos a medida."],
+    ["¿Tengo que pagar un modelo de IA aparte?", "Normalmente sí: los agentes usan un proveedor de IA que elegís vos, con tu cuenta. Te explicamos las opciones en la llamada."],
+    costFaq("cuántos agentes, herramientas y reglas de aprobación entran"),
+  ],
+  sources: [{ label: "Open Duet (GitHub)", href: "https://github.com/Anil-matcha/open-duet" }],
+  relatedLinks: [
+    { path: "/es/servicios/automatizacion-ia", title: "Automatización de procesos con IA" },
+    { path: "/es/automatizaciones/automatizar-cobranzas", title: "Automatizar cobranzas" },
+    { path: "/es/automatizaciones/pedidos-por-whatsapp", title: "Sistema de pedidos por WhatsApp" },
+    { path: "/es/demos/cobranzas", title: "Demo: cobranzas automáticas" },
+    SERVICE,
+  ],
+  relatedService: AUTOMATION,
+  relatedPosts: [],
+});

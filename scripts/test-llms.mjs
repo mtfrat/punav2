@@ -60,7 +60,7 @@ for (const line of robots.split("\n")) {
 
 // Free tools: hub + each tool in llms.txt and puna.md; llms-full sections (built from the same arrays) cover the 3 tools and the 6 rubro automatizaciones.
 assert.equal(toolDefinitions.length, 3, "expected the 3 free tools");
-assert.equal(rubroUseCases.length, 7, "expected the 7 rubro automatizaciones (6 + monotributistas, #79)");
+assert.equal(rubroUseCases.length, 8, "expected the 8 rubro automatizaciones (6 + monotributistas #79 + agentes IA con aprobación)");
 for (const [name, text] of [["llms.txt", llms], ["puna.md", md]]) {
   assert.ok(text.includes(`(${SITE}${TOOLS_BASE})`), `${name}: missing ${TOOLS_BASE}`);
   for (const tool of toolDefinitions) assert.ok(text.includes(`(${SITE}${toolPath(tool.slug)})`), `${name}: missing ${toolPath(tool.slug)}`);
