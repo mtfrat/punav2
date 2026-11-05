@@ -24,6 +24,7 @@ PAGES = {
     "cartera-de-polizas-y-renovaciones": ("Cartera de pólizas y renovaciones", "De los PDF al Excel y a los avisos a 30 días"),
     "matricula-productor-asesor-de-seguros": ("Matrícula de productor asesor de seguros", "Fechas y pasos según la SSN, y un calendario que avisa"),
     "control-de-facturacion-monotributistas": ("Control de facturación de monotributistas", "Recategorización y topes según ARCA, con semáforo y avisos"),
+    "agentes-ia-con-aprobacion-humana": ("Agentes de IA con aprobación humana", "Preparan el trabajo y esperan tu OK antes de actuar"),
 }
 BADGE = "DIAGNÓSTICO EN 15 MIN"
 
